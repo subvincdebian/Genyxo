@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Назва</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+        <div class="nav-logo">
+            <i class="fas fa-magic"></i>
+            <span>Назва</span>
+        </div>
+            
+        <div class="search-container">
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Знайти паки...">
+            <button class="search-btn">
+             <i class="fas fa-search"></i>
+            </button>
+        </div>
+        </div>
+
+        <div class="nav-links">
+            <a href="#home" class="nav-link active">Початок</a>
+            <a href="#products" class="nav-link">Продукти</a>
+            <a href="#about" class="nav-link">Про нас</a>
+            <button class="login-btn" id="loginBtn">
+                <i class="fas fa-user"></i>
+                Зареєструватись / Увійти
+            </button>
+    </nav>
+<!-- Hero -->
+    <section class="hero" id="home">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+        <div class="hero-text">
+        <h1 class="hero-title">Назва <span></span></h1>
+        <p class="hero-subtitle">Відкрийте новий рівень з нашим сервісом — підписки на AI, соціальні мережі та інше. Зручний доступ до сучасних інструментів, що відкривають безмежні можливості для вашого розвитку і бізнесу.</p>
+                
+        <div class="hero-stats">
+            <div class="stat">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">Щасливих користувачів</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Різних підписок</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">24h</div>
+                <div class="stat-label">Завжди працюємо</div>
+            </div>
+        </div>
+                
+        <button class="cta-btn" id="exploreBtn">Дивитись пакети</button>
+        </div>
+            
+        <div class="hero-visual">
+            <div class="mirror-showcase">
+            <div class="mirror-frame">
+            <img src="images/subscriptionshome.webp" alt="My Anime Mirror" class="showcase-image">
+            </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <!-- Products -->
+    <section class="products" id="products">
+        <div class="container">
+            <h2 class="section-title">Пакети підписок</h2>
+            <div class="products-grid" id="productsGrid">
+            </div>
+        </div>
+    </section>
+
+<!-- About -->
+    <section class="about" id="about">
+        <div class="container">
+            <h2 class="section-title">Про нас</h2>
+            <div class="about-content">
+                <div class="about-text">
+                <p>Ми прагнемо зробити преміальний цифровий досвід доступним для кожного. Наші кураторські пакети підписки об’єднують найпотужніші інструменти — від сервісів штучного інтелекту та креативних платформ до преміальних функцій соціальних мереж та програм для продуктивності.</p>
+                <p>Наша місія — допомогти творцям, підприємцям та звичайним користувачам заощадити час, підвищити ефективність та розкрити свій повний потенціал завдяки розумному та доступному доступу до улюблених цифрових послуг.</p>
+            <div class="about-features">
+            <div class="feature">
+                <i class="fas fa-palette"></i>
+                <h4>Кастомні Дизайни</h4>
+                <p>Опис Опис Опис Опис Опис</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-shipping-fast"></i>
+                <h4>Швидка доставка</h4>
+                <p>Доставка протягом 24 годин</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-award"></i>
+                <h4>Преміальна якість</h4>
+                <p>Тільки від офіційних джерел</p>
+            </div>
+            </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+    <div class="footer-content">
+    <div class="footer-section">
+        <h3>Про "Назва"</h3>
+        <p>Опис опис опис опис опис Опис опис опис опис опис Опис опис опис опис опис Опис опис опис опис опис Опис опис опис опис опис Опис опис опис опис опис Опис опис опис опис опис Опис опис опис опис опис</p>
+    <div class="social-links">
+        <a href="https://instagram.com/username" class="social-icon" title="Instagram" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+        </a>
+        <a href="paste your tiktok profile link" class="social-icon" title="TikTok" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/>
+        </svg>
+        </a>
+        <a href="https://wa.me/phonenumber" class="social-icon" title="WhatsApp" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893c0-3.189-1.248-6.189-3.515-8.444"/>
+        </svg>
+        </a>
+    </div>
+    </div>
+            
+    <div class="footer-section">
+        <h3>Посилання</h3>
+        <ul class="footer-links">
+            <li><a href="#home">Початок</a></li>
+            <li><a href="#products">Всі продукти</a></li>
+            <li><a href="#custom">Кастомні замовлення</a></li>
+            <li><a href="#shipping">Інформація про покупку</a></li>
+            <li><a href="#contact">Наші Контакти</a></li>
+        </ul>
+    </div>
+            
+    <div class="footer-section">
+        <h3>Контактна Інформація</h3>
+        <p class="contact-info">
+        <i class="fas fa-map-marker-alt"></i>
+        Україна, Київ
+        </p>
+        <p class="contact-info">
+        <i class="fas fa-phone"></i>
+        +38000000000
+        </p>
+        <p class="contact-info">
+        <i class="fas fa-envelope"></i>
+        ...@gmail.com
+        </p>
+    </div>
+    </div>
+        
+    <div class="footer-bottom">
+        <p>&copy; 2025 "Назва". All rights reserved.</p>
+    </div>
+    </footer>
+
+  <!-- Order -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content glass">
+            <span class="close-btn" id="closeOrder">&times;</span>
+            <h2>Order Your Mirror</h2>
+            <form class="order-form" id="orderForm">
+        <div class="form-group">
+            <input type="text" id="fullName" placeholder="Full Name" required>
+        </div>
+        <div class="form-group">
+            <input type="text" id="nickname" placeholder="Nickname" required>
+        </div>
+        <div class="form-group">
+            <input type="tel" id="phone" placeholder="Phone Number" required>
+        </div>
+        <div class="form-group">
+            <input type="text" id="city" placeholder="City" required>
+        </div>
+        <div class=<textarea id="address" placeholder="Full Address" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+            <label>Delivery Method:</label>
+        <div class="delivery-options">
+            <label class="option">
+                <input type="radio" name="delivery" value="stopdesk" required>
+                <span>Stop Desk</span>
+            </label>
+                <label class="option">
+                <input type="radio" name="delivery" value="home">
+                <span>Home Delivery</span>
+            </label>
+        </div>
+        </div>
+        <button type="submit" class="submit-btn">Sumbit Order</button>
+        </form>
+    </div>
+    </div>
+
+    <!-- Login -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content glass">
+            <span class="close-btn" id="closeLogin">&times;</span>
+            <h2>Login / Sign Up</h2>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Email Address" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <div class="form-options">
+                <label class="remember">
+                <input type="checkbox">
+                <span>Remember me</span>
+            </label>
+                <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+                <button type="submit" class="submit-btn">Login</button>
+            <div class="signup-link">
+                Don't have an account? <a href="#" id="showSignup">Sign up</a>
+            </div>
+        </form>
+
+        <form class="signup-form" id="signupForm" style="display: none;">
+            <div class="form-group">
+                <input type="text" id="signupName" placeholder="Full Name" required>
+            </div>
+            <div class="form-group">
+                <input type="email" id="signupEmail" placeholder="Email Address" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="signupPassword" placeholder="Password" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+            </div>
+                <button type="submit" class="submit-btn">Create Account</button>
+            <div class="signup-link">
+                Already have an account? <a href="#" id="showLogin">Login</a>
+            </div>
+        </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
