@@ -2,12 +2,12 @@ import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
   
-  @IsEmail({}, { message: 'Введіть коректний Email' })
-  @IsNotEmpty({ message: 'Email не може бути пустим' })
+  @IsEmail({}, { message: 'Please enter a valid Email.' })
+  @IsNotEmpty({ message: 'Email cannot be empty.' })
   email: string;
 
-  @IsNotEmpty({ message: 'Пароль не може бути пустим' })
-  @MinLength(6, { message: 'Пароль має бути не менше 6 символів' })
+  @IsNotEmpty({ message: 'Password cannot be empty.' })
+  @MinLength(6, { message: 'Password must be at least 6 characters long.' })
   password: string;
 
   @IsOptional()

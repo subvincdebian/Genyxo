@@ -1,27 +1,42 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from '../users/user.entity'; 
+import { UsersService } from '../users/users.service';
+import { Request as ExpressRequest } from 'express';
 
-// (Цей декоратор краще винести в окремий файл, але для прикладу зробимо так)
-// const GetUser = createParamDecorator((data, ctx: ExecutionContext): User => {
-//   const req = ctx.switchToHttp().getRequest();
-//   return req.user;
-// });
+interface RequestWithUser extends ExpressRequest {
+    user: { id: number, email: string, name: string };
+}
 
 @Controller('profile')
 export class ProfileController {
-  
-  @UseGuards(AuthGuard('jwt')) 
+  constructor(private usersService: UsersService) {}
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
-  getProfile(@Request() req) {
+  async getProfile(@Request() req) {
+
+    const userId = req.user.id;
+
+    const user = await this.usersService.findOneById(userId);
     
-    const user: User = req.user;
-    
+    if (!user) {
+        return { error: 'User not found' };
+    }
+
     return {
         id: user.id,
         email: user.email,
         name: user.name,
-        message: 'Дані профілю успішно завантажено!'
+        role: user.role,
+        credits: user.credits,
+        avatar: user.avatar
     };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('update')
+  async updateProfile(@Request() req, @Body() body: { name?: string, avatar?: string }) {
+    await this.usersService.updateUser(req.user.id, body);
+    return { status: 'success' };
   }
 }

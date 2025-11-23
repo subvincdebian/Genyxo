@@ -24,7 +24,7 @@ export class AuthController {
     const user = await this.authService.validateUser(loginUserDto.email, loginUserDto.password);
     
     if (!user) {
-        throw new UnauthorizedException('Неправильний email або пароль');
+        throw new UnauthorizedException('Incorrect email or password');
     }
     
     return this.authService.login(user as any);

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { max-width: 1200px; margin: 100px auto; padding: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: rgba(0,0,0,0.3);
+        }
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+            color: var(--text-gray);
+        }
+        .data-table th { color: var(--text-light); background: rgba(255,255,255,0.1); }
+        
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .badge-success { background: #2ecc71; color: black; }
+        .badge-pending { background: #f1c40f; color: black; }
+        .badge-admin { background: #e74c3c; color: white; }
+        
+        .action-btn {
+            padding: 5px 10px;
+            background: var(--text-light);
+            color: black;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><i class="fas fa-shield-alt"></i> Admin Panel</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="chat.html" class="nav-link">Chat</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <h1 style="color: white; margin-bottom: 2rem;"> System Management</h1>
+
+        <div class="glass" style="padding: 20px; margin-bottom: 30px;">
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i>Users</h2>
+                <button onclick="loadUsers()" class="action-btn"><i class="fas fa-sync"></i> Update</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Credits</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+            </table>
+        </div>
+
+        <div class="glass" style="padding: 20px;">
+            <div class="section-header">
+                <h2><i class="fas fa-receipt"></i> Transactions</h2>
+                <button onclick="loadTransactions()" class="action-btn"><i class="fas fa-sync"></i> Update</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Amount ($)</th>
+                        <th>Credits</th>
+                        <th>Status</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+        const token = localStorage.getItem('authToken');
+
+        // Якщо токена немає - викидаємо на логін
+        if (!token) window.location.href = 'index.html';
+
+        // 1. Завантаження користувачів
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!res.ok) throw new Error('Access Denied or Server Error');
+                
+                const users = await res.json();
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = '';
+                
+                users.forEach(u => {
+                    const roleBadge = u.role === 'admin' ? '<span class="badge badge-admin">ADMIN</span>' : 'User';
+                    // Перевірка на null
+                    const userName = u.name ? u.name : '-';
+                    const userCredits = u.credits ? u.credits : '0.00';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${u.id}</td>
+                            <td>${u.email}</td>
+                            <td>${userName}</td>
+                            <td>${roleBadge}</td>
+                            <td><strong>${userCredits}</strong></td>
+                            <td>
+                                <button class="action-btn" onclick="addCreditsPrompt(${u.id})">+ Credits</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error("Error loading users:", e);
+                // Не показуємо алерт кожну секунду, просто в консоль
+            }
+        }
+
+        // 2. Завантаження транзакцій
+        async function loadTransactions() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/transactions`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!res.ok) return;
+
+                const transactions = await res.json();
+                const tbody = document.getElementById('transactionsTable');
+                tbody.innerHTML = '';
+                
+                if (transactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No transactions found</td></tr>';
+                    return;
+                }
+
+                transactions.forEach(t => {
+                    // Визначаємо колір статусу
+                    let statusClass = 'badge-pending'; // жовтий за замовчуванням
+                    if (t.status === 'APPROVED') statusClass = 'badge-success'; // зелений
+                    if (t.status === 'DECLINED') statusClass = 'badge-admin';   // червоний
+
+                    // Кнопки показуємо ТІЛЬКИ якщо статус PENDING
+                    let actionBtns = '';
+                    if (t.status === 'PENDING') {
+                        actionBtns = `
+                            <div style="display: flex; gap: 5px;">
+                                <button class="action-btn" style="background: #2ecc71; color: white;" onclick="processTx(${t.id}, 'approve')">✓</button>
+                                <button class="action-btn" style="background: #e74c3c; color: white;" onclick="processTx(${t.id}, 'decline')">✕</button>
+                            </div>
+                        `;
+                    } else {
+                        actionBtns = '-'; // Якщо вже оброблено
+                    }
+
+                    const userEmail = t.user ? t.user.email : 'Unknown User';
+                    const dateStr = new Date(t.createdAt).toLocaleString();
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${t.id}</td>
+                            <td>${userEmail}</td>
+                            <td>$${t.amount}</td>
+                            <td>${t.creditsAmount}</td>
+                            <td><span class="badge ${statusClass}">${t.status}</span></td>
+                            <td>${t.provider}</td>
+                            <td>${dateStr}</td>
+                            <td>${actionBtns}</td> 
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error("Error loading transactions:", e);
+            }
+        }
+
+        // 3. Функція обробки (Approve/Decline)
+        async function processTx(id, action) {
+            const endpoint = action === 'approve' ? 'approve-transaction' : 'decline-transaction';
+            
+            if(!confirm(`Are you sure you want to ${action.toUpperCase()} this transaction?`)) return;
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ txId: id }) // Відправляємо DTO
+                });
+
+                if (res.ok) {
+                    // Оновлюємо таблиці
+                    loadTransactions();
+                    loadUsers(); // Баланс юзера теж зміниться
+                } else {
+                    const err = await res.json();
+                    alert('Error: ' + (err.message || 'Failed'));
+                }
+            } catch (e) {
+                alert('Server error');
+            }
+        }
+
+        // 4. Ручне додавання кредитів
+        async function addCreditsPrompt(userId) {
+            const amount = prompt("How many credits to add?");
+            if (amount) {
+                await fetch(`${API_BASE_URL}/admin/add-credits`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ userId: Number(userId), amount: Number(amount) })
+                });
+                loadUsers();
+            }
+        }
+
+        // Запуск при старті
+        loadUsers();
+        loadTransactions();
+    </script>
+</body>
+</html>

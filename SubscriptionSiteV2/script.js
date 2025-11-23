@@ -1,45 +1,75 @@
 const products = [
     {
         id: 1,
-        name: " Супер АІ",
-        price: "$49.99",
-        character: "Naruto",
-        image: "aiproductbanner.jpg" 
+        name: "Start AI",
+        price: "$1.50",
+        image: "startai.jpg",
+        credits: "500 credits",
+        features: [
+            "Access to basic AI models",
+            "Standard support",
+            "Lifetime validity"
+        ]
     },
     {
         id: 2,
-        name: "Ігрові Підписки",
-        price: "$54.99",
-        character: "Sailor Moon",
-        image: "XB-PS-Switch-IL.jpg" 
+        name: "AI Explorer",
+        price: "$2.00",
+        image: "aiexplorer.jpg",
+        credits: "1,000 credits",
+        features: [
+            "Access to advanced AI models",
+            "Priority support",
+            "Lifetime validity"
+        ]
     },
     {
         id: 3,
-        name: "Apple One",
-        price: "$59.99",
-        character: "Goku",
-        image: "apple-one-2.webp" 
+        name: "Pro Creator",
+        price: "$3.50",
+        image: "procreatorai.jpg",
+        credits: "2,000 credits",
+        features: [
+            "All AI models included",
+            "VIP support",
+            "Lifetime validity"
+        ]
     },
     {
         id: 4,
-        name: "Telegram Premium",
-        price: "$52.99",
-        character: "Eren Yeager",
-        image: "tgpremium.jpg" 
+        name: "AI Master",
+        price: "$7.00",
+        image: "aimaster.jpg",
+        credits: "5,000 credits",
+        features: [
+            "All AI models",
+            "24/7 Premium support",
+            "Lifetime validity"
+        ]
     },
     {
         id: 5,
-        name: "Discord Nitro",
-        price: "$56.99",
-        character: "All Might",
-        image: "discordnitro.webp" 
+        name: "Unlimited Power",
+        price: "$12.00",
+        image: "unlimitedpower.jpg",
+        credits: "10,000 credits",
+        features: [
+            "All features",
+            "Dedicated support manager",
+            "Lifetime validity"
+        ]
     },
     {
         id: 6,
-        name: "Музикальні Підписки",
-        price: "$51.99",
-        character: "Nezuko",
-        image: "musicsubscriptions.jpg" 
+        name: "AI Titan",
+        price: "$25.00",
+        image: "aititan.jpg",
+        credits: "25,000 credits",
+        features: [
+            "Unlimited everything",
+            "White-label options",
+            "Lifetime validity"
+        ]
     }
 ];
 
@@ -66,8 +96,25 @@ const logoutContainer = document.getElementById('logoutContainer');
 const logoutBtn = document.getElementById('logoutBtn');
 const welcomeMessage = document.getElementById('welcomeMessage');
 const profileDropdown = document.getElementById('profileDropdown');
-const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
 const loginBtnText = loginBtn.querySelector('span');
+const paymentMethodSelect = document.getElementById('paymentMethod');
+const manualPaymentModal = document.getElementById('manualPaymentModal');
+const closeManualPaymentBtn = document.getElementById('closeManualPayment');
+
+const profilePanel = document.getElementById('profilePanel');
+const navUsername = document.getElementById('navUsername');
+const navAvatar = document.getElementById('navAvatar');
+const navIcon = document.getElementById('navIcon');
+
+const menuName = document.getElementById('menuName');
+const menuEmail = document.getElementById('menuEmail');
+const menuCredits = document.getElementById('menuCredits');
+const dropdownAvatars = document.querySelectorAll('.dropdown-avatar');
+
+const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
+
+// Setup Listeners
+closeManualPaymentBtn.addEventListener('click', closeManualPaymentModal);
 
 // Current product for ordering
 let currentProduct = null;
@@ -78,14 +125,103 @@ function init() {
     setupEventListeners();
     setupNavigation();
     updateLoginButton(currentUserName, authToken);
+
+    if (authToken) {
+        fetchUserData();
+    }
+}
+
+async function fetchUserData() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/profile`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.ok) {
+            const user = await response.json();
+            console.log("User data received:", user);
+            updateUserUI(user);
+        } else {
+            console.log('Token invalid');
+            handleLogout();
+        }
+    } catch (e) {
+        console.error("Loading Profile Error:", e);
+    }
+}
+
+function updateUserUI(user) {
+    // 1. Оновлюємо кнопку навігації
+    if (navUsername) navUsername.textContent = user.name || user.email;
+    
+    // Логіка аватарки (в кнопці і в меню)
+    if (user.avatar) {
+        if(navIcon) navIcon.style.display = 'none';
+        if(navAvatar) {
+            navAvatar.style.display = 'block';
+            navAvatar.src = user.avatar;
+        }
+        // Оновлюємо велику аватарку в меню
+        dropdownAvatars.forEach(img => img.src = user.avatar);
+    } else {
+        // Якщо аватарки немає - ставимо дефолтну
+        dropdownAvatars.forEach(img => img.src = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y');
+    }
+
+    // 2. Оновлюємо текст у випадаючому меню
+    if (menuName) menuName.textContent = user.name || 'User';
+    if (menuEmail) menuEmail.textContent = user.email;
+    if (menuCredits) menuCredits.textContent = user.credits || 0;
+}
+
+// Обробник кліку на кнопку профілю
+function handleLoginButtonClick(e) {
+    e.stopPropagation();
+    if (authToken) {
+        // Тоггл меню
+        profilePanel.classList.toggle('show'); // Додай стиль .show { display: block; } у CSS якщо ще немає
+    } else {
+        openLoginModal();
+    }
+}
+
+// Вихід
+function handleLogout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    authToken = null;
+    
+    // Скидаємо UI
+    if(navUsername) navUsername.textContent = 'Register / Login';
+    if(navIcon) navIcon.style.display = 'inline-block';
+    if(navAvatar) navAvatar.style.display = 'none';
+    if(profilePanel) profilePanel.classList.remove('show');
+    
+    window.location.reload();
 }
 
 function updateLoginButton(name, token) {
     if (token) {
-        loginBtnText.textContent = name;
+        // Стан: ЗАЛОГІНЕНИЙ
+        navUsername.textContent = name;
+        navIcon.style.display = 'none'; 
+        navAvatar.style.display = 'block'; 
+        
+        menuName.textContent = name;
+        menuEmail.textContent = localStorage.getItem('userEmail') || 'user@example.com';
     } else {
-        loginBtnText.textContent = 'Зареєструватись / Увійти';
+        // Стан: ГІСТЬ
+        navUsername.textContent = 'Зареєструватись / Увійти';
+        navIcon.style.display = 'inline-block';
+        navAvatar.style.display = 'none';
+        profilePanel.classList.remove('show');
     }
+}
+
+function closeManualPaymentModal() {
+    manualPaymentModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
 // Load products into the grid
@@ -95,20 +231,38 @@ function loadProducts() {
     products.forEach(product => {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
+        
+        // Генеруємо HTML списку фіч
+        const featuresHtml = product.features.map(feature => `
+            <li>
+                <span class="feature-icon"><i class="fas fa-check"></i></span>
+                ${feature}
+            </li>
+        `).join('');
+
         productCard.innerHTML = `
             <div class="product-image">
-            <img src="${product.image}" alt="${product.name}" onerror="this.src='placeholder.jpg'">
+                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=${product.name}'">
             </div>
+            
             <div class="product-info">
-            <h3 class="product-name">${product.name}</h3>
-            <div class="product-price">${product.price}</div>
-            <button class="buy-btn" data-id="${product.id}">
-            Buy Now
-            </button>
+                <h3 class="product-name">${product.name}</h3>
+                <div class="product-price">${product.price}</div>
+                
+                <ul class="product-features">
+                    <li>
+                        <span class="feature-icon icon-bolt"><i class="fas fa-bolt"></i></span>
+                        ${product.credits}
+                    </li>
+                    ${featuresHtml}
+                </ul>
+
+                <button class="buy-btn" data-id="${product.id}">
+                    Buy Now
+                </button>
             </div>`;
         productsGrid.appendChild(productCard);
-        }
-    );
+    });
 
     // Add event listeners to buy buttons
     document.querySelectorAll('.buy-btn').forEach(btn => {
@@ -116,8 +270,8 @@ function loadProducts() {
             const productId = parseInt(e.target.getAttribute('data-id'));
             currentProduct = products.find(p => p.id === productId);
             openOrderModal();
-        })}
-    );
+        });
+    });
 }
 
 // Setup
@@ -153,22 +307,22 @@ function setupEventListeners() {
     });
 
     window.addEventListener('click', (e) => {
-        if (e.target === orderModal) closeOrderModal();
-        if (e.target === loginModal) closeLoginModal();
-        
-        if (!e.target.closest('#loginBtn')) {
-            if (profileDropdown.classList.contains('show')) {
-                profileDropdown.classList.remove('show');
+        if (!e.target.closest('.profile-container')) {
+            if (profilePanel.classList.contains('show')) {
+                profilePanel.classList.remove('show');
             }
         }
     });
+
+    if(dropdownLogoutBtn) {
+        dropdownLogoutBtn.addEventListener('click', handleLogout);
+    }
 }
 
 function handleLoginButtonClick(e) {
     e.stopPropagation();
-    
     if (authToken) {
-        profileDropdown.classList.toggle('show');
+        profilePanel.classList.toggle('show');
     } else {
         openLoginModal();
     }
@@ -213,7 +367,6 @@ function openLoginModal() {
     showLoginForm();
 }
 
-
 function closeLoginModal() {
     loginModal.style.display = 'none';
     document.body.style.overflow = 'auto';
@@ -233,26 +386,85 @@ function showLoginForm() {
 }
 
 // Form handlers
-function handleOrderSubmit(e) {
+async function handleOrderSubmit(e) {
     e.preventDefault();
-        
-    const formData = {
-        product: currentProduct.name,
-        fullName: document.getElementById('fullName').value,
-        nickname: document.getElementById('nickname').value,
-        phone: document.getElementById('phone').value,
-        city: document.getElementById('city').value,
-        address: document.getElementById('address').value,
-        delivery: document.querySelector('input[name="delivery"]:checked').value
-    };
+    if (!authToken) { alert('Log in'); return; }
+    
+    const selectedMethod = document.getElementById('paymentMethod').value;
 
-    // send data to a server 'no server available actually'
-    console.log('Order submitted:', formData);
-        
-    // Show success message
-    alert(`Thank you, ${formData.nickname}! Your order for "${formData.product}" has been placed successfully!`);
-        
-    closeOrderModal();
+    try {
+        const response = await fetch(`${API_BASE_URL}/payment/buy`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                packId: currentProduct.id,
+                paymentMethod: selectedMethod
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'manual_pending') {
+            closeOrderModal();
+            showPaymentWindow(data.instructions, data.orderId);
+        } else {
+            alert(`Error: ${data.message}`);
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Server Error');
+    }
+}
+
+let currentOrderId = null;
+
+function showPaymentWindow(instr, orderId) {
+    currentOrderId = orderId;
+    const modal = document.getElementById('manualPaymentModal');
+    
+    document.getElementById('paymentTitle').innerText = instr.currency === 'USDT' ? 'Crypto payment' : 'Payment by card';
+    
+    // Показуємо або Гаманець, або Номер карти
+    const target = instr.address || instr.number;
+    document.getElementById('paymentTarget').innerText = target;
+    document.getElementById('paymentAmount').innerText = instr.amount;
+    document.getElementById('paymentNetwork').innerText = instr.network || instr.holder;
+    
+    // Очищаємо поле вводу
+    document.getElementById('paymentProof').value = '';
+    
+    modal.style.display = 'flex';
+}
+
+function confirmManualPayment() {
+    const proof = document.getElementById('paymentProof').value;
+    if (proof.length < 4) {
+        alert('Please enter confirmation (Transaction hash or time)');
+        return;
+    }
+
+    // Тут можна відправити proof на сервер, щоб зберегти його (опціонально)
+    // Але для MVP достатньо просто повідомити клієнта
+    
+    alert(`Thank you! Order #${currentOrderId} accepted for processing. We will verify the payment (${proof}) and we will accrue credits within 20 minutes.`);
+    
+    document.getElementById('manualPaymentModal').style.display = 'none';
+}
+
+document.getElementById('closeManualPayment').addEventListener('click', () => {
+    document.getElementById('manualPaymentModal').style.display = 'none';
+});
+
+function showManualPaymentInstructions(instr) {
+    document.getElementById('manualCardNumber').textContent = instr.card;
+    document.getElementById('manualCardHolder').textContent = instr.holder;
+    document.getElementById('manualAmount').textContent = `$${instr.amount}`;
+    document.getElementById('manualOrderId').textContent = `Order #${instr.orderId}`;
+    
+    manualPaymentModal.style.display = 'flex';
 }
 
 async function handleLoginSubmit(e) {
@@ -273,35 +485,30 @@ async function handleLoginSubmit(e) {
         const data = await response.json();
 
         if (response.ok) {
-            // Успішний вхід: зберігаємо токен і оновлюємо UI
             localStorage.setItem('authToken', data.access_token);
-            localStorage.setItem('userName', data.user.name || 'Мій Кабінет');
             authToken = data.access_token;
-            currentUserName = data.user.name || 'Мій Кабінет';
 
-            alert(`З поверненням! Ви успішно увійшли.`);
-            updateLoginButton(currentUserName, authToken);
+            await fetchUserData();
+            
             closeLoginModal();
         } else {
-            // Помилка (наприклад, неправильний пароль)
-            const errorMessage = data.message || 'Неправильний email або пароль.';
-            alert(`Помилка входу: ${errorMessage}`);
+            const errorMessage = data.message || 'Incorrect email or password.';
+            alert(`Login Error: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Network or server error:', error);
-        alert('Помилка підключення до сервера. Перевірте, чи запущено бек-енд.');
+        alert('Server connection failed. Check if the backend is running.');
     }
 }
 
 async function handleSignupSubmit(e) {
     e.preventDefault();
     
-    // Перевірка відповідності паролів
     const password = document.getElementById('signupPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     
     if (password !== confirmPassword) {
-        alert('Помилка: Паролі не збігаються!');
+        alert('Error: Passwords do not match!');
         return;
     }
 
@@ -323,37 +530,20 @@ async function handleSignupSubmit(e) {
         const data = await response.json();
 
         if (response.ok) {
-            // Успішна реєстрація: зберігаємо токен і оновлюємо UI
             localStorage.setItem('authToken', data.access_token);
-            localStorage.setItem('userName', data.user.name || 'Мій Кабінет');
             authToken = data.access_token;
-            currentUserName = data.user.name || 'Мій Кабінет';
-
-            alert(`Ласкаво просимо, ${currentUserName}! Ваш обліковий запис успішно створено.`);
-            updateLoginButton(currentUserName, authToken);
+            
+            await fetchUserData();
+            
             closeLoginModal();
         } else {
-            // Помилка (наприклад, email вже зайнятий)
-            const errorMessage = data.message || 'Невідома помилка реєстрації.';
-            alert(`Помилка реєстрації: ${errorMessage}`);
+            const errorMessage = data.message || 'Unknown registration error.';
+            alert(`Register Error: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Network or server error:', error);
-        alert('Помилка підключення до сервера. Перевірте, чи запущено бек-енд.');
+        alert('Server connection failed. Check if the backend is running.');
     }
-}
-
-function handleLogout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    authToken = null;
-    currentUserName = 'Мій Кабінет';
-    
-    alert('Ви успішно вийшли.');
-    
-    updateLoginButton(currentUserName, authToken);
-    profileDropdown.classList.remove('show'); 
 }
 
 // Search functionality
@@ -366,8 +556,7 @@ function handleSearch(e) {
     }
 
     const filteredProducts = products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.character.toLowerCase().includes(searchTerm)
+        product.name.toLowerCase().includes(searchTerm)
     );
 
     productsGrid.innerHTML = '';
@@ -375,8 +564,8 @@ function handleSearch(e) {
     if (filteredProducts.length === 0) {
         productsGrid.innerHTML = `
         <div class="no-results glass" style="grid-column: 1/-1; text-align: center; padding: 2rem;">
-        <h3>No products found</h3>
-        <p>Try searching for different anime characters</p>
+            <h3>No products found</h3>
+            <p>Try searching for different product</p>
         </div>
         `;
         return;
@@ -385,22 +574,32 @@ function handleSearch(e) {
     filteredProducts.forEach(product => {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
+        
+        // Той самий генератор HTML, що і в loadProducts
+        const featuresHtml = product.features.map(feature => `
+            <li><span class="feature-icon"><i class="fas fa-check"></i></span>${feature}</li>
+        `).join('');
+
         productCard.innerHTML = `
         <div class="product-image">
-        <img src="${product.image}" alt="${product.name}" onerror="this.src='placeholder.jpg'">
+            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=${product.name}'">
         </div>
         <div class="product-info">
-        <h3 class="product-name">${product.name}</h3>
-        <div class="product-price">${product.price}</div>
-        <button class="buy-btn" data-id="${product.id}">
-        Buy Now
-        </button>
+            <h3 class="product-name">${product.name}</h3>
+            <div class="product-price">${product.price}</div>
+            
+            <ul class="product-features">
+                <li><span class="feature-icon icon-bolt"><i class="fas fa-bolt"></i></span>${product.credits}</li>
+                ${featuresHtml}
+            </ul>
+
+            <button class="buy-btn" data-id="${product.id}">Buy Now</button>
         </div>
         `;
         productsGrid.appendChild(productCard);
     });
 
-    // Re-add event listeners to filtered products
+    // Re-add event listeners
     document.querySelectorAll('.buy-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const productId = parseInt(e.target.getAttribute('data-id'));

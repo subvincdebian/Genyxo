@@ -20,6 +20,7 @@ export class AuthService {
       return result;
     }
     return null;
+    
   }
 
   async login(user: User) {
@@ -33,7 +34,7 @@ export class AuthService {
   async register(createUserDto: CreateUserDto) {
     const existingUser = await this.usersService.findOneByEmail(createUserDto.email);
     if (existingUser) {
-        throw new UnauthorizedException('Користувач з таким email вже існує');
+        throw new UnauthorizedException('A user with this email already exists.');
     }
     const user = await this.usersService.create(createUserDto);
     return this.login(user); 
