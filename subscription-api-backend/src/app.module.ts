@@ -6,8 +6,6 @@ import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { UsersService } from './users/users.service';
-import { UsersController } from './users/users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { ProfileModule } from './profile/profile.module';
@@ -23,11 +21,11 @@ import { NotificationsModule } from './notifications/notifications.module';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'nest_user',
-      password: 'Atlanticus123cus123',
-      database: 'my_perfect_db',
+      host: process.env.DATABASE_HOST || 'localhost',
+      port: parseInt(process.env.DATABASE_PORT!) || 3306,
+      username: process.env.DATABASE_USER || 'nest_user',
+      password: process.env.DATABASE_PASSWORD || 'Atlanticus123cus123',
+      database: process.env.DATABASE_NAME || 'my_perfect_db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),

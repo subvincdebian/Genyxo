@@ -1,12 +1,10 @@
 import { Controller, Get, Post, Body, UseGuards, Request, ForbiddenException, HttpStatus, HttpCode } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/role.enum';
 
 import { PaymentService } from '../payment/payment.service'; 
-import { AdminTransactionDto } from '../payment/dto/payment.dto';
 import { TransactionStatus } from '../users/transaction.entity';
 
 @Controller('admin')

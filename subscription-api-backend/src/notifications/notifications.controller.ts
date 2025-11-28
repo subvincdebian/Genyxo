@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Request, Patch, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { NotificationsService } from './notifications.service';
 
