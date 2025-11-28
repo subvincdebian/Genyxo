@@ -1,0 +1,84 @@
+{
+    "nav": {
+        "home": "Inicio",
+        "products": "Productos",
+        "chat": "Chat",
+        "about": "Sobre nosotros",
+        "login": "Registro / Acceso",
+        "profile": "Perfil"
+    },
+    "hero": {
+        "title": "AIVault",
+        "subtitle": "Descubre un nuevo nivel con nuestro servicio: suscripciones a IA, redes sociales y más.",
+        "view_packages": "Ver paquetes",
+        "happy_customers": "Clientes satisfechos",
+        "ai_models": "Diferentes modelos de IA",
+        "always_working": "Siempre funcionando"
+    },
+    "menu": {
+        "profile": "Perfil",
+        "notifications": "Notificaciones",
+        "help": "Centro de ayuda",
+        "language": "Idioma",
+        "contact": "Contáctanos",
+        "logout": "Cerrar sesión"
+    },
+    "products_data": {
+        "products_title": "Paquetes de suscripción",
+        "buy_now": "Comprar ahora",
+        "1": {
+            "name": "Start AI",
+            "credits_label": "500 créditos",
+            "features": [
+                "Acceso a modelos básicos de IA",
+                "Soporte estándar",
+                "Validez de por vida"
+            ]
+        },
+        "2": {
+            "name": "AI Explorer",
+            "credits_label": "1.000 créditos",
+            "features": [
+                "Acceso a modelos avanzados de IA",
+                "Soporte prioritario",
+                "Validez de por vida"
+            ]
+        },
+        "3": {
+            "name": "Pro Creator",
+            "credits_label": "2.000 créditos",
+            "features": [
+                "Todos los modelos de IA incluidos",
+                "Soporte VIP",
+                "Validez de por vida"
+            ]
+        },
+        "4": {
+            "name": "AI Master",
+            "credits_label": "5.000 créditos",
+            "features": [
+                "Todos los modelos de IA",
+                "Soporte Premium 24/7",
+                "Validez de por vida"
+            ]
+        },
+        "5": {
+            "name": "Unlimited Power",
+            "credits_label": "10.000 créditos",
+            "features": [
+                "Todas las funciones",
+                "Gerente de soporte dedicado",
+                "Validez de por vida"
+            ]
+        },
+        "6": {
+            "name": "AI Titan",
+            "credits": "25.000 créditos",
+            "features": [
+                "Todo ilimitado",
+                "Opciones de marca blanca",
+                "Validez de por vida"
+            ]
+        }
+    }
+}

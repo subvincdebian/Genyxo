@@ -13,12 +13,10 @@ export class UsersService {
   async findOneByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({ 
         where: { email },
-        // Вибираємо пароль, щоб AuthService міг його перевірити
         select: ['id', 'email', 'password', 'role', 'name', 'credits', 'avatar'] 
     });
   }
 
-  // ✅ ВИПРАВЛЕНО: Тепер повертає всі дані (включаючи credits) для ProfileController
   async findOneById(id: number): Promise<User | null> {
     return this.usersRepository.findOne({ 
         where: { id },
@@ -35,7 +33,6 @@ export class UsersService {
     await this.usersRepository.update(id, updates);
   }
 
-  // ✅ Безпечне додавання кредитів
   async addCredits(userId: number, amount: number): Promise<void> {
     const user = await this.findOneById(userId);
     if (user) {
@@ -48,16 +45,13 @@ export class UsersService {
     }
   }
 
-  // 💥 ОСТАТОЧНЕ ВИПРАВЛЕННЯ: Усуваємо помилку 'user' is possibly 'null'.
   async deductCredits(userId: number, amount: number): Promise<boolean> {
     const user = await this.findOneById(userId);
     
-    // Крок 1: Обов'язкова перевірка на null
     if (!user) {
       return false;
     }
 
-    // Крок 2: Безпечний доступ до credits (тепер user гарантовано існує)
     const currentCredits = Number(user.credits) || 0;
     
     if (currentCredits < amount) {
@@ -70,7 +64,6 @@ export class UsersService {
     return true;
   }
 
-  // ✅ Безпечне отримання балансу
   async getBalance(userId: number): Promise<number> {
     const user = await this.findOneById(userId);
     return user ? Number(user.credits) : 0;

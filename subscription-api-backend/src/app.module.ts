@@ -11,6 +11,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './chat/chat.module';
 import { PaymentModule } from './payment/payment.module';
 import { AdminModule } from './admin/admin.module';
+import { SupportModule } from './support/support.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { AdminModule } from './admin/admin.module';
     ChatModule,
     PaymentModule,
     AdminModule,
+    SupportModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

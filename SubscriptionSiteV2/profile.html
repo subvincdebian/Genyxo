@@ -12,6 +12,13 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
+
+            <div class="burger" id="burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
             <div class="left-side">
                 <div class="nav-logo">
                     <a href="index.html" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
@@ -36,9 +43,7 @@
             <div class="right-side">
                 <div class="nav-links">
                     <a href="index.html" class="nav-link active">Home</a>
-                    <a href="#products" class="nav-link">Products</a>
                     <a href="chat.html" class="nav-link">Chat</a>
-                    <a href="#about" class="nav-link">About Us</a>
                 </div>
                 <div class="profile-container">
                     <button class="login-btn profile-toggle-btn" id="loginBtn">
@@ -48,6 +53,8 @@
                     </button>
                     
                     <div class="profile-dropdown glass" id="profilePanel">
+
+                        <button class="close-profile-panel" id="closeProfilePanel">✕</button>
                         
                         <div class="dropdown-header">
                             <div class="user-details">
@@ -75,22 +82,32 @@
                         </div>
 
                         <div class="dropdown-menu">
+
                             <a href="profile.html" class="menu-item">
                                 <i class="fas fa-user-cog"></i> <span>Profile</span>
                             </a>
-                            <a href="#" class="menu-item">
-                                <i class="fas fa-life-ring"></i> <span>Notifications</span>
+
+                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
+                                <div style="display:flex; align-items:center;">
+                                    <i class="fas fa-bell"></i> 
+                                    <span>Notifications</span>
+                                </div>
+                                <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
-                            <a href="#" class="menu-item">
+
+                            <a href="support.html" class="menu-item">
                                 <i class="fas fa-bell"></i> <span>Help Center</span>
                             </a>
+
                             <a href="#" class="menu-item">
                                 <i class="fas fa-globe"></i> <span>Language</span>
                                 <span class="lang-val">English ></span>
                             </a>
+
                             <a href="#contact" class="menu-item">
                                 <i class="fas fa-envelope"></i> <span>Contact us</span>
                             </a>
+
                         </div>
 
                         <div class="dropdown-footer">
@@ -104,6 +121,17 @@
 
         </div>
     </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#products">Products</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="#about">About us</a></li>
+        </ul>
+    </div>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
 
     <div class="profile-page">
 
@@ -144,7 +172,7 @@
 
                 <a href="#" class="menu-item" data-page="page-payment">
                     <!-- Bookings icon -->
-                   <img src="wallet_icon.png" decoding="async" width="20" height="20">
+                   <img src="./images/wallet_icon.png" decoding="async" width="20" height="20">
                     Payment settings
                 </a>
 
@@ -300,14 +328,53 @@
     </main>
 </div>
 
+    <div class="modal" id="langModal">
+        <div class="modal-content glass" style="max-width: 400px;">
+            <span class="close-btn" id="closeLangModal">&times;</span>
+            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
+            <div class="lang-grid" id="langGrid">
+                </div>
+        </div>
+    </div>
+
     <script>
 
         const API_BASE_URL = 'http://localhost:3000';
         const token = localStorage.getItem('authToken');
 
+        const notificationBadge = document.getElementById('notificationBadge');
+
+        const burger = document.getElementById("burger");
+        const mobileMenu = document.getElementById("mobileMenu");
+        const overlay = document.getElementById("menuOverlay"); // получаем overlay
+
+        function closeMenu() {
+            burger.classList.remove("active");
+            mobileMenu.classList.remove("active");
+            overlay.classList.remove("active");
+        }
+
+        burger.addEventListener("click", () => {
+            burger.classList.toggle("active");
+            mobileMenu.classList.toggle("active");
+            overlay.classList.toggle("active");
+        });
+
+        // Закрытие меню при клике на ссылку
+        document.querySelectorAll(".mobile-menu a").forEach(link => {
+            link.addEventListener("click", closeMenu);
+        });
+
+        // Закрытие при клике на overlay (пустая область вокруг меню)
+        overlay.addEventListener("click", closeMenu);
+
+            document.getElementById('closeProfilePanel').addEventListener('click', () => {
+            profilePanel.classList.remove('show');
+            document.querySelector('.profile-container').classList.remove('active');
+        });
+
         if (!token) {
             window.location.href = 'index.html';
-            alert('Please log in.');
         }
 
         async function loadProfileData() {
@@ -325,36 +392,29 @@
                 });
                 const user = await response.json();
 
-                // Заповнюємо поля
                 document.getElementById('profileName').textContent = user.name || 'User';
 
-                if (user.id) { // Перевіряємо, чи отримали ми валідного користувача
-                    // Оновлюємо кнопку профілю
+                if (user.id) {
                     navUsername.textContent = user.name || 'Profile';
                     navIcon.style.display = 'none';
                     navAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
                     navAvatar.style.display = 'inline-block';
                     
-                    // Перетворюємо кнопку Login/Register на кнопку, яка відкриває дропдаун
                     loginBtn.classList.remove('login-btn');
-                    loginBtn.classList.add('profile-toggle-btn'); // Додайте цей клас для стилізації
+                    loginBtn.classList.add('profile-toggle-btn');
                     
-                    // Оновлюємо дані в ДРОПДАУН-МЕНЮ
                     document.getElementById('menuName').textContent = user.name || 'User';
                     document.getElementById('menuEmail').textContent = user.email || '';
-                    document.getElementById('menuCredits').textContent = (user.credits || 0).toLocaleString(); // Відображаємо баланс
+                    document.getElementById('menuCredits').textContent = (user.credits || 0).toLocaleString();
                     document.querySelector('.dropdown-avatar').src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
                     
-                    // Встановлюємо фоновий аватар для бічної панелі
                     document.getElementById('avatarPreview').style.backgroundImage = `url('${user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}')`;
                 }
                 
-                // Відображаємо аватарку, якщо є
                 if (user.avatar) {
                     document.getElementById('avatarPreview').style.backgroundImage = `url('${user.avatar}')`;
                 }
                 
-                // Тут можна заповнити й інші інпути (email, name в формі)
                 const nameInput = document.querySelector('input[placeholder="John Doe"]');
                 if(nameInput) nameInput.value = user.name || '';
                 
@@ -368,11 +428,38 @@
 
         loadProfileData();
 
+        async function updateNotificationsBadge() {
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.count;
+
+                    if (notificationBadge) {
+                        if (count > 0) {
+                            notificationBadge.style.display = 'inline-block';
+                            notificationBadge.textContent = count > 99 ? '99+' : count;
+                        } else {
+                            notificationBadge.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error checking notifications:", e);
+            }
+        }
+
+        updateNotificationsBadge();
+
         document.getElementById("avatarInput").addEventListener("change", function(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Обмеження розміру (наприклад, до 50МБ), бо longtext має ліміт
             if (file.size > 50 * 1024 * 1024) {
                 alert("Файл занадто великий! Максимум 50MB.");
                 return;
@@ -383,10 +470,8 @@
             reader.onload = async function(e) {
                 const base64Image = e.target.result;
                 
-                // 1. Показуємо відразу (прев'ю)
                 document.getElementById("avatarPreview").style.backgroundImage = `url('${base64Image}')`;
 
-                // 2. Відправляємо на сервер
                 try {
                     const response = await fetch(`${API_BASE_URL}/profile/update`, {
                         method: 'POST',
@@ -398,7 +483,6 @@
                     });
 
                     if (response.ok) {
-                        // Оновлюємо і в меню (якщо воно є на цій сторінці)
                         alert("Аватар оновлено!");
                     } else {
                         alert("Помилка збереження");
@@ -411,7 +495,6 @@
             reader.readAsDataURL(file);
         });
 
-        // 3. Обробка кнопки "Save changes" (для імені)
         const saveBtn = document.querySelector('.save-btn');
         if(saveBtn) {
             saveBtn.addEventListener('click', async (e) => {
@@ -428,7 +511,6 @@
                     body: JSON.stringify({ name: newName })
                 });
                 alert("Дані збережено!");
-                // Оновити ім'я зліва
                 document.getElementById('profileName').textContent = newName;
             });
         }
@@ -444,28 +526,21 @@
             });
         });
 
-        // Активні меню-пункти
         document.querySelectorAll(".menu-item").forEach(btn => {
             btn.addEventListener("click", () => {
 
-                // Прибрати active у всіх сторінок
                 document.querySelectorAll(".page").forEach(page => {
                     page.classList.remove("active");
                 });
 
-                // Яку сторінку показати
                 const pageId = btn.getAttribute("data-page");
 
-                // Показати її
                 document.getElementById(pageId).classList.add("active");
 
-                // Підсвітка активної кнопки
                 document.querySelectorAll(".menu-item").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
             });
         });
-
-        // Кнопка "Change Password"
 
         document.addEventListener("click", (e) => {
             if (e.target.id === "openChangePassword") {
@@ -473,7 +548,7 @@
             }
         });
         (() => {
-        // Helpers
+
         const $ = s => document.querySelector(s);
         const $$ = s => Array.from(document.querySelectorAll(s));
 
@@ -691,28 +766,28 @@
             });
         }
 
-
         const profileToggleBtn = document.getElementById('loginBtn');
         const profileDropdown = document.getElementById('profilePanel');
 
         profileToggleBtn.addEventListener('click', () => {
-            // Перевіряємо, чи користувач зареєстрований (якщо не зареєстрований, він залишається кнопкою Login/Register)
             if (token) {
                 profileDropdown.classList.toggle('show');
             }
         });
 
-        // Закриття дропдауну при кліку поза ним
         document.addEventListener('click', (event) => {
             const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
             
-            // Закриваємо, якщо клік був не всередині кнопки або дропдауну
             if (!isClickInside && profileDropdown.classList.contains('show')) {
                 profileDropdown.classList.remove('show');
             }
         });
 
     </script>
+
+<script src="js/i18n.js"></script>
+
+<script src="js/script.js"></script>
 
 </body>
 </html>

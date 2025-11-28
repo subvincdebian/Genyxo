@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { Transaction, TransactionStatus } from '../users/transaction.entity'; 
 import { UsersService } from '../users/users.service';
 
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
+
 export const PACKS: Record<number, { name: string, price: number, credits: number }> = {
   1: { name: 'Start AI', price: 1.50, credits: 500 },
   2: { name: 'AI Explorer', price: 2.00, credits: 1000 },
@@ -33,12 +36,10 @@ export class PaymentService {
   constructor(
     @InjectRepository(Transaction)
     private transactionRepo: Repository<Transaction>,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private notificationsService: NotificationsService
   ) {}
 
-  /**
-   * Створення транзакції та отримання інструкцій до оплати.
-   */
   async createPayment(userId: number, packId: number, method: string) {
     
     const pack = PACKS[packId];
@@ -49,13 +50,12 @@ export class PaymentService {
     let instructions: any;
     let providerName: string;
 
-    // Генерація інструкцій (для ручних методів)
     if (method === 'MANUAL_CARD') {
         const priceUah = Math.ceil(pack.price * 42); 
         instructions = {
             ...REQUISITES.UAH_CARD,
             amount: `${priceUah} UAH`,
-            description: `Order #${new Date().getTime()}` // Унікальний опис
+            description: `Order #${new Date().getTime()}`
         };
         providerName = 'MANUAL_CARD';
     } 
@@ -71,18 +71,16 @@ export class PaymentService {
         throw new BadRequestException('UNKNOWN_PAYMENT_METHOD', 'Unknown payment method provided.');
     }
 
-    // Створення об'єкта транзакції у базі даних
     const transaction = this.transactionRepo.create({
       amount: pack.price,
       creditsAmount: pack.credits,
-      status: TransactionStatus.PENDING, // Використовуємо enum
+      status: TransactionStatus.PENDING,
       provider: providerName,
       user: { id: userId }
     });
     
     await this.transactionRepo.save(transaction);
 
-    // Повертаємо ID для клієнта і інструкції
     return { 
         status: 'manual_pending',
         orderId: transaction.id, 
@@ -107,9 +105,15 @@ export class PaymentService {
     await this.transactionRepo.save(transaction);
 
     if (newStatus === TransactionStatus.APPROVED) {
-        // Нарахування кредитів
         await this.usersService.addCredits(transaction.user.id, Number(transaction.creditsAmount));
-    }
+        
+        await this.notificationsService.create(
+            transaction.user.id,
+            'Payment Successful 💰',
+            `Your account has been credited with ${transaction.creditsAmount} credits. Thank you!`,
+            NotificationType.SYSTEM
+        );
+      }
 
     return { status: 'success', newStatus };
   }

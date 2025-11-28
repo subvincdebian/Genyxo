@@ -11,6 +11,13 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
+
+            <div class="burger" id="burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
             <div class="left-side">
                 <div class="nav-logo">
                     <i class="fas fa-magic"></i>
@@ -32,10 +39,10 @@
 
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="#home" class="nav-link active">Home</a>
-                    <a href="#products" class="nav-link">Products</a>
-                    <a href="chat.html" class="nav-link">Chat</a>
-                    <a href="#about" class="nav-link">About Us</a>
+                    <a href="#home" class="nav-link active" data-i18n="nav.home">Home</a>
+                    <a href="#products" class="nav-link" data-i18n="nav.products">Products</a>
+                    <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
+                    <a href="#about" class="nav-link" data-i18n="nav.about">About Us</a>
                 </div>
                 <div class="profile-container">
                     <button class="login-btn" id="loginBtn">
@@ -45,6 +52,8 @@
                     </button>
                     
                     <div class="profile-dropdown glass" id="profilePanel">
+
+                        <button class="close-profile-panel" id="closeProfilePanel">✕</button>
                         
                         <div class="dropdown-header">
                             <div class="user-details">
@@ -72,22 +81,32 @@
                         </div>
 
                         <div class="dropdown-menu">
+
                             <a href="profile.html" class="menu-item">
                                 <i class="fas fa-user-cog"></i> <span>Profile</span>
                             </a>
-                            <a href="#" class="menu-item">
-                                <i class="fas fa-life-ring"></i> <span>Notifications</span>
+
+                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
+                                <div style="display:flex; align-items:center;">
+                                    <i class="fas fa-bell"></i> 
+                                    <span>Notifications</span>
+                                </div>
+                                <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
-                            <a href="#" class="menu-item">
+
+                            <a href="support.html" class="menu-item">
                                 <i class="fas fa-bell"></i> <span>Help Center</span>
                             </a>
+
                             <a href="#" class="menu-item">
-                                <i class="fas fa-globe"></i> <span>Language</span>
-                                <span class="lang-val">English ></span>
+                                <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
+                                <span class="lang-val" id="currentLangDisplay">English ></span>
                             </a>
+
                             <a href="#contact" class="menu-item">
                                 <i class="fas fa-envelope"></i> <span>Contact us</span>
                             </a>
+
                         </div>
 
                         <div class="dropdown-footer">
@@ -101,29 +120,39 @@
 
         </div>
     </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#products">Products</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="#about">About us</a></li>
+        </ul>
+    </div>
+    <div class="menu-overlay" id="menuOverlay"></div>
     
     <!-- Hero -->
     <section class="hero" id="home">
         <div class="hero-bg"></div>
         <div class="hero-content">
-            <div class="hero-text">
-                <h1 class="hero-title">AIVault</h1>
-                <p class="hero-subtitle">Discover a new level with our service - subscriptions to AI, social networks, and more. Convenient access to modern tools that open up limitless opportunities for your development and business.</p>
+            <div class="hero-text animate-on-scroll" style="animation: fadeInLeft 1s ease;">
+                <h1 class="hero-title" data-i18n="hero.title">AIVault</h1>
+                <p class="hero-subtitle" data-i18n="hero.subtitle">Discover a new level with our service - subscriptions to AI, social networks, and more. Convenient access to modern tools that open up limitless opportunities for your development and business.</p>
                         
                 <div class="hero-stats">
                     <div class="stat">
                         <div class="stat-number">
                             500+
                         </div>
-                        <div class="stat-label">
+                        <div class="stat-label" data-i18n="happy_customers">
                             Happy Customers
                         </div>
                     </div>
                     <div class="stat">
                         <div class="stat-number">
-                            50+
+                            10+
                         </div>
-                        <div class="stat-label">
+                        <div class="stat-label" data-i18n="ai_models">
                             Different AI Models
                         </div>
                     </div>
@@ -131,18 +160,18 @@
                         <div class="stat-number">
                             24h
                         </div>
-                        <div class="stat-label">
+                        <div class="stat-label" data-i18n="always_working">
                             Always working
                         </div>
                     </div>
                 </div>
-                <button class="cta-btn" id="exploreBtn">View packages</button>
+                <button class="cta-btn" id="exploreBtn" data-i18n="hero.view_packages">View packages</button>
             </div>
             
             <div class="hero-visual">
                 <div class="mirror-showcase">
                     <div class="mirror-frame">
-                        <img src="mainphoto.png" alt="Main Photo" class="showcase-image">
+                        <img src="./images/mainphoto.png" alt="Main Photo" class="showcase-image">
                     </div>
                 </div>
             </div>
@@ -152,13 +181,13 @@
     <!-- Products -->
     <section class="products" id="products">
         <div class="container">
-            <h2 class="section-title">Subscription packages</h2>
-            <div class="products-grid" id="productsGrid"></div>
+            <h2 class="section-title" data-i18n="products_title">Subscription packages</h2>
+            <div class="products-grid" id="productsGrid" class="animate-on-scroll"></div>
         </div>
     </section>
 
 <!-- About -->
-    <section class="about" id="about">
+    <section class="about animate-on-scroll" id="about" style="animation: blurFadeIn 1.2s ease;">
         <div class="container">
             <h2 class="section-title">About Us</h2>
             <div class="about-content">
@@ -189,7 +218,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer animate-on-scroll" style="animation: fadeInUp 1s ease;">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>AIVault</h3>
@@ -376,7 +405,18 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div class="modal" id="langModal">
+        <div class="modal-content glass" style="max-width: 400px;">
+            <span class="close-btn" id="closeLangModal">&times;</span>
+            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
+            <div class="lang-grid" id="langGrid">
+                </div>
+        </div>
+    </div>
+
+<script src="js/i18n.js"></script>
+
+<script src="js/script.js"></script>
 
 </body>
 </html>

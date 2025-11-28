@@ -9,6 +9,8 @@ import * as bcrypt from 'bcrypt';
 import { Transaction } from './transaction.entity';
 import { Message } from '../chat/message.entity';
 import { Role } from './role.enum';
+import { SupportTicket } from '../support/support.entity';
+import { Notification } from '../notifications/notification.entity';
 
 @Entity('users')
 export class User {
@@ -40,8 +42,14 @@ export class User {
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   transactions: Transaction[];
 
+  @OneToMany(() => SupportTicket, (ticket) => ticket.user)
+  tickets: SupportTicket[];
+
   @OneToMany(() => Message, (message) => message.user) 
   messages: Message[];
+
+  @OneToMany(() => Notification, (notification) => notification.user)
+  notifications: Notification[];
 
   @BeforeInsert()
   async hashPassword() {

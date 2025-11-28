@@ -6,7 +6,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/role.enum';
 
 import { PaymentService } from '../payment/payment.service'; 
-import { AdminTransactionDto } from '../payment/dto/payment.dto'; // Або ваш шлях до DTO
+import { AdminTransactionDto } from '../payment/dto/payment.dto';
 import { TransactionStatus } from '../users/transaction.entity';
 
 @Controller('admin')

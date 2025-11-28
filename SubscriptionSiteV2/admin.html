@@ -47,6 +47,7 @@
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="chat.html" class="nav-link">Chat</a>
+                <a href="support.html" class="nav-link">Support</a>
             </div>
         </div>
     </nav>
@@ -57,7 +58,7 @@
         <div class="glass" style="padding: 20px; margin-bottom: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-users"></i>Users</h2>
-                <button onclick="loadUsers()" class="action-btn"><i class="fas fa-sync"></i> Update</button>
+                <button onclick="loadUsers()" class="action-btn"><i class="fas fa-sync"></i> Refresh</button>
             </div>
             <table class="data-table">
                 <thead>
@@ -77,7 +78,7 @@
         <div class="glass" style="padding: 20px;">
             <div class="section-header">
                 <h2><i class="fas fa-receipt"></i> Transactions</h2>
-                <button onclick="loadTransactions()" class="action-btn"><i class="fas fa-sync"></i> Update</button>
+                <button onclick="loadTransactions()" class="action-btn"><i class="fas fa-sync"></i> Refresh</button>
             </div>
             <table class="data-table">
                 <thead>
@@ -96,14 +97,40 @@
         </div>
     </div>
 
+    <div class="glass" style="padding: 20px; margin-top: 30px;">
+        <div class="section-header">
+            <h2><i class="fas fa-headset"></i> Support Tickets</h2>
+            <button onclick="loadAdminTickets()" class="action-btn"><i class="fas fa-sync"></i> Refresh</button>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="supportTable"></tbody>
+        </table>
+    </div>
+
+    <div class="modal" id="langModal">
+        <div class="modal-content glass" style="max-width: 400px;">
+            <span class="close-btn" id="closeLangModal">&times;</span>
+            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
+            <div class="lang-grid" id="langGrid">
+                </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE_URL = 'http://localhost:3000';
         const token = localStorage.getItem('authToken');
 
-        // Якщо токена немає - викидаємо на логін
         if (!token) window.location.href = 'index.html';
 
-        // 1. Завантаження користувачів
         async function loadUsers() {
             try {
                 const res = await fetch(`${API_BASE_URL}/admin/users`, {
@@ -118,7 +145,6 @@
                 
                 users.forEach(u => {
                     const roleBadge = u.role === 'admin' ? '<span class="badge badge-admin">ADMIN</span>' : 'User';
-                    // Перевірка на null
                     const userName = u.name ? u.name : '-';
                     const userCredits = u.credits ? u.credits : '0.00';
 
@@ -137,11 +163,9 @@
                 });
             } catch (e) {
                 console.error("Error loading users:", e);
-                // Не показуємо алерт кожну секунду, просто в консоль
             }
         }
 
-        // 2. Завантаження транзакцій
         async function loadTransactions() {
             try {
                 const res = await fetch(`${API_BASE_URL}/admin/transactions`, {
@@ -160,12 +184,10 @@
                 }
 
                 transactions.forEach(t => {
-                    // Визначаємо колір статусу
-                    let statusClass = 'badge-pending'; // жовтий за замовчуванням
-                    if (t.status === 'APPROVED') statusClass = 'badge-success'; // зелений
-                    if (t.status === 'DECLINED') statusClass = 'badge-admin';   // червоний
+                    let statusClass = 'badge-pending';
+                    if (t.status === 'APPROVED') statusClass = 'badge-success';
+                    if (t.status === 'DECLINED') statusClass = 'badge-admin';
 
-                    // Кнопки показуємо ТІЛЬКИ якщо статус PENDING
                     let actionBtns = '';
                     if (t.status === 'PENDING') {
                         actionBtns = `
@@ -175,7 +197,7 @@
                             </div>
                         `;
                     } else {
-                        actionBtns = '-'; // Якщо вже оброблено
+                        actionBtns = '-';
                     }
 
                     const userEmail = t.user ? t.user.email : 'Unknown User';
@@ -199,7 +221,6 @@
             }
         }
 
-        // 3. Функція обробки (Approve/Decline)
         async function processTx(id, action) {
             const endpoint = action === 'approve' ? 'approve-transaction' : 'decline-transaction';
             
@@ -212,13 +233,12 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ txId: id }) // Відправляємо DTO
+                    body: JSON.stringify({ txId: id })
                 });
 
                 if (res.ok) {
-                    // Оновлюємо таблиці
                     loadTransactions();
-                    loadUsers(); // Баланс юзера теж зміниться
+                    loadUsers();
                 } else {
                     const err = await res.json();
                     alert('Error: ' + (err.message || 'Failed'));
@@ -228,7 +248,6 @@
             }
         }
 
-        // 4. Ручне додавання кредитів
         async function addCreditsPrompt(userId) {
             const amount = prompt("How many credits to add?");
             if (amount) {
@@ -244,9 +263,50 @@
             }
         }
 
-        // Запуск при старті
+        async function loadAdminTickets() {
+            const res = await fetch(`${API_BASE_URL}/support/admin/all`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const tickets = await res.json();
+            const tbody = document.getElementById('supportTable');
+            tbody.innerHTML = '';
+
+            tickets.forEach(t => {
+                let action = t.status === 'CLOSED' ? 'Closed' : 
+                    `<button class="action-btn" onclick="replyTicket(${t.id})">Reply & Close</button>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${t.id}</td>
+                        <td>${t.user ? t.user.email : 'Unknown'}</td>
+                        <td>${t.subject}</td>
+                        <td><span class="badge ${t.status === 'OPEN' ? 'badge-pending' : 'badge-success'}">${t.status}</span></td>
+                        <td>${action}</td>
+                    </tr>
+                    ${t.status === 'OPEN' ? `<tr><td colspan="5" style="color:#999; padding-left:20px;">Message: ${t.message}</td></tr>` : ''}
+                `;
+            });
+        }
+
+        async function replyTicket(id) {
+            const reply = prompt("Enter your reply to the user:");
+            if (reply) {
+                await fetch(`${API_BASE_URL}/support/admin/resolve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ ticketId: id, response: reply })
+                });
+                loadAdminTickets();
+            }
+        }
+
         loadUsers();
         loadTransactions();
+        loadAdminTickets();
+
     </script>
 </body>
 </html>

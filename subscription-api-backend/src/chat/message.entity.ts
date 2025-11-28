@@ -18,7 +18,6 @@ export class Message {
   @CreateDateColumn()
   createdAt: Date;
 
-  // Зв'язок: Одне повідомлення належить одному користувачу
   @ManyToOne(() => User)
   user: User;
 }
