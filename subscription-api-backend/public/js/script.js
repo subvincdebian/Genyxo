@@ -31,7 +31,7 @@ const products = [
     },
 ]
 
-const API_BASE_URL = 'http://localhost:3000'; 
+const API_BASE_URL = process.env.APP_API_URL || 'http://localhost:3000';
 let authToken = localStorage.getItem('authToken') || null;
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
 
