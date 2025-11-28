@@ -126,7 +126,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:3000';
+        const API_BASE_URL = process.env.APP_API_URL || 'http://localhost:3000';
         const token = localStorage.getItem('authToken');
 
         if (!token) window.location.href = 'index.html';
