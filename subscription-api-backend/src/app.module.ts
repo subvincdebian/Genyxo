@@ -20,7 +20,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.MYSQLHOST || 'localhost',
-      port: parseInt(process.env.PORT!) || 3306,
+      port: parseInt(process.env.MYSQLPORT!) || 3306,
       username: process.env.MYSQLUSER || 'nest_user',
       password: process.env.MYSQLPASSWORD || 'Atlanticus123cus123',
       database: process.env.MYSQLDATABASE || 'my_perfect_db',
