@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
+
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -26,6 +30,9 @@ import { NotificationsModule } from './notifications/notifications.module';
       database: 'my_perfect_db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), 
     }),
     AuthModule,
     UsersModule,
