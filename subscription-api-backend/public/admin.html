@@ -152,7 +152,7 @@
         <div class="glass" style="padding: 20px; margin-bottom: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-users"></i>Users</h2>
-                <button onclick="loadUsers()" class="action-btn"><i id="refreshIcon" class="fas fa-sync"></i> Refresh</button>
+                <button onclick="loadUsers()" class="action-btn"><i id="refreshIconUsers" class="fas fa-sync"></i> Refresh</button>
             </div>
             <table class="data-table">
                 <thead>
@@ -172,7 +172,7 @@
         <div class="glass" style="padding: 20px;">
             <div class="section-header">
                 <h2><i class="fas fa-receipt"></i> Transactions</h2>
-                <button onclick="loadTransactions()" class="action-btn"><i id="refreshIcon" class="fas fa-sync"></i> Refresh</button>
+                <button onclick="loadTransactions()" class="action-btn"><i id="refreshIconTx" class="fas fa-sync"></i> Refresh</button>
             </div>
             <table class="data-table">
                 <thead>
@@ -193,7 +193,7 @@
         <div class="glass" style="padding: 20px; margin-top: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-headset"></i> Support Tickets</h2>
-                <button onclick="loadAdminTickets()" class="action-btn"><i id="refreshIcon" class="fas fa-sync"></i> Refresh</button>
+                <button onclick="loadAdminTickets()" class="action-btn"><i id="refreshIconTickets" class="fas fa-sync"></i> Refresh</button>
             </div>
             <table class="data-table">
                 <thead>
@@ -243,7 +243,7 @@
 
         async function loadUsers() {
 
-            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshIcon = document.getElementById('refreshIconUsers');
 
             if (refreshIcon) {
                 refreshIcon.classList.add('spin');
@@ -289,7 +289,7 @@
 
         async function loadTransactions() {
 
-            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshIcon = document.getElementById('refreshIconTx');
 
             if (refreshIcon) {
                 refreshIcon.classList.add('spin');
@@ -397,7 +397,7 @@
 
         async function loadAdminTickets() {
 
-            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshIcon = document.getElementById('refreshIconTickets');
 
             if (refreshIcon) {
                 refreshIcon.classList.add('spin');
