@@ -264,28 +264,47 @@
         }
 
         async function loadAdminTickets() {
-            const res = await fetch(`${API_BASE_URL}/support/admin/all`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const tickets = await res.json();
-            const tbody = document.getElementById('supportTable');
-            tbody.innerHTML = '';
+            try {
+                const res = await fetch(`${API_BASE_URL}/support/admin/all`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!res.ok) {
+                    console.error("Failed to load tickets. Status:", res.status);
+                    document.getElementById('supportTable').innerHTML = 
+                        '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load data (Server Error)</td></tr>';
+                    return;
+                }
 
-            tickets.forEach(t => {
-                let action = t.status === 'CLOSED' ? 'Closed' : 
-                    `<button class="action-btn" onclick="replyTicket(${t.id})">Reply & Close</button>`;
+                const tickets = await res.json();
+                const tbody = document.getElementById('supportTable');
+                tbody.innerHTML = '';
+                
+                if (tickets.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No tickets found</td></tr>';
+                    return;
+                }
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${t.id}</td>
-                        <td>${t.user ? t.user.email : 'Unknown'}</td>
-                        <td>${t.subject}</td>
-                        <td><span class="badge ${t.status === 'OPEN' ? 'badge-pending' : 'badge-success'}">${t.status}</span></td>
-                        <td>${action}</td>
-                    </tr>
-                    ${t.status === 'OPEN' ? `<tr><td colspan="5" style="color:#999; padding-left:20px;">Message: ${t.message}</td></tr>` : ''}
-                `;
-            });
+                tickets.forEach(t => {
+                    
+                    let statusBadge = t.status === 'OPEN' ? 'badge-pending' : 'badge-success';
+                    let action = t.status === 'CLOSED' ? 'Closed' : 
+                        `<button class="action-btn" onclick="replyTicket(${t.id})">Reply & Close</button>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${t.id}</td>
+                            <td>${t.user ? t.user.email : 'Unknown'}</td>
+                            <td>${t.subject || 'No Subject'}</td> 
+                            <td><span class="badge ${statusBadge}">${t.status}</span></td>
+                            <td>${action}</td>
+                        </tr>
+                        ${t.status === 'OPEN' ? `<tr><td colspan="5" style="color:#999; padding-left:20px;">Message: ${t.message}</td></tr>` : ''}
+                    `;
+                });
+            } catch (e) {
+                console.error("Error fetching tickets:", e);
+            }
         }
 
         async function replyTicket(id) {
