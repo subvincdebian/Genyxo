@@ -265,45 +265,54 @@
 
         async function loadAdminTickets() {
             try {
+                console.log("Починаю завантаження тікетів..."); // Лог 1
                 const res = await fetch(`${API_BASE_URL}/support/admin/all`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (!res.ok) {
-                    console.error("Failed to load tickets. Status:", res.status);
-                    document.getElementById('supportTable').innerHTML = 
-                        '<tr><td colspan="5" style="text-align:center; color:red;">Failed to load data (Server Error)</td></tr>';
+                    console.error("Помилка запиту:", res.status);
                     return;
                 }
 
                 const tickets = await res.json();
+                console.log("Отримані дані з бекенду (Support):", tickets);
+
                 const tbody = document.getElementById('supportTable');
                 tbody.innerHTML = '';
-                
-                if (tickets.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No tickets found</td></tr>';
-                    return;
+
+                if (!tickets || tickets.length === 0) {
+                     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No tickets found</td></tr>';
+                     return;
                 }
 
                 tickets.forEach(t => {
+                    const id = t.id || '-';
+                    const email = t.user?.email || 'Unknown User';
+                    const subject = t.subject || 'No Subject';
+                    const status = t.status || 'UNKNOWN';
                     
-                    let statusBadge = t.status === 'OPEN' ? 'badge-pending' : 'badge-success';
-                    let action = t.status === 'CLOSED' ? 'Closed' : 
-                        `<button class="action-btn" onclick="replyTicket(${t.id})">Reply & Close</button>`;
+                    let badgeClass = 'badge-pending';
+                    if (status === 'CLOSED' || status === 'RESOLVED') badgeClass = 'badge-success';
+                    if (status === 'OPEN') badgeClass = 'badge-admin';
 
+                    let actionBtn = status === 'CLOSED' 
+                        ? '<span style="color:#2ecc71;">Closed</span>' 
+                        : `<button class="action-btn" onclick="replyTicket(${id})">Reply</button>`;
+                    
                     tbody.innerHTML += `
                         <tr>
-                            <td>${t.id}</td>
-                            <td>${t.user ? t.user.email : 'Unknown'}</td>
-                            <td>${t.subject || 'No Subject'}</td> 
-                            <td><span class="badge ${statusBadge}">${t.status}</span></td>
-                            <td>${action}</td>
+                            <td>${id}</td>
+                            <td>${email}</td>
+                            <td title="${t.message || ''}">${subject}</td> 
+                            <td><span class="badge ${badgeClass}">${status}</span></td>
+                            <td>${actionBtn}</td>
                         </tr>
-                        
                     `;
                 });
             } catch (e) {
-                console.error("Error fetching tickets:", e);
+                console.error("Критична помилка в loadAdminTickets:", e);
+                document.getElementById('supportTable').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center">Error loading data</td></tr>';
             }
         }
 
