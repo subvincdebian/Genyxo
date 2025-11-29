@@ -339,14 +339,14 @@
 
     <script>
 
-        const API_BASE_URL = process.env.APP_API_URL || 'http://localhost:3000';
+        const API_BASE_URL = 'hostaisite-production.up.railway.app';
         const token = localStorage.getItem('authToken');
 
         const notificationBadge = document.getElementById('notificationBadge');
 
         const burger = document.getElementById("burger");
         const mobileMenu = document.getElementById("mobileMenu");
-        const overlay = document.getElementById("menuOverlay"); // получаем overlay
+        const overlay = document.getElementById("menuOverlay");
 
         function closeMenu() {
             burger.classList.remove("active");
