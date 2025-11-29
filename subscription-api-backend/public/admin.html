@@ -12,11 +12,16 @@
         
         .data-table {
             width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
             margin-top: 1rem;
             background: rgba(0,0,0,0.3);
         }
         .data-table th, .data-table td {
+            white-space: nowrap; /* Забороняє перенесення тексту на новий рядок */
+            overflow: hidden;    /* Ховає те, що не влазить */
+            text-overflow: ellipsis; /* Додає "..." в кінці довгого тексту */
+            vertical-align: middle; /* Вирівнює все по центру по вертикалі */
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid var(--glass-border);
@@ -265,69 +270,80 @@
 
         async function loadAdminTickets() {
             try {
-                console.log("Починаю завантаження тікетів..."); // Лог 1
                 const res = await fetch(`${API_BASE_URL}/support/admin/all`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
-                if (!res.ok) {
-                    console.error("Помилка запиту:", res.status);
-                    return;
-                }
+                
+                if (!res.ok) return;
 
                 const tickets = await res.json();
-                console.log("Отримані дані з бекенду (Support):", tickets);
-
                 const tbody = document.getElementById('supportTable');
                 tbody.innerHTML = '';
 
                 if (!tickets || tickets.length === 0) {
-                     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No tickets found</td></tr>';
-                     return;
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No tickets found</td></tr>';
+                    return;
                 }
 
                 tickets.forEach(t => {
-                    const id = t.id || '-';
-                    const email = t.user?.email || 'Unknown User';
+                    const userEmail = t.user ? t.user.email : 'Unknown';
                     const subject = t.subject || 'No Subject';
-                    const status = t.status || 'UNKNOWN';
+                    const status = t.status || 'PENDING';
                     
-                    let badgeClass = 'badge-pending';
-                    if (status === 'CLOSED' || status === 'RESOLVED') badgeClass = 'badge-success';
-                    if (status === 'OPEN') badgeClass = 'badge-admin';
+                    let statusBadge = 'badge-pending';
+                    if (status === 'CLOSED') statusBadge = 'badge-success';
+                    
+                    const safeMessage = (t.message || "").replace(/'/g, "`").replace(/"/g, "&quot;");
+                    
+                    let actionHtml = '';
+                    if (status === 'CLOSED') {
+                        actionHtml = '<span style="color: #2ecc71; font-size: 0.9em;"><i class="fas fa-check"></i> Done</span>';
+                    } else {
+                        actionHtml = `<button class="action-btn" onclick="openReplyModal(${t.id}, '${safeMessage}')">View & Reply</button>`;
+                    }
 
-                    let actionBtn = status === 'CLOSED' 
-                        ? '<span style="color:#2ecc71;">Closed</span>' 
-                        : `<button class="action-btn" onclick="replyTicket(${id})">Reply</button>`;
-                    
                     tbody.innerHTML += `
                         <tr>
-                            <td>${id}</td>
-                            <td>${email}</td>
-                            <td title="${t.message || ''}">${subject}</td> 
-                            <td><span class="badge ${badgeClass}">${status}</span></td>
-                            <td>${actionBtn}</td>
+                            <td>${t.id}</td>
+                            <td title="${userEmail}">${userEmail}</td>
+                            <td title="${subject}">${subject}</td>
+                            <td><span class="badge ${statusBadge}">${status}</span></td>
+                            <td style="text-align: right;">${actionHtml}</td>
                         </tr>
                     `;
                 });
             } catch (e) {
-                console.error("Критична помилка в loadAdminTickets:", e);
-                document.getElementById('supportTable').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center">Error loading data</td></tr>';
+                console.error(e);
             }
         }
 
-        async function replyTicket(id) {
-            const reply = prompt("Enter your reply to the user:");
+        async function openReplyModal(id, userMessage) {
+            
+            const reply = prompt(`User Message:\n"${userMessage}"\n\nEnter your reply:`);
+            
             if (reply) {
-                await fetch(`${API_BASE_URL}/support/admin/resolve`, {
+                await replyTicket(id, reply);
+            }
+        }
+
+        async function replyTicket(id, replyText) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/support/admin/resolve`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ ticketId: id, response: reply })
+                    body: JSON.stringify({ ticketId: id, response: replyText })
                 });
-                loadAdminTickets();
+                
+                if(res.ok) {
+                    loadAdminTickets();
+                } else {
+                    alert("Failed to send reply");
+                }
+            } catch(e) {
+                console.error(e);
             }
         }
 
