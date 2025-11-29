@@ -331,19 +331,29 @@ function handleLoginButtonClick(e) {
 // Setup navigation
 function setupNavigation() {
     navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-    e.preventDefault();
-    const targetId = link.getAttribute('href').substring(1);
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href'); // Отримуємо весь атрибут href
 
-    // Remove active class from all links
-    navLinks.forEach(l => l.classList.remove('active'));
-    // Add active class to clicked link
-    link.classList.add('active');
+            // 1. Обробка якірних посилань (#home, #products, #about)
+            if (href.startsWith('#')) {
+                // 🛑 Запобігаємо переходу, щоб зробити плавний скрол
+                e.preventDefault();
+                
+                const targetId = href.substring(1);
 
-    if (targetId === 'home' || targetId === 'products' || targetId === 'about') {
-    document.getElementById(targetId).scrollIntoView({ behavior: 'smooth' });
-    }
-    });
+                // Оновлення активного класу для всіх посилань
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                // Плавний скрол
+                document.getElementById(targetId).scrollIntoView({ behavior: 'smooth' });
+            } 
+            
+            // 2. Обробка посилань на файли (chat.html)
+            // Якщо href НЕ починається з '#', ми не викликаємо e.preventDefault(), 
+            // тому браузер виконає стандартну дію і ПЕРЕЙДЕ на сторінку chat.html!
+            
+        });
     });
 }
 
