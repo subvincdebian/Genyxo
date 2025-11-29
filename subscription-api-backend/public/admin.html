@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .admin-container { max-width: 1200px; margin: 100px auto; padding: 20px; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         
@@ -22,7 +31,7 @@
             overflow: hidden;    /* Ховає те, що не влазить */
             text-overflow: ellipsis; /* Додає "..." в кінці довгого тексту */
             vertical-align: middle; /* Вирівнює все по центру по вертикалі */
-            padding: 12px;
+            padding: 12px 8px;
             text-align: left;
             border-bottom: 1px solid var(--glass-border);
             color: var(--text-gray);
@@ -42,6 +51,86 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+        }
+
+        .col-id { width: 50px; }      /* Максимально вузька для ID */
+        .col-small { width: 80px; }   /* Для сум ($0.00), кредитів */
+        .col-status { width: 100px; } /* Для статусу (OPEN, CLOSED) */
+        .col-date { width: 150px; }  /* Для дати та часу */
+        .col-action { width: 120px; text-align: right; } /* Для кнопок дії */
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75); /* Темний напівпрозорий фон */
+            display: none; /* Спочатку приховане */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Має бути поверх усього */
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 550px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            /* Клас .glass вже зробить його прозорим */
+        }
+
+        .modal-content h3 {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .user-message-box {
+            background: rgba(255, 255, 255, 0.05); /* Легкий фон для повідомлення */
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-height: 180px;
+            overflow-y: auto;
+            white-space: pre-wrap; /* Зберігає переноси рядків */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            font-style: italic;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            border-radius: 8px;
+            resize: vertical;
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .primary-btn {
+            background-color: #3498db; /* Блакитний колір для головної дії */
+            color: white;
+        }
+        .primary-btn:hover {
+            background-color: #2980b9;
         }
     </style>
 </head>
@@ -63,7 +152,7 @@
         <div class="glass" style="padding: 20px; margin-bottom: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-users"></i>Users</h2>
-                <button onclick="loadUsers()" class="action-btn"><i class="fas fa-sync"></i> Refresh</button>
+                <button onclick="loadUsers()" class="action-btn"><i id="refreshIcon" class="fas fa-sync"></i> Refresh</button>
             </div>
             <table class="data-table">
                 <thead>
@@ -83,7 +172,7 @@
         <div class="glass" style="padding: 20px;">
             <div class="section-header">
                 <h2><i class="fas fa-receipt"></i> Transactions</h2>
-                <button onclick="loadTransactions()" class="action-btn"><i class="fas fa-sync"></i> Refresh</button>
+                <button onclick="loadTransactions()" class="action-btn"><i id="refreshIcon" class="fas fa-sync"></i> Refresh</button>
             </div>
             <table class="data-table">
                 <thead>
@@ -104,7 +193,7 @@
         <div class="glass" style="padding: 20px; margin-top: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-headset"></i> Support Tickets</h2>
-                <button onclick="loadAdminTickets()" class="action-btn"><i class="fas fa-sync"></i> Refresh</button>
+                <button onclick="loadAdminTickets()" class="action-btn"><i id="refreshIcon" class="fas fa-sync"></i> Refresh</button>
             </div>
             <table class="data-table">
                 <thead>
@@ -130,6 +219,22 @@
         </div>
     </div>
 
+    <div id="replyModal" class="modal-overlay">
+        <div class="modal-content glass">
+            <h3>Reply to Ticket #<span id="modalTicketId"></span></h3>
+            <p><strong>User Message:</strong></p>
+            <div id="modalUserMessage" class="user-message-box"></div>
+            
+            <label for="replyInput">Your Reply:</label>
+            <textarea id="replyInput" rows="5" placeholder="Enter your response here..."></textarea>
+            
+            <div class="modal-actions">
+                <button class="action-btn" onclick="closeReplyModal()">Cancel</button>
+                <button class="action-btn primary-btn" onclick="submitReply()">Send Reply</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
         const token = localStorage.getItem('authToken');
@@ -137,6 +242,13 @@
         if (!token) window.location.href = 'index.html';
 
         async function loadUsers() {
+
+            const refreshIcon = document.getElementById('refreshIcon');
+
+            if (refreshIcon) {
+                refreshIcon.classList.add('spin');
+            }
+
             try {
                 const res = await fetch(`${API_BASE_URL}/admin/users`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -167,11 +279,22 @@
                     `;
                 });
             } catch (e) {
-                console.error("Error loading users:", e);
-            }
+                console.error("Critical Error in loadUsers:", e);          
+            } finally {
+                if (refreshIcon) {
+                    refreshIcon.classList.remove('spin');
+                }
+            }   
         }
 
         async function loadTransactions() {
+
+            const refreshIcon = document.getElementById('refreshIcon');
+
+            if (refreshIcon) {
+                refreshIcon.classList.add('spin');
+            }
+
             try {
                 const res = await fetch(`${API_BASE_URL}/admin/transactions`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -222,7 +345,11 @@
                     `;
                 });
             } catch (e) {
-                console.error("Error loading transactions:", e);
+                console.error("Critical Error in loadTransactions:", e);          
+            } finally {
+                if (refreshIcon) {
+                    refreshIcon.classList.remove('spin');
+                }
             }
         }
 
@@ -269,6 +396,13 @@
         }
 
         async function loadAdminTickets() {
+
+            const refreshIcon = document.getElementById('refreshIcon');
+
+            if (refreshIcon) {
+                refreshIcon.classList.add('spin');
+            }
+
             try {
                 const res = await fetch(`${API_BASE_URL}/support/admin/all`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -313,16 +447,44 @@
                     `;
                 });
             } catch (e) {
-                console.error(e);
-            }
+                console.error("Critical Error in loadAdminTickets:", e);          
+            } finally {
+                if (refreshIcon) {
+                    refreshIcon.classList.remove('spin');
+                }
+            }   
+        }    
+
+        let currentTicketId = null;
+
+        // Відкриває модальне вікно
+        function openReplyModal(id, userMessage) {
+            currentTicketId = id;
+            document.getElementById('modalTicketId').textContent = id;
+            document.getElementById('modalUserMessage').textContent = userMessage;
+            document.getElementById('replyInput').value = ''; // Очистити поле
+            document.getElementById('replyModal').style.display = 'flex'; // Показати
         }
 
-        async function openReplyModal(id, userMessage) {
+        // Закриває модальне вікно
+        function closeReplyModal() {
+            document.getElementById('replyModal').style.display = 'none'; // Приховати
+            currentTicketId = null;
+        }
+
+        // Обробляє натискання кнопки "Send Reply"
+        async function submitReply() {
+            const replyText = document.getElementById('replyInput').value;
             
-            const reply = prompt(`User Message:\n"${userMessage}"\n\nEnter your reply:`);
+            if (!replyText || replyText.trim() === "") {
+                alert("Please enter a reply before sending.");
+                return;
+            }
             
-            if (reply) {
-                await replyTicket(id, reply);
+            if (currentTicketId) {
+                closeReplyModal();
+                // Викликаємо функцію, яка відправляє дані на бекенд
+                await replyTicket(currentTicketId, replyText);
             }
         }
 
@@ -344,6 +506,7 @@
                 }
             } catch(e) {
                 console.error(e);
+                alert("Error connecting to server.");
             }
         }
 
