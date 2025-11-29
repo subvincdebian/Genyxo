@@ -31,7 +31,7 @@ const products = [
     },
 ]
 
-const API_BASE_URL = 'hostaisite-production.up.railway.app';
+const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
 let authToken = localStorage.getItem('authToken') || null;
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
 
