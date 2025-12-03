@@ -1,18 +1,21 @@
-import { Controller, Post, Body, UseGuards, Request, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, HttpStatus, HttpCode, Headers } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentService } from './payment.service';
-import { BuyPackDto } from './dto/payment.dto'; 
 
 @Controller('payment')
-@UseGuards(AuthGuard('jwt'))
 export class PaymentController {
   constructor(private paymentService: PaymentService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('buy')
   @HttpCode(HttpStatus.OK)
-  // @Roles(Role.USER, Role.ADMIN) // Можна не вказувати, якщо це дефолтний доступ
-  async buyPack(@Request() req, @Body() buyPackDto: BuyPackDto) {
-    const userId = req.user.id;
-    return this.paymentService.createPayment(userId, buyPackDto.packId, buyPackDto.paymentMethod);
+  async buyPack(@Request() req, @Body() body: { packId: number }) {
+    return this.paymentService.createPayment(req.user.id, body.packId);
+  }
+
+  @Post('webhook')
+  @HttpCode(HttpStatus.OK)
+  async webhook(@Headers() headers, @Body() payload: any) {
+    return this.paymentService.handleWebhook(headers, payload);
   }
 }

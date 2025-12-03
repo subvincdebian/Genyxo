@@ -57,7 +57,6 @@ const profileDropdown = document.getElementById('profileDropdown');
 const loginBtnText = loginBtn.querySelector('span');
 const paymentMethodSelect = document.getElementById('paymentMethod');
 const manualPaymentModal = document.getElementById('manualPaymentModal');
-const closeManualPaymentBtn = document.getElementById('closeManualPayment');
 
 const profilePanel = document.getElementById('profilePanel');
 const navUsername = document.getElementById('navUsername');
@@ -73,8 +72,7 @@ const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
 
 const notificationBadge = document.getElementById('notificationBadge');
 
-// Setup Listeners
-closeManualPaymentBtn.addEventListener('click', closeManualPaymentModal);
+const payButton = document.getElementById('payButton');
 
 // Current product for ordering
 let currentProduct = null;
@@ -332,20 +330,16 @@ function handleLoginButtonClick(e) {
 function setupNavigation() {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-            const href = link.getAttribute('href'); // Отримуємо весь атрибут href
+            const href = link.getAttribute('href');
 
-            // 1. Обробка якірних посилань (#home, #products, #about)
             if (href.startsWith('#')) {
-                // 🛑 Запобігаємо переходу, щоб зробити плавний скрол
                 e.preventDefault();
                 
                 const targetId = href.substring(1);
 
-                // Оновлення активного класу для всіх посилань
                 navLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
 
-                // Плавний скрол
                 document.getElementById(targetId).scrollIntoView({ behavior: 'smooth' });
             } 
             
@@ -359,6 +353,19 @@ function setupNavigation() {
 
 // Modal functions
 function openOrderModal() {
+    if (!currentProduct) return;
+
+    // Заповнюємо дані у новому модальному вікні
+    document.getElementById('checkoutImg').src = currentProduct.image;
+    document.getElementById('checkoutName').innerText = 
+        (window.i18n && i18n.translations.products_data[currentProduct.id].name) || 'Product';
+        
+    document.getElementById('checkoutCredits').innerText = 
+        (window.i18n && i18n.translations.products_data[currentProduct.id].credits_label) || 'Credits';
+
+    document.getElementById('checkoutPrice').innerText = currentProduct.price;
+    document.getElementById('checkoutTotal').innerText = currentProduct.price;
+
     orderModal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -366,7 +373,6 @@ function openOrderModal() {
 function closeOrderModal() {
     orderModal.style.display = 'none';
     document.body.style.overflow = 'auto';
-    orderForm.reset();
 }
 
 function openLoginModal() {
@@ -393,40 +399,6 @@ function showSignupForm() {
 function showLoginForm() {
     signupForm.style.display = 'none';
     loginForm.style.display = 'block';
-}
-
-// Form handlers
-async function handleOrderSubmit(e) {
-    e.preventDefault();
-    if (!authToken) { alert('Log in'); return; }
-    
-    const selectedMethod = document.getElementById('paymentMethod').value;
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/payment/buy`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({
-                packId: currentProduct.id,
-                paymentMethod: selectedMethod
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.status === 'manual_pending') {
-            closeOrderModal();
-            showPaymentWindow(data.instructions, data.orderId);
-        } else {
-            alert(`Error: ${data.message}`);
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Server Error');
-    }
 }
 
 let currentOrderId = null;
@@ -475,6 +447,50 @@ function showManualPaymentInstructions(instr) {
     document.getElementById('manualOrderId').textContent = `Order #${instr.orderId}`;
     
     manualPaymentModal.style.display = 'flex';
+}
+
+async function submitOrder() {
+    if (!authToken) {
+        alert('Please log in to continue.');
+        openLoginModal();
+        return;
+    }
+
+    const btn = document.getElementById('payButton');
+    
+    // Вмикаємо анімацію завантаження
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/payment/buy`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                packId: currentProduct.id
+                // paymentMethod більше не потрібен, NowPayments сам розбереться
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.url) {
+            // 🔥 ПЕРЕАДРЕСАЦІЯ НА NOWPAYMENTS
+            window.location.href = data.url;
+        } else {
+            alert(`Error: ${data.message || 'Payment creation failed'}`);
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Connection error. Please try again.');
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    }
 }
 
 async function handleLoginSubmit(e) {

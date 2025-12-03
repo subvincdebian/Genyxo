@@ -3,14 +3,20 @@ import { User } from './user.entity';
 
 export enum TransactionStatus {
   PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  DECLINED = 'DECLINED',
+  WAITING = 'WAITING', // Коли юзер перейшов, але ще не оплатив
+  CONFIRMING = 'CONFIRMING', // Транзакція в мережі, чекаємо підтверджень
+  APPROVED = 'APPROVED', // Успіх!
+  DECLINED = 'DECLINED', // Помилка або тайм-аут
+  PARTIALLY_PAID = 'PARTIALLY_PAID' // Якщо скинули менше ніж треба
 }
 
 @Entity('transactions')
 export class Transaction {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ nullable: true })
+  externalId: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number; // Сума в доларах/гривнях
@@ -22,7 +28,7 @@ export class Transaction {
   status: TransactionStatus; // 'PENDING', 'SUCCESS', 'FAILED'
 
   @Column()
-  provider: string; // 'CRYPTO', 'WAYFORPAY', 'PAYPAL'
+  provider: string; // 'CRYPTO', 'WAYFORPAY', 'PAYPAL', 'NOWPAYMENTS
 
   @CreateDateColumn()
   createdAt: Date;

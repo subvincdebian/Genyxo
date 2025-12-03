@@ -1666,3 +1666,187 @@ body {
         display: none !important;
     }
 }
+
+/* Checkout Modal Styles */
+.checkout-modal {
+    max-width: 700px; /* Ширше вікно */
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.checkout-modal h2 {
+    padding: 20px 30px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.checkout-container {
+    display: flex;
+    flex-direction: row;
+}
+
+/* Mobile responsive for checkout */
+@media (max-width: 700px) {
+    .checkout-container {
+        flex-direction: column;
+    }
+}
+
+/* Ліва колонка */
+.checkout-details {
+    flex: 1.2;
+    padding: 30px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.product-preview {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.product-preview img {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.product-text h3 {
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.credits-badge {
+    display: inline-block;
+    background: rgba(16, 230, 204, 0.15);
+    color: #10e6cc;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.payment-methods-preview .label {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.icons-row {
+    display: flex;
+    gap: 15px;
+    font-size: 1.8rem;
+    color: #fff;
+    margin-bottom: 10px;
+    opacity: 0.8;
+}
+
+.usdt-icon {
+    font-weight: bold;
+    color: #2ecc71;
+}
+
+.sub-label {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+/* Права колонка (Summary) */
+.checkout-summary {
+    flex: 1;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.2); /* Трохи темніше */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    color: #ccc;
+    font-size: 1rem;
+}
+
+.free-text {
+    color: #2ecc71;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 15px 0;
+}
+
+.summary-row.total {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+.pay-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pay-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(118, 75, 162, 0.4);
+}
+
+.pay-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.terms-text {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 15px;
+}
+
+/* Спіннер завантаження */
+.spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    position: absolute;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.pay-btn.loading .btn-text {
+    opacity: 0;
+}
+
+.pay-btn.loading .spinner {
+    display: block;
+}

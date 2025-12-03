@@ -280,78 +280,59 @@
 
   <!-- Order -->
     <div class="modal" id="orderModal">
-        <div class="modal-content glass">
+        <div class="modal-content glass checkout-modal">
             <span class="close-btn" id="closeOrder">&times;</span>
-            <h2>Purchase of Credits</h2>
-            <form class="order-form" id="orderForm">
+            
+            <h2 data-i18n="checkout.title">Order Summary</h2>
+            
+            <div class="checkout-container">
+                <div class="checkout-details">
+                    <div class="product-preview">
+                        <img id="checkoutImg" src="" alt="Product">
+                        <div class="product-text">
+                            <h3 id="checkoutName">Product Name</h3>
+                            <p class="credits-badge"><i class="fas fa-bolt"></i> <span id="checkoutCredits">0</span> credits</p>
+                        </div>
+                    </div>
 
-                <div class="input-group">
-                    <label for="paymentMethod" style="color: #ccc; display: block; margin-bottom: 5px;">Payment method:</label>
-                    <select id="paymentMethod" name="paymentMethod" style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #555;">
-                        <option value="MANUAL_CRYPTO">🌍 Crypto (USDT TRC20)</option>
-                        <option value="MANUAL_CARD">Credit Card</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="text" id="fullName" placeholder="Full Name" required>
-                </div>
-                <div class="form-group">
-                    <input type="tel" id="phone" placeholder="Phone Number" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" id="city" placeholder="City" required>
-                </div>
-                <div class="form-group">
-                    <label>Delivery Method:</label>
-                    <div class="delivery-options">
-                        <label class="option">
-                            <input type="radio" name="delivery" value="stopdesk" required>
-                            <span>Stop Desk</span>
-                        </label>
-                            <label class="option">
-                            <input type="radio" name="delivery" value="home">
-                            <span>Home Delivery</span>
-                        </label>
+                    <div class="payment-methods-preview">
+                        <p class="label" data-i18n="checkout.methods">We accept:</p>
+                        <div class="icons-row">
+                            <i class="fab fa-bitcoin" title="Bitcoin"></i>
+                            <i class="fab fa-ethereum" title="Ethereum"></i>
+                            <span class="usdt-icon">₮</span>
+                            <i class="fab fa-cc-visa" title="Visa"></i>
+                            <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                        </div>
+                        <p class="sub-label" data-i18n="checkout.secure">Secure payment via NowPayments</p>
                     </div>
                 </div>
-                <button type="submit" class="submit-btn" id="buyButton">Sumbit Order</button>
-            </form>
-        </div>
-    </div>
 
-    <div class="modal" id="manualPaymentModal" style="z-index: 3000;">
-        <div class="modal-content glass" style="text-align: center; max-width: 450px;">
-            <span class="close-btn" id="closeManualPayment">&times;</span>
-            
-            <h2 id="paymentTitle">Payment</h2>
-            
-            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 20px 0; text-align: left;">
-                <p style="font-size: 0.8rem; color: #aaa;">Where to pay:</p>
-                <div id="paymentTarget" style="font-size: 1.1rem; color: #fff; word-break: break-all; margin: 5px 0; font-family: monospace;">...</div>
-                
-                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                    <span style="color: #aaa;">Amount:</span>
-                    <strong id="paymentAmount" style="color: #2ecc71;">...</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: #aaa;">Network/Bank:</span>
-                    <span id="paymentNetwork" style="color: #fff;">...</span>
+                <div class="checkout-summary">
+                    <div class="summary-row">
+                        <span data-i18n="checkout.subtotal">Subtotal</span>
+                        <span id="checkoutPrice">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span data-i18n="checkout.fee">Processing Fee</span>
+                        <span class="free-text" data-i18n="checkout.free">0%</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="summary-row total">
+                        <span data-i18n="checkout.total">Total</span>
+                        <span id="checkoutTotal">$0.00</span>
+                    </div>
+
+                    <button class="pay-btn" id="payButton" onclick="submitOrder()">
+                        <span class="btn-text" data-i18n="checkout.pay_now">Pay Now</span>
+                        <div class="spinner"></div>
+                    </button>
+                    
+                    <p class="terms-text" data-i18n="checkout.terms">
+                        By continuing, you agree to our Terms of Service.
+                    </p>
                 </div>
             </div>
-
-            <div style="margin-bottom: 20px; text-align: left;">
-                <label style="font-size: 0.9rem; color: #aaa; display: block; margin-bottom: 5px;">
-                    Enter TXID (transaction hash) or payment time:
-                </label>
-                <input type="text" id="paymentProof" placeholder="Example: 7382...ad82 or 14:30" 
-                    style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #555; background: rgba(0,0,0,0.3); color: white;">
-            </div>
-
-            <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 20px;">
-                Click the button below only AFTER you have sent the funds.
-            </p>
-
-            <button class="submit-btn" onclick="confirmManualPayment()">I paid</button>
         </div>
     </div>
 

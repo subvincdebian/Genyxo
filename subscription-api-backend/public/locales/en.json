@@ -80,5 +80,16 @@
         },
         "products_title": "Subscription packages",
         "buy_now": "Buy Now"
+    },
+    "checkout": {
+        "title": "Order Summary",
+        "methods": "Secure Payment Methods:",
+        "secure": "Processed by NowPayments",
+        "subtotal": "Subtotal",
+        "fee": "Processing Fee",
+        "free": "Covered by us",
+        "total": "Total due",
+        "pay_now": "Pay Now Securely",
+        "terms": "By continuing, you agree to our Terms of Service."
     }
 }
