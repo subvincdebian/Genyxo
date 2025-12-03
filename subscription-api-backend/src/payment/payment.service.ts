@@ -1,12 +1,10 @@
-import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Transaction, TransactionStatus } from '../users/transaction.entity'; 
+import { Transaction, TransactionStatus } from '../users/transaction.entity';
 import { UsersService } from '../users/users.service';
-
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
-
 import axios from 'axios';
 import * as crypto from 'crypto';
 
@@ -30,11 +28,11 @@ export class PaymentService {
     private notificationsService: NotificationsService
   ) {}
 
+  // 1. Створення посилання (NowPayments)
   async createPayment(userId: number, packId: number) {
     const pack = PACKS[packId];
     if (!pack) throw new BadRequestException('Package not found');
 
-    // Створюємо запис у БД
     const transaction = this.transactionRepo.create({
       amount: pack.price,
       creditsAmount: pack.credits,
@@ -46,17 +44,16 @@ export class PaymentService {
     await this.transactionRepo.save(transaction);
 
     try {
-      // Запит до NowPayments для створення інвойсу
       const response = await axios.post(
         process.env.NOWPAYMENTS_API_URL!,
         {
           price_amount: pack.price,
-          price_currency: 'usd', // Валюта ціни (долар)
+          price_currency: 'usd',
           order_id: transaction.id.toString(),
           order_description: `Purchase: ${pack.name}`,
-          ipn_callback_url: 'https://hostaisite-production.up.railway.app/payment/webhook', // Твій URL на Railway
-          success_url: 'https://hostaisite-production.up.railway.app/#success', // Куди повернути після успіху
-          cancel_url: 'https://hostaisite-production.up.railway.app/#cancel', // Куди повернути після відміни
+          ipn_callback_url: 'https://hostaisite-production.up.railway.app/payment/webhook',
+          success_url: 'https://hostaisite-production.up.railway.app/#success', 
+          cancel_url: 'https://hostaisite-production.up.railway.app/#cancel', 
         },
         {
           headers: {
@@ -66,40 +63,34 @@ export class PaymentService {
         }
       );
 
-      // Зберігаємо ID інвойсу від NowPayments
       transaction.externalId = response.data.id;
       await this.transactionRepo.save(transaction);
 
-      // Повертаємо URL, куди перенаправити клієнта
-      return { 
-        url: response.data.invoice_url 
-      };
+      return { url: response.data.invoice_url };
 
     } catch (error) {
       this.logger.error('NowPayments Create Error:', error.response?.data || error.message);
       throw new BadRequestException('Payment gateway error');
     }
   }
-  
+
+  // 2. Webhook (NowPayments)
   async handleWebhook(headers: any, body: any) {
     const signature = headers['x-nowpayments-sig'];
-    
-    // ВАЖЛИВО: Сортуємо ключі для перевірки підпису (вимога NowPayments)
+    if (!signature) return; 
+
     const sortedKeys = Object.keys(body).sort();
     const jsonString = sortedKeys.map(key => `${key}=${body[key]}`).join('&');
-    
     const hmac = crypto.createHmac('sha512', process.env.NOWPAYMENTS_IPN_SECRET!);
     const calculatedSignature = hmac.update(jsonString).digest('hex');
 
     if (signature !== calculatedSignature) {
-        this.logger.error('Invalid signature from NowPayments');
+        this.logger.error('Invalid signature');
         throw new BadRequestException('Invalid signature');
     }
 
-    this.logger.log(`Webhook received for Order #${body.order_id}, Status: ${body.payment_status}`);
-
     const transactionId = Number(body.order_id);
-    const status = body.payment_status; // 'waiting', 'confirming', 'confirmed', 'sending', 'partially_paid', 'finished', 'failed', 'expired'
+    const status = body.payment_status; 
 
     const transaction = await this.transactionRepo.findOne({ 
         where: { id: transactionId },
@@ -108,32 +99,53 @@ export class PaymentService {
 
     if (!transaction) return;
 
-    // Логіка зміни статусів
     if (status === 'finished' || status === 'confirmed') {
         if (transaction.status !== TransactionStatus.APPROVED) {
-            transaction.status = TransactionStatus.APPROVED;
-            await this.transactionRepo.save(transaction);
-
-            // Нарахування кредитів
-            await this.usersService.addCredits(transaction.user.id, transaction.creditsAmount);
-
-            // Сповіщення
-            await this.notificationsService.create(
-                transaction.user.id,
-                'Payment Successful! 🎉',
-                `Received payment via NowPayments. Added ${transaction.creditsAmount} credits.`,
-                NotificationType.SYSTEM
-            );
+            await this.finalizeTransaction(transaction);
         }
     } else if (status === 'failed' || status === 'expired') {
         transaction.status = TransactionStatus.DECLINED;
         await this.transactionRepo.save(transaction);
     } else {
-        // Проміжні статуси (waiting, confirming)
-        transaction.status = TransactionStatus.WAITING; // Можна додати більше статусів, якщо треба
+        transaction.status = TransactionStatus.WAITING;
         await this.transactionRepo.save(transaction);
     }
 
     return { status: 'ok' };
+  }
+
+  // 🔥 3. Метод для АДМІНКИ (Виправлення помилки build)
+  async updateTransactionStatus(txId: number, newStatus: TransactionStatus, adminId: number) {
+    const transaction = await this.transactionRepo.findOne({ 
+        where: { id: txId },
+        relations: ['user'] 
+    });
+
+    if (!transaction) throw new NotFoundException('Transaction not found.');
+
+    transaction.status = newStatus;
+    await this.transactionRepo.save(transaction);
+
+    // Якщо адмін натиснув Approve - нараховуємо кредити
+    if (newStatus === TransactionStatus.APPROVED) {
+        await this.finalizeTransaction(transaction);
+    }
+
+    return { status: 'success', newStatus };
+  }
+
+  // Допоміжний метод (щоб не дублювати код нарахування)
+  private async finalizeTransaction(transaction: Transaction) {
+      transaction.status = TransactionStatus.APPROVED;
+      await this.transactionRepo.save(transaction);
+
+      await this.usersService.addCredits(transaction.user.id, Number(transaction.creditsAmount));
+
+      await this.notificationsService.create(
+          transaction.user.id,
+          'Payment Successful! 🎉',
+          `Your account received ${transaction.creditsAmount} credits.`,
+          NotificationType.SYSTEM
+      );
   }
 }
