@@ -56,13 +56,71 @@ function init() {
     setupEventListeners();
     setupNavigation();
     updateLoginButton(currentUserName, authToken);
+    checkPaymentStatus();
 
     if (authToken) {
         fetchUserData();
     }
 }
 
-// --- CHECKOUT LOGIC (НОВА) ---
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    
+    // Іконки
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        info: 'fa-info-circle'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <i class="fas ${icons[type]}"></i>
+        <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Видаляємо через 4 секунди
+    setTimeout(() => {
+        toast.classList.add('hiding');
+        toast.addEventListener('animationend', () => toast.remove());
+    }, 4000);
+}
+
+function checkPaymentStatus() {
+    if (window.location.hash === '#success') {
+        // Очищаємо хеш, щоб при перезавантаженні не стріляло знову
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+        
+        showToast('Payment successful! Credits added.', 'success');
+        
+        // Запуск конфетті
+        var duration = 3 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        function randomInOut(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        var interval = setInterval(function() {
+          var timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          var particleCount = 50 * (timeLeft / duration);
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInOut(0.1, 0.3), y: Math.random() - 0.2 } }));
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInOut(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    } else if (window.location.hash === '#cancel') {
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+        showToast('Payment cancelled.', 'error');
+    }
+}
 
 // 1. Відкриття вікна
 function openCheckout(product) {
@@ -118,13 +176,13 @@ async function processPayment() {
             // 🔥 ПЕРЕАДРЕСАЦІЯ НА ОПЛАТУ
             window.location.href = data.url;
         } else {
-            alert(`Error: ${data.message || 'Failed to create payment'}`);
+            showToast(`Error: ${data.message || 'Failed to create payment'}`, 'error');
             payBtn.classList.remove('loading');
             payBtn.disabled = false;
         }
     } catch (error) {
         console.error(error);
-        alert('Connection error. Please try again.');
+        showToast('Connection error. Please try again.', 'error');
         payBtn.classList.remove('loading');
         payBtn.disabled = false;
     }
@@ -261,11 +319,12 @@ async function handleLoginSubmit(e) {
             authToken = data.access_token;
             await fetchUserData();
             closeLoginModal();
+            showToast('Welcome back!', 'success');
         } else {
-            alert(`Login Error: ${data.message}`);
+            showToast(data.message || 'Incorrect credentials', 'error');
         }
     } catch (error) {
-        alert('Server connection failed.');
+        showToast('Server connection failed.', 'error');
     }
 }
 
@@ -298,11 +357,12 @@ async function handleSignupSubmit(e) {
             authToken = data.access_token;
             await fetchUserData();
             closeLoginModal();
+            showToast('Account created successfully!', 'success');
         } else {
-            alert(`Register Error: ${data.message}`);
+            showToast(data.message || 'Registration failed', 'error');
         }
     } catch (error) {
-        alert('Server connection failed.');
+        showToast('Server connection failed.', 'error');
     }
 }
 
