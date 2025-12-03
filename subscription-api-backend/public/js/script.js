@@ -190,7 +190,11 @@ async function processPayment() {
 
 // --- PRODUCTS GRID ---
 function loadProducts() {
-    if (!productsGrid) return;
+    if (!productsGrid) {
+        console.error("Element with ID 'productsGrid' not found!");
+        return;
+    }
+
     productsGrid.innerHTML = '';
     
     // Перевірка наявності перекладів
@@ -497,6 +501,10 @@ function setupEventListeners() {
         if (e.target === checkoutModal) {
             checkoutModal.style.display = 'none';
             document.body.style.overflow = 'auto';
+        }
+        if (e.target.classList.contains('buy-now-btn')) {
+            const id = parseInt(e.target.getAttribute('data-id'));
+            openCheckout(id);
         }
     });
 }
