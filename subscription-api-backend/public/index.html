@@ -278,60 +278,63 @@
         </div>
     </footer>
 
-  <!-- Order -->
-    <div class="modal" id="orderModal">
-        <div class="modal-content glass checkout-modal">
-            <span class="close-btn" id="closeOrder">&times;</span>
+    <!-- Order -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content glass checkout-content">
+            <span class="close-btn" id="closeCheckout">&times;</span>
             
-            <h2 data-i18n="checkout.title">Order Summary</h2>
-            
-            <div class="checkout-container">
-                <div class="checkout-details">
-                    <div class="product-preview">
-                        <img id="checkoutImg" src="" alt="Product">
-                        <div class="product-text">
-                            <h3 id="checkoutName">Product Name</h3>
-                            <p class="credits-badge"><i class="fas fa-bolt"></i> <span id="checkoutCredits">0</span> credits</p>
-                        </div>
-                    </div>
+            <div class="checkout-header">
+                <h2>Secure Checkout</h2>
+                <div class="secure-badge"><i class="fas fa-lock"></i> Encrypted</div>
+            </div>
 
-                    <div class="payment-methods-preview">
-                        <p class="label" data-i18n="checkout.methods">We accept:</p>
-                        <div class="icons-row">
-                            <i class="fab fa-bitcoin" title="Bitcoin"></i>
-                            <i class="fab fa-ethereum" title="Ethereum"></i>
-                            <span class="usdt-icon">₮</span>
-                            <i class="fab fa-cc-visa" title="Visa"></i>
-                            <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+            <div class="checkout-body">
+                <div class="checkout-product">
+                    <img id="checkoutImg" src="" alt="Product" class="checkout-img">
+                    <div class="checkout-info">
+                        <h3 id="checkoutName">AI Pack</h3>
+                        <p class="checkout-desc">Instant delivery • Lifetime validity</p>
+                        <div class="checkout-credits">
+                            <i class="fas fa-bolt"></i> <span id="checkoutCredits">0</span> Credits
                         </div>
-                        <p class="sub-label" data-i18n="checkout.secure">Secure payment via NowPayments</p>
                     </div>
                 </div>
+
+                <div class="divider"></div>
 
                 <div class="checkout-summary">
-                    <div class="summary-row">
-                        <span data-i18n="checkout.subtotal">Subtotal</span>
+                    <div class="row">
+                        <span>Price</span>
                         <span id="checkoutPrice">$0.00</span>
                     </div>
-                    <div class="summary-row">
-                        <span data-i18n="checkout.fee">Processing Fee</span>
-                        <span class="free-text" data-i18n="checkout.free">0%</span>
+                    <div class="row">
+                        <span>Processing Fee</span>
+                        <span class="green-text">Covered by us</span>
                     </div>
-                    <div class="divider"></div>
-                    <div class="summary-row total">
-                        <span data-i18n="checkout.total">Total</span>
+                    <div class="row total">
+                        <span>Total due</span>
                         <span id="checkoutTotal">$0.00</span>
                     </div>
-
-                    <button class="pay-btn" id="payButton" onclick="submitOrder()">
-                        <span class="btn-text" data-i18n="checkout.pay_now">Pay Now</span>
-                        <div class="spinner"></div>
-                    </button>
-                    
-                    <p class="terms-text" data-i18n="checkout.terms">
-                        By continuing, you agree to our Terms of Service.
-                    </p>
                 </div>
+
+                <div class="payment-methods">
+                    <span>We accept:</span>
+                    <div class="methods-icons">
+                        <i class="fab fa-bitcoin" title="Bitcoin"></i>
+                        <i class="fab fa-ethereum" title="Ethereum"></i>
+                        <i class="fas fa-dollar-sign" title="USDT"></i>
+                        <i class="fab fa-cc-visa" title="Visa/Mastercard"></i>
+                    </div>
+                </div>
+
+                <button class="pay-now-btn" id="payBtn" onclick="processPayment()">
+                    <span class="btn-text">Proceed to Payment</span>
+                    <div class="spinner"></div>
+                </button>
+
+                <p class="checkout-footer">
+                    Powered by <strong>NowPayments</strong>. You will be redirected to complete the secure payment.
+                </p>
             </div>
         </div>
     </div>

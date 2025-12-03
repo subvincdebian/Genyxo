@@ -1667,9 +1667,9 @@ body {
     }
 }
 
-/* Checkout Modal Styles */
+/*
 .checkout-modal {
-    max-width: 700px; /* Ширше вікно */
+    max-width: 700px;
     padding: 0;
     overflow: hidden;
     display: flex;
@@ -1688,14 +1688,12 @@ body {
     flex-direction: row;
 }
 
-/* Mobile responsive for checkout */
 @media (max-width: 700px) {
     .checkout-container {
         flex-direction: column;
     }
 }
 
-/* Ліва колонка */
 .checkout-details {
     flex: 1.2;
     padding: 30px;
@@ -1758,11 +1756,10 @@ body {
     color: #666;
 }
 
-/* Права колонка (Summary) */
 .checkout-summary {
     flex: 1;
     padding: 30px;
-    background: rgba(0, 0, 0, 0.2); /* Трохи темніше */
+    background: rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1827,7 +1824,6 @@ body {
     margin-top: 15px;
 }
 
-/* Спіннер завантаження */
 .spinner {
     display: none;
     width: 20px;
@@ -1849,4 +1845,179 @@ body {
 
 .pay-btn.loading .spinner {
     display: block;
+} 
+*/
+
+.checkout-content {
+    max-width: 450px; /* Компактний розмір */
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
+
+.checkout-header {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.checkout-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.secure-badge {
+    font-size: 0.75rem;
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.checkout-body {
+    padding: 25px;
+}
+
+/* Product Section */
+.checkout-product {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.checkout-img {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.checkout-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+}
+
+.checkout-desc {
+    margin: 0 0 8px 0;
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.checkout-credits {
+    font-size: 0.9rem;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 20px 0;
+}
+
+/* Summary Section */
+.checkout-summary .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: #ddd;
+}
+
+.checkout-summary .total {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.15);
+}
+
+.green-text { color: #2ecc71; }
+
+/* Methods */
+.payment-methods {
+    margin: 25px 0;
+    text-align: center;
+}
+
+.payment-methods span {
+    font-size: 0.8rem;
+    color: #888;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.methods-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    font-size: 1.5rem;
+    color: #ccc;
+}
+
+.checkout-footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 15px;
+}
+
+/* Pay Button */
+.pay-now-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: #10e6cc; /* Ваш фірмовий колір */
+    color: #000;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pay-now-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 20px rgba(16, 230, 204, 0.4);
+}
+
+.pay-now-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Spinner for button */
+.spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pay-now-btn.loading .btn-text { display: none; }
+.pay-now-btn.loading .spinner { display: block; margin: 0; }

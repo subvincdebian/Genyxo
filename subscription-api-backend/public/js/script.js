@@ -37,7 +37,6 @@ let currentUserName = localStorage.getItem('userName') || 'My Profile';
 
 // DOM Elements
 const productsGrid = document.getElementById('productsGrid');
-const orderModal = document.getElementById('orderModal');
 const loginModal = document.getElementById('loginModal');
 const loginBtn = document.getElementById('loginBtn');
 const closeOrder = document.getElementById('closeOrder');
@@ -55,7 +54,6 @@ const logoutBtn = document.getElementById('logoutBtn');
 const welcomeMessage = document.getElementById('welcomeMessage');
 const profileDropdown = document.getElementById('profileDropdown');
 const loginBtnText = loginBtn.querySelector('span');
-const paymentMethodSelect = document.getElementById('paymentMethod');
 const manualPaymentModal = document.getElementById('manualPaymentModal');
 
 const profilePanel = document.getElementById('profilePanel');
@@ -73,6 +71,10 @@ const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
 const notificationBadge = document.getElementById('notificationBadge');
 
 const payButton = document.getElementById('payButton');
+
+const checkoutModal = document.getElementById('checkoutModal');
+const closeCheckoutBtn = document.getElementById('closeCheckout');
+const payBtn = document.getElementById('payBtn');
 
 // Current product for ordering
 let currentProduct = null;
@@ -132,6 +134,14 @@ function updateUserUI(user) {
     if (menuCredits) menuCredits.textContent = user.credits || 0;
 }
 
+if (closeCheckoutBtn) {
+    closeCheckoutBtn.addEventListener('click', () => {
+        checkoutModal.style.display = 'none';
+        payBtn.classList.remove('loading');
+        payBtn.disabled = false;
+    });
+}
+
 // Обробник кліку на кнопку профілю
 function handleLoginButtonClick(e) {
     e.stopPropagation();
@@ -178,6 +188,68 @@ function updateLoginButton(name, token) {
     }
 }
 
+function openCheckout(product) {
+    currentProduct = product;
+    
+    // Якщо не залогінений - просимо увійти
+    if (!authToken) {
+        openLoginModal();
+        return;
+    }
+
+    // Заповнюємо дані (безпечно з перекладів)
+    const productTrans = (window.i18n && i18n.translations.products_data[product.id]) 
+                         ? i18n.translations.products_data[product.id] 
+                         : { name: 'Product', credits_label: 'Credits' };
+
+    document.getElementById('checkoutImg').src = product.image;
+    document.getElementById('checkoutName').textContent = productTrans.name;
+    document.getElementById('checkoutCredits').textContent = productTrans.credits_label.replace(/\D/g, ''); // Тільки цифри
+    document.getElementById('checkoutPrice').textContent = product.price;
+    document.getElementById('checkoutTotal').textContent = product.price;
+
+    // Відкриваємо вікно
+    checkoutModal.style.display = 'flex';
+}
+
+// 2. Логіка кнопки "Pay Now"
+async function processPayment() {
+    if (!authToken || !currentProduct) return;
+
+    // Анімація завантаження
+    payBtn.classList.add('loading');
+    payBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/payment/buy`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                packId: currentProduct.id
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.url) {
+            // 🔥 ПЕРЕАДРЕСАЦІЯ НА NOWPAYMENTS
+            window.location.href = data.url;
+        } else {
+            alert(`Error: ${data.message || 'Failed to create payment'}`);
+            payBtn.classList.remove('loading');
+            payBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Connection error. Please try again.');
+        payBtn.classList.remove('loading');
+        payBtn.disabled = false;
+    }
+}
+
 async function updateNotificationsBadge() {
     if (!authToken) return;
 
@@ -202,11 +274,6 @@ async function updateNotificationsBadge() {
     } catch (e) {
         console.error("Error checking notifications:", e);
     }
-}
-
-function closeManualPaymentModal() {
-    manualPaymentModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
 }
 
 // Load products into the grid
@@ -266,8 +333,8 @@ function loadProducts() {
     document.querySelectorAll('.buy-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const productId = parseInt(e.target.getAttribute('data-id'));
-            currentProduct = products.find(p => p.id === productId);
-            openOrderModal();
+            const product = products.find(p => p.id === productId);
+            openCheckout(product);
         });
     });
 }
@@ -276,13 +343,11 @@ function loadProducts() {
 function setupEventListeners() {
     // Modal open/close
     loginBtn.addEventListener('click', handleLoginButtonClick);
-    closeOrder.addEventListener('click', closeOrderModal);
     closeLogin.addEventListener('click', closeLoginModal);
     
     dropdownLogoutBtn.addEventListener('click', handleLogout); 
 
     // submissions
-    orderForm.addEventListener('submit', handleOrderSubmit);
     loginForm.addEventListener('submit', handleLoginSubmit);
     signupForm.addEventListener('submit', handleSignupSubmit);
      
@@ -351,30 +416,6 @@ function setupNavigation() {
     });
 }
 
-// Modal functions
-function openOrderModal() {
-    if (!currentProduct) return;
-
-    // Заповнюємо дані у новому модальному вікні
-    document.getElementById('checkoutImg').src = currentProduct.image;
-    document.getElementById('checkoutName').innerText = 
-        (window.i18n && i18n.translations.products_data[currentProduct.id].name) || 'Product';
-        
-    document.getElementById('checkoutCredits').innerText = 
-        (window.i18n && i18n.translations.products_data[currentProduct.id].credits_label) || 'Credits';
-
-    document.getElementById('checkoutPrice').innerText = currentProduct.price;
-    document.getElementById('checkoutTotal').innerText = currentProduct.price;
-
-    orderModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeOrderModal() {
-    orderModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
 function openLoginModal() {
     loginModal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -403,38 +444,6 @@ function showLoginForm() {
 
 let currentOrderId = null;
 
-function showPaymentWindow(instr, orderId) {
-    currentOrderId = orderId;
-    const modal = document.getElementById('manualPaymentModal');
-    
-    document.getElementById('paymentTitle').innerText = instr.currency === 'USDT' ? 'Crypto payment' : 'Payment by card';
-    
-    // Показуємо або Гаманець, або Номер карти
-    const target = instr.address || instr.number;
-    document.getElementById('paymentTarget').innerText = target;
-    document.getElementById('paymentAmount').innerText = instr.amount;
-    document.getElementById('paymentNetwork').innerText = instr.network || instr.holder;
-    
-    // Очищаємо поле вводу
-    document.getElementById('paymentProof').value = '';
-    
-    modal.style.display = 'flex';
-}
-
-function confirmManualPayment() {
-    const proof = document.getElementById('paymentProof').value;
-    if (proof.length < 4) {
-        alert('Please enter confirmation (Transaction hash or time)');
-        return;
-    }
-
-    // Тут можна відправити proof на сервер, щоб зберегти його (опціонально)
-    // Але для MVP достатньо просто повідомити клієнта
-    
-    alert(`Thank you! Order #${currentOrderId} accepted for processing. We will verify the payment (${proof}) and we will accrue credits within 20 minutes.`);
-    
-    document.getElementById('manualPaymentModal').style.display = 'none';
-}
 
 document.getElementById('closeManualPayment').addEventListener('click', () => {
     document.getElementById('manualPaymentModal').style.display = 'none';
