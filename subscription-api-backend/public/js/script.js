@@ -8,7 +8,7 @@ const products = [
 ];
 
 // Вкажіть вашу реальну адресу на Railway
-const API_BASE_URL = 'https://hostaisite-production.up.railway.app'; 
+const API_BASE_URL = 'https://genyxo.com/' || 'https://hostaisite-production.up.railway.app';
 let authToken = localStorage.getItem('authToken') || null;
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
 let currentProduct = null;

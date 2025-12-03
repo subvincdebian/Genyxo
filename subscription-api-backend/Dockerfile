@@ -17,5 +17,9 @@ COPY . .
 # Запускаємо процес build
 RUN npm run build
 
+# Встановлюємо порт
+ENV PORT 3306
+EXPOSE 3306
+
 # Запускаємо додаток
 CMD [ "npm", "run", "start:prod" ]
