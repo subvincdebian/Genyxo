@@ -9,10 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Стилі з chat.html залишаються незмінними */
         .chat-container {
             max-width: 930px;
             margin: 20px auto 2rem;
-            height: 80vh;
+            height: 80vh; /* Залишаємо висоту, щоб контролювати скрол */
             display: flex;
             flex-direction: column;
             padding: 0 1rem;
@@ -20,7 +21,7 @@
         
         .chat-box {
             flex: 1;
-            overflow-y: auto;
+            overflow-y: auto; /* Забезпечує скрол для повідомлень */
             padding: 1.5rem;
             margin-bottom: 1rem;
             display: flex;
@@ -126,6 +127,8 @@
             border-radius: 12px 12px 0 0;
             border-bottom: 1px solid var(--glass-border);
             color: white;
+            flex-wrap: wrap; /* Додано для адаптивності, якщо заголовок переповнений */
+            gap: 10px; /* Додано для проміжків */
         }
 
         .chat-header h2 {
@@ -145,6 +148,13 @@
             background: var(--primary-light);
             color: var(--text-light);
             border: 1px solid var(--glass-border);
+        }
+        /* Встановлення основного вмісту для скролу */
+        .chat-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
         }
     </style>
 </head>
@@ -167,19 +177,24 @@
     <div class="chat-container">
         <div class="chat-header">
             <h2 data-i18n="chat.chat_title">AI Chat</h2>
+            
+            <div class="model-selector-container">
+                <label for="aiModel" data-i18n="chat.model_select_label">Select AI Model:</label>
+                <select id="aiModel" style="width: 250px;">
+                    <option value="default" data-i18n="chat.model_default">Default Model (GPT-3.5/Llama)</option>
+                    <option value="advanced" data-i18n="chat.model_advanced">Advanced Model (GPT-4/Claude)</option>
+                    <option value="fast" data-i18n="chat.model_fast">Fast Model (Mistral/Gemini Flash)</option>
+                    <option value="creative" data-i18n="chat.model_creative">Creative Model (DALL-E/Midjourney Text)</option>
+                </select>
+            </div>
+
             <div class="balance-info">
                 <span data-i18n="chat.balance">Balance:</span> <strong id="creditBalance">0</strong> <span data-i18n="chat.credits">Credits</span>
             </div>
         </div>
 
-        <div class="glass" style="flex: 1; padding: 0; display: flex; flex-direction: column;">
+        <div class="glass chat-content-wrapper">
             
-            <div class="model-selector-container" style="padding: 15px; border-bottom: 1px solid var(--glass-border);">
-                <label for="aiModel" data-i18n="chat.model_select_label">Select AI Model:</label>
-                <select id="aiModel" style="width: 250px;">
-                    </select>
-            </div>
-
             <div class="chat-box" id="chatBox">
                 </div>
 
@@ -208,6 +223,7 @@
 
         if (!token) window.location.href = 'index.html';
 
+        // Helper to get dynamic translations securely (Kept for alerts and dynamic content)
         function t(key, defaultText) {
             if (window.i18n && window.i18n.translations) {
                 const keys = key.split('.');
@@ -221,18 +237,14 @@
             return defaultText || key;
         }
 
+        // --- DOM Elements ---
         const chatBox = document.getElementById('chatBox');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const creditBalanceEl = document.getElementById('creditBalance');
         const aiModelSelect = document.getElementById('aiModel');
 
-        const models = [
-            { id: 'default', nameKey: 'chat.model_default' },
-            { id: 'advanced', nameKey: 'chat.model_advanced' },
-            { id: 'fast', nameKey: 'chat.model_fast' },
-            { id: 'creative', nameKey: 'chat.model_creative' }
-        ];
+        // --- Chat Logic ---
 
         function appendMessage(sender, content, model = null) {
             const messageDiv = document.createElement('div');
@@ -245,6 +257,7 @@
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
             
+            // Render content as Markdown if it's from bot
             if (sender === 'bot') {
                 contentDiv.innerHTML = marked.parse(content);
             } else {
@@ -280,6 +293,7 @@
             userInput.value = '';
             appendMessage('user', message);
 
+            // Bot placeholder for response
             const botMessageEl = document.createElement('div');
             botMessageEl.className = 'message bot';
             botMessageEl.innerHTML = `<div class="message-avatar"><i class="fas fa-robot"></i></div><div class="message-content">...</div>`;
@@ -299,8 +313,9 @@
                 if (response.ok) {
                     const data = await response.json();
                     
+                    // Update the placeholder message with real data
                     botMessageEl.querySelector('.message-content').innerHTML = marked.parse(data.botResponse);
-                    updateBalanceUI(data.newBalance || 0);
+                    updateBalanceUI(data.newBalance || 0); // Update balance after message
                 } else {
                     botMessageEl.querySelector('.message-content').innerHTML = `<span style="color: red;">Error: ${response.statusText}</span>`;
                 }
@@ -308,18 +323,11 @@
                 console.error("Error sending message:", e);
                 botMessageEl.querySelector('.message-content').innerHTML = `<span style="color: red;">${t('chat.system_msg_error', 'Error connecting to server.')}</span>`;
             }
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll again after update
         }
 
         function updateBalanceUI(amount) {
             creditBalanceEl.textContent = amount;
-        }
-
-        function populateModels() {
-            aiModelSelect.innerHTML = models.map(m => {
-                const translatedName = t(m.nameKey, m.nameKey.split('.').pop());
-                return `<option value="${m.id}">${translatedName}</option>`;
-            }).join('');
         }
 
         async function loadChatHistory() {
@@ -359,7 +367,6 @@
                 if (response.ok) {
                     const data = await response.json();
                     updateBalanceUI(data.credits || 0);
-                    populateModels();
                     loadChatHistory();
                 } else {
                     const errorMsg = t('chat.system_msg_error', "Error loading user profile.");
@@ -375,6 +382,7 @@
             if (e.key === 'Enter') sendMessage();
         });
 
+        // Use a small timeout to ensure the i18n engine has loaded the JSON first
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 loadUserProfile();
