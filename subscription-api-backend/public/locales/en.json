@@ -84,17 +84,6 @@
         "products_title": "Subscription packages",
         "buy_now": "Buy Now"
     },
-    "checkout": {
-        "title": "Order Summary",
-        "methods": "Secure Payment Methods:",
-        "secure": "Processed by NowPayments",
-        "subtotal": "Subtotal",
-        "fee": "Processing Fee",
-        "free": "Covered by us",
-        "total": "Total due",
-        "pay_now": "Pay Now Securely",
-        "terms": "By continuing, you agree to our Terms of Service."
-    },
     "about_section": {
         "title": "About Us",
         "text_1": "We provide seamless access to today’s most important digital tools – from cutting-edge AI services to creative platforms, premium social features and productivity apps.",
@@ -140,5 +129,18 @@
         "account_created": "Account created successfully!",
         "reg_failed": "Registration failed",
         "pass_mismatch": "Error: Passwords do not match!"
+    },
+    "order": {
+        "title": "Secure Checkout",
+        "badge": "Encrypted",
+        "packname": "AI Pack",
+        "packdesc": "Instant delivery • Lifetime validity",
+        "price": "Price",
+        "fee_title": "Processing Fee",
+        "fee_desc": "Covered by us",
+        "total": "Total due",
+        "method": "We accept:",
+        "button": "Proceed to Payment",
+        "footer": "Powered by  . You will be redirected to complete the secure payment."
     }
 }

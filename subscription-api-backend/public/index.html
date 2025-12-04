@@ -285,16 +285,16 @@
             <span class="close-btn" id="closeCheckout">&times;</span>
             
             <div class="checkout-header">
-                <h2>Secure Checkout</h2>
-                <div class="secure-badge"><i class="fas fa-lock"></i> Encrypted</div>
+                <h2 data-i18n="order.title">Secure Checkout</h2>
+                <div class="secure-badge"><i class="fas fa-lock"></i data-i18n=order.badge> Encrypted</div>
             </div>
 
             <div class="checkout-body">
                 <div class="checkout-product">
                     <img id="checkoutImg" src="" alt="Product" class="checkout-img">
                     <div class="checkout-info">
-                        <h3 id="checkoutName">AI Pack</h3>
-                        <p class="checkout-desc">Instant delivery • Lifetime validity</p>
+                        <h3 id="checkoutName" data-i18n="order.packaname">AI Pack</h3>
+                        <p class="checkout-desc" data-i18n="order.packdesc">Instant delivery • Lifetime validity</p>
                         <div class="checkout-credits">
                             <i class="fas fa-bolt"></i> <span id="checkoutCredits">0</span> Credits
                         </div>
@@ -305,21 +305,21 @@
 
                 <div class="checkout-summary">
                     <div class="row">
-                        <span>Price</span>
+                        <span data-i18n="order.price">Price</span>
                         <span id="checkoutPrice">$0.00</span>
                     </div>
                     <div class="row">
-                        <span>Processing Fee</span>
-                        <span class="green-text">Covered by us</span>
+                        <span data-i18n="order.fee_title">Processing Fee</span>
+                        <span class="green-text" data-i18n="order.fee_desc">Covered by us</span>
                     </div>
                     <div class="row total">
-                        <span>Total due</span>
+                        <span data-i18n="order.total">Total due</span>
                         <span id="checkoutTotal">$0.00</span>
                     </div>
                 </div>
 
                 <div class="payment-methods">
-                    <span>We accept:</span>
+                    <span data-i18n="order.method">We accept:</span>
                     <div class="methods-icons">
                         <i class="fab fa-bitcoin" title="Bitcoin"></i>
                         <i class="fab fa-ethereum" title="Ethereum"></i>
@@ -329,11 +329,11 @@
                 </div>
 
                 <button class="pay-now-btn" id="payBtn" onclick="processPayment()">
-                    <span class="btn-text">Proceed to Payment</span>
+                    <span class="btn-text" data-i18n="order.button">Proceed to Payment</span>
                     <div class="spinner"></div>
                 </button>
 
-                <p class="checkout-footer">
+                <p class="checkout-footer" data-i18n="order.footer">
                     Powered by <strong>NowPayments</strong>. You will be redirected to complete the secure payment.
                 </p>
             </div>
