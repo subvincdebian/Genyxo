@@ -626,11 +626,19 @@
         // 2. Рендер списку зліва
         function renderHistoryList() {
             historyList.innerHTML = '';
+
+            if (conversations.length === 0) {
+                historyList.innerHTML = '<div style="font-size:0.85rem; color: #666; padding: 10px 0;" data-i18n="chat.no_history">No messages yet</div>';
+                return;
+            }
+
             conversations.forEach(chat => {
                 const div = document.createElement('div');
                 div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+                
+                div.onclick = () => selectChat(chat.id);
                 div.innerHTML = `
-                    <span class="chat-title" onclick="selectChat(${chat.id})">
+                    <span class="chat-title">
                         <i class="far fa-message" style="margin-right:8px; font-size:0.8rem;"></i>
                         ${chat.title}
                     </span>
