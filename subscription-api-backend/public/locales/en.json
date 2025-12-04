@@ -194,5 +194,21 @@
             "unknown_user": "Unknown User",
             "no_subject": "No Subject"
         }
+    },
+    "chat": {
+        "meta_title": "Chat Room - Genyxo",
+        "chat_title": "AI Chat",
+        "balance": "Balance:",
+        "credits": "Credits",
+        "model_select_label": "Select AI Model:",
+        "input_placeholder": "Ask me anything...",
+        "send_button": "Send",
+        "system_msg_placeholder": "Hi! I'm your AI assistant. Choose a model or just write me something and we'll get started! 🚀",
+        "system_msg_no_history": "No history found. Start a new conversation!",
+        "system_msg_error": "Error loading chat history or user data.",
+        "model_default": "Default Model (GPT-3.5/Llama)",
+        "model_advanced": "Advanced Model (GPT-4/Claude)",
+        "model_fast": "Fast Model (Mistral/Gemini Flash)",
+        "model_creative": "Creative Model (DALL-E/Midjourney Text)"
     }
 }
