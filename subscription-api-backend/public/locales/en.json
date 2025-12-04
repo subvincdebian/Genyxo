@@ -5,7 +5,10 @@
         "chat": "Chat",
         "about": "About Us",
         "login": "Register / Login",
-        "profile": "Profile"
+        "profile": "Profile",
+        "userload": "Loading...",
+        "emailload": "loading@gmail.com",
+        "profileupgrade": "Upgrade"
     },
     "hero": {
         "title": "Genyxo",
@@ -91,5 +94,51 @@
         "total": "Total due",
         "pay_now": "Pay Now Securely",
         "terms": "By continuing, you agree to our Terms of Service."
+    },
+    "about_section": {
+        "title": "About Us",
+        "text_1": "We provide seamless access to today’s most important digital tools – from cutting-edge AI services to creative platforms, premium social features and productivity apps.",
+        "text_2": "Our mission is to empower creators, entrepreneurs and everyday users by giving them smarter, faster and more cost-effective access to the digital services they rely on.",
+        "text_3": "With us, you save time and money, reduce hassle and unlock more possibilities with every subscription.",
+        "feat_1_title": "Custom Designs",
+        "feat_1_desc": "You can create custom images",
+        "feat_2_title": "Fast Accrual",
+        "feat_2_desc": "Instant Response",
+        "feat_3_title": "Premium quality",
+        "feat_3_desc": "Only from official sources"
+    },
+    "footer": {
+        "desc_1": "Manual access to the latest AI models in one place.",
+        "desc_2": "Fast, transparent, no overpayments.",
+        "links_title": "Links",
+        "shipping": "Shipping Information",
+        "contact_title": "Contact Information",
+        "rights": "© 2025 Genyxo. All rights reserved."
+    },
+    "auth": {
+        "login_title": "Login / Sign Up",
+        "email_placeholder": "Email Address",
+        "password_placeholder": "Password",
+        "confirm_password_placeholder": "Confirm Password",
+        "name_placeholder": "Full Name",
+        "remember_me": "Remember me",
+        "forgot_pass": "Forgot password?",
+        "login_btn": "Login",
+        "signup_btn": "Create Account",
+        "no_account": "Don't have an account?",
+        "has_account": "Already have an account?",
+        "link_signup": "Sign up",
+        "link_login": "Login",
+        "logout_msg": "Log out of account"
+    },
+    "toasts": {
+        "payment_success": "Payment successful! Credits added.",
+        "payment_cancel": "Payment cancelled.",
+        "welcome": "Welcome back!",
+        "login_error": "Incorrect credentials",
+        "server_error": "Server connection failed.",
+        "account_created": "Account created successfully!",
+        "reg_failed": "Registration failed",
+        "pass_mismatch": "Error: Passwords do not match!"
     }
 }

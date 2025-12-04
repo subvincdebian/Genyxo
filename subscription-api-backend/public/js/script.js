@@ -61,6 +61,24 @@ function init() {
     if (authToken) {
         fetchUserData();
     }
+
+    const observerOptions = {
+        threshold: 0.1, 
+        rootMargin: "0px 0px -50px 0px"
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-active');
+                observer.unobserve(entry.target); 
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+    });
 }
 
 function showToast(message, type = 'info') {
@@ -94,7 +112,8 @@ function checkPaymentStatus() {
         // Очищаємо хеш, щоб при перезавантаженні не стріляло знову
         history.pushState("", document.title, window.location.pathname + window.location.search);
         
-        showToast('Payment successful! Credits added.', 'success');
+        const msg = window.i18n?.translations?.toasts?.payment_success || 'Payment successful!';
+        showToast(msg, 'Payment successful! Credits added.', 'success');
         
         // Запуск конфетті
         var duration = 3 * 1000;
@@ -118,7 +137,8 @@ function checkPaymentStatus() {
         }, 250);
     } else if (window.location.hash === '#cancel') {
         history.pushState("", document.title, window.location.pathname + window.location.search);
-        showToast('Payment cancelled.', 'error');
+        const msg = window.i18n?.translations?.toasts?.payment_cancel || 'Payment cancelled.';
+        showToast(msg, 'Payment cancelled.', 'error');
     }
 }
 
@@ -323,7 +343,8 @@ async function handleLoginSubmit(e) {
             authToken = data.access_token;
             await fetchUserData();
             closeLoginModal();
-            showToast('Welcome back!', 'success');
+            const msg = window.i18n?.translations?.toasts?.welcome || 'Welcome back!';
+            showToast(msg, 'Welcome back!', 'success');
         } else {
             showToast(data.message || 'Incorrect credentials', 'error');
         }
@@ -338,7 +359,8 @@ async function handleSignupSubmit(e) {
     const confirmPassword = document.getElementById('confirmPassword').value;
     
     if (password !== confirmPassword) {
-        alert('Error: Passwords do not match!');
+        const msg = window.i18n?.translations?.toasts?.pass_mismatch || 'Passwords do not match!';
+        showToast(msg, 'error');
         return;
     }
 
@@ -501,10 +523,6 @@ function setupEventListeners() {
         if (e.target === checkoutModal) {
             checkoutModal.style.display = 'none';
             document.body.style.overflow = 'auto';
-        }
-        if (e.target.classList.contains('buy-now-btn')) {
-            const id = parseInt(e.target.getAttribute('data-id'));
-            openCheckout(id);
         }
     });
 }
