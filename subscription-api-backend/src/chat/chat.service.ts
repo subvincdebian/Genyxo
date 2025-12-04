@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common'; // <--- Додано NotFoundException
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from './message.entity';
+import { Conversation } from './conversation.entity'; // <--- Додано імпорт Conversation
 
 @Injectable()
 export class ChatService {
@@ -11,29 +12,94 @@ export class ChatService {
 
   constructor(
     private configService: ConfigService,
-    @InjectRepository(Message)
-    private messageRepository: Repository<Message>,
+    @InjectRepository(Message) private messageRepository: Repository<Message>,
+    @InjectRepository(Conversation) private conversationRepository: Repository<Conversation>,
   ) {
-    this.openai = new OpenAI({
-      apiKey: this.configService.get<string>('OPENAI_API_KEY'),
-    });
+    this.openai = new OpenAI({ apiKey: this.configService.get('OPENAI_API_KEY') });
   }
 
-  async saveMessage(userId: number, content: string, sender: 'user' | 'bot', model: string) {
-    const message = this.messageRepository.create({
-      user: { id: userId },
-      content,
-      sender,
-      model,
-    });
-    await this.messageRepository.save(message);
-  }
-
-  async getHistory(userId: number): Promise<Message[]> {
-    return this.messageRepository.find({
+  async getUserConversations(userId: number) {
+    return this.conversationRepository.find({
       where: { user: { id: userId } },
-      order: { createdAt: 'ASC' },
+      order: { updatedAt: 'DESC' }, 
     });
+  }
+
+  async getConversationMessages(userId: number, conversationId: number) {
+    const conversation = await this.conversationRepository.findOne({
+      where: { id: conversationId, user: { id: userId } },
+      relations: ['messages'],
+      order: { messages: { createdAt: 'ASC' } } as any
+    });
+
+    if (!conversation) throw new NotFoundException('Chat not found');
+    return conversation.messages;
+  }
+
+  async processMessage(userId: number, text: string, model: string, conversationId?: number) {
+    let conversation: Conversation;
+
+    // Якщо ID немає — створюємо новий чат
+    if (!conversationId) {
+      conversation = this.conversationRepository.create({
+        user: { id: userId },
+        title: text.substring(0, 30) + '...', 
+      });
+      await this.conversationRepository.save(conversation);
+    } else {
+      // ВИПРАВЛЕННЯ ТУТ:
+      const existingChat = await this.conversationRepository.findOne({ where: { id: conversationId } });
+      
+      if (!existingChat) {
+          throw new NotFoundException('Chat not found');
+      }
+      
+      conversation = existingChat; // Тепер TypeScript знає, що тут точно не null
+      
+      conversation.updatedAt = new Date(); 
+      await this.conversationRepository.save(conversation);
+    }
+
+    // Зберігаємо User Message
+    const userMsg = this.messageRepository.create({
+      content: text,
+      sender: 'user',
+      model,
+      conversation,
+      user: { id: userId } 
+    });
+    await this.messageRepository.save(userMsg);
+
+    // Отримуємо контекст для AI (останні 10 повідомлень цього чату)
+    const history = await this.messageRepository.find({
+        where: { conversation: { id: conversation.id } },
+        order: { createdAt: 'ASC' },
+        take: 10
+    });
+    
+    const apiMessages = history.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.content
+    }));
+
+    // Логіка запиту до AI
+    const aiResponse = await this.getAiResponse(apiMessages, model);
+
+    // Зберігаємо Bot Message
+    const botMsg = this.messageRepository.create({
+      content: aiResponse.reply,
+      sender: 'bot',
+      model,
+      conversation,
+      user: { id: userId }
+    });
+    await this.messageRepository.save(botMsg);
+
+    return { 
+        botReply: aiResponse.reply, 
+        conversationId: conversation.id,
+        title: conversation.title 
+    };
   }
 
   async getAiResponse(messagesHistory: any[], model: string = 'gpt-4o-mini') {
@@ -77,11 +143,20 @@ export class ChatService {
 
     } catch (error) {
       console.error('OpenAI Error:', error.response?.data || error.message);
-      // Якщо помилка то, найчастіше це:
-      // 1. Неправильний API_KEY
-      // 2. Немає грошей на балансі OpenAI
-      // 3. Неправильна назва моделі
       return { reply: "There was an error connecting to AI. Check your API key and balance.", tokensUsed: 0 };
     }
+  }
+
+  async renameConversation(userId: number, id: number, newTitle: string) {
+    const chat = await this.conversationRepository.findOne({ where: { id, user: { id: userId } } });
+    if (!chat) throw new NotFoundException();
+    chat.title = newTitle;
+    return this.conversationRepository.save(chat);
+  }
+
+  async deleteConversation(userId: number, id: number) {
+    const chat = await this.conversationRepository.findOne({ where: { id, user: { id: userId } } });
+    if (!chat) throw new NotFoundException();
+    return this.conversationRepository.remove(chat);
   }
 }

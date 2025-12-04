@@ -23,6 +23,70 @@
             flex-shrink: 0;
         }
 
+        .chat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            margin: 4px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            color: var(--text-gray);
+            transition: 0.2s;
+            position: relative;
+        }
+        .chat-item:hover, .chat-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        .chat-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 170px;
+            font-size: 0.9rem;
+        }
+        .chat-options-btn {
+            opacity: 0;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            transition: 0.2s;
+        }
+        .chat-item:hover .chat-options-btn, .chat-item.active .chat-options-btn {
+            opacity: 1;
+        }
+        .chat-options-btn:hover { color: white; }
+
+        /* Dropdown Menu */
+        .options-dropdown {
+            position: absolute;
+            right: 10px;
+            top: 35px;
+            background: #252525;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            min-width: 120px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .options-dropdown.show { display: flex; }
+        .dropdown-item {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            color: #ddd;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dropdown-item:hover { background: rgba(255,255,255,0.1); }
+        .dropdown-item.delete { color: #ff6b6b; }
+
         /* --- Chat Layout Grid --- */
         .chat-layout {
             display: flex;
@@ -156,6 +220,7 @@
             font-size: 4rem;
             margin-bottom: 1rem;
             background: linear-gradient(135deg, #fff, #aaa);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -510,16 +575,26 @@
     </div>
 
     <script>
+
+        let currentChatId = null; 
+        let conversations = [];
+
         const chatBox = document.getElementById('chatBox');
         const welcomeScreen = document.getElementById('welcomeScreen');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const typingIndicator = document.getElementById('typingIndicator');
         const creditBalanceEl = document.getElementById('creditBalance');
+
+        const historyList = document.getElementById('historyList');
         
         // Config
         const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
         const token = localStorage.getItem('authToken');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConversations(); // Завантажуємо список чатів при старті
+        });
 
         // Check Auth
         if (!token) {
@@ -528,6 +603,90 @@
         }
 
         // --- Logic ---
+
+        async function loadConversations() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/chat/conversations`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    conversations = await res.json();
+                    renderHistoryList();
+                    
+                    // Якщо є чати - відкриваємо останній, інакше New Chat
+                    if (conversations.length > 0 && !currentChatId) {
+                        selectChat(conversations[0].id);
+                    } else if (conversations.length === 0) {
+                        startNewChat();
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // 2. Рендер списку зліва
+        function renderHistoryList() {
+            historyList.innerHTML = '';
+            conversations.forEach(chat => {
+                const div = document.createElement('div');
+                div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+                div.innerHTML = `
+                    <span class="chat-title" onclick="selectChat(${chat.id})">
+                        <i class="far fa-message" style="margin-right:8px; font-size:0.8rem;"></i>
+                        ${chat.title}
+                    </span>
+                    <button class="chat-options-btn" onclick="toggleDropdown(event, ${chat.id})">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <div class="options-dropdown" id="dropdown-${chat.id}">
+                        <div class="dropdown-item" onclick="renameChat(${chat.id})">
+                            <i class="fas fa-pencil-alt"></i> Rename
+                        </div>
+                        <div class="dropdown-item delete" onclick="deleteChat(${chat.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </div>
+                    </div>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        // 3. Вибір чату (завантаження історії)
+        async function selectChat(id) {
+            if (currentChatId === id) return;
+            
+            currentChatId = id;
+            renderHistoryList(); // Оновити підсвітку активного
+            
+            // UI: Показати завантаження або очистити
+            chatBox.innerHTML = ''; 
+            toggleChatView(true); // Перемикаємо на вигляд чату
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const messages = await res.json();
+                    messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        document.querySelector('.new-chat-btn').onclick = (e) => {
+            e.preventDefault();
+            startNewChat();
+        };
+
+        // 4. Функція "Новий Чат"
+        function startNewChat() {
+            currentChatId = null;
+            chatBox.innerHTML = ''; // Очистити повідомлення
+            renderHistoryList(); // Прибрати активний клас
+            toggleChatView(false); // Показати Welcome Screen
+            
+            // Оновити URL без перезавантаження (опціонально)
+            history.pushState({}, '', window.location.pathname);
+        }
 
         // 1. Toggle between Welcome Screen and Chat List
         function toggleChatView(hasMessages) {
@@ -550,20 +709,17 @@
         // 3. Send Message logic
         async function sendMessage() {
             const text = userInput.value.trim();
-            const modelSelectElement = document.getElementById('modelSelect');
-            const selectedModel = modelSelectElement ? modelSelectElement.value : 'gpt-4o-mini';
-
+            const model = document.getElementById('modelSelect').value;
             if (!text) return;
 
-            // UI Updates
-            toggleChatView(true); // Switch to chat view
             appendMessage('user', text);
             userInput.value = '';
-            typingIndicator.style.display = 'block';
-            scrollToBottom();
+            typingIndicator.style.display = 'flex';
+            chatBox.scrollTop = chatBox.scrollHeight;
+            toggleChatView(true); // Ховаємо welcome screen
 
             try {
-                const response = await fetch(`${API_BASE_URL}/chat/message`, {
+                const res = await fetch(`${API_BASE_URL}/chat/message`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -571,26 +727,28 @@
                     },
                     body: JSON.stringify({ 
                         message: text, 
-                        model: selectedModel 
+                        model: model,
+                        conversationId: currentChatId // 🔥 ВАЖЛИВО: відправляємо ID поточного чату
                     })
                 });
 
-                const data = await response.json();
+                const data = await res.json();
                 typingIndicator.style.display = 'none';
-                
-                if (response.ok) {
-                    appendMessage('bot', data.botReply, selectedModel);
-                    if (data.creditsLeft !== undefined) {
-                        updateBalanceUI(data.creditsLeft);
-                    }
-                } else {
-                    const errorMsg = data.message || 'Server error';
-                    appendError(errorMsg);
-                }
 
-            } catch (error) {
-                typingIndicator.style.display = 'none';
-                appendError('Connection failed.');
+                if (res.ok) {
+                    appendMessage('bot', data.botReply, model);
+                    updateBalanceUI(data.creditsLeft);
+
+                    // Якщо це був новий чат, нам повернувся conversationId
+                    if (!currentChatId && data.conversationId) {
+                        currentChatId = data.conversationId;
+                        // Додаємо новий чат в список і рендеримо
+                        conversations.unshift({ id: data.conversationId, title: data.title });
+                        renderHistoryList();
+                    }
+                }
+            } catch (e) {
+                console.error(e);
             }
         }
 
@@ -670,6 +828,55 @@
             } catch (e) {
                 console.error("Init Error:", e);
             }
+        }
+
+        window.toggleDropdown = function(e, id) {
+            e.stopPropagation(); // Щоб не спрацював клік на chat-title
+            // Закрити всі інші
+            document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
+            const dropdown = document.getElementById(`dropdown-${id}`);
+            if(dropdown) dropdown.classList.toggle('show');
+        }
+
+        // Закриття дропдаунів при кліку в будь-якому місці
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
+        });
+
+        // 7. Перейменування
+        window.renameChat = async function(id) {
+            const newTitle = prompt("New chat name:");
+            if(!newTitle) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/chat/conversation/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ title: newTitle })
+                });
+                if(res.ok) {
+                    const chat = conversations.find(c => c.id === id);
+                    if(chat) chat.title = newTitle;
+                    renderHistoryList();
+                }
+            } catch(e) { alert("Error renaming chat"); }
+        }
+
+        // 8. Видалення
+        window.deleteChat = async function(id) {
+            if(!confirm("Delete this chat?")) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/chat/conversation/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if(res.ok) {
+                    conversations = conversations.filter(c => c.id !== id);
+                    renderHistoryList();
+                    if(currentChatId === id) startNewChat();
+                }
+            } catch(e) { alert("Error deleting chat"); }
         }
 
         // Events

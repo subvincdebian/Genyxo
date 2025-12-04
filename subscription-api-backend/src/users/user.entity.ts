@@ -8,6 +8,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { Transaction } from './transaction.entity';
 import { Message } from '../chat/message.entity';
+import { Conversation } from '../chat/conversation.entity'; // <--- Додано імпорт
 import { Role } from './role.enum';
 import { SupportTicket } from '../support/support.entity';
 import { Notification } from '../notifications/notification.entity';
@@ -50,6 +51,9 @@ export class User {
 
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[];
+
+  @OneToMany(() => Conversation, (conversation) => conversation.user)
+  conversations: Conversation[];
 
   @BeforeInsert()
   async hashPassword() {

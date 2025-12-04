@@ -1,4 +1,16 @@
-import { Controller, Post, Body, UseGuards, Request, ForbiddenException, BadRequestException, Get } from '@nestjs/common';
+import { 
+  Controller, 
+  Post, 
+  Body, 
+  UseGuards, 
+  Request, 
+  ForbiddenException, 
+  BadRequestException, 
+  Get, 
+  Param,   // <--- Додано
+  Patch,   // <--- Додано
+  Delete   // <--- Додано
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatService } from './chat.service';
 import { UsersService } from '../users/users.service';
@@ -29,53 +41,66 @@ export class ChatController {
   };
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('history')
-  async getHistory(@Request() req) {
-    return this.chatService.getHistory(req.user.id);
+  @Get('conversations')
+  async getConversations(@Request() req) {
+    return this.chatService.getUserConversations(req.user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('history/:id')
+  async getChatHistory(@Param('id') id: number, @Request() req) {
+    return this.chatService.getConversationMessages(req.user.id, id);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('message')
-  async sendMessage(
-    @Body('message') message: string, 
-    @Body('model') model: string, 
-    @Request() req
-  ) {
+  async sendMessage(@Body() body: { message: string, model: string, conversationId?: number }, @Request() req) {
     const userId = req.user.id;
-    const selectedModel = model || 'gpt-4o-mini';
+    // Витягуємо змінні з body, щоб вони були доступні
+    const { message, conversationId } = body;
+    const selectedModel = body.model || 'gpt-4o-mini';
+
     const cost = this.MODEL_PRICES[selectedModel];
 
     if (!cost) {
         throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
     }
 
-    // 1. Спроба списання
+    // 1. Списання кредитів
     const isDeducted = await this.usersService.deductCredits(userId, cost);
 
     if (!isDeducted) {
         throw new ForbiddenException(`Not enough credits for ${selectedModel}. Price: ${cost} Credits.`);
     }
 
-    await this.chatService.saveMessage(userId, message, 'user', selectedModel);
-
-    const previousMessages = await this.chatService.getHistory(userId);
-
-    const apiMessages = previousMessages.slice(-10).map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant', // 'assistant' - це роль бота в API
-        content: msg.content
-    }));
-
-    const aiResponse = await this.chatService.getAiResponse(apiMessages, selectedModel);
-    
-    await this.chatService.saveMessage(userId, aiResponse.reply, 'bot', selectedModel);
+    // 2. Обробка повідомлення (збереження, AI, історія) перенесена в сервіс
+    // Ми більше не викликаємо saveMessage вручну тут, бо processMessage це робить
+    const result = await this.chatService.processMessage(
+        userId, 
+        message, 
+        selectedModel, 
+        conversationId
+    );
 
     const newBalance = await this.usersService.getBalance(userId);
 
     return {
-      user: req.user.email,
-      botReply: aiResponse.reply,
+      botReply: result.botReply,
+      conversationId: result.conversationId,
       creditsLeft: newBalance,
-      // cost: cost
+      title: result.title
     };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('conversation/:id')
+  async rename(@Param('id') id: number, @Body('title') title: string, @Request() req) {
+      return this.chatService.renameConversation(req.user.id, id, title);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('conversation/:id')
+  async delete(@Param('id') id: number, @Request() req) {
+      return this.chatService.deleteConversation(req.user.id, id);
   }
 }
