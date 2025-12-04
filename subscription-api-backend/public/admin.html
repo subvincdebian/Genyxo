@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover a new level with our service - subscriptions to AI, social networks, and more. Convenient access to modern tools that open up limitless opportunities for your development and business.">
-    <title>Admin Panel - Genyxo</title>
+    <meta name="description" content="Admin Panel for Genyxo management.">
+    <title data-i18n="admin.meta_title">Admin Panel - Genyxo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-
         .spin {
             animation: spin 1s linear infinite;
         }
@@ -28,10 +27,10 @@
             background: rgba(0,0,0,0.3);
         }
         .data-table th, .data-table td {
-            white-space: nowrap; /* Забороняє перенесення тексту на новий рядок */
-            overflow: hidden;    /* Ховає те, що не влазить */
-            text-overflow: ellipsis; /* Додає "..." в кінці довгого тексту */
-            vertical-align: middle; /* Вирівнює все по центру по вертикалі */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
             padding: 12px 8px;
             text-align: left;
             border-bottom: 1px solid var(--glass-border);
@@ -54,11 +53,11 @@
             cursor: pointer;
         }
 
-        .col-id { width: 50px; }      /* Максимально вузька для ID */
-        .col-small { width: 80px; }   /* Для сум ($0.00), кредитів */
-        .col-status { width: 100px; } /* Для статусу (OPEN, CLOSED) */
-        .col-date { width: 150px; }  /* Для дати та часу */
-        .col-action { width: 120px; text-align: right; } /* Для кнопок дії */
+        .col-id { width: 50px; }
+        .col-small { width: 80px; }
+        .col-status { width: 100px; }
+        .col-date { width: 150px; }
+        .col-action { width: 120px; text-align: right; }
 
         .modal-overlay {
             position: fixed;
@@ -66,11 +65,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.75); /* Темний напівпрозорий фон */
-            display: none; /* Спочатку приховане */
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* Має бути поверх усього */
+            z-index: 1000;
         }
 
         .modal-content {
@@ -79,7 +78,6 @@
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-            /* Клас .glass вже зробить його прозорим */
         }
 
         .modal-content h3 {
@@ -90,13 +88,13 @@
         }
 
         .user-message-box {
-            background: rgba(255, 255, 255, 0.05); /* Легкий фон для повідомлення */
+            background: rgba(255, 255, 255, 0.05);
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             max-height: 180px;
             overflow-y: auto;
-            white-space: pre-wrap; /* Зберігає переноси рядків */
+            white-space: pre-wrap;
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #ccc;
             font-style: italic;
@@ -138,32 +136,38 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-logo"><i class="fas fa-shield-alt"></i> Admin Panel</div>
+            <div class="nav-logo">
+                <i class="fas fa-shield-alt"></i> 
+                <span data-i18n="admin.nav_title">Admin Panel</span>
+            </div>
             <div class="nav-links">
-                <a href="index.html" class="nav-link">Home</a>
-                <a href="chat.html" class="nav-link">Chat</a>
-                <a href="support.html" class="nav-link">Support</a>
+                <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
+                <a href="support.html" class="nav-link" data-i18n="menu.help">Support</a>
+                <a href="#" class="nav-link" onclick="openLangModal(); return false;" data-i18n="menu.language">Language</a>
             </div>
         </div>
     </nav>
 
     <div class="admin-container">
-        <h1 style="color: white; margin-bottom: 2rem;"> System Management</h1>
+        <h1 style="color: white; margin-bottom: 2rem;" data-i18n="admin.system_mgmt">System Management</h1>
 
         <div class="glass" style="padding: 20px; margin-bottom: 30px;">
             <div class="section-header">
-                <h2><i class="fas fa-users"></i>Users</h2>
-                <button onclick="loadUsers()" class="action-btn"><i id="refreshIconUsers" class="fas fa-sync"></i> Refresh</button>
+                <h2><i class="fas fa-users"></i> <span data-i18n="admin.users_title">Users</span></h2>
+                <button onclick="loadUsers()" class="action-btn">
+                    <i id="refreshIconUsers" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
+                </button>
             </div>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="col-id">ID</th>
-                        <th>Email</th>
-                        <th>Name</th>
-                        <th class="col-small">Role</th>
-                        <th class="col-small">Credits</th>
-                        <th class="col-action">Action</th>
+                        <th class="col-id" data-i18n="admin.table.id">ID</th>
+                        <th data-i18n="admin.table.email">Email</th>
+                        <th data-i18n="admin.table.name">Name</th>
+                        <th class="col-small" data-i18n="admin.table.role">Role</th>
+                        <th class="col-small" data-i18n="admin.table.credits">Credits</th>
+                        <th class="col-action" data-i18n="admin.table.action">Action</th>
                     </tr>
                 </thead>
                 <tbody id="usersTable"></tbody>
@@ -172,19 +176,22 @@
 
         <div class="glass" style="padding: 20px;">
             <div class="section-header">
-                <h2><i class="fas fa-receipt"></i> Transactions</h2>
-                <button onclick="loadTransactions()" class="action-btn"><i id="refreshIconTx" class="fas fa-sync"></i> Refresh</button>
+                <h2><i class="fas fa-receipt"></i> <span data-i18n="admin.transactions_title">Transactions</span></h2>
+                <button onclick="loadTransactions()" class="action-btn">
+                    <i id="refreshIconTx" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
+                </button>
             </div>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="col-id">ID</th>
-                        <th>User</th>
-                        <th class="col-small">Amount ($)</th>
-                        <th class="col-small">Credits</th>
-                        <th class="col-status">Status</th>
-                        <th>Method</th>
-                        <th class="col-date">Date</th>
+                        <th class="col-id" data-i18n="admin.table.id">ID</th>
+                        <th data-i18n="admin.table.user">User</th>
+                        <th class="col-small" data-i18n="admin.table.amount">Amount ($)</th>
+                        <th class="col-small" data-i18n="admin.table.credits">Credits</th>
+                        <th class="col-status" data-i18n="admin.table.status">Status</th>
+                        <th data-i18n="admin.table.method">Method</th>
+                        <th class="col-date" data-i18n="admin.table.date">Date</th>
+                        <th class="col-action" data-i18n="admin.table.action">Action</th>
                     </tr>
                 </thead>
                 <tbody id="transactionsTable"></tbody>
@@ -193,17 +200,19 @@
 
         <div class="glass" style="padding: 20px; margin-top: 30px;">
             <div class="section-header">
-                <h2><i class="fas fa-headset"></i> Support Tickets</h2>
-                <button onclick="loadAdminTickets()" class="action-btn"><i id="refreshIconTickets" class="fas fa-sync"></i> Refresh</button>
+                <h2><i class="fas fa-headset"></i> <span data-i18n="admin.tickets_title">Support Tickets</span></h2>
+                <button onclick="loadAdminTickets()" class="action-btn">
+                    <i id="refreshIconTickets" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
+                </button>
             </div>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="col-id">ID</th>
-                        <th>User</th>       
-                        <th>Subject</th>    
-                        <th class="col-status">Status</th>
-                        <th class="col-action">Action</th>
+                        <th class="col-id" data-i18n="admin.table.id">ID</th>
+                        <th data-i18n="admin.table.user">User</th>       
+                        <th data-i18n="admin.table.subject">Subject</th>    
+                        <th class="col-status" data-i18n="admin.table.status">Status</th>
+                        <th class="col-action" data-i18n="admin.table.action">Action</th>
                     </tr>
                 </thead>
                 <tbody id="supportTable"></tbody>
@@ -214,27 +223,28 @@
     <div class="modal" id="langModal">
         <div class="modal-content glass" style="max-width: 400px;">
             <span class="close-btn" id="closeLangModal">&times;</span>
-            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
-            <div class="lang-grid" id="langGrid">
-                </div>
+            <h2 style="text-align:center; margin-bottom:20px;" data-i18n="admin.modal.select_lang">Select Language</h2>
+            <div class="lang-grid" id="langGrid"></div>
         </div>
     </div>
 
     <div id="replyModal" class="modal-overlay">
         <div class="modal-content glass">
-            <h3>Reply to Ticket #<span id="modalTicketId"></span></h3>
-            <p><strong>User Message:</strong></p>
+            <h3><span data-i18n="admin.modal.reply_title">Reply to Ticket #</span><span id="modalTicketId"></span></h3>
+            <p><strong data-i18n="admin.modal.user_msg">User Message:</strong></p>
             <div id="modalUserMessage" class="user-message-box"></div>
             
-            <label for="replyInput">Your Reply:</label>
-            <textarea id="replyInput" rows="5" placeholder="Enter your response here..."></textarea>
+            <label for="replyInput" data-i18n="admin.modal.your_reply">Your Reply:</label>
+            <textarea id="replyInput" rows="5" placeholder="Enter your response here..." data-i18n="admin.modal.placeholder"></textarea>
             
             <div class="modal-actions">
-                <button class="action-btn" onclick="closeReplyModal()">Cancel</button>
-                <button class="action-btn primary-btn" onclick="submitReply()">Send Reply</button>
+                <button class="action-btn" onclick="closeReplyModal()" data-i18n="admin.modal.cancel">Cancel</button>
+                <button class="action-btn primary-btn" onclick="submitReply()" data-i18n="admin.modal.send">Send Reply</button>
             </div>
         </div>
     </div>
+
+    <script src="js/i18n.js"></script>
 
     <script>
         const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
@@ -242,29 +252,43 @@
 
         if (!token) window.location.href = 'index.html';
 
-        async function loadUsers() {
-
-            const refreshIcon = document.getElementById('refreshIconUsers');
-
-            if (refreshIcon) {
-                refreshIcon.classList.add('spin');
+        function t(key, defaultText) {
+            if (window.i18n && window.i18n.translations) {
+                const keys = key.split('.');
+                let result = window.i18n.translations;
+                for (let k of keys) {
+                    if (result[k] === undefined) return defaultText || key;
+                    result = result[k];
+                }
+                return result;
             }
+            return defaultText || key;
+        }
+
+        async function loadUsers() {
+            const refreshIcon = document.getElementById('refreshIconUsers');
+            if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
                 const res = await fetch(`${API_BASE_URL}/admin/users`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
-                if (!res.ok) throw new Error('Access Denied or Server Error');
+                if (!res.ok) throw new Error(t('admin.js.access_denied', 'Access Denied'));
                 
                 const users = await res.json();
                 const tbody = document.getElementById('usersTable');
                 tbody.innerHTML = '';
                 
+                if (users.length === 0) {
+                     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">${t('admin.js.no_users', 'No users found')}</td></tr>`;
+                }
+
                 users.forEach(u => {
                     const roleBadge = u.role === 'admin' ? '<span class="badge badge-admin">ADMIN</span>' : 'User';
                     const userName = u.name ? u.name : '-';
                     const userCredits = u.credits ? u.credits : '0.00';
+                    const addCreditsText = t('admin.js.add_credits_btn', '+ Credits');
 
                     tbody.innerHTML += `
                         <tr>
@@ -274,7 +298,7 @@
                             <td>${roleBadge}</td>
                             <td><strong>${userCredits}</strong></td>
                             <td>
-                                <button class="action-btn" onclick="addCreditsPrompt(${u.id})">+ Credits</button>
+                                <button class="action-btn" onclick="addCreditsPrompt(${u.id})">${addCreditsText}</button>
                             </td>
                         </tr>
                     `;
@@ -282,19 +306,13 @@
             } catch (e) {
                 console.error("Critical Error in loadUsers:", e);          
             } finally {
-                if (refreshIcon) {
-                    refreshIcon.classList.remove('spin');
-                }
+                if (refreshIcon) refreshIcon.classList.remove('spin');
             }   
         }
 
         async function loadTransactions() {
-
             const refreshIcon = document.getElementById('refreshIconTx');
-
-            if (refreshIcon) {
-                refreshIcon.classList.add('spin');
-            }
+            if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
                 const res = await fetch(`${API_BASE_URL}/admin/transactions`, {
@@ -308,38 +326,38 @@
                 tbody.innerHTML = '';
                 
                 if (transactions.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No transactions found</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">${t('admin.js.no_transactions', 'No transactions found')}</td></tr>`;
                     return;
                 }
 
-                transactions.forEach(t => {
+                transactions.forEach(tx => {
                     let statusClass = 'badge-pending';
-                    if (t.status === 'APPROVED') statusClass = 'badge-success';
-                    if (t.status === 'DECLINED') statusClass = 'badge-admin';
+                    if (tx.status === 'APPROVED') statusClass = 'badge-success';
+                    if (tx.status === 'DECLINED') statusClass = 'badge-admin';
 
                     let actionBtns = '';
-                    if (t.status === 'PENDING') {
+                    if (tx.status === 'PENDING') {
                         actionBtns = `
-                            <div style="display: flex; gap: 5px;">
-                                <button class="action-btn" style="background: #2ecc71; color: white;" onclick="processTx(${t.id}, 'approve')">✓</button>
-                                <button class="action-btn" style="background: #e74c3c; color: white;" onclick="processTx(${t.id}, 'decline')">✕</button>
+                            <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                                <button class="action-btn" style="background: #2ecc71; color: white;" onclick="processTx(${tx.id}, 'approve')">✓</button>
+                                <button class="action-btn" style="background: #e74c3c; color: white;" onclick="processTx(${tx.id}, 'decline')">✕</button>
                             </div>
                         `;
                     } else {
                         actionBtns = '-';
                     }
 
-                    const userEmail = t.user ? t.user.email : 'Unknown User';
-                    const dateStr = new Date(t.createdAt).toLocaleString();
+                    const userEmail = tx.user ? tx.user.email : t('admin.js.unknown_user', 'Unknown User');
+                    const dateStr = new Date(tx.createdAt).toLocaleString();
 
                     tbody.innerHTML += `
                         <tr>
-                            <td>${t.id}</td>
+                            <td>${tx.id}</td>
                             <td>${userEmail}</td>
-                            <td>$${t.amount}</td>
-                            <td>${t.creditsAmount}</td>
-                            <td><span class="badge ${statusClass}">${t.status}</span></td>
-                            <td>${t.provider}</td>
+                            <td>$${tx.amount}</td>
+                            <td>${tx.creditsAmount}</td>
+                            <td><span class="badge ${statusClass}">${tx.status}</span></td>
+                            <td>${tx.provider}</td>
                             <td>${dateStr}</td>
                             <td>${actionBtns}</td> 
                         </tr>
@@ -348,16 +366,18 @@
             } catch (e) {
                 console.error("Critical Error in loadTransactions:", e);          
             } finally {
-                if (refreshIcon) {
-                    refreshIcon.classList.remove('spin');
-                }
+                if (refreshIcon) refreshIcon.classList.remove('spin');
             }
         }
 
         async function processTx(id, action) {
             const endpoint = action === 'approve' ? 'approve-transaction' : 'decline-transaction';
             
-            if(!confirm(`Are you sure you want to ${action.toUpperCase()} this transaction?`)) return;
+            const msg = action === 'approve' 
+                ? t('admin.js.confirm_approve', 'Approve?') 
+                : t('admin.js.confirm_decline', 'Decline?');
+
+            if(!confirm(msg)) return;
             
             try {
                 const res = await fetch(`${API_BASE_URL}/admin/${endpoint}`, {
@@ -374,15 +394,15 @@
                     loadUsers();
                 } else {
                     const err = await res.json();
-                    alert('Error: ' + (err.message || 'Failed'));
+                    alert('Error: ' + (err.message || t('admin.js.error_failed', 'Failed')));
                 }
             } catch (e) {
-                alert('Server error');
+                alert(t('admin.js.error_server', 'Server error'));
             }
         }
 
         async function addCreditsPrompt(userId) {
-            const amount = prompt("How many credits to add?");
+            const amount = prompt(t('admin.js.prompt_credits', "How many credits to add?"));
             if (amount) {
                 await fetch(`${API_BASE_URL}/admin/add-credits`, {
                     method: 'POST',
@@ -397,12 +417,8 @@
         }
 
         async function loadAdminTickets() {
-
             const refreshIcon = document.getElementById('refreshIconTickets');
-
-            if (refreshIcon) {
-                refreshIcon.classList.add('spin');
-            }
+            if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
                 const res = await fetch(`${API_BASE_URL}/support/admin/all`, {
@@ -416,30 +432,32 @@
                 tbody.innerHTML = '';
 
                 if (!tickets || tickets.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No tickets found</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${t('admin.js.no_tickets', 'No tickets found')}</td></tr>`;
                     return;
                 }
 
-                tickets.forEach(t => {
-                    const userEmail = t.user ? t.user.email : 'Unknown';
-                    const subject = t.subject || 'No Subject';
-                    const status = t.status || 'PENDING';
+                tickets.forEach(ticket => {
+                    const userEmail = ticket.user ? ticket.user.email : t('admin.js.unknown_user', 'Unknown');
+                    const subject = ticket.subject || t('admin.js.no_subject', 'No Subject');
+                    const status = ticket.status || 'PENDING';
                     
                     let statusBadge = 'badge-pending';
                     if (status === 'CLOSED') statusBadge = 'badge-success';
                     
-                    const safeMessage = (t.message || "").replace(/'/g, "`").replace(/"/g, "&quot;");
+                    const safeMessage = (ticket.message || "").replace(/'/g, "`").replace(/"/g, "&quot;");
                     
                     let actionHtml = '';
                     if (status === 'CLOSED') {
-                        actionHtml = '<span style="color: #2ecc71; font-size: 0.9em;"><i class="fas fa-check"></i> Done</span>';
+                        const doneText = t('admin.js.done', 'Done');
+                        actionHtml = `<span style="color: #2ecc71; font-size: 0.9em;"><i class="fas fa-check"></i> ${doneText}</span>`;
                     } else {
-                        actionHtml = `<button class="action-btn" onclick="openReplyModal(${t.id}, '${safeMessage}')">View & Reply</button>`;
+                        const btnText = t('admin.js.view_reply', 'View & Reply');
+                        actionHtml = `<button class="action-btn" onclick="openReplyModal(${ticket.id}, '${safeMessage}')">${btnText}</button>`;
                     }
 
                     tbody.innerHTML += `
                         <tr>
-                            <td>${t.id}</td>
+                            <td>${ticket.id}</td>
                             <td title="${userEmail}">${userEmail}</td>
                             <td title="${subject}">${subject}</td>
                             <td><span class="badge ${statusBadge}">${status}</span></td>
@@ -450,41 +468,35 @@
             } catch (e) {
                 console.error("Critical Error in loadAdminTickets:", e);          
             } finally {
-                if (refreshIcon) {
-                    refreshIcon.classList.remove('spin');
-                }
+                if (refreshIcon) refreshIcon.classList.remove('spin');
             }   
         }    
 
         let currentTicketId = null;
 
-        // Відкриває модальне вікно
         function openReplyModal(id, userMessage) {
             currentTicketId = id;
             document.getElementById('modalTicketId').textContent = id;
             document.getElementById('modalUserMessage').textContent = userMessage;
-            document.getElementById('replyInput').value = ''; // Очистити поле
-            document.getElementById('replyModal').style.display = 'flex'; // Показати
+            document.getElementById('replyInput').value = '';
+            document.getElementById('replyModal').style.display = 'flex';
         }
 
-        // Закриває модальне вікно
         function closeReplyModal() {
-            document.getElementById('replyModal').style.display = 'none'; // Приховати
+            document.getElementById('replyModal').style.display = 'none';
             currentTicketId = null;
         }
 
-        // Обробляє натискання кнопки "Send Reply"
         async function submitReply() {
             const replyText = document.getElementById('replyInput').value;
             
             if (!replyText || replyText.trim() === "") {
-                alert("Please enter a reply before sending.");
+                alert(t('admin.js.empty_reply', "Please enter a reply before sending."));
                 return;
             }
             
             if (currentTicketId) {
                 closeReplyModal();
-                // Викликаємо функцію, яка відправляє дані на бекенд
                 await replyTicket(currentTicketId, replyText);
             }
         }
@@ -503,17 +515,21 @@
                 if(res.ok) {
                     loadAdminTickets();
                 } else {
-                    alert("Failed to send reply");
+                    alert(t('admin.js.error_failed', "Failed to send reply"));
                 }
             } catch(e) {
                 console.error(e);
-                alert("Error connecting to server.");
+                alert(t('admin.js.error_server', "Error connecting to server."));
             }
         }
 
-        loadUsers();
-        loadTransactions();
-        loadAdminTickets();
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                loadUsers();
+                loadTransactions();
+                loadAdminTickets();
+            }, 300);
+        });
 
     </script>
 </body>

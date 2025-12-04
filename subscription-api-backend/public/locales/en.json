@@ -142,5 +142,57 @@
         "method": "We accept:",
         "button": "Proceed to Payment",
         "footer": "Powered by  . You will be redirected to complete the secure payment."
+    },
+    "language": {
+        "select": "Select Language"
+    },
+    "admin": {
+        "meta_title": "Admin Panel - Genyxo",
+        "nav_title": "Admin Panel",
+        "system_mgmt": "System Management",
+        "users_title": "Users",
+        "transactions_title": "Transactions",
+        "tickets_title": "Support Tickets",
+        "refresh": "Refresh",
+        "table": {
+            "id": "ID",
+            "email": "Email",
+            "name": "Name",
+            "role": "Role",
+            "credits": "Credits",
+            "action": "Action",
+            "user": "User",
+            "amount": "Amount ($)",
+            "status": "Status",
+            "method": "Method",
+            "date": "Date",
+            "subject": "Subject"
+        },
+        "modal": {
+            "reply_title": "Reply to Ticket #",
+            "user_msg": "User Message:",
+            "your_reply": "Your Reply:",
+            "placeholder": "Enter your response here...",
+            "cancel": "Cancel",
+            "send": "Send Reply",
+            "select_lang": "Select Language"
+        },
+        "js": {
+            "add_credits_btn": "+ Credits",
+            "no_users": "No users found",
+            "no_transactions": "No transactions found",
+            "no_tickets": "No tickets found",
+            "confirm_approve": "Are you sure you want to APPROVE this transaction?",
+            "confirm_decline": "Are you sure you want to DECLINE this transaction?",
+            "prompt_credits": "How many credits to add?",
+            "done": "Done",
+            "view_reply": "View & Reply",
+            "empty_reply": "Please enter a reply before sending.",
+            "error_server": "Error connecting to server.",
+            "error_failed": "Failed",
+            "access_denied": "Access Denied or Server Error",
+            "unknown_user": "Unknown User",
+            "no_subject": "No Subject"
+        }
     }
 }

@@ -49,7 +49,7 @@
                 </div>
                 <div class="profile-container">
                     <button class="login-btn" id="loginBtn">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
                         <i class="fas fa-user" id="navIcon"></i>
                         <span id="navUsername" data-i18n="nav.login">Register / Login</span>
                     </button>
@@ -349,52 +349,53 @@
             </div>
 
             <span class="close-btn" id="closeLogin">&times;</span>
-            <h2>Login / Sign Up</h2>
-        <form class="login-form" id="loginForm">
-            <div class="form-group">
-                <input type="email" id="email" placeholder="Email Address" required>
-            </div>
-            <div class="form-group">
-                <input type="password" id="password" placeholder="Password" required>
-            </div>
-            <div class="form-options">
-                <label class="remember">
-                <input type="checkbox">
-                <span>Remember me</span>
-            </label>
-                <a href="#" class="forgot-link">Forgot password?</a>
-            </div>
-                <button type="submit" class="submit-btn">Login</button>
-            <div class="signup-link">
-                Don't have an account? <a href="#" id="showSignup">Sign up</a>
-            </div>
-        </form>
+            <h2 data-i18n="auth.login_title">Login / Sign Up</h2>
 
-        <form class="signup-form" id="signupForm" style="display: none;">
-            <div class="form-group">
-                <input type="text" id="signupName" placeholder="Full Name" required>
-            </div>
-            <div class="form-group">
-                <input type="email" id="signupEmail" placeholder="Email Address" required>
-            </div>
-            <div class="form-group">
-                <input type="password" id="signupPassword" placeholder="Password" required>
-            </div>
-            <div class="form-group">
-                <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-            </div>
-                <button type="submit" class="submit-btn">Create Account</button>
-            <div class="signup-link">
-                Already have an account? <a href="#" id="showLogin">Login</a>
-            </div>
-        </form>
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <input type="email" id="email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <div class="form-options">
+                    <label class="remember">
+                    <input type="checkbox">
+                    <span data-i18n="auth.remember_me">Remember me</span>
+                </label>
+                    <a href="#" class="forgot-link" data-i18n="auth.forgot_pass">Forgot password?</a>
+                </div>
+                    <button type="submit" class="submit-btn" data-i18n="auth.login_btn">Login</button>
+                <div class="signup-link" data-i18n="auth.no_account">
+                    Don't have an account? <a href="#" id="showSignup" data-i18n="auth.link_signup">Sign up</a>
+                </div>
+            </form>
+
+            <form class="signup-form" id="signupForm" style="display: none;">
+                <div class="form-group">
+                    <input type="text" id="signupName" data-i18n="auth.name_placeholder" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="signupEmail" data-i18n="auth.email_placeholder" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signupPassword" data-i18n="auth.password_placeholder" placeholder="Password" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="confirmPassword" data-i18n="auth.confirm_password_placeholder" placeholder="Confirm Password" required>
+                </div>
+                    <button type="submit" class="submit-btn" data-i18n="auth.signup_btn">Create Account</button>
+                <div class="signup-link" data-i18n="auth.has_account">
+                    Already have an account? <a href="#" id="showLogin" data-i18n="auth.link_login">Login</a>
+                </div>
+            </form>
         </div>
     </div>
 
     <div class="modal" id="langModal">
         <div class="modal-content glass" style="max-width: 400px;">
             <span class="close-btn" id="closeLangModal">&times;</span>
-            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
+            <h2 style="text-align:center; margin-bottom:20px;" data-i18n="language.select">Select Language</h2>
             <div class="lang-grid" id="langGrid"></div>
         </div>
     </div>
