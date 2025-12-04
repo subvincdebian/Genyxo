@@ -3,302 +3,564 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover a new level with our service - subscriptions to AI, social networks, and more. Convenient access to modern tools that open up limitless opportunities for your development and business.">
     <title data-i18n="chat.meta_title">Chat Room - Genyxo</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script src="i18n.js"></script>
+
     <style>
-        /* Стилі з chat.html залишаються незмінними */
-        .chat-container {
-            max-width: 930px;
-            margin: 20px auto 2rem;
-            height: 80vh; /* Залишаємо висоту, щоб контролювати скрол */
+        /* Override global body for chat layout to be full height fixed */
+        body {
+            overflow: hidden; /* Prevent body scroll, handle inside containers */
             display: flex;
             flex-direction: column;
-            padding: 0 1rem;
+            height: 100vh;
+        }
+
+        .navbar {
+            position: relative; /* Not fixed for chat page layout simplicity */
+            flex-shrink: 0;
+        }
+
+        /* --- Chat Layout Grid --- */
+        .chat-layout {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 80px); /* Subtract navbar height approx */
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar (Left) --- */
+        .chat-sidebar {
+            width: 260px;
+            background: rgba(0, 0, 0, 0.4);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .new-chat-btn {
+            background: var(--text-light);
+            color: var(--text-dark);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+
+        .history-label {
+            color: var(--text-gray);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        /* --- Main Area (Right) --- */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at 50% 30%, rgba(20, 30, 60, 0.4), transparent 70%);
+        }
+
+        /* --- Header inside Chat (Model Select) --- */
+        .chat-header {
+            padding: 15px 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .model-select-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.08);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .model-select-wrapper select {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            outline: none;
+            font-size: 0.95rem;
+            cursor: pointer;
+            appearance: none; /* Hide default arrow */
+            padding-right: 20px;
         }
         
-        .chat-box {
+        /* Custom arrow for select */
+        .model-select-wrapper::after {
+            content: '\f078';
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: var(--text-gray);
+            font-size: 0.7rem;
+            position: absolute;
+            right: 15px;
+            pointer-events: none;
+        }
+
+        /* --- Welcome Screen (Empty State) --- */
+        .welcome-screen {
             flex: 1;
-            overflow-y: auto; /* Забезпечує скрол для повідомлень */
-            padding: 1.5rem;
-            margin-bottom: 1rem;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .welcome-logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .welcome-subtitle {
+            color: var(--text-gray);
+            font-size: 1rem;
+            max-width: 500px;
+            margin-bottom: 3rem;
+            line-height: 1.5;
+        }
+
+        /* Suggestion Cards */
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .suggestion-card {
+            background: var(--glass-light);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .suggestion-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .suggestion-icon {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #10e6cc; /* Brand Color */
+        }
+
+        .suggestion-text {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            line-height: 1.4;
+        }
+
+        /* --- Chat Messages Area --- */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: none; /* Hidden by default until messages exist */
+            flex-direction: column;
             gap: 1.5rem;
+            scroll-behavior: smooth;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .message {
             display: flex;
-            align-items: flex-start;
+            gap: 1rem;
             max-width: 85%;
+            animation: slideIn 0.3s ease;
         }
 
         .message.user {
-            margin-left: auto;
+            align-self: flex-end;
             flex-direction: row-reverse;
         }
-        
+
         .message-content {
-            padding: 12px 18px;
-            border-radius: 20px;
-            max-width: 100%;
-            word-wrap: break-word;
+            padding: 1rem 1.5rem;
+            border-radius: 18px;
             line-height: 1.6;
+            font-size: 1rem;
+            word-wrap: break-word;
         }
 
-        .message.user .message-content {
-            background: #2980b9; 
+        .user .message-content {
+            background: var(--text-light);
+            color: black;
             border-bottom-right-radius: 4px;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        .message.bot .message-content {
-            background: rgba(255, 255, 255, 0.1); 
-            border-bottom-left-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .bot .message-content {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--glass-border);
             color: var(--text-light);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .bot .message-content img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
         }
 
-        .message-avatar {
-            width: 35px;
-            height: 35px;
+        .avatar {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            margin: 0 10px;
-            background: #555;
-            color: white;
             flex-shrink: 0;
-        }
-
-        .message.user .message-avatar { background: #3498db; }
-        .message.bot .message-avatar { background: #7f8c8d; }
-
-        .chat-input-area {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: var(--glass-dark);
-            border-radius: 12px;
             border: 1px solid var(--glass-border);
-            margin-top: auto; /* Push to bottom */
-            box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
         }
         
-        .chat-input-area input {
-            flex: 1;
-            padding: 10px 15px;
-            border: none;
+        .bot .avatar { background: rgba(16, 230, 204, 0.2); color: #10e6cc; }
+        .user .avatar { background: var(--text-light); color: black; }
+
+        /* --- Input Area --- */
+        .input-wrapper {
+            padding: 1.5rem 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
             background: transparent;
-            color: var(--text-light);
-            font-size: 1rem;
         }
 
-        .chat-input-area input:focus {
-            outline: none;
-        }
-        
-        .chat-input-area button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .chat-input-area button:hover {
-            background: #2980b9;
-        }
-        
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 12px 12px 0 0;
-            border-bottom: 1px solid var(--glass-border);
-            color: white;
-            flex-wrap: wrap; /* Додано для адаптивності, якщо заголовок переповнений */
-            gap: 10px; /* Додано для проміжків */
-        }
-
-        .chat-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .model-selector-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .model-selector-container select {
-            padding: 8px 10px;
-            border-radius: 6px;
-            background: var(--primary-light);
-            color: var(--text-light);
+        .input-container {
+            position: relative;
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
-        }
-        /* Встановлення основного вмісту для скролу */
-        .chat-content-wrapper {
-            flex: 1;
+            border-radius: 24px;
+            padding: 8px;
             display: flex;
-            flex-direction: column;
-            padding: 0;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: border-color 0.3s;
+        }
+
+        .input-container:focus-within {
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            padding: 12px 20px;
+            font-size: 1rem;
+            outline: none;
+            min-height: 50px;
+        }
+
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: var(--text-light);
+            color: black;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin-right: 5px;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            background: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 10px;
+        }
+
+        /* Typing Animation */
+        .typing-indicator {
+            display: none;
+            padding: 10px 20px;
+            margin-left: 50px;
+            margin-bottom: 15px;
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                position: absolute;
+                left: -260px;
+                height: 100%;
+                z-index: 100;
+                background: #000;
+            }
+            .chat-sidebar.active {
+                left: 0;
+            }
+            .suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+            .welcome-title { font-size: 1.5rem; }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
+
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <i class="fas fa-magic"></i>
-                <span>Genyxo</span>
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
+                    <i class="fas fa-magic"></i>
+                    <span>Genyxo</span>
+                </a>
             </div>
+            <button class="burger" id="sidebarToggle" style="display: none; background:none; border:none; color:white; font-size:1.5rem;">
+                <i class="fas fa-bars"></i>
+            </button>
+            
             <div class="nav-links">
-                <a href="index.html#home" class="nav-link" data-i18n="nav.home">Home</a>
-                <a href="index.html#products" class="nav-link" data-i18n="nav.products">Products</a>
-                <a href="support.html" class="nav-link" data-i18n="menu.help">Support</a>
-                <a href="#" class="nav-link" onclick="openLangModal(); return false;" data-i18n="menu.language">Language</a>
+                <div class="profile-container">
+                    <button class="login-btn" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                        <i class="fas fa-coins" style="color: #ffd700;"></i>
+                        <span id="creditBalance" style="margin-left: 8px;">0 Credits</span>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
     
-    <div class="chat-container">
-        <div class="chat-header">
-            <h2 data-i18n="chat.chat_title">AI Chat</h2>
+    <div class="chat-layout">
+        <aside class="chat-sidebar" id="sidebar">
+            <button class="new-chat-btn" onclick="location.reload()">
+                <i class="fas fa-plus"></i> <span data-i18n="chat.new_chat">New Chat</span>
+            </button>
             
-            <div class="model-selector-container">
-                <label for="aiModel" data-i18n="chat.model_select_label">Select AI Model:</label>
-                <select id="aiModel" style="width: 250px;">
-                    <option value="default" data-i18n="chat.model_default">Default Model (GPT-3.5/Llama)</option>
-                    <option value="advanced" data-i18n="chat.model_advanced">Advanced Model (GPT-4/Claude)</option>
-                    <option value="fast" data-i18n="chat.model_fast">Fast Model (Mistral/Gemini Flash)</option>
-                    <option value="creative" data-i18n="chat.model_creative">Creative Model (DALL-E/Midjourney Text)</option>
-                </select>
+            <div class="history-label" data-i18n="chat.history_title">History</div>
+            <div class="history-list" id="historyList">
+                <div style="font-size:0.85rem; color: #666; padding: 10px 0;" data-i18n="chat.no_history">No messages yet</div>
+            </div>
+        </aside>
+
+        <main class="chat-main">
+            
+            <div class="chat-header">
+                <div style="font-weight: 600; color: #fff;">Genyxo AI</div>
+                
+                <div class="model-select-wrapper">
+                    <i class="fas fa-robot" style="color: #10e6cc;"></i>
+                    <select id="modelSelect">
+                        <option value="gpt-5.1">GPT-5.1 (50 cr)</option>
+                        <option value="gpt-5-mini">GPT-5 (30 cr)</option>
+                        <option value="gpt-5-nano">GPT-5 Mini (25 cr)</option>
+                        <option value="gpt-4.1">GPT-4.1 (30 cr)</option>
+                        <option value="gpt-4.1-mini">GPT-4 Mini (20 cr)</option>
+                        <option value="gpt-4o" selected>GPT-4o (40 cr)</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini (30 cr)</option>
+                        <option value="o1-preview">GPT-o1 (40 cr)</option>
+                        <option value="o3-reasoning">GPT-o3 Reasoning (75 cr)</option>
+                        <option value="dall-e-3">DALL-E Image (100 cr)</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="balance-info">
-                <span data-i18n="chat.balance">Balance:</span> <strong id="creditBalance">0</strong> <span data-i18n="chat.credits">Credits</span>
-            </div>
-        </div>
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-logo">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <h1 class="welcome-title" data-i18n="chat.welcome_title">Hi there! I'm Genyxo AI</h1>
+                <p class="welcome-subtitle" data-i18n="chat.welcome_subtitle">
+                    Your AI assistant designed to help you find the perfect domain for your needs.
+                </p>
 
-        <div class="glass chat-content-wrapper">
-            
-            <div class="chat-box" id="chatBox">
+                <div class="suggestions-grid">
+                    <div class="suggestion-card" onclick="useSuggestion(this)">
+                        <div class="suggestion-icon"><i class="fas fa-rocket"></i></div>
+                        <div class="suggestion-text" data-i18n="chat.suggestion_1">Help me build a new website</div>
+                    </div>
+                    <div class="suggestion-card" onclick="useSuggestion(this)">
+                        <div class="suggestion-icon"><i class="fas fa-code"></i></div>
+                        <div class="suggestion-text" data-i18n="chat.suggestion_2">I want to link my domain to services</div>
+                    </div>
+                    <div class="suggestion-card" onclick="useSuggestion(this)">
+                        <div class="suggestion-icon"><i class="fas fa-paint-brush"></i></div>
+                        <div class="suggestion-text" data-i18n="chat.suggestion_3">Can you suggest me good domain names?</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="messages-container" id="chatBox">
                 </div>
 
-            <div class="chat-input-area">
-                <input type="text" id="userInput" data-i18n="chat.input_placeholder" placeholder="Ask me anything...">
-                <button id="sendBtn" data-i18n="chat.send_button">Send</button>
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
-        </div>
 
+            <div class="input-wrapper">
+                <div class="input-container">
+                    <input type="text" class="chat-input" id="userInput" data-i18n="chat.input_placeholder" placeholder="Send message..." autocomplete="off">
+                    <button class="send-btn" id="sendBtn">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                </div>
+                <div class="disclaimer" data-i18n="chat.disclaimer">
+                    AI is smart, but not perfect. Double-check important info!
+                </div>
+            </div>
+        </main>
     </div>
 
     <div class="modal" id="langModal">
         <div class="modal-content glass" style="max-width: 400px;">
             <span class="close-btn" id="closeLangModal">&times;</span>
-            <h2 style="text-align:center; margin-bottom:20px;" data-i18n="admin.modal.select_lang">Select Language</h2>
+            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
             <div class="lang-grid" id="langGrid"></div>
         </div>
     </div>
 
-
-    <script src="js/i18n.js"></script>
-
     <script>
+        const chatBox = document.getElementById('chatBox');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const creditBalanceEl = document.getElementById('creditBalance');
+        
+        // Config
         const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
         const token = localStorage.getItem('authToken');
 
-        if (!token) window.location.href = 'index.html';
-
-        // Helper to get dynamic translations securely (Kept for alerts and dynamic content)
-        function t(key, defaultText) {
-            if (window.i18n && window.i18n.translations) {
-                const keys = key.split('.');
-                let result = window.i18n.translations;
-                for (let k of keys) {
-                    if (result[k] === undefined) return defaultText || key;
-                    result = result[k];
-                }
-                return result;
-            }
-            return defaultText || key;
+        // Check Auth
+        if (!token) {
+            window.location.href = 'index.html';
+            alert('Please log in first.');
         }
 
-        // --- DOM Elements ---
-        const chatBox = document.getElementById('chatBox');
-        const userInput = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const creditBalanceEl = document.getElementById('creditBalance');
-        const aiModelSelect = document.getElementById('aiModel');
+        // --- Logic ---
 
-        // --- Chat Logic ---
-
-        function appendMessage(sender, content, model = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-
-            const avatar = document.createElement('div');
-            avatar.className = 'message-avatar';
-            avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
-
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-            
-            // Render content as Markdown if it's from bot
-            if (sender === 'bot') {
-                contentDiv.innerHTML = marked.parse(content);
+        // 1. Toggle between Welcome Screen and Chat List
+        function toggleChatView(hasMessages) {
+            if (hasMessages) {
+                welcomeScreen.style.display = 'none';
+                chatBox.style.display = 'flex';
             } else {
-                contentDiv.textContent = content;
+                welcomeScreen.style.display = 'flex';
+                chatBox.style.display = 'none';
             }
-
-            if (model) {
-                const modelSpan = document.createElement('span');
-                modelSpan.style.display = 'block';
-                modelSpan.style.fontSize = '0.75em';
-                modelSpan.style.color = 'rgba(255, 255, 255, 0.5)';
-                modelSpan.textContent = `Model: ${model}`;
-                contentDiv.prepend(modelSpan);
-            }
-
-            if (sender === 'user') {
-                messageDiv.appendChild(contentDiv);
-                messageDiv.appendChild(avatar);
-            } else {
-                messageDiv.appendChild(avatar);
-                messageDiv.appendChild(contentDiv);
-            }
-
-            chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        // 2. Click suggestion card
+        window.useSuggestion = function(cardElement) {
+            const text = cardElement.querySelector('.suggestion-text').innerText;
+            userInput.value = text;
+            sendMessage();
+        }
+
+        // 3. Send Message logic
         async function sendMessage() {
-            const message = userInput.value.trim();
-            const modelId = aiModelSelect.value;
-            if (!message) return;
+            const text = userInput.value.trim();
+            const modelSelectElement = document.getElementById('modelSelect');
+            const selectedModel = modelSelectElement ? modelSelectElement.value : 'gpt-4o-mini';
 
+            if (!text) return;
+
+            // UI Updates
+            toggleChatView(true); // Switch to chat view
+            appendMessage('user', text);
             userInput.value = '';
-            appendMessage('user', message);
-
-            // Bot placeholder for response
-            const botMessageEl = document.createElement('div');
-            botMessageEl.className = 'message bot';
-            botMessageEl.innerHTML = `<div class="message-avatar"><i class="fas fa-robot"></i></div><div class="message-content">...</div>`;
-            chatBox.appendChild(botMessageEl);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            typingIndicator.style.display = 'block';
+            scrollToBottom();
 
             try {
                 const response = await fetch(`${API_BASE_URL}/chat/message`, {
@@ -307,87 +569,132 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ message, modelId })
+                    body: JSON.stringify({ 
+                        message: text, 
+                        model: selectedModel 
+                    })
                 });
 
+                const data = await response.json();
+                typingIndicator.style.display = 'none';
+                
                 if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Update the placeholder message with real data
-                    botMessageEl.querySelector('.message-content').innerHTML = marked.parse(data.botResponse);
-                    updateBalanceUI(data.newBalance || 0); // Update balance after message
+                    appendMessage('bot', data.botReply, selectedModel);
+                    if (data.creditsLeft !== undefined) {
+                        updateBalanceUI(data.creditsLeft);
+                    }
                 } else {
-                    botMessageEl.querySelector('.message-content').innerHTML = `<span style="color: red;">Error: ${response.statusText}</span>`;
+                    const errorMsg = data.message || 'Server error';
+                    appendError(errorMsg);
                 }
-            } catch (e) {
-                console.error("Error sending message:", e);
-                botMessageEl.querySelector('.message-content').innerHTML = `<span style="color: red;">${t('chat.system_msg_error', 'Error connecting to server.')}</span>`;
+
+            } catch (error) {
+                typingIndicator.style.display = 'none';
+                appendError('Connection failed.');
             }
-            chatBox.scrollTop = chatBox.scrollHeight; // Scroll again after update
+        }
+
+        function appendMessage(sender, text, model = '') {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+            
+            const icon = sender === 'bot' ? 'fa-robot' : 'fa-user';
+            
+            // Convert Markdown if bot
+            let contentHTML = text;
+            if (sender === 'bot' && typeof marked !== 'undefined' && !text.includes('<img')) {
+                contentHTML = marked.parse(text);
+            }
+
+            msgDiv.innerHTML = `
+                <div class="avatar"><i class="fas ${icon}"></i></div>
+                <div class="message-content">
+                    ${contentHTML}
+                </div>
+            `;
+            
+            chatBox.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        function appendError(msg) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message bot';
+            msgDiv.innerHTML = `
+                 <div class="avatar" style="background:#e74c3c; color:white;"><i class="fas fa-exclamation"></i></div>
+                <div class="message-content" style="color:#ff6b6b; border-color:#e74c3c;">
+                    ${msg}
+                </div>
+            `;
+            chatBox.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         function updateBalanceUI(amount) {
-            creditBalanceEl.textContent = amount;
+            creditBalanceEl.textContent = `${amount} Credits`;
         }
 
-        async function loadChatHistory() {
-             try {
+        // 4. Load History & Profile
+        async function initChat() {
+            try {
+                // Load Profile for credits
+                const profileRes = await fetch(`${API_BASE_URL}/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (profileRes.ok) {
+                    const user = await profileRes.json();
+                    updateBalanceUI(user.credits || 0);
+                }
+
+                // Load History
                 const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
                 if (historyRes.ok) {
                     const history = await historyRes.json();
-                    chatBox.innerHTML = ''; 
                     
-                    history.forEach(msg => {
-                        appendMessage(msg.sender, msg.content, msg.model);
-                    });
-                    
-                    if (history.length === 0) {
-                        const defaultMessage = t('chat.system_msg_placeholder', "Hi! I'm your AI assistant. Choose a model or just write me something and we'll get started! 🚀");
-                        appendMessage('bot', defaultMessage);
+                    if (history.length > 0) {
+                        toggleChatView(true);
+                        history.forEach(msg => {
+                            appendMessage(msg.sender, msg.content, msg.model);
+                        });
+                    } else {
+                        toggleChatView(false); // Show Welcome Screen
                     }
-                } else {
-                    const errorMsg = t('chat.system_msg_error', "Error loading chat history.");
-                    chatBox.innerHTML = `<p style="text-align: center; margin-top: 20px; color: #e74c3c;">${errorMsg}</p>`;
                 }
             } catch (e) {
-                console.error("Error loading history or user data:", e);
-                const errorMsg = t('chat.system_msg_error', "Error loading chat history.");
-                chatBox.innerHTML = `<p style="text-align: center; margin-top: 20px; color: #e74c3c;">${errorMsg}</p>`;
+                console.error("Init Error:", e);
             }
         }
 
-        async function loadUserProfile() {
-             try {
-                const response = await fetch(`${API_BASE_URL}/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    updateBalanceUI(data.credits || 0);
-                    loadChatHistory();
-                } else {
-                    const errorMsg = t('chat.system_msg_error', "Error loading user profile.");
-                    chatBox.innerHTML = `<p style="text-align: center; margin-top: 20px; color: #e74c3c;">${errorMsg}</p>`;
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
+        // Events
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
 
-        // Use a small timeout to ensure the i18n engine has loaded the JSON first
+        // Init
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                loadUserProfile();
-            }, 300); 
+            // Check if i18n is loaded, otherwise wait a bit or let i18n.js handle it
+            if(window.i18n && typeof window.i18n.init === 'function') {
+                window.i18n.init().then(initChat);
+            } else {
+                initChat();
+            }
         });
+
+        // Mobile Sidebar Toggle (Optional logic if you add a burger button visible on mobile)
+        const toggleBtn = document.getElementById('sidebarToggle');
+        if(toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+        }
 
     </script>
 </body>
