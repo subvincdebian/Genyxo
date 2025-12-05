@@ -350,6 +350,44 @@
             to { transform: scale(1); }
         }
 
+        .lang-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .lang-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 100%;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .lang-btn.active {
+            background: rgba(16, 230, 204, 0.15); /* Ваш акцентний колір */
+            border-color: #10e6cc;
+            color: #10e6cc;
+        }
+
+        .lang-flag {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
     </style>
 </head>
 <body>
@@ -455,11 +493,12 @@
         </div>
     </div>
 
-    <div class="modal" id="langModal">
-        <div class="modal-content glass" style="max-width: 400px;">
-            <span class="close-btn" id="closeLangModal">&times;</span>
-            <h2 style="text-align:center; margin-bottom:20px;" data-i18n="language.select">Select Language</h2>
-            <div class="lang-grid" id="langGrid"></div>
+    <div class="modal" id="langModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:10001;">
+        <div class="modal-content glass" style="max-width: 400px; background:#121212; padding:20px; border-radius:15px; width:90%;">
+            <span class="close-btn" id="closeLangModal" style="float:right; cursor:pointer; font-size:1.5rem; color:#aaa;">&times;</span>
+            <h2 style="text-align:center; margin-bottom:20px; color:white;" data-i18n="language.select">Select Language</h2>
+            <div class="lang-grid" id="langGrid" style="display:flex; flex-direction:column; gap:10px;">
+                </div>
         </div>
     </div>
 
@@ -471,10 +510,92 @@
 
         if (!token) window.location.href = 'index.html';
 
-        const profileToggleBtn = document.getElementById('loginBtn');
-        const profileDropdown = document.getElementById('profilePanel');
+        // --- ЛОГІКА МОВНОГО ВІКНА (ВИПРАВЛЕНО) ---
+        const SUPPORTED_LANGUAGES = {
+            'en': 'English',
+            'uk': 'Українська',
+            'es': 'Español',
+            'de': 'Deutsch',
+            'fr': 'Français'
+        };
 
-        // Helper to access translations safely
+        const FLAGS = {
+            'en': '🇺🇸', 'uk': '🇺🇦', 'es': '🇪🇸', 'de': '🇩🇪', 'fr': '🇫🇷'
+        };
+
+        function openLangModal() {
+            const modal = document.getElementById('langModal');
+            const grid = document.getElementById('langGrid');
+            
+            // Отримуємо поточну мову з i18n або localStorage
+            const currentLang = (window.i18n && window.i18n.currentLang) 
+                                ? window.i18n.currentLang 
+                                : (localStorage.getItem('appLang') || 'en');
+
+            // Генеруємо кнопки
+            grid.innerHTML = Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => `
+                <button class="lang-btn ${code === currentLang ? 'active' : ''}" onclick="handleLangSelect('${code}')">
+                    <span class="lang-flag">${FLAGS[code]}</span>
+                    <span>${name}</span>
+                    ${code === currentLang ? '<i class="fas fa-check" style="margin-left:auto;"></i>' : ''}
+                </button>
+            `).join('');
+            
+            modal.style.display = 'flex';
+        }
+
+        // Обгортка для вибору мови
+        async function handleLangSelect(lang) {
+            if (window.i18n) {
+                await window.i18n.changeLanguage(lang);
+            } else {
+                localStorage.setItem('appLang', lang);
+                location.reload();
+            }
+            document.getElementById('langModal').style.display = 'none';
+            
+            // Оновлюємо текст у меню (English >)
+            const langDisplay = document.getElementById('currentLangDisplay');
+            if(langDisplay) langDisplay.textContent = `${SUPPORTED_LANGUAGES[lang]} >`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Кнопка відкриття
+            const langMenuBtn = document.getElementById('langMenuBtn');
+            if (langMenuBtn) {
+                langMenuBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openLangModal();
+                });
+            }
+
+            // Кнопка закриття (хрестик)
+            const closeLangBtn = document.getElementById('closeLangModal');
+            if (closeLangBtn) {
+                closeLangBtn.addEventListener('click', () => {
+                    document.getElementById('langModal').style.display = 'none';
+                });
+            }
+            
+            // Закриття по кліку на фон
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('langModal');
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // --- РЕШТА ЛОГІКИ (Profile, Notifications) ---
+            // (Залиште цей код без змін, він відповідає за завантаження даних)
+            loadProfileData();
+            
+            // Затримка для перекладу повідомлень
+            setTimeout(loadNotifications, 100);
+        });
+
+        // --- ФУНКЦІЇ ЗАВАНТАЖЕННЯ ДАНИХ ---
+        
+        // Helper helper
         function safeTranslate(path, defaultText) {
             if (!window.i18n || !window.i18n.translations) return defaultText;
             const keys = path.split('.');
@@ -486,32 +607,23 @@
             return res || defaultText;
         }
 
+        const profileToggleBtn = document.getElementById('loginBtn');
+        const profileDropdown = document.getElementById('profilePanel');
+
         document.addEventListener('click', (event) => {
             const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
-            
             if (!isClickInside && profileDropdown.classList.contains('show')) {
                 profileDropdown.classList.remove('show');
             }
         });
 
-        // Language Modal Logic (Specific to this page if not global)
-        const langMenuBtn = document.getElementById('langMenuBtn');
-        if (langMenuBtn) {
-            langMenuBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                openLangModal();
-            });
-        }
-        
         async function loadProfileData() {
             if (!token) return;
-
             try {
                 const navUsername = document.getElementById('navUsername');
                 const navIcon = document.getElementById('navIcon');
                 const navAvatar = document.getElementById('navAvatar');
                 const loginBtn = document.getElementById('loginBtn');
-                
                 const menuName = document.getElementById('menuName');
                 const menuEmail = document.getElementById('menuEmail');
                 const menuCredits = document.getElementById('menuCredits');
@@ -522,23 +634,19 @@
                 });
                 
                 if (!response.ok) throw new Error('Failed to fetch profile');
-                
                 const user = await response.json();
 
                 if (user.id) {
                     if(navUsername) navUsername.textContent = user.name || safeTranslate('nav.profile', 'Profile');
                     if(navIcon) navIcon.style.display = 'none';
-                    
                     if(navAvatar) {
                         navAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
                         navAvatar.style.display = 'inline-block';
                     }
-                    
                     if(loginBtn) {
                         loginBtn.classList.remove('login-btn');
                         loginBtn.classList.add('profile-toggle-btn');
                     }
-
                     if(menuName) menuName.textContent = user.name || safeTranslate('menu.profile', 'User');
                     if(menuEmail) menuEmail.textContent = user.email || '';
                     if(menuCredits) menuCredits.textContent = (user.credits || 0).toLocaleString();
@@ -547,53 +655,34 @@
 
                 loginBtn.onclick = (e) => {
                     e.stopPropagation();
-                    if (token) {
-                        profileDropdown.classList.toggle('show');
-                    } else {
-                         window.location.href = 'index.html';
-                    }
+                    if (token) profileDropdown.classList.toggle('show');
+                    else window.location.href = 'index.html';
                 };
                 
-                // Logout handler
                 document.getElementById('dropdownLogoutBtn').onclick = () => {
-                     localStorage.removeItem('authToken');
-                     window.location.href = 'index.html';
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'index.html';
                 };
-
-            } catch (e) {
-                console.error("Error loading profile:", e);
-            }
+            } catch (e) { console.error("Error loading profile:", e); }
         }
-
-        loadProfileData();
 
         async function updateNotificationsBadge() {
             if (!token) return;
-
             try {
                 const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
                 if (response.ok) {
                     const data = await response.json();
                     const count = data.count;
                     const badge = document.getElementById('notificationBadge');
-
                     if (badge) {
-                        if (count > 0) {
-                            badge.style.display = 'inline-block';
-                            badge.textContent = count > 99 ? '99+' : count;
-                        } else {
-                            badge.style.display = 'none';
-                        }
+                        badge.style.display = count > 0 ? 'inline-block' : 'none';
+                        badge.textContent = count > 99 ? '99+' : count;
                     }
                 }
-            } catch (e) {
-                console.error("Error checking notifications:", e);
-            }
+            } catch (e) { console.error(e); }
         }
-
         updateNotificationsBadge();
 
         async function loadNotifications() {
@@ -606,22 +695,16 @@
                 
                 if(list.length === 0) {
                     const emptyText = safeTranslate('notifications.empty_state', 'No notifications yet.');
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="far fa-bell-slash"></i>
-                            <p>${emptyText}</p>
-                        </div>`;
+                    container.innerHTML = `<div class="empty-state"><i class="far fa-bell-slash"></i><p>${emptyText}</p></div>`;
                     return;
                 }
 
+                const timeLocale = safeTranslate('notifications.time_format', 'en-US');
                 container.innerHTML = list.map(n => {
                     let icon = 'fa-bell';
                     if(n.type === 'SYSTEM' || n.title.includes('Payment')) icon = 'fa-wallet';
                     if(n.type === 'SUPPORT') icon = 'fa-headset';
-                    if(n.title.includes('Welcome')) icon = 'fa-party-horn';
-                    
-                    // Тут дата форматується залежно від локалі браузера, або можна використати translations locale
-                    const timeLocale = safeTranslate('notifications.time_format', 'en-US');
+                    if(n.title.includes('Welcome')) icon = 'fa-party-horn'; // fa-party-horn може не бути в безкоштовній версії, замініть на fa-star
 
                     return `
                     <div class="notif-card ${n.isRead ? '' : 'unread'}" onclick="markRead(${n.id}, this)">
@@ -631,8 +714,7 @@
                             <p>${n.message}</p>
                             <span class="notif-time">${new Date(n.createdAt).toLocaleString(timeLocale)}</span>
                         </div>
-                    </div>
-                    `;
+                    </div>`;
                 }).join('');
             } catch (e) { 
                 console.error(e);
@@ -643,7 +725,6 @@
 
         async function markRead(id, element) {
             element.classList.remove('unread');
-            
             await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -660,62 +741,6 @@
             });
             loadNotifications();
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // 1. Знаходимо кнопку за новим ID
-            const langMenuBtn = document.getElementById('langMenuBtn');
-            
-            // 2. Знаходимо модальне вікно
-            const langModal = document.getElementById('langModal');
-            const closeLangBtn = document.getElementById('closeLangModal');
-
-            // Функція відкриття (дублюємо тут, якщо вона не доступна глобально з i18n.js)
-            function openLangModal() {
-                if (window.i18n && window.selectLanguage) {
-                    // Генеруємо кнопки мов динамічно, якщо потрібно, або просто показуємо вікно
-                    // (Логіка генерації списку мов зазвичай в i18n.js, тут головне - показати вікно)
-                    if (typeof window.openLangModal === 'function') {
-                        window.openLangModal(); // Викликаємо функцію з i18n.js якщо вона є
-                    } else {
-                        // Фолбек: просто показуємо модалку, якщо функція не знайдена
-                        langModal.style.display = 'flex';
-                    }
-                } else {
-                    langModal.style.display = 'flex';
-                }
-            }
-
-            // 3. Вішаємо подію кліку
-            if (langMenuBtn) {
-                langMenuBtn.addEventListener('click', (e) => {
-                    e.preventDefault(); // Забороняємо перехід за посиланням #
-                    openLangModal();
-                });
-            }
-
-            // 4. Логіка закриття (хрестик)
-            if (closeLangBtn) {
-                closeLangBtn.addEventListener('click', () => {
-                    langModal.style.display = 'none';
-                });
-            }
-
-            // 5. Закриття при кліку за межами вікна
-            window.addEventListener('click', (e) => {
-                if (e.target === langModal) {
-                    langModal.style.display = 'none';
-                }
-            });
-        });
-
-        // Чекаємо, поки ініціалізується i18n, перш ніж рендерити контент, що залежить від перекладу
-        document.addEventListener('DOMContentLoaded', () => {
-             // i18n init is called in i18n.js on DOMContentLoaded.
-             // We give it a slight delay or call logic after initialization if strictly needed,
-             // but since loadNotifications is async (fetches data), translations should be ready by the time data arrives.
-             setTimeout(loadNotifications, 100);
-        });
-
     </script>
 </body>
 </html>
