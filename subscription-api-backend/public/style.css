@@ -178,13 +178,15 @@ body {
     color: var(--text-dark);
     cursor: pointer;
     transition: all 0.3s ease;
+    white-space: nowrap;
     min-width: 110px;
-    min-height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     font-weight: 600;
+    max-width: 150px;
+    height: 40px;
 }
 
 .login-btn:hover {
