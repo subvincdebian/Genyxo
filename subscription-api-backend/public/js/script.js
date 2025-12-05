@@ -120,8 +120,8 @@ function updateUIState(isLoggedIn, userData = null) {
         }
 
         // Клас кнопки (щоб працював дропдаун)
-        loginBtn.classList.remove('login-btn'); 
-        loginBtn.classList.add('profile-toggle-btn'); // Припускаю, що у тебе є цей клас в CSS для стилю без фону
+        loginBtn.classList.add('login-btn');
+        loginBtn.classList.add('profile-toggle-btn');
     } else {
         // Стан "Гість"
         if (navUsername) navUsername.textContent = 'Register / Login';
@@ -451,7 +451,7 @@ async function handleSignupSubmit(e) {
                 localStorage.setItem('userName', data.user.name);
                 localStorage.setItem('userEmail', data.user.email);
             }
-            
+
             await fetchUserData();
             closeLoginModal();
             showToast('Account created successfully!', 'success');
