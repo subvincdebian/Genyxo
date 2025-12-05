@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Discover a new level with our service - subscriptions to AI, social networks, and more. Convenient access to modern tools that open up limitless opportunities for your development and business.">
-    <title>Support Center - Genyxo</title>
+    <title data-i18n="support.page_title">Support Center - Genyxo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="profile.css"> <style>
+    <link rel="stylesheet" href="profile.css"> 
+    <style>
         .support-container { max-width: 900px; margin: 100px auto; padding: 20px; }
         .ticket-form { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 16px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.1); }
         .ticket-list { display: flex; flex-direction: column; gap: 15px; }
@@ -333,20 +334,20 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="index.html" style="text-decoration: none; color: white;">
-                    <i class="fas fa-headset"></i> Help Center
+                    <i class="fas fa-headset"></i> <span data-i18n="nav.help_center">Help Center</span>
                 </a>
             </div>
             
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="index.html" class="nav-link active">Back To Home</a>
-                    <a href="chat.html" class="nav-link">Chat</a>
+                    <a href="index.html" class="nav-link active" data-i18n="nav.back_home">Back To Home</a>
+                    <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
                 </div>
                 <div class="profile-container">
                     <button class="login-btn" id="loginBtn">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
                         <i class="fas fa-user" id="navIcon"></i>
-                        <span id="navUsername">Register / Login</span>
+                        <span id="navUsername" data-i18n="nav.login">Register / Login</span>
                     </button>
                     
                     <div class="profile-dropdown glass" id="profilePanel">
@@ -355,11 +356,11 @@
                             <div class="user-details">
                                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" class="avatar-big dropdown-avatar">
                                 <div class="user-text">
-                                    <h3 id="menuName">Loading...</h3>
-                                    <p id="menuEmail">loading@email.com</p>
+                                    <h3 id="menuName" data-i18n="nav.userload">Loading...</h3>
+                                    <p id="menuEmail" data-i18n="nav.emailload">loading@email.com</p>
                                 </div>
                             </div>
-                            <span class="plan-badge">Free</span>
+                            <span class="plan-badge" data-i18n="menu.plan_free">Free</span>
                         </div>
 
                         <div class="credits-card">
@@ -367,47 +368,47 @@
                                 <div class="credits-amount">
                                     <span class="icon-flask">🪙</span>
                                     <span class="amount-number" id="menuCredits">70</span>
-                                    <i class="fas fa-info-circle info-icon" title="Деталі"></i>
+                                    <i class="fas fa-info-circle info-icon" title="Details"></i>
                                 </div>
                             </div>
-                            <div class="credits-meta">
+                            <div class="credits-meta" data-i18n="menu.meta_info">
                                 Free | 0 Credits | $0.0/mo
                             </div>
-                            <button class="upgrade-full-btn">Upgrade</button>
+                            <button class="upgrade-full-btn" data-i18n="nav.profileupgrade">Upgrade</button>
                         </div>
 
                         <div class="dropdown-menu">
 
                             <a href="profile.html" class="menu-item">
-                                <i class="fas fa-user-cog"></i> <span>Profile</span>
+                                <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
                             </a>
 
                             <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
                                 <div style="display:flex; align-items:center;">
                                     <i class="fas fa-bell"></i> 
-                                    <span>Notifications</span>
+                                    <span data-i18n="menu.notifications">Notifications</span>
                                 </div>
                                 <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
 
                             <a href="support.html" class="menu-item">
-                                <i class="fas fa-question-circle"></i> <span>Help Center</span>
+                                <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
                             </a>
 
                             <a href="#" class="menu-item">
-                                <i class="fas fa-globe"></i> <span>Language</span>
-                                <span class="lang-val">English ></span>
+                                <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
+                                <span class="lang-val" id="currentLangDisplay">English ></span>
                             </a>
 
                             <a href="#contact" class="menu-item">
-                                <i class="fas fa-envelope"></i> <span>Contact us</span>
+                                <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
                             </a>
                             
                         </div>
 
                         <div class="dropdown-footer">
                             <button class="menu-item logout-item" id="dropdownLogoutBtn">
-                                <i class="fas fa-sign-out-alt"></i> <span>Log out</span>
+                                <i class="fas fa-sign-out-alt"></i> <span data-i18n="menu.logout">Log out</span>
                             </button>
                         </div>
                     </div>
@@ -417,39 +418,52 @@
     </nav>
 
     <div class="support-container">
-        <h1 class="title">Support Requests</h1>
+        <h1 class="title" data-i18n="support.title">Support Requests</h1>
         
         <div class="ticket-form">
-            <h2 style="margin-bottom: 20px;">Create new ticket</h2>
+            <h2 style="margin-bottom: 20px;" data-i18n="support.create_title">Create new ticket</h2>
             <form id="createTicketForm" class="form">
-                <label>Subject</label>
-                <input type="text" id="ticketSubject" placeholder="e.g., Payment issue" required>
+                <label data-i18n="support.form_subject">Subject</label>
+                <input type="text" id="ticketSubject" data-i18n="support.form_subject_placeholder" placeholder="e.g., Payment issue" required>
                 
-                <label style="margin-top: 15px;">Message</label>
-                <textarea id="ticketMessage" rows="5" placeholder="Describe your problem..." 
+                <label style="margin-top: 15px;" data-i18n="support.form_message">Message</label>
+                <textarea id="ticketMessage" rows="5" data-i18n="support.form_message_placeholder" placeholder="Describe your problem..." 
                     style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 8px;" required></textarea>
                 
-                <button type="submit" class="save-btn" style="margin-top: 20px;">Submit Ticket</button>
+                <button type="submit" class="save-btn" style="margin-top: 20px;" data-i18n="support.submit_btn">Submit Ticket</button>
             </form>
         </div>
 
-        <h2 style="margin-bottom: 20px;">Your History</h2>
+        <h2 style="margin-bottom: 20px;" data-i18n="support.history_title">Your History</h2>
         <div id="ticketList" class="ticket-list">
-            <p style="color: gray; text-align: center;">Loading tickets...</p>
+            <p style="color: gray; text-align: center;" data-i18n="support.loading">Loading tickets...</p>
         </div>
     </div>
 
     <div class="modal" id="langModal">
         <div class="modal-content glass" style="max-width: 400px;">
             <span class="close-btn" id="closeLangModal">&times;</span>
-            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
+            <h2 style="text-align:center; margin-bottom:20px;" data-i18n="language.select">Select Language</h2>
             <div class="lang-grid" id="langGrid">
                 </div>
         </div>
     </div>
 
+    <script src="js/i18n.js"></script>
     <script>
-        
+        // Helper to get text safely even if async load isn't finished perfectly
+        function getTrans(key, fallback) {
+            if (window.i18n && window.i18n.translations) {
+                const keys = key.split('.');
+                let text = window.i18n.translations;
+                for (const k of keys) {
+                    text = text ? text[k] : null;
+                }
+                return text || fallback;
+            }
+            return fallback;
+        }
+
         const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
         const token = localStorage.getItem('authToken');
 
@@ -538,13 +552,14 @@
                 if (response.ok) {
                     const data = await response.json();
                     const count = data.count;
+                    const badge = document.getElementById('notificationBadge');
 
-                    if (notificationBadge) {
+                    if (badge) {
                         if (count > 0) {
-                            notificationBadge.style.display = 'inline-block';
-                            notificationBadge.textContent = count > 99 ? '99+' : count;
+                            badge.style.display = 'inline-block';
+                            badge.textContent = count > 99 ? '99+' : count;
                         } else {
-                            notificationBadge.style.display = 'none';
+                            badge.style.display = 'none';
                         }
                     }
                 }
@@ -558,14 +573,21 @@
         // 1. Завантаження тікетів
         async function loadTickets() {
             try {
+                // Ensure translations are loaded before rendering dynamic content
+                // (Though i18n.js usually handles this via callbacks, checking simple delay here for safety in inline script)
+                
                 const res = await fetch(`${API_BASE_URL}/support/my-tickets`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const tickets = await res.json();
                 const container = document.getElementById('ticketList');
                 
+                const noTicketsText = getTrans('support.no_tickets', 'No tickets found.');
+                const createdAtText = getTrans('support.created_at', 'Created:');
+                const replyText = getTrans('support.admin_reply', 'Support Team Replied:');
+
                 if(tickets.length === 0) {
-                    container.innerHTML = '<p style="color: gray; text-align: center;">No tickets found.</p>';
+                    container.innerHTML = `<p style="color: gray; text-align: center;">${noTicketsText}</p>`;
                     return;
                 }
 
@@ -576,11 +598,11 @@
                             <span class="ticket-status status-${t.status}">${t.status}</span>
                         </div>
                         <p style="color: #ccc;">${t.message}</p>
-                        <small style="color: #666;">Created: ${new Date(t.createdAt).toLocaleString()}</small>
+                        <small style="color: #666;">${createdAtText} ${new Date(t.createdAt).toLocaleString()}</small>
                         
                         ${t.adminResponse ? `
                             <div class="admin-reply">
-                                <span class="reply-label"><i class="fas fa-user-shield"></i> Support Team Replied:</span>
+                                <span class="reply-label"><i class="fas fa-user-shield"></i> ${replyText}</span>
                                 ${t.adminResponse}
                             </div>
                         ` : ''}
@@ -608,24 +630,22 @@
                 });
 
                 if (res.ok) {
-                    alert('Ticket created!');
+                    alert(getTrans('support.alert_created', 'Ticket created!'));
                     document.getElementById('createTicketForm').reset();
                     loadTickets();
                 } else {
-                    alert('Error creating ticket');
+                    alert(getTrans('support.alert_error', 'Error creating ticket'));
                 }
             } catch (e) {
-                alert('Server error');
+                alert(getTrans('support.alert_server', 'Server error'));
             }
         });
 
-        loadTickets();
+        // Initialize tickets (wait slightly for i18n if needed or run immediately)
+        setTimeout(loadTickets, 100);
 
     </script>
-
-<script src="js/i18n.js"></script>
-
-<script src="js/script.js"></script>
+    <script src="js/script.js"></script>
 
 </body>
 </html>

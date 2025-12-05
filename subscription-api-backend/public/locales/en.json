@@ -10,7 +10,12 @@
         "emailload": "loading@gmail.com",
         "profileupgrade": "Upgrade",
         "back_home": "Back To Home",
-        "search_placeholder": "Search products..."
+        "search_placeholder": "Search products...",
+        "help_center": "Help Center",
+        "notifications": "Notifications",
+        "language": "Language",
+        "contact": "Contact us",
+        "logout": "Log out"
     },
     "hero": {
         "title": "Genyxo",
@@ -302,5 +307,23 @@
         "subscriptions": {
             "title": "Subscriptions"
         }
+    },
+    "support": {
+        "page_title": "Support Center - Genyxo",
+        "title": "Support Requests",
+        "create_title": "Create new ticket",
+        "form_subject": "Subject",
+        "form_subject_placeholder": "e.g., Payment issue",
+        "form_message": "Message",
+        "form_message_placeholder": "Describe your problem...",
+        "submit_btn": "Submit Ticket",
+        "history_title": "Your History",
+        "loading": "Loading tickets...",
+        "no_tickets": "No tickets found.",
+        "created_at": "Created:",
+        "admin_reply": "Support Team Replied:",
+        "alert_created": "Ticket created!",
+        "alert_error": "Error creating ticket",
+        "alert_server": "Server error"
     }
 }
