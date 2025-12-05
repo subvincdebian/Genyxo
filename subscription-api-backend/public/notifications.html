@@ -662,6 +662,53 @@
             loadNotifications();
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Знаходимо кнопку за новим ID
+            const langMenuBtn = document.getElementById('langMenuBtn');
+            
+            // 2. Знаходимо модальне вікно
+            const langModal = document.getElementById('langModal');
+            const closeLangBtn = document.getElementById('closeLangModal');
+
+            // Функція відкриття (дублюємо тут, якщо вона не доступна глобально з i18n.js)
+            function openLangModal() {
+                if (window.i18n && window.selectLanguage) {
+                    // Генеруємо кнопки мов динамічно, якщо потрібно, або просто показуємо вікно
+                    // (Логіка генерації списку мов зазвичай в i18n.js, тут головне - показати вікно)
+                    if (typeof window.openLangModal === 'function') {
+                        window.openLangModal(); // Викликаємо функцію з i18n.js якщо вона є
+                    } else {
+                        // Фолбек: просто показуємо модалку, якщо функція не знайдена
+                        langModal.style.display = 'flex';
+                    }
+                } else {
+                    langModal.style.display = 'flex';
+                }
+            }
+
+            // 3. Вішаємо подію кліку
+            if (langMenuBtn) {
+                langMenuBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // Забороняємо перехід за посиланням #
+                    openLangModal();
+                });
+            }
+
+            // 4. Логіка закриття (хрестик)
+            if (closeLangBtn) {
+                closeLangBtn.addEventListener('click', () => {
+                    langModal.style.display = 'none';
+                });
+            }
+
+            // 5. Закриття при кліку за межами вікна
+            window.addEventListener('click', (e) => {
+                if (e.target === langModal) {
+                    langModal.style.display = 'none';
+                }
+            });
+        });
+
         // Чекаємо, поки ініціалізується i18n, перш ніж рендерити контент, що залежить від перекладу
         document.addEventListener('DOMContentLoaded', () => {
              // i18n init is called in i18n.js on DOMContentLoaded.
