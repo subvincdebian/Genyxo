@@ -131,6 +131,57 @@
         .primary-btn:hover {
             background-color: #2980b9;
         }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .status-open { background-color: #f39c12; color: #fff; }
+        .status-in_progress { background-color: #3498db; color: #fff; }
+        .status-closed { background-color: #2ecc71; color: #fff; }
+
+        .priority-low { background-color: #34495e; color: #fff; }
+        .priority-medium { background-color: #f1c40f; color: #111; }
+        .priority-high { background-color: #e74c3c; color: #fff; }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .pagination-controls button {
+            padding: 8px 15px;
+            cursor: pointer;
+            background-color: #333;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background-color: #555;
+        }
+
+        .pagination-controls button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .pagination-controls span {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <body>
@@ -210,13 +261,27 @@
                     <tr>
                         <th class="col-id" data-i18n="admin.table.id">ID</th>
                         <th data-i18n="admin.table.user">User</th>       
-                        <th data-i18n="admin.table.subject">Subject</th>    
+                        <th data-i18n="admin.table.subject">Subject</th>
+                        <th>Priority</th>
+                        <th>Created By</th>
+                        <th>Created At</th>
                         <th class="col-status" data-i18n="admin.table.status">Status</th>
                         <th class="col-action" data-i18n="admin.table.action">Action</th>
                     </tr>
                 </thead>
-                <tbody id="supportTable"></tbody>
+                <tbody id="ticketsTableBody"></tbody>
             </table>
+
+            <div class="pagination-controls">
+                <button id="prevPageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span id="currentPageInfo">Page 1 of 1</span>
+                <button id="nextPageBtn" disabled>
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
         </div>
     </div>
 
@@ -251,6 +316,9 @@
         const token = localStorage.getItem('authToken');
 
         if (!token) window.location.href = 'index.html';
+
+        let currentTicketsPage = 1;
+        const ticketsLimit = 10;
 
         function t(key, defaultText) {
             if (window.i18n && window.i18n.translations) {
@@ -416,61 +484,82 @@
             }
         }
 
+        function renderTickets(tickets) {
+            const tableBody = document.getElementById('ticketsTableBody');
+            tableBody.innerHTML = '';
+
+            if (tickets.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">${i18n.t('admin.js.no_tickets', 'No tickets found.')}</td></tr>`;
+                return;
+            }
+
+            const html = tickets.map(t => {
+                const statusClass = `status-badge status-${t.status.toLowerCase().replace(' ', '_')}`;
+                const priorityClass = `status-badge priority-${t.priority.toLowerCase()}`;
+                const creationDate = new Date(t.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                return `
+                    <tr data-ticket-id="${t.id}">
+                        <td>${t.id}</td>
+                        <td title="${t.message}">${t.subject}</td>
+                        <td><span class="${priorityClass}">${t.priority}</span></td> <td><span class="${statusClass}">${t.status}</span></td>
+                        <td>${t.user.name || t.user.email}</td>
+                        <td>${creationDate}</td>
+                        <td>
+                            ${t.status !== 'CLOSED' ? `
+                                <button class="action-btn" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-reply"></i> Reply
+                                </button>
+                            ` : `<span style="color: #2ecc71;">Resolved</span>`}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tableBody.innerHTML = html;
+        }
+
         async function loadAdminTickets() {
-            const refreshIcon = document.getElementById('refreshIconTickets');
-            if (refreshIcon) refreshIcon.classList.add('spin');
-
             try {
-                const res = await fetch(`${API_BASE_URL}/support/admin/all`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (!res.ok) return;
+                const token = localStorage.getItem('authToken');
+                if (!token) return;
 
-                const tickets = await res.json();
-                const tbody = document.getElementById('supportTable');
-                tbody.innerHTML = '';
-
-                if (!tickets || tickets.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${t('admin.js.no_tickets', 'No tickets found')}</td></tr>`;
-                    return;
-                }
-
-                tickets.forEach(ticket => {
-                    const userEmail = ticket.user ? ticket.user.email : t('admin.js.unknown_user', 'Unknown');
-                    const subject = ticket.subject || t('admin.js.no_subject', 'No Subject');
-                    const status = ticket.status || 'PENDING';
-                    
-                    let statusBadge = 'badge-pending';
-                    if (status === 'CLOSED') statusBadge = 'badge-success';
-                    
-                    const safeMessage = (ticket.message || "").replace(/'/g, "`").replace(/"/g, "&quot;");
-                    
-                    let actionHtml = '';
-                    if (status === 'CLOSED') {
-                        const doneText = t('admin.js.done', 'Done');
-                        actionHtml = `<span style="color: #2ecc71; font-size: 0.9em;"><i class="fas fa-check"></i> ${doneText}</span>`;
-                    } else {
-                        const btnText = t('admin.js.view_reply', 'View & Reply');
-                        actionHtml = `<button class="action-btn" onclick="openReplyModal(${ticket.id}, '${safeMessage}')">${btnText}</button>`;
+                const res = await fetch(`${API_BASE_URL}/support/admin/all?page=${currentTicketsPage}&limit=${ticketsLimit}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     }
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${ticket.id}</td>
-                            <td title="${userEmail}">${userEmail}</td>
-                            <td title="${subject}">${subject}</td>
-                            <td><span class="badge ${statusBadge}">${status}</span></td>
-                            <td style="text-align: right;">${actionHtml}</td>
-                        </tr>
-                    `;
                 });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    
+                    const tickets = result.data;
+                    const meta = result.meta;
+
+                    renderTickets(tickets);
+                    updateTicketsPaginationControls(meta);
+                } else {
+                    console.error('Failed to load admin tickets:', res.statusText);
+                }
             } catch (e) {
-                console.error("Critical Error in loadAdminTickets:", e);          
-            } finally {
-                if (refreshIcon) refreshIcon.classList.remove('spin');
-            }   
-        }    
+                console.error('Server error on loading admin tickets:', e);
+            }
+        }
+
+        function updateTicketsPaginationControls(meta) {
+            const prevBtn = document.getElementById('prevPageBtn');
+            const nextBtn = document.getElementById('nextPageBtn');
+            const infoSpan = document.getElementById('currentPageInfo');
+            
+            currentTicketsPage = meta.page;
+            
+            infoSpan.textContent = `Page ${meta.page} of ${meta.lastPage} (Total: ${meta.total})`;
+            
+            prevBtn.disabled = meta.page <= 1;
+            nextBtn.disabled = meta.page >= meta.lastPage;
+        }
 
         let currentTicketId = null;
 
@@ -522,6 +611,20 @@
                 alert(t('admin.js.error_server', "Error connecting to server."));
             }
         }
+
+        document.getElementById('prevPageBtn').addEventListener('click', () => {
+            if (currentTicketsPage > 1) {
+                currentTicketsPage--;
+                loadAdminTickets();
+            }
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', () => {
+            // Ми не знаємо мета.lastPage тут, але кнопка буде disabled, якщо page >= lastPage
+            // Втім, краще перевірити на бекенді, але для фронтенду цього вистачить.
+            currentTicketsPage++;
+            loadAdminTickets();
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {

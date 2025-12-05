@@ -1,8 +1,9 @@
-import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { SupportService } from './support.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { ResolveTicketDto } from './dto/resolve-ticket.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/role.enum';
@@ -12,27 +13,25 @@ import { Role } from '../users/role.enum';
 export class SupportController {
   constructor(private supportService: SupportService) {}
 
-  // ЮЗЕР: Створити
   @Post('create')
   async createTicket(@Request() req, @Body() dto: CreateTicketDto) {
-    return this.supportService.create(req.user.id, dto.subject, dto.message);
+    // Передаємо пріоритет, якщо він є
+    return this.supportService.create(req.user.id, dto.subject, dto.message, dto.priority);
   }
 
-  // ЮЗЕР: Мої тікети
   @Get('my-tickets')
   async getMyTickets(@Request() req) {
     return this.supportService.getUserTickets(req.user.id);
   }
 
-  // АДМІН: Всі тікети
+  // АДМІН: Всі тікети з пагінацією
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Get('admin/all')
-  async getAllTickets() {
-    return this.supportService.getAllTickets();
+  async getAllTickets(@Query() paginationQuery: PaginationQueryDto) {
+    return this.supportService.getAllTickets(paginationQuery);
   }
 
-  // АДМІН: Відповісти
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Post('admin/resolve')

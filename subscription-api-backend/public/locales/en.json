@@ -324,6 +324,13 @@
         "admin_reply": "Support Team Replied:",
         "alert_created": "Ticket created!",
         "alert_error": "Error creating ticket",
-        "alert_server": "Server error"
+        "alert_server": "Server error",
+        "label_priority": "Priority",
+        "priority_low": "Low",
+        "priority_medium": "Medium (Default)",
+        "priority_high": "High (Urgent)",
+        "toast_success": "Ticket created successfully!",
+        "toast_error": "Error creating ticket.",
+        "toast_server_error": "Server error. Please try again later."
     }
 }

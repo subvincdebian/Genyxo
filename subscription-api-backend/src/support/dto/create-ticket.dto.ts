@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, Length, IsEnum, IsOptional } from 'class-validator';
+import { TicketPriority } from '../support.entity';
 
 export class CreateTicketDto {
   @IsString()
@@ -10,4 +11,8 @@ export class CreateTicketDto {
   @IsNotEmpty()
   @Length(10, 2000)
   message: string;
+
+  @IsOptional()
+  @IsEnum(TicketPriority)
+  priority?: TicketPriority;
 }

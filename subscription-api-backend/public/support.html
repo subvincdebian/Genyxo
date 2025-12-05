@@ -430,6 +430,14 @@
                 <textarea id="ticketMessage" rows="5" data-i18n="support.form_message_placeholder" placeholder="Describe your problem..." 
                     style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 8px;" required></textarea>
                 
+                <div class="ticket-form">
+                    <label for="ticketPriority" data-i18n="support.label_priority">Priority:</label>
+                    <select id="ticketPriority">
+                        <option value="MEDIUM" data-i18n="support.priority_medium">Medium (Default)</option>
+                        <option value="LOW" data-i18n="support.priority_low">Low</option>
+                        <option value="HIGH" data-i18n="support.priority_high">High (Urgent)</option>
+                    </select>
+                </div>
                 <button type="submit" class="save-btn" style="margin-top: 20px;" data-i18n="support.submit_btn">Submit Ticket</button>
             </form>
         </div>
@@ -573,9 +581,6 @@
         // 1. Завантаження тікетів
         async function loadTickets() {
             try {
-                // Ensure translations are loaded before rendering dynamic content
-                // (Though i18n.js usually handles this via callbacks, checking simple delay here for safety in inline script)
-                
                 const res = await fetch(`${API_BASE_URL}/support/my-tickets`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -583,33 +588,63 @@
                 const container = document.getElementById('ticketList');
                 
                 const noTicketsText = getTrans('support.no_tickets', 'No tickets found.');
-                const createdAtText = getTrans('support.created_at', 'Created:');
+                const createdAtText = getTrans('support.created_at', 'Opened:');
                 const replyText = getTrans('support.admin_reply', 'Support Team Replied:');
+                const awaitingText = getTrans('support.awaiting', 'Awaiting response from admin...');
 
                 if(tickets.length === 0) {
                     container.innerHTML = `<p style="color: gray; text-align: center;">${noTicketsText}</p>`;
                     return;
                 }
 
-                container.innerHTML = tickets.map(t => `
-                    <div class="ticket-card">
-                        <div class="ticket-header">
-                            <h3>${t.subject}</h3>
-                            <span class="ticket-status status-${t.status}">${t.status}</span>
-                        </div>
-                        <p style="color: #ccc;">${t.message}</p>
-                        <small style="color: #666;">${createdAtText} ${new Date(t.createdAt).toLocaleString()}</small>
-                        
-                        ${t.adminResponse ? `
-                            <div class="admin-reply">
-                                <span class="reply-label"><i class="fas fa-user-shield"></i> ${replyText}</span>
-                                ${t.adminResponse}
+                container.innerHTML = tickets.map(t => {
+                    const statusClass = `status-badge status-${t.status ? t.status.toLowerCase() : 'open'}`;
+                    const priorityVal = t.priority ? t.priority.toLowerCase() : 'low';
+                    const priorityClass = `status-badge priority-${priorityVal}`;
+                    
+                    const openedDate = new Date(t.createdAt).toLocaleDateString('uk-UA', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+
+                    const cardClass = t.status === 'CLOSED' ? 'ticket-card resolved' : 'ticket-card';
+
+                    return `
+                        <div class="${cardClass}">
+                            <div class="ticket-header">
+                                <h3>Ticket #${t.id}: ${t.subject}</h3>
+                                <div>
+                                    <span class="${priorityClass}" style="margin-right: 5px;">${t.priority || 'Low'}</span> 
+                                    <span class="${statusClass}">${t.status}</span>
+                                </div>
                             </div>
-                        ` : ''}
-                    </div>
-                `).join('');
+                            
+                            <div class="ticket-body">
+                                <p style="margin: 5px 0;"><strong>${createdAtText}</strong> ${openedDate}</p>
+                                <p style="color: #ccc;">${t.message}</p>
+                            </div>
+                            
+                            ${t.adminResponse ? `
+                                <div class="admin-response admin-reply">
+                                    <span class="reply-label"><i class="fas fa-user-shield"></i> ${replyText}</span>
+                                    <div style="margin-top: 5px;">${t.adminResponse}</div>
+                                </div>
+                            ` : `
+                                <p style="opacity: 0.6; margin-top: 15px; font-style: italic; font-size: 0.9em;">
+                                    ${awaitingText}
+                                </p>
+                            `}
+                        </div>
+                    `;
+                }).join('');
+
             } catch (e) {
                 console.error(e);
+                const container = document.getElementById('ticketList');
+                if(container) container.innerHTML = `<p style="color: red;">Error loading tickets.</p>`;
             }
         }
 
@@ -618,6 +653,7 @@
             e.preventDefault();
             const subject = document.getElementById('ticketSubject').value;
             const message = document.getElementById('ticketMessage').value;
+            const priority = document.getElementById('ticketPriority').value;
 
             try {
                 const res = await fetch(`${API_BASE_URL}/support/create`, {
@@ -626,18 +662,30 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ subject, message })
+                    body: JSON.stringify({ subject, message, priority })
                 });
 
                 if (res.ok) {
-                    alert(getTrans('support.alert_created', 'Ticket created!'));
+                    if (typeof showToast === 'function') {
+                        showToast(i18n.t('support.toast_success', 'Ticket created successfully!'), 'success');
+                    } else {
+                        alert('Ticket created!');
+                    }
                     document.getElementById('createTicketForm').reset();
                     loadTickets();
                 } else {
-                    alert(getTrans('support.alert_error', 'Error creating ticket'));
+                    if (typeof showToast === 'function') {
+                        showToast(i18n.t('support.toast_error', 'Error creating ticket.'), 'error');
+                    } else {
+                        alert('Error creating ticket');
+                    }
                 }
             } catch (e) {
-                alert(getTrans('support.alert_server', 'Server error'));
+                if (typeof showToast === 'function') {
+                    showToast(i18n.t('support.toast_server_error', 'Server error. Please try again later.'), 'error');
+                } else {
+                    alert('Server error');
+                }
             }
         });
 
