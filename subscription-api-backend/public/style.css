@@ -2076,8 +2076,9 @@ body {
 
 .profile-toggle-btn {
     background: none;
+    background: var(--text-light);
+    color: var(--text-dark);
     border: 1px solid var(--glass-border);
-    border-radius: 50%; /* Робить кнопку круглою */
     padding: 0;
     width: 45px;
     height: 45px;
