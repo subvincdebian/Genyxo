@@ -2075,3 +2075,23 @@ body {
     from { transform: translateX(0); opacity: 1; }
     to { transform: translateX(120%); opacity: 0; }
 }
+
+.profile-toggle-btn {
+    background: none;
+    border: 1px solid var(--glass-border);
+    border-radius: 50%; /* Робить кнопку круглою */
+    padding: 0;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.profile-toggle-btn:hover {
+    transform: scale(1.05);
+    border-color: var(--text-light);
+}
