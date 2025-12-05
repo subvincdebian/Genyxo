@@ -178,6 +178,7 @@ body {
     color: var(--text-dark);
     cursor: pointer;
     transition: all 0.3s ease;
+    min-width: 180px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2080,8 +2081,6 @@ body {
     color: var(--text-dark);
     border: 1px solid var(--glass-border);
     padding: 0;
-    width: 45px;
-    height: 45px;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
