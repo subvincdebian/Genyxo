@@ -7,10 +7,12 @@ const products = [
     { id: 6, price: "$25.00", image: "./images/aititan.jpg" },
 ];
 
-// Вкажіть вашу реальну адресу на Railway
 const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
 let authToken = localStorage.getItem('authToken') || null;
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
+let currentUserEmail = localStorage.getItem('userEmail');
+let currentUserAvatar = localStorage.getItem('userAvatar');
+
 let currentProduct = null;
 
 // --- DOM Elements ---
@@ -59,7 +61,15 @@ function init() {
     checkPaymentStatus();
 
     if (authToken) {
-        fetchUserData();
+        updateUIState(true, {
+            name: currentUserName,
+            email: currentUserEmail,
+            avatar: currentUserAvatar
+        });
+        
+        fetchUserData(); 
+    } else {
+        updateUIState(false);
     }
 
     const observerOptions = {
@@ -79,6 +89,50 @@ function init() {
     document.querySelectorAll('.animate-on-scroll').forEach(el => {
         observer.observe(el);
     });
+}
+
+function updateUIState(isLoggedIn, userData = null) {
+    if (isLoggedIn && userData) {
+        // Кнопка навігації
+        if (navUsername) navUsername.textContent = userData.name || userData.email || 'User';
+        if (navIcon) navIcon.style.display = 'none';
+        
+        if (navAvatar) {
+            navAvatar.style.display = 'block';
+            // Якщо аватарки немає - дефолтна (Dicebear)
+            navAvatar.src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name || 'User'}`;
+        }
+
+        // Меню профілю
+        if (menuName) menuName.textContent = userData.name || 'User';
+        if (menuEmail) menuEmail.textContent = userData.email || '';
+        
+        // Аватарка в меню
+        if (dropdownAvatars) {
+            dropdownAvatars.forEach(img => {
+                img.src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name || 'User'}`;
+            });
+        }
+        
+        // Кредити (якщо передані, інакше чекаємо fetch)
+        if (userData.credits !== undefined && menuCredits) {
+             menuCredits.textContent = parseFloat(userData.credits).toLocaleString();
+        }
+
+        // Клас кнопки (щоб працював дропдаун)
+        loginBtn.classList.remove('login-btn'); 
+        loginBtn.classList.add('profile-toggle-btn'); // Припускаю, що у тебе є цей клас в CSS для стилю без фону
+    } else {
+        // Стан "Гість"
+        if (navUsername) navUsername.textContent = 'Register / Login';
+        if (navIcon) navIcon.style.display = 'inline-block';
+        if (navAvatar) navAvatar.style.display = 'none';
+        
+        loginBtn.classList.add('login-btn');
+        loginBtn.classList.remove('profile-toggle-btn');
+        
+        if (profilePanel) profilePanel.classList.remove('show');
+    }
 }
 
 function showToast(message, type = 'info') {
@@ -275,9 +329,14 @@ async function fetchUserData() {
         
         if (response.ok) {
             const user = await response.json();
-            updateUserUI(user);
+            localStorage.setItem('userName', user.name || '');
+            localStorage.setItem('userEmail', user.email || '');
+            if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
+
+            updateUIState(true, user);
             updateNotificationsBadge();
         } else {
+            console.warn('Token expired or invalid');
             handleLogout();
         }
     } catch (e) {
@@ -341,6 +400,12 @@ async function handleLoginSubmit(e) {
         if (response.ok) {
             localStorage.setItem('authToken', data.access_token);
             authToken = data.access_token;
+
+            if (data.user) {
+                localStorage.setItem('userName', data.user.name);
+                localStorage.setItem('userEmail', data.user.email);
+            }
+            
             await fetchUserData();
             closeLoginModal();
             const msg = window.i18n?.translations?.toasts?.welcome || 'Welcome back!';
@@ -381,6 +446,12 @@ async function handleSignupSubmit(e) {
         if (response.ok) {
             localStorage.setItem('authToken', data.access_token);
             authToken = data.access_token;
+
+            if (data.user) {
+                localStorage.setItem('userName', data.user.name);
+                localStorage.setItem('userEmail', data.user.email);
+            }
+            
             await fetchUserData();
             closeLoginModal();
             showToast('Account created successfully!', 'success');
@@ -404,7 +475,12 @@ function handleLoginButtonClick(e) {
 
 function handleLogout() {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userAvatar');
     authToken = null;
+    
+    updateUIState(false);
     window.location.reload();
 }
 
