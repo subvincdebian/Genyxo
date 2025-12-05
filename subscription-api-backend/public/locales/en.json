@@ -129,7 +129,9 @@
         "server_error": "Server connection failed.",
         "account_created": "Account created successfully!",
         "reg_failed": "Registration failed",
-        "pass_mismatch": "Error: Passwords do not match!"
+        "pass_mismatch": "Error: Passwords do not match!",
+        "marked_all_success": "All notifications marked as read.",
+        "mark_all_fail": "Failed to mark notifications."
     },
     "order": {
         "title": "Secure Checkout",

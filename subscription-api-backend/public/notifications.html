@@ -392,6 +392,8 @@
 </head>
 <body>
 
+    <div id="toast-container"></div>
+
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
@@ -522,6 +524,39 @@
         const FLAGS = {
             'en': '🇺🇸', 'uk': '🇺🇦', 'es': '🇪🇸', 'de': '🇩🇪', 'fr': '🇫🇷'
         };
+
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return; // Перевіряємо, чи є контейнер
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            // Визначаємо іконку
+            let iconClass = 'fa-info-circle';
+            if (type === 'success') iconClass = 'fa-check-circle';
+            if (type === 'error') iconClass = 'fa-times-circle';
+
+            toast.innerHTML = `
+                <i class="fas ${iconClass} toast-icon"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            
+            // Анімація появи
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10); // Невеликий таймаут для спрацювання CSS-переходу
+
+            // Анімація зникнення та видалення
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300); // Час має відповідати тривалості CSS-переходу
+            }, duration);
+        }
 
         function openLangModal() {
             const modal = document.getElementById('langModal');
@@ -742,10 +777,10 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 loadNotifications();
-                showToast(safeTranslate('notifications.marked_all_success', 'All notifications marked as read.'), 'success');
+                showToast(safeTranslate('toasts.marked_all_success', 'All notifications marked as read.'), 'success');
                 
             } catch (e) {
-                showToast(safeTranslate('notifications.mark_all_fail', 'Failed to mark notifications.'), 'error');
+                showToast(safeTranslate('toasts.mark_all_fail', 'Failed to mark notifications.'), 'error');
             }
         }
     </script>
