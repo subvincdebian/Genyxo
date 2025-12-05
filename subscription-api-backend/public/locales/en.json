@@ -8,7 +8,8 @@
         "profile": "Profile",
         "userload": "Loading...",
         "emailload": "loading@gmail.com",
-        "profileupgrade": "Upgrade"
+        "profileupgrade": "Upgrade",
+        "back_home": "Back To Home"
     },
     "hero": {
         "title": "Genyxo",
@@ -210,5 +211,18 @@
         "model_advanced": "Advanced Model (GPT-4/Claude)",
         "model_fast": "Fast Model (Mistral/Gemini Flash)",
         "model_creative": "Creative Model (DALL-E/Midjourney Text)"
+    },
+    "notifications": {
+        "meta_title": "Notifications - Genyxo",
+        "center_title": "Notifications Center",
+        "header_title": "Your Notifications",
+        "mark_all_btn": "Mark all read",
+        "loading": "Loading notifications...",
+        "empty_state": "No notifications yet.",
+        "error_loading": "Error loading data",
+        "confirm_read_all": "Mark all as read?",
+        "plan_free": "Free",
+        "plan_meta": "Free | 0 Credits | $0.0/mo",
+        "time_format": "en-US"
     }
 }
