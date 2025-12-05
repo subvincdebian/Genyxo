@@ -776,7 +776,9 @@
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+
                 loadNotifications();
+
                 showToast(safeTranslate('toasts.marked_all_success', 'All notifications marked as read.'), 'success');
                 
             } catch (e) {

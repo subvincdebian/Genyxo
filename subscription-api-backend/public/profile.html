@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Discover a new level with our service - subscriptions to AI, social networks, and more. Convenient access to modern tools that open up limitless opportunities for your development and business.">
-    <title>Profile - Genyxo</title>
+    <title data-i18n="profile.title">Profile - Genyxo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="profile.css">
 </head>
 <body>
     
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
 
@@ -32,7 +31,7 @@
                     <div class="search-box">
                         <input type="text" style="display:none" autocomplete="username">
                         <input type="password" style="display:none" autocomplete="current-password">
-                        <input type="text" class="search-input" placeholder="Search products..." autocomplete="off" autocapitalize="none" spellcheck="false" name="search-field-xyz">
+                        <input type="text" class="search-input" data-i18n="nav.search_placeholder" placeholder="Search products..." autocomplete="off" autocapitalize="none" spellcheck="false" name="search-field-xyz">
                         
                         <button class="search-btn">
                             <i class="fas fa-search"></i>
@@ -43,14 +42,14 @@
 
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="index.html" class="nav-link active">Home</a>
-                    <a href="chat.html" class="nav-link">Chat</a>
+                    <a href="index.html" class="nav-link active" data-i18n="nav.home">Home</a>
+                    <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
                 </div>
                 <div class="profile-container">
                     <button class="login-btn profile-toggle-btn" id="loginBtn">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
                         <i class="fas fa-user" id="navIcon"></i>
-                        <span id="navUsername">Register / Login</span>
+                        <span id="navUsername" data-i18n="nav.login">Register / Login</span>
                     </button>
                     
                     <div class="profile-dropdown glass" id="profilePanel">
@@ -61,11 +60,11 @@
                             <div class="user-details">
                                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" class="avatar-big dropdown-avatar">
                                 <div class="user-text">
-                                    <h3 id="menuName">Loading...</h3>
-                                    <p id="menuEmail">loading@email.com</p>
+                                    <h3 id="menuName" data-i18n="nav.userload">Loading...</h3>
+                                    <p id="menuEmail" data-i18n="nav.emailload">loading@email.com</p>
                                 </div>
                             </div>
-                            <span class="plan-badge">Free</span>
+                            <span class="plan-badge" data-i18n="menu.plan_free">Free</span>
                         </div>
 
                         <div class="credits-card">
@@ -73,47 +72,47 @@
                                 <div class="credits-amount">
                                     <span class="icon-flask">🪙</span>
                                     <span class="amount-number" id="menuCredits">70</span>
-                                    <i class="fas fa-info-circle info-icon" title="Деталі"></i>
+                                    <i class="fas fa-info-circle info-icon" data-i18n="menu.details_title" title="Details"></i>
                                 </div>
                             </div>
-                            <div class="credits-meta">
+                            <div class="credits-meta" data-i18n="menu.meta_info">
                                 Free | 0 Credits | $0.0/mo
                             </div>
-                            <button class="upgrade-full-btn">Upgrade</button>
+                            <button class="upgrade-full-btn" data-i18n="nav.profileupgrade">Upgrade</button>
                         </div>
 
                         <div class="dropdown-menu">
 
                             <a href="profile.html" class="menu-item">
-                                <i class="fas fa-user-cog"></i> <span>Profile</span>
+                                <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
                             </a>
 
                             <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
                                 <div style="display:flex; align-items:center;">
                                     <i class="fas fa-bell"></i> 
-                                    <span>Notifications</span>
+                                    <span data-i18n="menu.notifications">Notifications</span>
                                 </div>
                                 <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
 
                             <a href="support.html" class="menu-item">
-                                <i class="fas fa-question-circle"></i> <span>Help Center</span>
+                                <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
                             </a>
 
                             <a href="#" class="menu-item">
-                                <i class="fas fa-globe"></i> <span>Language</span>
+                                <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
                                 <span class="lang-val">English ></span>
                             </a>
 
                             <a href="#contact" class="menu-item">
-                                <i class="fas fa-envelope"></i> <span>Contact us</span>
+                                <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
                             </a>
 
                         </div>
 
                         <div class="dropdown-footer">
                             <button class="menu-item logout-item" id="dropdownLogoutBtn">
-                                <i class="fas fa-sign-out-alt"></i> <span>Log out</span>
+                                <i class="fas fa-sign-out-alt"></i> <span data-i18n="menu.logout">Log out</span>
                             </button>
                         </div>
                     </div>
@@ -125,10 +124,10 @@
 
     <div class="mobile-menu" id="mobileMenu">
         <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#products">Products</a></li>
-            <li><a href="chat.html">Chat</a></li>
-            <li><a href="#about">About us</a></li>
+            <li><a href="#home" data-i18n="nav.home">Home</a></li>
+            <li><a href="#products" data-i18n="nav.products">Products</a></li>
+            <li><a href="chat.html" data-i18n="nav.chat">Chat</a></li>
+            <li><a href="#about" data-i18n="nav.about">About us</a></li>
         </ul>
     </div>
     <div class="menu-overlay" id="menuOverlay"></div>
@@ -136,141 +135,129 @@
 
     <div class="profile-page">
 
-    <!-- Ліва панель -->
-        <aside class="sidebar">
+    <aside class="sidebar">
             <div class="sidebar-header">
 
                 <div class="avatar" id="avatarPreview"></div>
 
-                <!-- File input for avatar -->
                 <label class="avatar-upload">
                     <input type="file" id="avatarInput" accept="image/*">
-                    Change avatar
+                    <span data-i18n="profile.change_avatar">Change avatar</span>
                 </label>
 
                 <div class="user-info">
-                    <p class="name" id="profileName">Your Name</p>
-                    <p class="view-profile">View profile</p>
+                    <p class="name" id="profileName" data-i18n="nav.userload">Loading...</p>
+                    <p class="view-profile" data-i18n="profile.view_profile">View profile</p>
                 </div>
             </div>
 
             <nav class="menu">
 
                 <a href="#" class="menu-item active" data-page="page-general">
-                    <!-- Home icon -->
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5Z"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    Home
+                    <span data-i18n="profile.sidebar.home">Home</span>
                 </a>
 
                 <a href="#" class="menu-item" data-page="page-password">
-                    <!-- Messages icon -->
-                 <img decoding="async" width="20" height="20" src="https://airlinecouncil.ca/wp-content/uploads/2016/01/icon-security-grey.svg" class="attachment-medium size-medium" alt="Message icon">
-                    Password and security
+                    <img decoding="async" width="20" height="20" src="https://airlinecouncil.ca/wp-content/uploads/2016/01/icon-security-grey.svg" class="attachment-medium size-medium" alt="Message icon">
+                 <span data-i18n="profile.sidebar.security">Password and security</span>
                 </a>
 
                 <a href="#" class="menu-item" data-page="page-payment">
-                    <!-- Bookings icon -->
-                   <img src="./images/wallet_icon.png" decoding="async" width="20" height="20" alt="Wallet Icon">
-                    Payment settings
+                    <img src="./images/wallet_icon.png" decoding="async" width="20" height="20" alt="Wallet Icon">
+                   <span data-i18n="profile.sidebar.payment">Payment settings</span>
                 </a>
 
                 <a href="#" class="menu-item" data-page="page-transactions">
-                    <!-- Achievements icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 50 50"
                         style="fill:#FFFFFF;">
                         <path d="M 25 2 C 12.309295 2 2 12.309295 2 25 C 2 37.690705 12.309295 48 25 48 C 37.690705 48 48 37.690705 48 25 C 48 12.309295 37.690705 2 25 2 z M 25 4 C 36.609824 4 46 13.390176 46 25 C 46 36.609824 36.609824 46 25 46 C 13.390176 46 4 36.609824 4 25 C 4 13.390176 13.390176 4 25 4 z M 24.984375 6.9863281 A 1.0001 1.0001 0 0 0 24 8 L 24 22.173828 A 3 3 0 0 0 22 25 A 3 3 0 0 0 22.294922 26.291016 L 16.292969 32.292969 A 1.0001 1.0001 0 1 0 17.707031 33.707031 L 23.708984 27.705078 A 3 3 0 0 0 25 28 A 3 3 0 0 0 28 25 A 3 3 0 0 0 26 22.175781 L 26 8 A 1.0001 1.0001 0 0 0 24.984375 6.9863281 z"></path>
                     </svg>
-                    Transactions
+                    <span data-i18n="profile.sidebar.transactions">Transactions</span>
                 </a>
 
                 <a href="#" class="menu-item" data-page="page-subscriptions">
-                    <!-- Connections icon -->
-                   <svg width="20" height="20" fill="white" viewBox="0 0 24 24" class="am-1yzbym3"><path d="M16.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M13.621 2.25a2.25 2.25 0 0 0-1.59.659l-8.5 8.5a2.25 2.25 0 0 0 0 3.182l5.878 5.879a2.25 2.25 0 0 0 3.182 0l8.5-8.5a2.25 2.25 0 0 0 .659-1.591V4.5a2.25 2.25 0 0 0-2.25-2.25zm-.53 1.72a.75.75 0 0 1 .53-.22H19.5a.75.75 0 0 1 .75.75v5.879a.75.75 0 0 1-.22.53l-8.5 8.5a.75.75 0 0 1-1.06 0L4.59 13.53a.75.75 0 0 1 0-1.06z"></path>
+                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24" class="am-1yzbym3"><path d="M16.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M13.621 2.25a2.25 2.25 0 0 0-1.59.659l-8.5 8.5a2.25 2.25 0 0 0 0 3.182l5.878 5.879a2.25 2.25 0 0 0 3.182 0l8.5-8.5a2.25 2.25 0 0 0 .659-1.591V4.5a2.25 2.25 0 0 0-2.25-2.25zm-.53 1.72a.75.75 0 0 1 .53-.22H19.5a.75.75 0 0 1 .75.75v5.879a.75.75 0 0 1-.22.53l-8.5 8.5a.75.75 0 0 1-1.06 0L4.59 13.53a.75.75 0 0 1 0-1.06z"></path>
                     </svg>
-                    Subscriptions
+                    <span data-i18n="profile.sidebar.subscriptions">Subscriptions</span>
                 </a>
 
                 <a href="#" class="menu-item">
-                    <!-- Group Sessions icon -->
                     <svg width="20" height="20" viewBox="0 0 24 24">
                         <circle cx="6" cy="7" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
                         <circle cx="18" cy="7" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
                         <path d="M3 21v-2c0-2.2 1.8-4 4-4" stroke="currentColor" stroke-width="2"/>
                         <path d="M21 21v-2c0-2.2-1.8-4-4-4" stroke="currentColor" stroke-width="2"/>
                     </svg>
-                    Group sessions
+                    <span data-i18n="profile.sidebar.groups">Group sessions</span>
                 </a>
             </nav>
         </aside>
 
-    <!-- Контент праворуч -->
     <main class="main-content">
 
-        <h1 class="title">Settings</h1>
+        <h1 class="title" data-i18n="profile.main_title">Settings</h1>
 
         <div class="tabs">
-            <button class="tab active">General</button>
-            <button class="tab">Notification</button>
-            <button class="tab">Availability</button>
-            <button class="tab">Security</button>
-            <button class="tab">Connected accounts</button>
-            <button class="tab">Billing</button>
+            <button class="tab active" data-i18n="profile.tabs.general">General</button>
+            <button class="tab" data-i18n="profile.tabs.notification">Notification</button>
+            <button class="tab" data-i18n="profile.tabs.availability">Availability</button>
+            <button class="tab" data-i18n="profile.tabs.security">Security</button>
+            <button class="tab" data-i18n="profile.tabs.connected">Connected accounts</button>
+            <button class="tab" data-i18n="profile.tabs.billing">Billing</button>
         </div>
 
         <section class="page active content-box" id="page-general">
-            <h2>Basic info</h2>
-            <p class="sub">Edit your profile information</p>
+            <h2 data-i18n="profile.general.title">Basic info</h2>
+            <p class="sub" data-i18n="profile.general.subtitle">Edit your profile information</p>
 
             <form class="form">
-                <label>Full name</label>
-                <input type="text" placeholder="John Doe" />
+                <label data-i18n="profile.general.label_name">Full name</label>
+                <input type="text" data-i18n="profile.general.placeholder_name" placeholder="John Doe" />
 
-                <label>Email</label>
-                <input type="email" placeholder="your@email.com" />
+                <label data-i18n="profile.general.label_email">Email</label>
+                <input type="email" data-i18n="profile.general.placeholder_email" placeholder="your@email.com" />
 
-                <label>Location</label>
-                <input type="text" placeholder="City, Country" />
+                <label data-i18n="profile.general.label_location">Location</label>
+                <input type="text" data-i18n="profile.general.placeholder_location" placeholder="City, Country" />
 
-                <button class="save-btn">Save changes</button>
+                <button class="save-btn" data-i18n="profile.general.save_btn">Save changes</button>
             </form>
         </section>
 
-        <!-- PASSWORD & SECURITY (це з’явиться після кліку) -->
         <div id="page-password" class="page">
-            <h2>Password and Security</h2>
+            <h2 data-i18n="profile.security.title">Password and Security</h2>
 
             <div class="security-block">
-                <h3 class="security-block__title">Change Password</h3>
-                <p class="security-block__description">For your security, we recommend creating a unique password that you don't use with <br> any other account on the network.</p>
-                <button id="openChangePassword" class="btn open-change-password">Change Password</button>
+                <h3 class="security-block__title" data-i18n="profile.security.change_pwd_title">Change Password</h3>
+                <p class="security-block__description" data-i18n="profile.security.change_pwd_desc">For your security, we recommend creating a unique password that you don't use with <br> any other account on the network.</p>
+                <button id="openChangePassword" class="btn open-change-password" data-i18n="profile.security.change_pwd_btn">Change Password</button>
 
-                <h3>Log out of all devices</h3>
-                <p class="security-block__description">Sign out of anywhere you use your Epic Games account, including all browsers, phones, consoles, and other devices, except this page.</p>
-                <button class="btn danger">Log out from all devices</button>
+                <h3 data-i18n="profile.security.logout_all_title">Log out of all devices</h3>
+                <p class="security-block__description" data-i18n="profile.security.logout_all_desc">Sign out of anywhere you use your account, including all browsers, phones, consoles, and other devices, except this page.</p>
+                <button class="btn danger" data-i18n="profile.security.logout_all_btn">Log out from all devices</button>
             </div>
         </div>
 
-        <!-- Change Password Modal (VisionOS / Glass) -->
         <div class="modal glass-modal" id="changePasswordModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
         <div class="glass-card" role="document">
             <button class="modal-close" id="closeModal" aria-label="Close modal">&times;</button>
 
-            <h2 id="modalTitle">Change Password</h2>
-            <p class="modal-sub">Enter your current password and choose a new secure password.</p>
+            <h2 id="modalTitle" data-i18n="profile.security.modal.title">Change Password</h2>
+            <p class="modal-sub" data-i18n="profile.security.modal.subtitle">Enter your current password and choose a new secure password.</p>
 
-            <!-- hidden fields for browser autocomplete safety (leave as-is) -->
             <input type="text" style="display:none" autocomplete="username">
             <input type="password" style="display:none" autocomplete="current-password">
 
-            <label class="field-label">Current password</label>
+            <label class="field-label" data-i18n="profile.security.modal.label_current">Current password</label>
             <input type="password" id="currentPassword" autocomplete="current-password" class="field">
 
-        <label class="field-label">New password</label>
+        <label class="field-label" data-i18n="profile.security.modal.label_new">New password</label>
            <div class="password-field">
-                <input type="password" id="newPassword" autocomplete="new-password" class="field" placeholder="New password">
+                <input type="password" id="newPassword" autocomplete="new-password" class="field" data-i18n="profile.security.modal.placeholder_new" placeholder="New password">
 
                 <button type="button" class="eye-btn" data-target="newPassword">
                      <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -280,9 +267,9 @@
                 </button>
             </div>
 
-            <label class="field-label">Confirm new password</label>
+            <label class="field-label" data-i18n="profile.security.modal.label_confirm">Confirm new password</label>
             <div class="password-field">
-                <input type="password" id="confirmPassword" autocomplete="new-password" class="field" placeholder="Confirm password">
+                <input type="password" id="confirmPassword" autocomplete="new-password" class="field" data-i18n="profile.security.modal.placeholder_confirm" placeholder="Confirm password">
 
                 <button type="button" class="eye-btn" data-target="confirmPassword">
                   <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -295,36 +282,39 @@
             <div id="errors" class="errors" aria-live="polite"></div>
 
             <div class="modal-actions">
-            <button id="savePassword" class="save" disabled>Save</button>
-            <button id="cancelPassword" class="cancel">Cancel</button>
+            <button id="savePassword" class="save" disabled data-i18n="profile.security.modal.btn_save">Save</button>
+            <button id="cancelPassword" class="cancel" data-i18n="profile.security.modal.btn_cancel">Cancel</button>
             </div>
         </div>
         </div>
 
-        <!-- PAYMENT Settings -->
         <div id="page-payment" class="page">
-            <h2 class="page-payment__title">Payment Settings</h2>
-            <p class="page-payment__description">Manage your account balance, transactions, and payment methods. <a href="#" style="color: dodgerblue;">View privacy policy.</a></p>
+            <h2 class="page-payment__title" data-i18n="profile.payment.title">Payment Settings</h2>
+            <p class="page-payment__description">
+                <span data-i18n="profile.payment.desc">Manage your account balance, transactions, and payment methods.</span> 
+                <a href="#" style="color: dodgerblue;" data-i18n="profile.payment.privacy_link">View privacy policy.</a>
+            </p>
 
-            <h2 class="page-payment__title">Account balance</h2>
-            <p class="page-payment__description">Use your account balance to purchase AI packs, use any AI Subscription versions etc. Balance is non-refundable. <a href="#" style="color: dodgerblue;">View terms</a></p>
+            <h2 class="page-payment__title" data-i18n="profile.payment.balance_title">Account balance</h2>
+            <p class="page-payment__description">
+                <span data-i18n="profile.payment.balance_desc">Use your account balance to purchase AI packs, use any AI Subscription versions etc. Balance is non-refundable.</span> 
+                <a href="#" style="color: dodgerblue;" data-i18n="profile.payment.terms_link">View terms</a>
+            </p>
 
-            <h2 class="page-payment__title">Balance</h2>
+            <h2 class="page-payment__title" data-i18n="profile.payment.balance_label">Balance</h2>
             <p class="page-payment__balance">0.00 USD</p>
-            <a href="#" class="menu-item page-payment__href" data-page="page-transactions">
+            <a href="#" class="menu-item page-payment__href" data-page="page-transactions" data-i18n="profile.payment.view_transactions_link">
                 View Transactions
             </a>
         </div>
 
-        <!-- TRANSACTIONS -->
         <div id="page-transactions" class="page">
-            <h2 class="page-transactions__title">Transactions</h2>
-            <p class="page-transactions__description">Your account's payment information, transactions.</p>
+            <h2 class="page-transactions__title" data-i18n="profile.transactions.title">Transactions</h2>
+            <p class="page-transactions__description" data-i18n="profile.transactions.desc">Your account's payment information, transactions.</p>
         </div>
 
-        <!-- SUBSCRIPTIONS -->
         <div id="page-subscriptions" class="page">
-            <h2 class="page-subscriptions__title">Subscriptions</h2>
+            <h2 class="page-subscriptions__title" data-i18n="profile.subscriptions.title">Subscriptions</h2>
         </div>
     </main>
 </div>
@@ -332,7 +322,7 @@
     <div class="modal" id="langModal">
         <div class="modal-content glass" style="max-width: 400px;">
             <span class="close-btn" id="closeLangModal">&times;</span>
-            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
+            <h2 style="text-align:center; margin-bottom:20px;" data-i18n="language.select">Select Language</h2>
             <div class="lang-grid" id="langGrid">
                 </div>
         </div>
@@ -536,7 +526,9 @@
 
                 const pageId = btn.getAttribute("data-page");
 
-                document.getElementById(pageId).classList.add("active");
+                if(pageId && document.getElementById(pageId)){
+                    document.getElementById(pageId).classList.add("active");
+                }
 
                 document.querySelectorAll(".menu-item").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
@@ -683,15 +675,23 @@
             ok.style.background = 'rgba(55, 179, 122, 0.06)';
             ok.style.borderLeftColor = 'rgba(55,179,122,0.9)';
             ok.style.color = '#bff3d0';
-            ok.textContent = 'Password changed successfully.';
+            // Get success text from i18n if possible, otherwise fallback
+            ok.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.success) 
+                ? window.i18n.translations.profile.security.modal.success 
+                : 'Password changed successfully.';
             errorsBox.appendChild(ok);
 
             setTimeout(() => closeModal(), 900);
             } catch (err) {
-            errorsBox.innerHTML = `<div class="error-item">Network error. Try again.</div>`;
+            const errMsg = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.network_error)
+                ? window.i18n.translations.profile.security.modal.network_error
+                : 'Network error. Try again.';
+            errorsBox.innerHTML = `<div class="error-item">${errMsg}</div>`;
             } finally {
             btnSave.disabled = false;
-            btnSave.textContent = 'Save';
+            btnSave.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.btn_save)
+                ? window.i18n.translations.profile.security.modal.btn_save
+                : 'Save';
             }
         });
         })();
@@ -787,7 +787,6 @@
     </script>
 
 <script src="js/i18n.js"></script>
-
 <script src="js/script.js"></script>
 
 </body>

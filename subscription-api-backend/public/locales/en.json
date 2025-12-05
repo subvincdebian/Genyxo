@@ -9,7 +9,8 @@
         "userload": "Loading...",
         "emailload": "loading@gmail.com",
         "profileupgrade": "Upgrade",
-        "back_home": "Back To Home"
+        "back_home": "Back To Home",
+        "search_placeholder": "Search products..."
     },
     "hero": {
         "title": "Genyxo",
@@ -25,7 +26,10 @@
         "help": "Help Center",
         "language": "Language",
         "contact": "Contact us",
-        "logout": "Log out"
+        "logout": "Log out",
+        "plan_free": "Free",
+        "details_title": "Details",
+        "meta_info": "Free | 0 Credits | $0.0/mo"
     },
     "products_data": {
         "1": {
@@ -226,5 +230,77 @@
         "plan_free": "Free",
         "plan_meta": "Free | 0 Credits | $0.0/mo",
         "time_format": "en-US"
+    },
+    "profile": {
+        "title": "Profile - Genyxo",
+        "change_avatar": "Change avatar",
+        "view_profile": "View profile",
+        "sidebar": {
+            "home": "Home",
+            "security": "Password and security",
+            "payment": "Payment settings",
+            "transactions": "Transactions",
+            "subscriptions": "Subscriptions",
+            "groups": "Group sessions"
+        },
+        "main_title": "Settings",
+        "tabs": {
+            "general": "General",
+            "notification": "Notification",
+            "availability": "Availability",
+            "security": "Security",
+            "connected": "Connected accounts",
+            "billing": "Billing"
+        },
+        "general": {
+            "title": "Basic info",
+            "subtitle": "Edit your profile information",
+            "label_name": "Full name",
+            "label_email": "Email",
+            "label_location": "Location",
+            "placeholder_name": "John Doe",
+            "placeholder_email": "your@email.com",
+            "placeholder_location": "City, Country",
+            "save_btn": "Save changes"
+        },
+        "security": {
+            "title": "Password and Security",
+            "change_pwd_title": "Change Password",
+            "change_pwd_desc": "For your security, we recommend creating a unique password that you don't use with any other account on the network.",
+            "change_pwd_btn": "Change Password",
+            "logout_all_title": "Log out of all devices",
+            "logout_all_desc": "Sign out of anywhere you use your account, including all browsers, phones, consoles, and other devices, except this page.",
+            "logout_all_btn": "Log out from all devices",
+            "modal": {
+                "title": "Change Password",
+                "subtitle": "Enter your current password and choose a new secure password.",
+                "label_current": "Current password",
+                "label_new": "New password",
+                "label_confirm": "Confirm new password",
+                "placeholder_new": "New password",
+                "placeholder_confirm": "Confirm password",
+                "btn_save": "Save",
+                "btn_cancel": "Cancel",
+                "success": "Password changed successfully.",
+                "network_error": "Network error. Try again."
+            }
+        },
+        "payment": {
+            "title": "Payment Settings",
+            "desc": "Manage your account balance, transactions, and payment methods.",
+            "privacy_link": "View privacy policy.",
+            "balance_title": "Account balance",
+            "balance_desc": "Use your account balance to purchase AI packs, use any AI Subscription versions etc. Balance is non-refundable.",
+            "terms_link": "View terms",
+            "balance_label": "Balance",
+            "view_transactions_link": "View Transactions"
+        },
+        "transactions": {
+            "title": "Transactions",
+            "desc": "Your account's payment information, transactions."
+        },
+        "subscriptions": {
+            "title": "Subscriptions"
+        }
     }
 }
