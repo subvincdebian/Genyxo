@@ -735,11 +735,18 @@
             const confirmText = safeTranslate('notifications.confirm_read_all', 'Mark all as read?');
             if(!confirm(confirmText)) return;
             
-            await fetch(`${API_BASE_URL}/notifications/read-all`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            loadNotifications();
+            try {
+
+                await fetch(`${API_BASE_URL}/notifications/read-all`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadNotifications();
+                showToast(safeTranslate('notifications.marked_all_success', 'All notifications marked as read.'), 'success');
+                
+            } catch (e) {
+                showToast(safeTranslate('notifications.mark_all_fail', 'Failed to mark notifications.'), 'error');
+            }
         }
     </script>
 </body>
