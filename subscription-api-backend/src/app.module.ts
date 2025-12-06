@@ -13,10 +13,28 @@ import { PaymentModule } from './payment/payment.module';
 import { AdminModule } from './admin/admin.module';
 import { SupportModule } from './support/support.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.zoho.eu',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'info@genyxo.com', // ТУТ МАЄ БУТИ ТВОЯ ПОШТА
+          pass: process.env.ZOHO_APP_PASSWORD,  // ТУТ МАЄ БУТИ APP PASSWORD (не звичайний пароль)
+        },
+      },
+      defaults: {
+        from: '"Genyxo Support" <info@genyxo.com>',
+      },
+    }),
+
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.MYSQLHOST || 'localhost',
@@ -38,6 +56,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AdminModule,
     SupportModule,
     NotificationsModule,
+    EmailModule,
   ],
   controllers: [],
   providers: [],

@@ -5,6 +5,7 @@ import { SupportTicket, TicketStatus, TicketPriority } from './support.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { EmailService } from '../email/email.service'; // <-- ІМПОРТУЄМО СЕРВІС ПОШТИ
 
 @Injectable()
 export class SupportService {
@@ -12,6 +13,7 @@ export class SupportService {
     @InjectRepository(SupportTicket)
     private ticketRepo: Repository<SupportTicket>,
     private notificationsService: NotificationsService,
+    private emailService: EmailService, // <-- ДОДАЄМО В КОНСТРУКТОР
   ) {}
 
   async create(userId: number, subject: string, message: string, priority?: TicketPriority) {
@@ -25,26 +27,21 @@ export class SupportService {
   }
 
   async getUserTickets(userId: number) {
-    // Тут можна залишити без пагінації, якщо у юзера не тисячі тікетів,
-    // або додати її пізніше. Для початку вистачить сортування.
     return this.ticketRepo.find({
       where: { user: { id: userId } },
       order: { createdAt: 'DESC' },
     });
   }
 
-  // --- АДМІН ЧАСТИНА ---
-
   async getAllTickets(paginationQuery: PaginationQueryDto) {
     const { page = 1, limit = 10 } = paginationQuery;
-    
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.ticketRepo.findAndCount({
       relations: ['user'],
       order: { 
-        status: 'ASC',
-        priority: 'DESC',
+        status: 'ASC', 
+        priority: 'DESC', 
         createdAt: 'DESC' 
       },
       take: limit,
@@ -64,7 +61,7 @@ export class SupportService {
   async resolveTicket(ticketId: number, response: string) {
     const ticket = await this.ticketRepo.findOne({
       where: { id: ticketId },
-      relations: ['user'],
+      relations: ['user'], // Важливо: ми тягнемо юзера, щоб знати його email
     });
 
     if (!ticket) {
@@ -76,13 +73,23 @@ export class SupportService {
 
     await this.ticketRepo.save(ticket);
 
-    // Створюємо нотифікацію
+    // 1. Сповіщення на сайті
     await this.notificationsService.create(
         ticket.user.id,
         'Support Reply 📩',
         `Support team has replied to your ticket "${ticket.subject}".`,
         NotificationType.SUPPORT
     );
+
+    // 2. Сповіщення на Email (НОВЕ)
+    if (ticket.user.email) {
+        await this.emailService.sendSupportReply(
+            ticket.user.email,
+            ticket.user.name || 'User',
+            ticket.subject,
+            response
+        );
+    }
     
     return ticket;
   }
