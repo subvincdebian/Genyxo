@@ -6,26 +6,23 @@
     <meta name="description" content="Admin Panel for Genyxo management.">
     <title data-i18n="admin.meta_title">Admin Panel - Genyxo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="profile.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .spin {
-            animation: spin 1s linear infinite;
+        /* Додаткові стилі для адмінки, щоб перекрити деякі моменти з profile.css */
+        body {
+            padding-top: 0; /* Скидаємо відступ, якщо він є в profile.css, бо тут своя структура */
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .admin-container { max-width: 1400px; margin: 100px auto; padding: 20px; } /* Зробив ширше для таблиць */
-        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         
-        /* ТАБЛИЦІ - Фіксуємо ширину колонок, щоб не стрибали */
+        .admin-container { max-width: 1400px; margin: 100px auto; padding: 20px; }
+        
+        /* Стилі таблиць */
         .data-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
             background: rgba(0,0,0,0.3);
-            table-layout: fixed; /* Важливо для рівних колонок */
+            table-layout: fixed;
         }
         .data-table th, .data-table td {
             padding: 12px 10px;
@@ -38,7 +35,7 @@
         }
         .data-table th { color: var(--text-light); background: rgba(255,255,255,0.1); font-weight: 600; }
         
-        /* Ширини колонок (загальні) */
+        /* Ширини колонок */
         .col-id { width: 60px; }
         .col-email { width: 220px; }
         .col-name { width: 180px; }
@@ -46,9 +43,7 @@
         .col-date { width: 160px; }
         .col-action { width: 140px; text-align: right; }
         .col-credits { width: 100px; }
-        
-        /* Специфічні ширини для Subject (щоб було більше місця) */
-        .col-subject { width: auto; } /* Займає все вільне місце */
+        .col-subject { width: auto; }
 
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         
@@ -68,7 +63,7 @@
             font-weight: 600;
         }
 
-        /* --- STYLES FOR SUPPORT TICKETS --- */
+        /* Support Tickets Styles */
         .status-badge {
             padding: 4px 8px;
             border-radius: 8px;
@@ -87,7 +82,7 @@
         .priority-medium { background-color: #f1c40f; color: #111; }
         .priority-high { background-color: #e74c3c; color: #fff; }
 
-        /* --- PAGINATION CONTROLS --- */
+        /* Pagination Controls */
         .pagination-controls {
             display: flex;
             justify-content: flex-end;
@@ -107,63 +102,104 @@
             border-radius: 8px;
             transition: 0.2s;
         }
-
-        .pagination-controls button:hover:not(:disabled) {
-            background-color: rgba(255,255,255,0.2);
-        }
-
+        /* Стиль для відключених кнопок */
         .pagination-controls button:disabled {
             cursor: not-allowed;
-            opacity: 0.4;
+            opacity: 0.3;
+            background-color: rgba(0,0,0,0.5);
         }
 
-        .pagination-controls span {
-            font-weight: 500;
-            font-size: 0.95em;
-            color: var(--text-gray);
-        }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* MODALS */
+        /* Modals */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.85);
             display: none; justify-content: center; align-items: center; z-index: 2000;
             backdrop-filter: blur(5px);
         }
-        .modal-content {
-            width: 90%; max-width: 600px; padding: 30px; border-radius: 16px;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--glass-border);
-        }
         .user-message-box {
             background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;
             max-height: 200px; overflow-y: auto; white-space: pre-wrap;
             border: 1px solid rgba(255, 255, 255, 0.1); color: #ddd; font-size: 0.95rem;
         }
-        .modal-content textarea {
-            width: 100%; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.4); color: #fff; border-radius: 8px;
-            resize: vertical; margin-bottom: 20px; font-size: 1rem;
-        }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 15px; }
         .primary-btn { background: #10e6cc; color: black; border: none; }
-        .primary-btn:hover { background: #0dbfb0; }
-
+        
+        /* Виправлення навігації для Admin Panel */
+        .navbar {
+            padding: 0.8rem 2rem;
+            height: 80px;
+        }
+        
+        .right-side {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        /* Прибираємо старі посилання навігації, якщо треба */
+        .nav-link { margin-right: 0; }
     </style>
 </head>
 <body>
+    
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <i class="fas fa-shield-alt"></i> 
-                <span data-i18n="admin.nav_title">Admin Panel</span>
+                <a href="admin.html" style="text-decoration: none; color: white; display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-shield-alt"></i> 
+                    <span data-i18n="admin.nav_title">Admin Panel</span>
+                </a>
             </div>
-            <div class="nav-links">
-                <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
-                <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
-                <a href="support.html" class="nav-link" data-i18n="menu.help">Support</a>
-                <a href="#" class="nav-link" onclick="openLangModal(); return false;" data-i18n="menu.language">Language</a>
-            </div>
+            
+            <div class="right-side">
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
+                    <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
+                </div>
+
+                <div class="profile-container">
+                    <button class="login-btn profile-toggle-btn" id="loginBtn">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" class="nav-avatar-small" id="navAvatar" alt="Avatar">
+                        <i class="fas fa-user" id="navIcon" style="display: none;"></i>
+                        <span id="navUsername">Admin</span>
+                    </button>
+                    
+                    <div class="profile-dropdown glass" id="profilePanel">
+                        
+                        <div class="dropdown-header">
+                            <div class="user-details">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Avatar" class="avatar-big dropdown-avatar">
+                                <div class="user-text">
+                                    <h3 id="menuName">Admin User</h3>
+                                    <p id="menuEmail">admin@genyxo.com</p>
+                                </div>
+                            </div>
+                            <span class="badge badge-admin">ADMIN</span>
+                        </div>
+
+                        <div class="dropdown-menu">
+                            <a href="profile.html" class="menu-item">
+                                <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
+                            </a>
+                            <a href="support.html" class="menu-item">
+                                <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
+                            </a>
+                            <a href="#" class="menu-item" onclick="openLangModal(); return false;">
+                                <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
+                                <span class="lang-val">></span>
+                            </a>
+                        </div>
+
+                        <div class="dropdown-footer">
+                            <button class="menu-item logout-item" id="dropdownLogoutBtn">
+                                <i class="fas fa-sign-out-alt"></i> <span data-i18n="menu.logout">Log out</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                </div>
         </div>
     </nav>
 
@@ -269,10 +305,8 @@
             <h3>Reply to Ticket #<span id="modalTicketId"></span></h3>
             <p><strong>User Message:</strong></p>
             <div id="modalUserMessage" class="user-message-box"></div>
-            
             <label for="replyInput">Your Reply:</label>
             <textarea id="replyInput" rows="5" placeholder="Enter your response here..."></textarea>
-            
             <div class="modal-actions">
                 <button class="action-btn" onclick="closeReplyModal()">Cancel</button>
                 <button class="action-btn primary-btn" onclick="submitReply()">Send Reply</button>
@@ -288,40 +322,89 @@
 
         if (!token) window.location.href = 'index.html';
 
-        // --- GLOBAL VARIABLES FOR PAGINATION ---
-        // Users
+        // --- GLOBAL PAGINATION STATE ---
         let usersPage = 1;
         const usersLimit = 10;
         
-        // Transactions
         let txPage = 1;
         const txLimit = 10;
         
-        // Tickets
         let ticketsPage = 1;
         const ticketsLimit = 10;
 
-        // Helper for translation
-        function t(key, defaultText) {
-            if (window.i18n && window.i18n.translations) {
-                const keys = key.split('.');
-                let result = window.i18n.translations;
-                for (let k of keys) {
-                    if (result[k] === undefined) return defaultText || key;
-                    result = result[k];
-                }
-                return result;
+        // --- HEADER & DROPDOWN LOGIC ---
+        const profileToggleBtn = document.getElementById('loginBtn');
+        const profileDropdown = document.getElementById('profilePanel');
+        const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
+
+        profileToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (event) => {
+            const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
+            if (!isClickInside && profileDropdown.classList.contains('show')) {
+                profileDropdown.classList.remove('show');
             }
-            return defaultText || key;
+        });
+
+        dropdownLogoutBtn.addEventListener('click', () => {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        });
+
+        // Завантаження даних про адміна в хедер
+        async function loadAdminProfile() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if(res.ok) {
+                    const user = await res.json();
+                    // Оновлюємо хедер
+                    const navAvatar = document.getElementById('navAvatar');
+                    const navUsername = document.getElementById('navUsername');
+                    const menuName = document.getElementById('menuName');
+                    const menuEmail = document.getElementById('menuEmail');
+                    const dropdownAvatar = document.querySelector('.dropdown-avatar');
+
+                    if(user.avatar) {
+                        navAvatar.src = user.avatar;
+                        dropdownAvatar.src = user.avatar;
+                    }
+                    if(user.name) {
+                        navUsername.textContent = user.name;
+                        menuName.textContent = user.name;
+                    }
+                    if(user.email) menuEmail.textContent = user.email;
+                }
+            } catch(e) {
+                console.error("Profile load error", e);
+            }
         }
 
-        // --- 1. USERS LOGIC ---
+        // --- HELPER TO DISABLE/ENABLE BUTTONS ---
+        function setPaginationLoading(type, isLoading) {
+            // type = 'User', 'Tx', 'Ticket'
+            const prevBtn = document.getElementById(`prev${type}Btn`);
+            const nextBtn = document.getElementById(`next${type}Btn`);
+            
+            if(isLoading) {
+                // Блокуємо, щоб не клікали під час завантаження
+                if(prevBtn) prevBtn.disabled = true;
+                if(nextBtn) nextBtn.disabled = true;
+            }
+            // Якщо isLoading = false, кнопки будуть розблоковані логікою updatePaginationUI
+        }
+
+        // --- 1. USERS ---
         async function loadUsers() {
+            setPaginationLoading('User', true); // БЛОКУЄМО КНОПКИ
             const refreshIcon = document.getElementById('refreshIconUsers');
             if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                // ADDED PAGE & LIMIT
                 const res = await fetch(`${API_BASE_URL}/admin/users?page=${usersPage}&limit=${usersLimit}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -329,7 +412,6 @@
                 if (!res.ok) throw new Error('Access Denied');
                 
                 const result = await res.json();
-                // Handle both new format {data, meta} and old array format just in case
                 const users = result.data ? result.data : result; 
                 const meta = result.meta || { page: 1, lastPage: 1, total: users.length };
 
@@ -365,11 +447,13 @@
                 console.error("Error in loadUsers:", e);          
             } finally {
                 if (refreshIcon) refreshIcon.classList.remove('spin');
+                // setPaginationLoading('User', false) - не потрібно, updatePaginationUI сам вирішить
             }   
         }
 
-        // --- 2. TRANSACTIONS LOGIC ---
+        // --- 2. TRANSACTIONS ---
         async function loadTransactions() {
+            setPaginationLoading('Tx', true); // БЛОКУЄМО
             const refreshIcon = document.getElementById('refreshIconTx');
             if (refreshIcon) refreshIcon.classList.add('spin');
 
@@ -406,10 +490,8 @@
                         } else {
                             actionBtns = '-';
                         }
-
                         const userEmail = tx.user ? tx.user.email : 'Unknown User';
                         const dateStr = new Date(tx.createdAt).toLocaleString();
-
                         tbody.innerHTML += `
                             <tr>
                                 <td>${tx.id}</td>
@@ -424,9 +506,7 @@
                         `;
                     });
                 }
-
                 updatePaginationUI('Tx', meta);
-
             } catch (e) {
                 console.error("Error in loadTransactions:", e);          
             } finally {
@@ -434,18 +514,16 @@
             }
         }
 
-        // --- 3. TICKETS LOGIC ---
+        // --- 3. TICKETS ---
         async function loadAdminTickets() {
+            setPaginationLoading('Ticket', true); // БЛОКУЄМО
             const refreshIcon = document.getElementById('refreshIconTickets');
             if(refreshIcon) refreshIcon.classList.add('spin');
 
             try {
                 const res = await fetch(`${API_BASE_URL}/support/admin/all?page=${ticketsPage}&limit=${ticketsLimit}`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                 });
 
                 if (res.ok) {
@@ -464,8 +542,6 @@
                             const priorityClass = `status-badge priority-${t.priority ? t.priority.toLowerCase() : 'medium'}`;
                             const creationDate = new Date(t.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                             
-                            // Виправлений порядок стовпчиків у JS, щоб відповідав HTML
-                            // HTML: ID | User | Subject | Priority | Status | Date | Action
                             return `
                                 <tr data-ticket-id="${t.id}">
                                     <td>${t.id}</td>
@@ -476,9 +552,7 @@
                                     <td>${creationDate}</td>
                                     <td style="text-align:right;">
                                         ${t.status !== 'CLOSED' ? `
-                                            <button class="action-btn" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">
-                                                <i class="fas fa-reply"></i> Reply
-                                            </button>
+                                            <button class="action-btn" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">Reply</button>
                                         ` : `<span style="color: #2ecc71;">Resolved</span>`}
                                     </td>
                                 </tr>
@@ -486,30 +560,32 @@
                         }).join('');
                         tableBody.innerHTML = html;
                     }
-
                     updatePaginationUI('Ticket', meta);
                 }
             } catch (e) {
-                console.error('Server error on loading admin tickets:', e);
+                console.error('Error loading tickets:', e);
             } finally {
                  if(refreshIcon) refreshIcon.classList.remove('spin');
             }
         }
 
-        // --- GENERIC PAGINATION UPDATE ---
+        // --- GENERIC PAGINATION UI UPDATE ---
         function updatePaginationUI(type, meta) {
-            // type can be 'User', 'Tx', 'Ticket'
             const prevBtn = document.getElementById(`prev${type}Btn`);
             const nextBtn = document.getElementById(`next${type}Btn`);
             const infoSpan = document.getElementById(`${type.toLowerCase()}PageInfo`);
 
+            // Оновлюємо текст (Сторінка X з Y)
             if (infoSpan) {
                 infoSpan.textContent = `Page ${meta.page} of ${meta.lastPage} (Total: ${meta.total})`;
             }
 
+            // Оновлюємо кнопки та події
             if (prevBtn) {
+                // Кнопка неактивна, якщо це перша сторінка
                 prevBtn.disabled = meta.page <= 1;
-                // Clone node to remove old event listeners to prevent stacking
+                
+                // Видаляємо старі лісенери через клонування (щоб не дублювалися кліки)
                 const newPrev = prevBtn.cloneNode(true);
                 prevBtn.parentNode.replaceChild(newPrev, prevBtn);
                 
@@ -521,7 +597,9 @@
             }
 
             if (nextBtn) {
+                // Кнопка неактивна, якщо це остання сторінка
                 nextBtn.disabled = meta.page >= meta.lastPage;
+                
                 const newNext = nextBtn.cloneNode(true);
                 nextBtn.parentNode.replaceChild(newNext, nextBtn);
                 
@@ -537,20 +615,16 @@
         async function processTx(id, action) {
             const endpoint = action === 'approve' ? 'approve-transaction' : 'decline-transaction';
             if(!confirm(`Are you sure you want to ${action.toUpperCase()}?`)) return;
-            
             try {
                 const res = await fetch(`${API_BASE_URL}/admin/${endpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ txId: id })
                 });
-
                 if (res.ok) {
                     loadTransactions();
-                    loadUsers(); // Update credits potentially
-                } else {
-                    alert('Failed');
-                }
+                    loadUsers();
+                } else { alert('Failed'); }
             } catch (e) { alert('Server error'); }
         }
 
@@ -571,7 +645,7 @@
         function openReplyModal(id, userMessage) {
             currentTicketId = id;
             document.getElementById('modalTicketId').textContent = id;
-            document.getElementById('modalUserMessage').textContent = userMessage; // Normally fetch full message
+            document.getElementById('modalUserMessage').textContent = userMessage;
             document.getElementById('replyInput').value = '';
             document.getElementById('replyModal').style.display = 'flex';
         }
@@ -581,7 +655,6 @@
         async function submitReply() {
             const replyText = document.getElementById('replyInput').value;
             if (!replyText.trim()) { alert("Enter a reply"); return; }
-            
             try {
                 const res = await fetch(`${API_BASE_URL}/support/admin/resolve`, {
                     method: 'POST',
@@ -595,6 +668,7 @@
 
         // INIT
         document.addEventListener('DOMContentLoaded', () => {
+            loadAdminProfile(); // Вантажимо аватарку адміна
             setTimeout(() => {
                 loadUsers();
                 loadTransactions();
@@ -602,7 +676,6 @@
             }, 300);
         });
 
-        // Close modal on outside click
         window.onclick = function(event) {
             const modal = document.getElementById('replyModal');
             if (event.target == modal) {
