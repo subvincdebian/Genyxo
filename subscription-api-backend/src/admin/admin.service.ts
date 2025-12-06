@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Transaction } from '../users/transaction.entity';
 import { TransactionStatus } from '../users/transaction.entity';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Injectable()
 export class AdminService {
@@ -14,15 +15,45 @@ export class AdminService {
     private transactionRepo: Repository<Transaction>,
   ) {}
 
-  async getAllUsers() {
-    return this.userRepo.find();
+  async getAllUsers(paginationQuery: PaginationQueryDto) {
+    const { page = 1, limit = 10 } = paginationQuery;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.userRepo.findAndCount({
+      order: { id: 'DESC' },
+      take: limit,
+      skip: skip,
+    });
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
-  async getAllTransactions() {
-    return this.transactionRepo.find({
+  async getAllTransactions(paginationQuery: PaginationQueryDto) {
+    const { page = 1, limit = 10 } = paginationQuery;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.transactionRepo.findAndCount({
       order: { id: 'DESC' },
-      relations: ['user']
+      relations: ['user'],
+      take: limit,
+      skip: skip,
     });
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   async manualAddCredits(userId: number, amount: number) {

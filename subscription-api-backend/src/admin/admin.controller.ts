@@ -1,17 +1,20 @@
-import { Controller, Get, Post, Body, UseGuards, Request, ForbiddenException, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, ForbiddenException, HttpStatus, HttpCode, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/role.enum';
-
 import { PaymentService } from '../payment/payment.service'; 
 import { TransactionStatus } from '../users/transaction.entity';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Controller('admin')
 @UseGuards(AuthGuard('jwt'))
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(private readonly adminService: AdminService, private readonly paymentService: PaymentService,) {}
+  constructor(
+      private readonly adminService: AdminService, 
+      private readonly paymentService: PaymentService
+  ) {}
 
   private checkAdmin(user: any) {
     if (user.role !== 'admin') {
@@ -20,13 +23,13 @@ export class AdminController {
   }
 
   @Get('users')
-  async getUsers() {
-    return this.adminService.getAllUsers();
+  async getUsers(@Query() paginationQuery: PaginationQueryDto) {
+    return this.adminService.getAllUsers(paginationQuery);
   }
 
   @Get('transactions')
-  async getTransactions() {
-    return this.adminService.getAllTransactions();
+  async getTransactions(@Query() paginationQuery: PaginationQueryDto) {
+    return this.adminService.getAllTransactions(paginationQuery);
   }
 
   @Post('add-credits')

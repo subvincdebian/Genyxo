@@ -16,133 +16,69 @@
             100% { transform: rotate(360deg); }
         }
 
-        .admin-container { max-width: 1200px; margin: 100px auto; padding: 20px; }
+        .admin-container { max-width: 1400px; margin: 100px auto; padding: 20px; } /* Зробив ширше для таблиць */
         .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         
+        /* ТАБЛИЦІ - Фіксуємо ширину колонок, щоб не стрибали */
         .data-table {
             width: 100%;
-            table-layout: fixed;
             border-collapse: collapse;
             margin-top: 1rem;
             background: rgba(0,0,0,0.3);
+            table-layout: fixed; /* Важливо для рівних колонок */
         }
         .data-table th, .data-table td {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            vertical-align: middle;
-            padding: 12px 8px;
+            padding: 12px 10px;
             text-align: left;
             border-bottom: 1px solid var(--glass-border);
             color: var(--text-gray);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        .data-table th { color: var(--text-light); background: rgba(255,255,255,0.1); }
+        .data-table th { color: var(--text-light); background: rgba(255,255,255,0.1); font-weight: 600; }
         
+        /* Ширини колонок (загальні) */
+        .col-id { width: 60px; }
+        .col-email { width: 220px; }
+        .col-name { width: 180px; }
+        .col-status { width: 110px; }
+        .col-date { width: 160px; }
+        .col-action { width: 140px; text-align: right; }
+        .col-credits { width: 100px; }
+        
+        /* Специфічні ширини для Subject (щоб було більше місця) */
+        .col-subject { width: auto; } /* Займає все вільне місце */
+
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
         .badge-success { background: #2ecc71; color: black; }
         .badge-pending { background: #f1c40f; color: black; }
         .badge-admin { background: #e74c3c; color: white; }
         
         .action-btn {
-            padding: 5px 10px;
+            padding: 6px 12px;
             background: var(--text-light);
             color: black;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
-        .col-id { width: 50px; }
-        .col-small { width: 80px; }
-        .col-status { width: 100px; }
-        .col-date { width: 150px; }
-        .col-action { width: 120px; text-align: right; }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            width: 90%;
-            max-width: 550px;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content h3 {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            color: #fff;
-        }
-
-        .user-message-box {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            max-height: 180px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ccc;
-            font-style: italic;
-        }
-
-        .modal-content label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .modal-content textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(0, 0, 0, 0.3);
-            color: #fff;
-            border-radius: 8px;
-            resize: vertical;
-            margin-bottom: 20px;
-            font-size: 1em;
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        .primary-btn {
-            background-color: #3498db;
-            color: white;
-        }
-        .primary-btn:hover {
-            background-color: #2980b9;
-        }
-
+        /* --- STYLES FOR SUPPORT TICKETS --- */
         .status-badge {
             padding: 4px 8px;
             border-radius: 8px;
-            font-size: 0.8em;
+            font-size: 0.75em;
             font-weight: bold;
             text-transform: uppercase;
             display: inline-block;
-            min-width: 80px;
+            min-width: 70px;
             text-align: center;
         }
-
         .status-open { background-color: #f39c12; color: #fff; }
         .status-in_progress { background-color: #3498db; color: #fff; }
         .status-closed { background-color: #2ecc71; color: #fff; }
@@ -151,37 +87,68 @@
         .priority-medium { background-color: #f1c40f; color: #111; }
         .priority-high { background-color: #e74c3c; color: #fff; }
 
+        /* --- PAGINATION CONTROLS --- */
         .pagination-controls {
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .pagination-controls button {
-            padding: 8px 15px;
+            padding: 8px 16px;
             cursor: pointer;
-            background-color: #333;
-            border: 1px solid #555;
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
             color: white;
             border-radius: 8px;
-            transition: background-color 0.2s;
+            transition: 0.2s;
         }
 
         .pagination-controls button:hover:not(:disabled) {
-            background-color: #555;
+            background-color: rgba(255,255,255,0.2);
         }
 
         .pagination-controls button:disabled {
             cursor: not-allowed;
-            opacity: 0.5;
+            opacity: 0.4;
         }
 
         .pagination-controls span {
-            font-weight: bold;
-            font-size: 1.1em;
+            font-weight: 500;
+            font-size: 0.95em;
+            color: var(--text-gray);
         }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            width: 90%; max-width: 600px; padding: 30px; border-radius: 16px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--glass-border);
+        }
+        .user-message-box {
+            background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;
+            max-height: 200px; overflow-y: auto; white-space: pre-wrap;
+            border: 1px solid rgba(255, 255, 255, 0.1); color: #ddd; font-size: 0.95rem;
+        }
+        .modal-content textarea {
+            width: 100%; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4); color: #fff; border-radius: 8px;
+            resize: vertical; margin-bottom: 20px; font-size: 1rem;
+        }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 15px; }
+        .primary-btn { background: #10e6cc; color: black; border: none; }
+        .primary-btn:hover { background: #0dbfb0; }
+
     </style>
 </head>
 <body>
@@ -203,7 +170,7 @@
     <div class="admin-container">
         <h1 style="color: white; margin-bottom: 2rem;" data-i18n="admin.system_mgmt">System Management</h1>
 
-        <div class="glass" style="padding: 20px; margin-bottom: 30px;">
+        <div class="glass" style="padding: 25px; margin-bottom: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-users"></i> <span data-i18n="admin.users_title">Users</span></h2>
                 <button onclick="loadUsers()" class="action-btn">
@@ -213,19 +180,24 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="col-id" data-i18n="admin.table.id">ID</th>
-                        <th data-i18n="admin.table.email">Email</th>
-                        <th data-i18n="admin.table.name">Name</th>
-                        <th class="col-small" data-i18n="admin.table.role">Role</th>
-                        <th class="col-small" data-i18n="admin.table.credits">Credits</th>
-                        <th class="col-action" data-i18n="admin.table.action">Action</th>
+                        <th class="col-id">ID</th>
+                        <th class="col-email">Email</th>
+                        <th class="col-name">Name</th>
+                        <th class="col-status">Role</th>
+                        <th class="col-credits">Credits</th>
+                        <th class="col-action">Action</th>
                     </tr>
                 </thead>
                 <tbody id="usersTable"></tbody>
             </table>
+            <div class="pagination-controls">
+                <button id="prevUserBtn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <span id="userPageInfo">Page 1</span>
+                <button id="nextUserBtn" disabled>Next <i class="fas fa-chevron-right"></i></button>
+            </div>
         </div>
 
-        <div class="glass" style="padding: 20px;">
+        <div class="glass" style="padding: 25px;">
             <div class="section-header">
                 <h2><i class="fas fa-receipt"></i> <span data-i18n="admin.transactions_title">Transactions</span></h2>
                 <button onclick="loadTransactions()" class="action-btn">
@@ -235,21 +207,26 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="col-id" data-i18n="admin.table.id">ID</th>
-                        <th data-i18n="admin.table.user">User</th>
-                        <th class="col-small" data-i18n="admin.table.amount">Amount ($)</th>
-                        <th class="col-small" data-i18n="admin.table.credits">Credits</th>
-                        <th class="col-status" data-i18n="admin.table.status">Status</th>
-                        <th data-i18n="admin.table.method">Method</th>
-                        <th class="col-date" data-i18n="admin.table.date">Date</th>
-                        <th class="col-action" data-i18n="admin.table.action">Action</th>
+                        <th class="col-id">ID</th>
+                        <th class="col-email">User Email</th>
+                        <th style="width: 100px;">Amount</th>
+                        <th style="width: 100px;">Credits</th>
+                        <th class="col-status">Status</th>
+                        <th style="width: 100px;">Method</th>
+                        <th class="col-date">Date</th>
+                        <th class="col-action">Action</th>
                     </tr>
                 </thead>
                 <tbody id="transactionsTable"></tbody>
             </table>
+             <div class="pagination-controls">
+                <button id="prevTxBtn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <span id="txPageInfo">Page 1</span>
+                <button id="nextTxBtn" disabled>Next <i class="fas fa-chevron-right"></i></button>
+            </div>
         </div>
 
-        <div class="glass" style="padding: 20px; margin-top: 30px;">
+        <div class="glass" style="padding: 25px; margin-top: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-headset"></i> <span data-i18n="admin.tickets_title">Support Tickets</span></h2>
                 <button onclick="loadAdminTickets()" class="action-btn">
@@ -259,67 +236,72 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="col-id" data-i18n="admin.table.id">ID</th>
-                        <th data-i18n="admin.table.user">User</th>       
-                        <th data-i18n="admin.table.subject">Subject</th>
-                        <th>Priority</th>
-                        <th>Created By</th>
-                        <th>Created At</th>
-                        <th class="col-status" data-i18n="admin.table.status">Status</th>
-                        <th class="col-action" data-i18n="admin.table.action">Action</th>
+                        <th class="col-id">ID</th>
+                        <th class="col-email">User</th>       
+                        <th class="col-subject">Subject</th>
+                        <th style="width: 100px;">Priority</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-date">Created At</th>
+                        <th class="col-action">Action</th>
                     </tr>
                 </thead>
                 <tbody id="ticketsTableBody"></tbody>
             </table>
 
             <div class="pagination-controls">
-                <button id="prevPageBtn" disabled>
-                    <i class="fas fa-chevron-left"></i> Previous
-                </button>
-                <span id="currentPageInfo">Page 1 of 1</span>
-                <button id="nextPageBtn" disabled>
-                    Next <i class="fas fa-chevron-right"></i>
-                </button>
+                <button id="prevTicketBtn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <span id="ticketPageInfo">Page 1</span>
+                <button id="nextTicketBtn" disabled>Next <i class="fas fa-chevron-right"></i></button>
             </div>
-            
         </div>
     </div>
 
     <div class="modal" id="langModal">
         <div class="modal-content glass" style="max-width: 400px;">
             <span class="close-btn" id="closeLangModal">&times;</span>
-            <h2 style="text-align:center; margin-bottom:20px;" data-i18n="admin.modal.select_lang">Select Language</h2>
+            <h2 style="text-align:center; margin-bottom:20px;">Select Language</h2>
             <div class="lang-grid" id="langGrid"></div>
         </div>
     </div>
 
     <div id="replyModal" class="modal-overlay">
         <div class="modal-content glass">
-            <h3><span data-i18n="admin.modal.reply_title">Reply to Ticket #</span><span id="modalTicketId"></span></h3>
-            <p><strong data-i18n="admin.modal.user_msg">User Message:</strong></p>
+            <h3>Reply to Ticket #<span id="modalTicketId"></span></h3>
+            <p><strong>User Message:</strong></p>
             <div id="modalUserMessage" class="user-message-box"></div>
             
-            <label for="replyInput" data-i18n="admin.modal.your_reply">Your Reply:</label>
-            <textarea id="replyInput" rows="5" placeholder="Enter your response here..." data-i18n="admin.modal.placeholder"></textarea>
+            <label for="replyInput">Your Reply:</label>
+            <textarea id="replyInput" rows="5" placeholder="Enter your response here..."></textarea>
             
             <div class="modal-actions">
-                <button class="action-btn" onclick="closeReplyModal()" data-i18n="admin.modal.cancel">Cancel</button>
-                <button class="action-btn primary-btn" onclick="submitReply()" data-i18n="admin.modal.send">Send Reply</button>
+                <button class="action-btn" onclick="closeReplyModal()">Cancel</button>
+                <button class="action-btn primary-btn" onclick="submitReply()">Send Reply</button>
             </div>
         </div>
     </div>
 
     <script src="js/i18n.js"></script>
-
+    
     <script>
         const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
         const token = localStorage.getItem('authToken');
 
         if (!token) window.location.href = 'index.html';
 
-        let currentTicketsPage = 1;
+        // --- GLOBAL VARIABLES FOR PAGINATION ---
+        // Users
+        let usersPage = 1;
+        const usersLimit = 10;
+        
+        // Transactions
+        let txPage = 1;
+        const txLimit = 10;
+        
+        // Tickets
+        let ticketsPage = 1;
         const ticketsLimit = 10;
 
+        // Helper for translation
         function t(key, defaultText) {
             if (window.i18n && window.i18n.translations) {
                 const keys = key.split('.');
@@ -333,198 +315,132 @@
             return defaultText || key;
         }
 
+        // --- 1. USERS LOGIC ---
         async function loadUsers() {
             const refreshIcon = document.getElementById('refreshIconUsers');
             if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/users`, {
+                // ADDED PAGE & LIMIT
+                const res = await fetch(`${API_BASE_URL}/admin/users?page=${usersPage}&limit=${usersLimit}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
-                if (!res.ok) throw new Error(t('admin.js.access_denied', 'Access Denied'));
+                if (!res.ok) throw new Error('Access Denied');
                 
-                const users = await res.json();
+                const result = await res.json();
+                // Handle both new format {data, meta} and old array format just in case
+                const users = result.data ? result.data : result; 
+                const meta = result.meta || { page: 1, lastPage: 1, total: users.length };
+
                 const tbody = document.getElementById('usersTable');
                 tbody.innerHTML = '';
                 
                 if (users.length === 0) {
-                     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">${t('admin.js.no_users', 'No users found')}</td></tr>`;
+                     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No users found</td></tr>`;
+                } else {
+                    users.forEach(u => {
+                        const roleBadge = u.role === 'admin' ? '<span class="badge badge-admin">ADMIN</span>' : 'User';
+                        const userName = u.name ? u.name : '-';
+                        const userCredits = u.credits ? u.credits : '0.00';
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${u.id}</td>
+                                <td title="${u.email}">${u.email}</td>
+                                <td>${userName}</td>
+                                <td>${roleBadge}</td>
+                                <td><strong>${userCredits}</strong></td>
+                                <td style="text-align:right;">
+                                    <button class="action-btn" onclick="addCreditsPrompt(${u.id})">+ Credits</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
                 }
+                
+                updatePaginationUI('User', meta);
 
-                users.forEach(u => {
-                    const roleBadge = u.role === 'admin' ? '<span class="badge badge-admin">ADMIN</span>' : 'User';
-                    const userName = u.name ? u.name : '-';
-                    const userCredits = u.credits ? u.credits : '0.00';
-                    const addCreditsText = t('admin.js.add_credits_btn', '+ Credits');
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${u.id}</td>
-                            <td>${u.email}</td>
-                            <td>${userName}</td>
-                            <td>${roleBadge}</td>
-                            <td><strong>${userCredits}</strong></td>
-                            <td>
-                                <button class="action-btn" onclick="addCreditsPrompt(${u.id})">${addCreditsText}</button>
-                            </td>
-                        </tr>
-                    `;
-                });
             } catch (e) {
-                console.error("Critical Error in loadUsers:", e);          
+                console.error("Error in loadUsers:", e);          
             } finally {
                 if (refreshIcon) refreshIcon.classList.remove('spin');
             }   
         }
 
+        // --- 2. TRANSACTIONS LOGIC ---
         async function loadTransactions() {
             const refreshIcon = document.getElementById('refreshIconTx');
             if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/transactions`, {
+                const res = await fetch(`${API_BASE_URL}/admin/transactions?page=${txPage}&limit=${txLimit}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
                 if (!res.ok) return;
 
-                const transactions = await res.json();
+                const result = await res.json();
+                const transactions = result.data ? result.data : result;
+                const meta = result.meta || { page: 1, lastPage: 1, total: transactions.length };
+
                 const tbody = document.getElementById('transactionsTable');
                 tbody.innerHTML = '';
                 
                 if (transactions.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">${t('admin.js.no_transactions', 'No transactions found')}</td></tr>`;
-                    return;
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No transactions found</td></tr>`;
+                } else {
+                    transactions.forEach(tx => {
+                        let statusClass = 'badge-pending';
+                        if (tx.status === 'APPROVED') statusClass = 'badge-success';
+                        if (tx.status === 'DECLINED') statusClass = 'badge-admin';
+
+                        let actionBtns = '';
+                        if (tx.status === 'PENDING') {
+                            actionBtns = `
+                                <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                                    <button class="action-btn" style="background: #2ecc71; color: white;" onclick="processTx(${tx.id}, 'approve')">✓</button>
+                                    <button class="action-btn" style="background: #e74c3c; color: white;" onclick="processTx(${tx.id}, 'decline')">✕</button>
+                                </div>
+                            `;
+                        } else {
+                            actionBtns = '-';
+                        }
+
+                        const userEmail = tx.user ? tx.user.email : 'Unknown User';
+                        const dateStr = new Date(tx.createdAt).toLocaleString();
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${tx.id}</td>
+                                <td title="${userEmail}">${userEmail}</td>
+                                <td>$${tx.amount}</td>
+                                <td>${tx.creditsAmount}</td>
+                                <td><span class="badge ${statusClass}">${tx.status}</span></td>
+                                <td>${tx.provider}</td>
+                                <td>${dateStr}</td>
+                                <td>${actionBtns}</td> 
+                            </tr>
+                        `;
+                    });
                 }
 
-                transactions.forEach(tx => {
-                    let statusClass = 'badge-pending';
-                    if (tx.status === 'APPROVED') statusClass = 'badge-success';
-                    if (tx.status === 'DECLINED') statusClass = 'badge-admin';
+                updatePaginationUI('Tx', meta);
 
-                    let actionBtns = '';
-                    if (tx.status === 'PENDING') {
-                        actionBtns = `
-                            <div style="display: flex; gap: 5px; justify-content: flex-end;">
-                                <button class="action-btn" style="background: #2ecc71; color: white;" onclick="processTx(${tx.id}, 'approve')">✓</button>
-                                <button class="action-btn" style="background: #e74c3c; color: white;" onclick="processTx(${tx.id}, 'decline')">✕</button>
-                            </div>
-                        `;
-                    } else {
-                        actionBtns = '-';
-                    }
-
-                    const userEmail = tx.user ? tx.user.email : t('admin.js.unknown_user', 'Unknown User');
-                    const dateStr = new Date(tx.createdAt).toLocaleString();
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${tx.id}</td>
-                            <td>${userEmail}</td>
-                            <td>$${tx.amount}</td>
-                            <td>${tx.creditsAmount}</td>
-                            <td><span class="badge ${statusClass}">${tx.status}</span></td>
-                            <td>${tx.provider}</td>
-                            <td>${dateStr}</td>
-                            <td>${actionBtns}</td> 
-                        </tr>
-                    `;
-                });
             } catch (e) {
-                console.error("Critical Error in loadTransactions:", e);          
+                console.error("Error in loadTransactions:", e);          
             } finally {
                 if (refreshIcon) refreshIcon.classList.remove('spin');
             }
         }
 
-        async function processTx(id, action) {
-            const endpoint = action === 'approve' ? 'approve-transaction' : 'decline-transaction';
-            
-            const msg = action === 'approve' 
-                ? t('admin.js.confirm_approve', 'Approve?') 
-                : t('admin.js.confirm_decline', 'Decline?');
-
-            if(!confirm(msg)) return;
-            
-            try {
-                const res = await fetch(`${API_BASE_URL}/admin/${endpoint}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ txId: id })
-                });
-
-                if (res.ok) {
-                    loadTransactions();
-                    loadUsers();
-                } else {
-                    const err = await res.json();
-                    alert('Error: ' + (err.message || t('admin.js.error_failed', 'Failed')));
-                }
-            } catch (e) {
-                alert(t('admin.js.error_server', 'Server error'));
-            }
-        }
-
-        async function addCreditsPrompt(userId) {
-            const amount = prompt(t('admin.js.prompt_credits', "How many credits to add?"));
-            if (amount) {
-                await fetch(`${API_BASE_URL}/admin/add-credits`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ userId: Number(userId), amount: Number(amount) })
-                });
-                loadUsers();
-            }
-        }
-
-        function renderTickets(tickets) {
-            const tableBody = document.getElementById('ticketsTableBody');
-            tableBody.innerHTML = '';
-
-            if (tickets.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">${i18n.t('admin.js.no_tickets', 'No tickets found.')}</td></tr>`;
-                return;
-            }
-
-            const html = tickets.map(t => {
-                const statusClass = `status-badge status-${t.status.toLowerCase().replace(' ', '_')}`;
-                const priorityClass = `status-badge priority-${t.priority.toLowerCase()}`;
-                const creationDate = new Date(t.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-                return `
-                    <tr data-ticket-id="${t.id}">
-                        <td>${t.id}</td>
-                        <td title="${t.message}">${t.subject}</td>
-                        <td><span class="${priorityClass}">${t.priority}</span></td> <td><span class="${statusClass}">${t.status}</span></td>
-                        <td>${t.user.name || t.user.email}</td>
-                        <td>${creationDate}</td>
-                        <td>
-                            ${t.status !== 'CLOSED' ? `
-                                <button class="action-btn" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">
-                                    <i class="fas fa-reply"></i> Reply
-                                </button>
-                            ` : `<span style="color: #2ecc71;">Resolved</span>`}
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-
-            tableBody.innerHTML = html;
-        }
-
+        // --- 3. TICKETS LOGIC ---
         async function loadAdminTickets() {
-            try {
-                const token = localStorage.getItem('authToken');
-                if (!token) return;
+            const refreshIcon = document.getElementById('refreshIconTickets');
+            if(refreshIcon) refreshIcon.classList.add('spin');
 
-                const res = await fetch(`${API_BASE_URL}/support/admin/all?page=${currentTicketsPage}&limit=${ticketsLimit}`, {
+            try {
+                const res = await fetch(`${API_BASE_URL}/support/admin/all?page=${ticketsPage}&limit=${ticketsLimit}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -534,98 +450,150 @@
 
                 if (res.ok) {
                     const result = await res.json();
-                    
-                    const tickets = result.data;
-                    const meta = result.meta;
+                    const tickets = result.data || [];
+                    const meta = result.meta || { page: 1, lastPage: 1, total: 0 };
 
-                    renderTickets(tickets);
-                    updateTicketsPaginationControls(meta);
-                } else {
-                    console.error('Failed to load admin tickets:', res.statusText);
+                    const tableBody = document.getElementById('ticketsTableBody');
+                    tableBody.innerHTML = '';
+
+                    if (tickets.length === 0) {
+                        tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">No tickets found</td></tr>`;
+                    } else {
+                        const html = tickets.map(t => {
+                            const statusClass = `status-badge status-${t.status.toLowerCase().replace(' ', '_')}`;
+                            const priorityClass = `status-badge priority-${t.priority ? t.priority.toLowerCase() : 'medium'}`;
+                            const creationDate = new Date(t.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                            
+                            // Виправлений порядок стовпчиків у JS, щоб відповідав HTML
+                            // HTML: ID | User | Subject | Priority | Status | Date | Action
+                            return `
+                                <tr data-ticket-id="${t.id}">
+                                    <td>${t.id}</td>
+                                    <td>${t.user ? (t.user.name || t.user.email) : 'Unknown'}</td>
+                                    <td title="${t.message}">${t.subject}</td>
+                                    <td><span class="${priorityClass}">${t.priority || 'MEDIUM'}</span></td>
+                                    <td><span class="${statusClass}">${t.status}</span></td>
+                                    <td>${creationDate}</td>
+                                    <td style="text-align:right;">
+                                        ${t.status !== 'CLOSED' ? `
+                                            <button class="action-btn" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">
+                                                <i class="fas fa-reply"></i> Reply
+                                            </button>
+                                        ` : `<span style="color: #2ecc71;">Resolved</span>`}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                        tableBody.innerHTML = html;
+                    }
+
+                    updatePaginationUI('Ticket', meta);
                 }
             } catch (e) {
                 console.error('Server error on loading admin tickets:', e);
+            } finally {
+                 if(refreshIcon) refreshIcon.classList.remove('spin');
             }
         }
 
-        function updateTicketsPaginationControls(meta) {
-            const prevBtn = document.getElementById('prevPageBtn');
-            const nextBtn = document.getElementById('nextPageBtn');
-            const infoSpan = document.getElementById('currentPageInfo');
-            
-            currentTicketsPage = meta.page;
-            
-            infoSpan.textContent = `Page ${meta.page} of ${meta.lastPage} (Total: ${meta.total})`;
-            
-            prevBtn.disabled = meta.page <= 1;
-            nextBtn.disabled = meta.page >= meta.lastPage;
+        // --- GENERIC PAGINATION UPDATE ---
+        function updatePaginationUI(type, meta) {
+            // type can be 'User', 'Tx', 'Ticket'
+            const prevBtn = document.getElementById(`prev${type}Btn`);
+            const nextBtn = document.getElementById(`next${type}Btn`);
+            const infoSpan = document.getElementById(`${type.toLowerCase()}PageInfo`);
+
+            if (infoSpan) {
+                infoSpan.textContent = `Page ${meta.page} of ${meta.lastPage} (Total: ${meta.total})`;
+            }
+
+            if (prevBtn) {
+                prevBtn.disabled = meta.page <= 1;
+                // Clone node to remove old event listeners to prevent stacking
+                const newPrev = prevBtn.cloneNode(true);
+                prevBtn.parentNode.replaceChild(newPrev, prevBtn);
+                
+                newPrev.addEventListener('click', () => {
+                    if (type === 'User') { usersPage--; loadUsers(); }
+                    if (type === 'Tx') { txPage--; loadTransactions(); }
+                    if (type === 'Ticket') { ticketsPage--; loadAdminTickets(); }
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.disabled = meta.page >= meta.lastPage;
+                const newNext = nextBtn.cloneNode(true);
+                nextBtn.parentNode.replaceChild(newNext, nextBtn);
+                
+                newNext.addEventListener('click', () => {
+                    if (type === 'User') { usersPage++; loadUsers(); }
+                    if (type === 'Tx') { txPage++; loadTransactions(); }
+                    if (type === 'Ticket') { ticketsPage++; loadAdminTickets(); }
+                });
+            }
         }
 
-        let currentTicketId = null;
+        // --- ACTIONS ---
+        async function processTx(id, action) {
+            const endpoint = action === 'approve' ? 'approve-transaction' : 'decline-transaction';
+            if(!confirm(`Are you sure you want to ${action.toUpperCase()}?`)) return;
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ txId: id })
+                });
 
+                if (res.ok) {
+                    loadTransactions();
+                    loadUsers(); // Update credits potentially
+                } else {
+                    alert('Failed');
+                }
+            } catch (e) { alert('Server error'); }
+        }
+
+        async function addCreditsPrompt(userId) {
+            const amount = prompt("How many credits to add?");
+            if (amount) {
+                await fetch(`${API_BASE_URL}/admin/add-credits`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ userId: Number(userId), amount: Number(amount) })
+                });
+                loadUsers();
+            }
+        }
+
+        // Reply Modal
+        let currentTicketId = null;
         function openReplyModal(id, userMessage) {
             currentTicketId = id;
             document.getElementById('modalTicketId').textContent = id;
-            document.getElementById('modalUserMessage').textContent = userMessage;
+            document.getElementById('modalUserMessage').textContent = userMessage; // Normally fetch full message
             document.getElementById('replyInput').value = '';
             document.getElementById('replyModal').style.display = 'flex';
         }
-
         function closeReplyModal() {
             document.getElementById('replyModal').style.display = 'none';
-            currentTicketId = null;
         }
-
         async function submitReply() {
             const replyText = document.getElementById('replyInput').value;
+            if (!replyText.trim()) { alert("Enter a reply"); return; }
             
-            if (!replyText || replyText.trim() === "") {
-                alert(t('admin.js.empty_reply', "Please enter a reply before sending."));
-                return;
-            }
-            
-            if (currentTicketId) {
-                closeReplyModal();
-                await replyTicket(currentTicketId, replyText);
-            }
-        }
-
-        async function replyTicket(id, replyText) {
             try {
                 const res = await fetch(`${API_BASE_URL}/support/admin/resolve`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ ticketId: id, response: replyText })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ ticketId: currentTicketId, response: replyText })
                 });
-                
-                if(res.ok) {
-                    loadAdminTickets();
-                } else {
-                    alert(t('admin.js.error_failed', "Failed to send reply"));
-                }
-            } catch(e) {
-                console.error(e);
-                alert(t('admin.js.error_server', "Error connecting to server."));
-            }
+                if(res.ok) { closeReplyModal(); loadAdminTickets(); }
+                else { alert("Failed"); }
+            } catch(e) { alert("Server error"); }
         }
 
-        document.getElementById('prevPageBtn').addEventListener('click', () => {
-            if (currentTicketsPage > 1) {
-                currentTicketsPage--;
-                loadAdminTickets();
-            }
-        });
-
-        document.getElementById('nextPageBtn').addEventListener('click', () => {
-            // Ми не знаємо мета.lastPage тут, але кнопка буде disabled, якщо page >= lastPage
-            // Втім, краще перевірити на бекенді, але для фронтенду цього вистачить.
-            currentTicketsPage++;
-            loadAdminTickets();
-        });
-
+        // INIT
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 loadUsers();
@@ -634,6 +602,13 @@
             }, 300);
         });
 
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('replyModal');
+            if (event.target == modal) {
+                closeReplyModal();
+            }
+        }
     </script>
 </body>
 </html>
