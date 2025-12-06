@@ -5,15 +5,25 @@
         "chat": "Chat",
         "about": "Über uns",
         "login": "Registrieren / Anmelden",
-        "profile": "Profil"
+        "profile": "Profil",
+        "userload": "Laden...",
+        "emailload": "laden@gmail.com",
+        "profileupgrade": "Upgrade",
+        "back_home": "Zurück zur Startseite",
+        "search_placeholder": "Produkte suchen...",
+        "help_center": "Hilfezentrum",
+        "notifications": "Benachrichtigungen",
+        "language": "Sprache",
+        "contact": "Kontakt",
+        "logout": "Abmelden"
     },
     "hero": {
         "title": "Genyxo",
-        "subtitle": "Entdecken Sie ein neues Niveau mit unserem Service – Abonnements für KI, soziale Netzwerke und mehr.",
+        "subtitle": "Entdecken Sie ein neues Level mit unserem Service - Abonnements für KI, soziale Netzwerke und mehr.",
         "view_packages": "Pakete ansehen",
         "happy_customers": "Zufriedene Kunden",
         "ai_models": "Verschiedene KI-Modelle",
-        "always_working": "Immer verfügbar"
+        "always_working": "Immer aktiv"
     },
     "menu": {
         "profile": "Profil",
@@ -21,11 +31,12 @@
         "help": "Hilfezentrum",
         "language": "Sprache",
         "contact": "Kontakt",
-        "logout": "Abmelden"
+        "logout": "Abmelden",
+        "plan_free": "Kostenlos",
+        "details_title": "Details",
+        "meta_info": "Kostenlos | 0 Credits | $0.0/Monat"
     },
     "products_data": {
-        "products_title": "Abonnement-Pakete",
-        "buy_now": "Jetzt kaufen",
         "1": {
             "name": "Start AI",
             "credits_label": "500 Credits",
@@ -48,7 +59,7 @@
             "name": "Pro Creator",
             "credits_label": "2.000 Credits",
             "features": [
-                "Alle KI-Modelle enthalten",
+                "Alle KI-Modelle inklusive",
                 "VIP-Support",
                 "Lebenslange Gültigkeit"
             ]
@@ -79,6 +90,247 @@
                 "White-Label-Optionen",
                 "Lebenslange Gültigkeit"
             ]
+        },
+        "products_title": "Abonnement-Pakete",
+        "buy_now": "Jetzt kaufen"
+    },
+    "about_section": {
+        "title": "Über uns",
+        "text_1": "Wir bieten nahtlosen Zugang zu den wichtigsten digitalen Tools von heute – von modernsten KI-Diensten bis hin zu kreativen Plattformen, Premium-Social-Funktionen und Produktivitäts-Apps.",
+        "text_2": "Unsere Mission ist es, Kreative, Unternehmer und Alltagsnutzer zu stärken, indem wir ihnen intelligenteren, schnelleren und kostengünstigeren Zugang zu den digitalen Diensten geben, auf die sie angewiesen sind.",
+        "text_3": "Mit uns sparen Sie Zeit und Geld, reduzieren Aufwand und erschließen mit jedem Abonnement mehr Möglichkeiten.",
+        "feat_1_title": "Individuelle Designs",
+        "feat_1_desc": "Erstellen Sie benutzerdefinierte Bilder",
+        "feat_2_title": "Schnelle Buchung",
+        "feat_2_desc": "Sofortige Reaktion",
+        "feat_3_title": "Premium Qualität",
+        "feat_3_desc": "Nur aus offiziellen Quellen"
+    },
+    "footer": {
+        "desc_1": "Manueller Zugriff auf die neuesten KI-Modelle an einem Ort.",
+        "desc_2": "Schnell, transparent, keine Überzahlungen.",
+        "links_title": "Links",
+        "shipping": "Versandinformationen",
+        "contact_title": "Kontaktinformationen",
+        "rights": "© 2025 Genyxo. Alle Rechte vorbehalten."
+    },
+    "auth": {
+        "login_title": "Anmelden / Registrieren",
+        "email_placeholder": "E-Mail-Adresse",
+        "password_placeholder": "Passwort",
+        "confirm_password_placeholder": "Passwort bestätigen",
+        "name_placeholder": "Vollständiger Name",
+        "remember_me": "Angemeldet bleiben",
+        "forgot_pass": "Passwort vergessen?",
+        "login_btn": "Anmelden",
+        "signup_btn": "Konto erstellen",
+        "no_account": "Noch kein Konto?",
+        "has_account": "Bereits ein Konto?",
+        "link_signup": "Registrieren",
+        "link_login": "Anmelden",
+        "logout_msg": "Vom Konto abmelden"
+    },
+    "toasts": {
+        "payment_success": "Zahlung erfolgreich! Credits hinzugefügt.",
+        "payment_cancel": "Zahlung abgebrochen.",
+        "welcome": "Willkommen zurück!",
+        "login_error": "Ungültige Anmeldedaten",
+        "server_error": "Serververbindung fehlgeschlagen.",
+        "account_created": "Konto erfolgreich erstellt!",
+        "reg_failed": "Registrierung fehlgeschlagen",
+        "pass_mismatch": "Fehler: Passwörter stimmen nicht überein!",
+        "marked_all_success": "Alle Benachrichtigungen als gelesen markiert.",
+        "mark_all_fail": "Fehler beim Markieren der Benachrichtigungen."
+    },
+    "order": {
+        "title": "Sichere Kasse",
+        "badge": "Verschlüsselt",
+        "packname": "KI-Paket",
+        "packdesc": "Sofortige Lieferung • Lebenslange Gültigkeit",
+        "price": "Preis",
+        "fee_title": "Bearbeitungsgebühr",
+        "fee_desc": "Von uns übernommen",
+        "total": "Gesamtbetrag",
+        "method": "Wir akzeptieren:",
+        "button": "Weiter zur Zahlung",
+        "footer": "Bereitgestellt von . Sie werden weitergeleitet, um die sichere Zahlung abzuschließen."
+    },
+    "language": {
+        "select": "Sprache wählen"
+    },
+    "admin": {
+        "meta_title": "Admin-Panel - Genyxo",
+        "nav_title": "Admin-Panel",
+        "system_mgmt": "Systemverwaltung",
+        "users_title": "Benutzer",
+        "transactions_title": "Transaktionen",
+        "tickets_title": "Support-Tickets",
+        "refresh": "Aktualisieren",
+        "table": {
+            "id": "ID",
+            "email": "E-Mail",
+            "name": "Name",
+            "role": "Rolle",
+            "credits": "Credits",
+            "action": "Aktion",
+            "user": "Benutzer",
+            "amount": "Betrag ($)",
+            "status": "Status",
+            "method": "Methode",
+            "date": "Datum",
+            "subject": "Betreff"
+        },
+        "modal": {
+            "reply_title": "Antwort auf Ticket #",
+            "user_msg": "Benutzernachricht:",
+            "your_reply": "Ihre Antwort:",
+            "placeholder": "Geben Sie hier Ihre Antwort ein...",
+            "cancel": "Abbrechen",
+            "send": "Antwort senden",
+            "select_lang": "Sprache wählen"
+        },
+        "js": {
+            "add_credits_btn": "+ Credits",
+            "no_users": "Keine Benutzer gefunden",
+            "no_transactions": "Keine Transaktionen gefunden",
+            "no_tickets": "Keine Tickets gefunden",
+            "confirm_approve": "Sind Sie sicher, dass Sie diese Transaktion GENEHMIGEN möchten?",
+            "confirm_decline": "Sind Sie sicher, dass Sie diese Transaktion ABLEHNEN möchten?",
+            "prompt_credits": "Wie viele Credits sollen hinzugefügt werden?",
+            "done": "Fertig",
+            "view_reply": "Ansehen & Antworten",
+            "empty_reply": "Bitte geben Sie vor dem Senden eine Antwort ein.",
+            "error_server": "Fehler beim Verbinden mit dem Server.",
+            "error_failed": "Fehlgeschlagen",
+            "access_denied": "Zugriff verweigert oder Serverfehler",
+            "unknown_user": "Unbekannter Benutzer",
+            "no_subject": "Kein Betreff"
         }
+    },
+    "chat": {
+        "meta_title": "Chatraum - Genyxo",
+        "chat_title": "KI-Chat",
+        "balance": "Guthaben:",
+        "credits": "Credits",
+        "model_select_label": "KI-Modell wählen:",
+        "input_placeholder": "Fragen Sie mich alles...",
+        "send_button": "Senden",
+        "system_msg_placeholder": "Hallo! Ich bin Ihr KI-Assistent. Wählen Sie ein Modell oder schreiben Sie mir einfach, und wir legen los! 🚀",
+        "system_msg_no_history": "Kein Verlauf gefunden. Starten Sie eine neue Unterhaltung!",
+        "system_msg_error": "Fehler beim Laden des Chatverlaufs oder der Benutzerdaten.",
+        "model_default": "Standardmodell (GPT-3.5/Llama)",
+        "model_advanced": "Fortgeschrittenes Modell (GPT-4/Claude)",
+        "model_fast": "Schnelles Modell (Mistral/Gemini Flash)",
+        "model_creative": "Kreatives Modell (DALL-E/Midjourney Text)"
+    },
+    "notifications": {
+        "meta_title": "Benachrichtigungen - Genyxo",
+        "center_title": "Benachrichtigungszentrum",
+        "header_title": "Ihre Benachrichtigungen",
+        "mark_all_btn": "Alle als gelesen markieren",
+        "loading": "Benachrichtigungen werden geladen...",
+        "empty_state": "Noch keine Benachrichtigungen.",
+        "error_loading": "Fehler beim Laden der Daten",
+        "confirm_read_all": "Alle als gelesen markieren?",
+        "plan_free": "Kostenlos",
+        "plan_meta": "Kostenlos | 0 Credits | $0.0/Monat",
+        "time_format": "de-DE"
+    },
+    "profile": {
+        "title": "Profil - Genyxo",
+        "change_avatar": "Avatar ändern",
+        "view_profile": "Profil ansehen",
+        "sidebar": {
+            "home": "Startseite",
+            "security": "Passwort und Sicherheit",
+            "payment": "Zahlungseinstellungen",
+            "transactions": "Transaktionen",
+            "subscriptions": "Abonnements",
+            "groups": "Gruppensitzungen"
+        },
+        "main_title": "Einstellungen",
+        "tabs": {
+            "general": "Allgemein",
+            "notification": "Benachrichtigung",
+            "availability": "Verfügbarkeit",
+            "security": "Sicherheit",
+            "connected": "Verknüpfte Konten",
+            "billing": "Abrechnung"
+        },
+        "general": {
+            "title": "Basisinformationen",
+            "subtitle": "Bearbeiten Sie Ihre Profilinformationen",
+            "label_name": "Vollständiger Name",
+            "label_email": "E-Mail",
+            "label_location": "Standort",
+            "placeholder_name": "Max Mustermann",
+            "placeholder_email": "ihre@email.com",
+            "placeholder_location": "Stadt, Land",
+            "save_btn": "Änderungen speichern"
+        },
+        "security": {
+            "title": "Passwort und Sicherheit",
+            "change_pwd_title": "Passwort ändern",
+            "change_pwd_desc": "Zu Ihrer Sicherheit empfehlen wir, ein einzigartiges Passwort zu erstellen, das Sie für kein anderes Konto verwenden.",
+            "change_pwd_btn": "Passwort ändern",
+            "logout_all_title": "Von allen Geräten abmelden",
+            "logout_all_desc": "Melden Sie sich von überall ab, wo Sie Ihr Konto verwenden (Browser, Telefone, Konsolen usw.), außer auf dieser Seite.",
+            "logout_all_btn": "Von allen Geräten abmelden",
+            "modal": {
+                "title": "Passwort ändern",
+                "subtitle": "Geben Sie Ihr aktuelles Passwort ein und wählen Sie ein neues sicheres Passwort.",
+                "label_current": "Aktuelles Passwort",
+                "label_new": "Neues Passwort",
+                "label_confirm": "Neues Passwort bestätigen",
+                "placeholder_new": "Neues Passwort",
+                "placeholder_confirm": "Passwort bestätigen",
+                "btn_save": "Speichern",
+                "btn_cancel": "Abbrechen",
+                "success": "Passwort erfolgreich geändert.",
+                "network_error": "Netzwerkfehler. Versuchen Sie es erneut."
+            }
+        },
+        "payment": {
+            "title": "Zahlungseinstellungen",
+            "desc": "Verwalten Sie Ihr Kontoguthaben, Transaktionen und Zahlungsmethoden.",
+            "privacy_link": "Datenschutzrichtlinie ansehen.",
+            "balance_title": "Kontoguthaben",
+            "balance_desc": "Verwenden Sie Ihr Guthaben, um KI-Pakete zu kaufen oder Abonnements zu nutzen. Guthaben ist nicht erstattungsfähig.",
+            "terms_link": "Nutzungsbedingungen ansehen",
+            "balance_label": "Guthaben",
+            "view_transactions_link": "Transaktionen ansehen"
+        },
+        "transactions": {
+            "title": "Transaktionen",
+            "desc": "Zahlungsinformationen und Transaktionen Ihres Kontos."
+        },
+        "subscriptions": {
+            "title": "Abonnements"
+        }
+    },
+    "support": {
+        "page_title": "Support-Center - Genyxo",
+        "title": "Support-Anfragen",
+        "create_title": "Neues Ticket erstellen",
+        "form_subject": "Betreff",
+        "form_subject_placeholder": "z.B. Zahlungsproblem",
+        "form_message": "Nachricht",
+        "form_message_placeholder": "Beschreiben Sie Ihr Problem...",
+        "submit_btn": "Ticket absenden",
+        "history_title": "Ihr Verlauf",
+        "loading": "Tickets werden geladen...",
+        "no_tickets": "Keine Tickets gefunden.",
+        "created_at": "Erstellt:",
+        "admin_reply": "Support-Team hat geantwortet:",
+        "alert_created": "Ticket erstellt!",
+        "alert_error": "Fehler beim Erstellen des Tickets",
+        "alert_server": "Serverfehler",
+        "label_priority": "Priorität",
+        "priority_low": "Niedrig",
+        "priority_medium": "Mittel (Standard)",
+        "priority_high": "Hoch (Dringend)",
+        "toast_success": "Ticket erfolgreich erstellt!",
+        "toast_error": "Fehler beim Erstellen des Tickets.",
+        "toast_server_error": "Serverfehler. Bitte versuchen Sie es später erneut."
     }
 }
