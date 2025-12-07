@@ -12,14 +12,14 @@
     <style>
         /* Override global body for chat layout to be full height fixed */
         body {
-            overflow: hidden; /* Prevent body scroll, handle inside containers */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
 
         .navbar {
-            position: relative; /* Not fixed for chat page layout simplicity */
+            position: relative;
             flex-shrink: 0;
         }
 
@@ -91,7 +91,7 @@
         .chat-layout {
             display: flex;
             flex: 1;
-            height: calc(100vh - 80px); /* Subtract navbar height approx */
+            height: calc(100vh - 80px);
             position: relative;
             overflow: hidden;
         }
@@ -188,7 +188,7 @@
             outline: none;
             font-size: 0.95rem;
             cursor: pointer;
-            appearance: none; /* Hide default arrow */
+            appearance: none;
             padding-right: 20px;
         }
         
@@ -270,7 +270,7 @@
         .suggestion-icon {
             font-size: 1.2rem;
             margin-bottom: 10px;
-            color: #10e6cc; /* Brand Color */
+            color: #10e6cc;
         }
 
         .suggestion-text {
@@ -284,7 +284,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 2rem;
-            display: none; /* Hidden by default until messages exist */
+            display: none;
             flex-direction: column;
             gap: 1.5rem;
             scroll-behavior: smooth;
@@ -439,6 +439,17 @@
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
+
+            #sidebarToggle {
+                display: block !important;
+            }
+            .nav-links {
+                display: none;
+            }
+            .profile-container {
+                display: flex !important; 
+            }
+
             .chat-sidebar {
                 position: absolute;
                 left: -260px;
@@ -459,66 +470,83 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .profile-container {
-            display: flex;
-            align-items: center;
-            gap: 10px; /* Відстань між кнопками */
-            position: relative; /* Важливо для позиціонування дропдауну */
-        }
-
-        /* Стиль для кнопки кредитів, щоб вона не змінювалась при наведенні/натисканні, бо вона не є інтерактивною */
-        .credit-btn {
-            cursor: default !important;
-            background: rgba(255,255,255,0.1) !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
-        }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-logo">
-                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
-                    <i class="fas fa-magic"></i>
-                    <span>Genyxo</span>
-                </a>
+            <div class="left-side">
+                <button class="burger" id="sidebarToggle" style="display: none; background:none; border:none; color:white; font-size:1.5rem; margin-right: 15px;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="nav-logo">
+                    <a href="index.html" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
+                        <i class="fas fa-magic"></i>
+                        <span>Genyxo</span>
+                    </a>
+                </div>
             </div>
-            
-            <button class="burger" id="sidebarToggle" style="display: none; background:none; border:none; color:white; font-size:1.5rem;">
-                <i class="fas fa-bars"></i>
-            </button>
-            
-            <div class="nav-links">
-                <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
-                <a href="chat.html" class="nav-link active" data-i18n="nav.chat">Chat</a>
-                
-                <div class="profile-container" style="display: flex; align-items: center; gap: 10px;">
+
+            <div class="right-side">
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="chat.html" class="nav-link active">Chat</a>
+                </div>
+
+                <div class="profile-container" style="display: flex; gap: 10px; align-items: center;">
                     
-                    <button class="login-btn credit-btn" style="cursor: default;">
+                    <button class="login-btn" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); min-width: auto; padding: 0.5rem 1rem;">
                         <i class="fas fa-coins" style="color: #ffd700;"></i>
                         <span id="creditBalance" style="margin-left: 8px;">0 Credits</span>
                     </button>
 
-                    <button class="login-btn" id="loginBtn"> 
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
-                        <i class="fas fa-user" id="navIcon"></i>
-                        <span id="navUsername" data-i18n="nav.login">Register / Login</span>
+                    <button class="login-btn" id="profileToggleBtn" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 35px; height: 35px;" alt="Avatar">
                     </button>
-
-                    <div class="profile-dropdown glass" id="profilePanel" style="display: none;">
-                        <div class="profile-header">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-avatar" id="profileAvatar" alt="Profile Avatar">
-                            <div class="profile-info">
-                                <h4 id="profileUsername">My Profile</h4>
-                                <p id="profileEmail">user@example.com</p>
+                    
+                    <div class="profile-dropdown glass" id="profilePanel">
+                        <button class="close-profile-panel" id="closeProfilePanel">✕</button>
+                        
+                        <div class="dropdown-header">
+                            <div class="user-details">
+                                <img src="" alt="Avatar" class="avatar-big dropdown-avatar" id="dropdownAvatar">
+                                <div class="user-text">
+                                    <h3 id="menuName">Loading...</h3>
+                                    <p id="menuEmail">loading@gmail.com</p>
+                                </div>
                             </div>
                         </div>
-                        <a href="#" class="profile-link" id="showHistory"><i class="fas fa-history"></i> <span data-i18n="profile.history">History</span></a>
-                        <a href="#" class="profile-link" id="showSettings"><i class="fas fa-cog"></i> <span data-i18n="profile.settings">Settings</span></a>
-                        <a href="#" class="profile-link" id="showLangModalBtn"><i class="fas fa-language"></i> <span data-i18n="profile.language">Language</span></a>
-                        <a href="#" class="profile-link logout-link" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span data-i18n="profile.logout">Logout</span></a>
+
+                        <div class="credits-card">
+                            <div class="credits-top">
+                                <div class="credits-amount">
+                                    <span class="icon-flask">🪙</span>
+                                    <span class="amount-number" id="menuCredits">0</span>
+                                </div>
+                            </div>
+                            <div class="credits-meta">
+                                Available Balance
+                            </div>
+                            <a href="index.html#products" style="text-decoration:none;">
+                                <button class="upgrade-full-btn">Buy Credits</button>
+                            </a>
+                        </div>
+
+                        <div class="dropdown-menu">
+                            <a href="profile.html" class="menu-item">
+                                <i class="fas fa-user-cog"></i> <span>Profile</span>
+                            </a>
+                            <a href="support.html" class="menu-item">
+                                <i class="fas fa-question-circle"></i> <span>Help Center</span>
+                            </a>
+                        </div>
+
+                        <div class="dropdown-footer">
+                            <button class="menu-item logout-item" id="dropdownLogoutBtn">
+                                <i class="fas fa-sign-out-alt"></i> <span>Log out</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -626,6 +654,17 @@
         const creditBalanceEl = document.getElementById('creditBalance');
 
         const historyList = document.getElementById('historyList');
+
+        const profileToggleBtn = document.getElementById('profileToggleBtn');
+        const profilePanel = document.getElementById('profilePanel');
+        const closeProfilePanel = document.getElementById('closeProfilePanel');
+        const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
+        const navAvatarImg = document.getElementById('navAvatarImg');
+
+        const menuName = document.getElementById('menuName');
+        const menuEmail = document.getElementById('menuEmail');
+        const menuCredits = document.getElementById('menuCredits');
+        const dropdownAvatar = document.getElementById('dropdownAvatar');
         
         // Config
         const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
@@ -853,6 +892,12 @@
                 if (profileRes.ok) {
                     const user = await profileRes.json();
                     updateBalanceUI(user.credits || 0);
+
+                    if (navAvatarImg) navAvatarImg.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+                    if (dropdownAvatar) dropdownAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+                    if (menuName) menuName.textContent = user.name || 'User';
+                    if (menuEmail) menuEmail.textContent = user.email || '';
+                    if (menuCredits) menuCredits.textContent = user.credits || 0;
                 }
 
                 // Load History
@@ -877,12 +922,38 @@
             }
         }
 
+        if (profileToggleBtn) {
+            profileToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profilePanel.classList.toggle('show');
+            });
+        }
+
+        if (closeProfilePanel) {
+            closeProfilePanel.addEventListener('click', () => {
+                profilePanel.classList.remove('show');
+            });
+        }
+
         window.toggleDropdown = function(e, id) {
             e.stopPropagation(); // Щоб не спрацював клік на chat-title
             // Закрити всі інші
             document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
             const dropdown = document.getElementById(`dropdown-${id}`);
             if(dropdown) dropdown.classList.toggle('show');
+        }
+
+        window.addEventListener('click', (e) => {
+            if (profilePanel && profilePanel.classList.contains('show') && !e.target.closest('.profile-container')) {
+                profilePanel.classList.remove('show');
+            }
+        });
+
+        if (dropdownLogoutBtn) {
+            dropdownLogoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
+            });
         }
 
         // Закриття дропдаунів при кліку в будь-якому місці
@@ -951,8 +1022,5 @@
         }
 
     </script>
-
-    <script src="script.js"></script>
-
 </body>
 </html>
