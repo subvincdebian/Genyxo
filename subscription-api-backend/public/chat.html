@@ -459,6 +459,20 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Відстань між кнопками */
+            position: relative; /* Важливо для позиціонування дропдауну */
+        }
+
+        /* Стиль для кнопки кредитів, щоб вона не змінювалась при наведенні/натисканні, бо вона не є інтерактивною */
+        .credit-btn {
+            cursor: default !important;
+            background: rgba(255,255,255,0.1) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+        }
     </style>
 </head>
 <body>
@@ -471,6 +485,7 @@
                     <span>Genyxo</span>
                 </a>
             </div>
+            
             <button class="burger" id="sidebarToggle" style="display: none; background:none; border:none; color:white; font-size:1.5rem;">
                 <i class="fas fa-bars"></i>
             </button>
@@ -479,19 +494,32 @@
                 <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
                 <a href="chat.html" class="nav-link active" data-i18n="nav.chat">Chat</a>
                 
-                <div class="profile-container">
-                    <button class="login-btn" id="loginBtn" style="margin-right: 10px;"> 
+                <div class="profile-container" style="display: flex; align-items: center; gap: 10px;">
+                    
+                    <button class="login-btn credit-btn" style="cursor: default;">
+                        <i class="fas fa-coins" style="color: #ffd700;"></i>
+                        <span id="creditBalance" style="margin-left: 8px;">0 Credits</span>
+                    </button>
+
+                    <button class="login-btn" id="loginBtn"> 
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
                         <i class="fas fa-user" id="navIcon"></i>
                         <span id="navUsername" data-i18n="nav.login">Register / Login</span>
                     </button>
-                    <div class="profile-dropdown glass" id="profilePanel" style="display: none;">
-                        </div>
 
-                    <button class="login-btn" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">
-                        <i class="fas fa-coins" style="color: #ffd700;"></i>
-                        <span id="creditBalance" style="margin-left: 8px;">0 Credits</span>
-                    </button>
+                    <div class="profile-dropdown glass" id="profilePanel" style="display: none;">
+                        <div class="profile-header">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-avatar" id="profileAvatar" alt="Profile Avatar">
+                            <div class="profile-info">
+                                <h4 id="profileUsername">My Profile</h4>
+                                <p id="profileEmail">user@example.com</p>
+                            </div>
+                        </div>
+                        <a href="#" class="profile-link" id="showHistory"><i class="fas fa-history"></i> <span data-i18n="profile.history">History</span></a>
+                        <a href="#" class="profile-link" id="showSettings"><i class="fas fa-cog"></i> <span data-i18n="profile.settings">Settings</span></a>
+                        <a href="#" class="profile-link" id="showLangModalBtn"><i class="fas fa-language"></i> <span data-i18n="profile.language">Language</span></a>
+                        <a href="#" class="profile-link logout-link" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span data-i18n="profile.logout">Logout</span></a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -923,5 +951,8 @@
         }
 
     </script>
+
+    <script src="script.js"></script>
+
 </body>
 </html>
