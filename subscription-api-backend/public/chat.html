@@ -476,81 +476,22 @@
             </button>
             
             <div class="nav-links">
+                <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="chat.html" class="nav-link active" data-i18n="nav.chat">Chat</a>
+                
                 <div class="profile-container">
-                    <button class="login-btn" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">
-                        <i class="fas fa-coins" style="color: #ffd700;"></i>
-                        <span id="creditBalance" style="margin-left: 8px;">0 Credits</span>
-                    </button>
-
-                    <button class="login-btn" id="loginBtn">
+                    <button class="login-btn" id="loginBtn" style="margin-right: 10px;"> 
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
                         <i class="fas fa-user" id="navIcon"></i>
                         <span id="navUsername" data-i18n="nav.login">Register / Login</span>
                     </button>
-                    
-                    <div class="profile-dropdown glass" id="profilePanel">
-
-                        <button class="close-profile-panel" id="closeProfilePanel">✕</button>
-                        
-                        <div class="dropdown-header">
-                            <div class="user-details">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" class="avatar-big dropdown-avatar">
-                                <div class="user-text">
-                                    <h3 id="menuName" data-i18n="nav.userload">Loading...</h3>
-                                    <p id="menuEmail" data-i18n="nav.emailload">loading@gmail.com</p>
-                                </div>
-                            </div>
+                    <div class="profile-dropdown glass" id="profilePanel" style="display: none;">
                         </div>
 
-                        <div class="credits-card">
-                            <div class="credits-top">
-                                <div class="credits-amount">
-                                    <span class="icon-flask">🪙</span>
-                                    <span class="amount-number" id="menuCredits">70</span>
-                                    <i class="fas fa-info-circle info-icon" title="Деталі"></i>
-                                </div>
-                            </div>
-                            <div class="credits-meta">
-                                Free | 0 Credits | $0.0/mo
-                            </div>
-                            <button class="upgrade-full-btn" data-i18n="nav.profileupgrade">Upgrade</button>
-                        </div>
-
-                        <div class="dropdown-menu">
-
-                            <a href="profile.html" class="menu-item">
-                                <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
-                            </a>
-
-                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
-                                <div style="display:flex; align-items:center;">
-                                    <i class="fas fa-bell"></i> 
-                                    <span data-i18n="menu.notifications">Notifications</span>
-                                </div>
-                                <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
-                            </a>
-
-                            <a href="support.html" class="menu-item">
-                                <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
-                            </a>
-
-                            <a href="#" class="menu-item">
-                                <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
-                                <span class="lang-val" id="currentLangDisplay">English ></span>
-                            </a>
-
-                            <a href="#contact" class="menu-item">
-                                <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
-                            </a>
-
-                        </div>
-
-                        <div class="dropdown-footer">
-                            <button class="menu-item logout-item" id="dropdownLogoutBtn">
-                                <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Log out</span>
-                            </button>
-                        </div>
-                    </div>
+                    <button class="login-btn" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                        <i class="fas fa-coins" style="color: #ffd700;"></i>
+                        <span id="creditBalance" style="margin-left: 8px;">0 Credits</span>
+                    </button>
                 </div>
             </div>
         </div>
