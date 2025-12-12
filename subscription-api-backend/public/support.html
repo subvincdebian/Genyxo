@@ -334,6 +334,27 @@
             }
         }
 
+        /* Support title adjustments: keep headset icon visible and nudge title right */
+        .support-container .title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .support-container .title i {
+            display: inline-block !important;
+            opacity: 1 !important;
+            color: var(--text-light) !important;
+            font-size: 1.05em;
+        }
+
+        @media (max-width: 768px) {
+            .support-container .title { margin-left: 16px; }
+        }
+
     </style>
 </head>
 <body>
