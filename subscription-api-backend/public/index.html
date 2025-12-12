@@ -411,10 +411,17 @@
         }
 
         if (profileToggleBtn) {
-            profileToggleBtn.addEventListener('click', () => {
-                // If logged in only (behavior from profile.html)
+            profileToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // If logged in -> toggle profile dropdown, otherwise open login modal
                 if (localStorage.getItem('authToken')) {
                     if (profileDropdown) profileDropdown.classList.toggle('show');
+                } else {
+                    const loginModal = document.getElementById('loginModal');
+                    if (loginModal) {
+                        loginModal.classList.add('show');
+                        loginModal.style.display = 'block';
+                    }
                 }
             });
         }

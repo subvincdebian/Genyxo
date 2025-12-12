@@ -1600,7 +1600,7 @@ body {
     /* ensure login button is visible on the right */
     .login-btn, .profile-toggle-btn {
         position: relative !important;
-        right: 75px;
+        left: 50px !important;
         margin: 0 6px 0 0;
         max-width: 140px;
         height: 40px;

@@ -1699,6 +1699,7 @@ body {
         font-size: 0.9rem;
         border-radius: 20px;
         height: 40px;
+        width: 150px;
     }
 
     /* Уменьшаем аватар в кнопке */
