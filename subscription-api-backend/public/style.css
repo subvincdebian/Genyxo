@@ -1698,7 +1698,7 @@ body {
         padding: 0.4rem 1rem;
         font-size: 0.9rem;
         border-radius: 20px;
-        height: auto;
+        height: 40px;
     }
 
     /* Уменьшаем аватар в кнопке */
