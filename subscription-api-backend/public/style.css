@@ -1531,10 +1531,9 @@ body {
         z-index: 2001;
 
         /* Чтобы выглядело красиво */
-        background: var(--glass-light);
+        background: var(--primary-color);
         opacity: 200%;
         border-radius: 18px;
-        backdrop-filter: blur(12px);
         border: 1px solid var(--glass-border);
         padding: 20px !important;
 

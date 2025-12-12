@@ -394,5 +394,54 @@
 
 <script src="js/script.js"></script>
 
+<script>
+    // Close profile dropdown on click outside or on close button
+    (function(){
+        const profileToggleBtn = document.getElementById('loginBtn');
+        const profilePanel = document.getElementById('profilePanel');
+        const closeProfilePanel = document.getElementById('closeProfilePanel');
+        const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+
+        if (profileToggleBtn) {
+            profileToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (profilePanel) profilePanel.classList.toggle('show');
+            });
+        }
+
+        if (closeProfilePanel) {
+            closeProfilePanel.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (profilePanel) profilePanel.classList.remove('show');
+                document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
+            });
+        }
+
+        // Close when clicking anywhere outside the profile container
+        window.addEventListener('click', (e) => {
+            if (profilePanel && profilePanel.classList.contains('show') && !e.target.closest('.profile-container')) {
+                profilePanel.classList.remove('show');
+            }
+            document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
+        });
+
+        // If mobile menu overlay exists, clicking it should also close profile panel
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', () => {
+                if (profilePanel) profilePanel.classList.remove('show');
+                document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
+            });
+        }
+
+        if (dropdownLogoutBtn) {
+            dropdownLogoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
+            });
+        }
+    })();
+</script>
+
 </body>
 </html>
