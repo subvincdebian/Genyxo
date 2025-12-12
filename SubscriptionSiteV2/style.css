@@ -1257,11 +1257,6 @@ body {
         display: none !important;
     }
 
-    .footer-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-        gap: 2rem;
-    }
     .left-side .search-container {
         display: none;
     }
@@ -1484,8 +1479,7 @@ body {
         z-index: 2001;
 
         /* Чтобы выглядело красиво */
-        background: var(--glass-light);
-        opacity: 200%;
+        background: var(--primary-color);
         border-radius: 18px;
         backdrop-filter: blur(12px);
         border: 1px solid var(--glass-border);
@@ -1653,6 +1647,7 @@ body {
         font-size: 0.9rem;
         border-radius: 20px;
         height: auto;
+        height: 50px;
     }
 
     /* Уменьшаем аватар в кнопке */
@@ -1664,5 +1659,44 @@ body {
     /* скрываем поиск в мобильной версии */
     .search-container {
         display: none !important;
+    }
+
+     .footer {
+        padding: 3rem 1.25rem;
+    }
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .footer-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Center social icons */
+    .social-links {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    /* Center contact rows (icon + text) */
+    .contact-info {
+        justify-content: center;
+    }
+
+    .footer-links {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Small spacing tweak for icons */
+    .contact-info i {
+        margin-right: 0.6rem;
+        width: auto;
+        display: inline-block;
     }
 }

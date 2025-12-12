@@ -510,7 +510,7 @@
         const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
         const token = localStorage.getItem('authToken');
 
-        if (!token) window.location.href = 'index.html';
+       /* if (!token) window.location.href = 'index.html'; */
 
         // --- ЛОГІКА МОВНОГО ВІКНА (ВИПРАВЛЕНО) ---
         const SUPPORTED_LANGUAGES = {
@@ -694,11 +694,13 @@
                     else window.location.href = 'index.html';
                 };
                 
+               
                 document.getElementById('dropdownLogoutBtn').onclick = () => {
                     localStorage.removeItem('authToken');
                     window.location.href = 'index.html';
                 };
             } catch (e) { console.error("Error loading profile:", e); }
+            
         }
 
         async function updateNotificationsBadge() {

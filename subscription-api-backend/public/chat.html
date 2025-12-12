@@ -6,11 +6,12 @@
     <title data-i18n="chat.meta_title">Chat Room - Genyxo</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="i18n.js"></script>
 
     <style>
-        /* Override global body for chat layout to be full height fixed */
+        
         body {
             overflow: hidden;
             display: flex;
@@ -86,6 +87,10 @@
         }
         .dropdown-item:hover { background: rgba(255,255,255,0.1); }
         .dropdown-item.delete { color: #ff6b6b; }
+
+        #profilePanel {
+            background: black;
+        }
 
         /* --- Chat Layout Grid --- */
         .chat-layout {
@@ -175,10 +180,10 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255,255,255,0.08);
-            padding: 8px 15px;
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
+            background: transparent;
+            padding: 4px 6px;
+            border-radius: 999px;
+            min-width: 180px;
         }
 
         .model-select-wrapper select {
@@ -189,20 +194,98 @@
             font-size: 0.95rem;
             cursor: pointer;
             appearance: none;
-            padding-right: 20px;
+            padding-right: 22px;
+            width: 100%;
+        }
+
+        /* Make dropdown options readable (dark text on light background) */
+        .model-select-wrapper select option {
+            color: #fff;
+            background: black;
+            border-radius: 8px;
+            border: none;
+        }
+
+        /* Slightly highlight when focused */
+        .model-select-wrapper select:focus {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            border-radius: 16px;
         }
         
-        /* Custom arrow for select */
-        .model-select-wrapper::after {
-            content: '\f078';
-            font-family: "Font Awesome 5 Free";
-            font-weight: 900;
-            color: var(--text-gray);
-            font-size: 0.7rem;
-            position: absolute;
-            right: 15px;
-            pointer-events: none;
+        /* Removed native pseudo-arrow to avoid duplicate caret (we use a single .caret icon) */
+        .model-select-wrapper::after { display: none; }
+
+        /* Custom select styles */
+        .custom-select {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.02);
+            min-width: 220px;
+            color: #e6eef8;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.02);
+            backdrop-filter: blur(4px);
         }
+        .custom-select .current { flex: 1; font-weight: 600; }
+        .custom-select .caret { color: rgba(255,255,255,0.7); }
+
+        /* Robot icon styling to separate it visually */
+        .model-select-wrapper .fa-robot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: rgba(16,230,204,0.04);
+            color: #10e6cc;
+            border: 1px solid rgba(16,230,204,0.06);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .custom-options {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            left: 0;
+            background: linear-gradient(180deg, #0f1416 0%, #070808 100%);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            margin: 0;
+            padding: 6px 6px;
+            list-style: none;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+            max-height: 260px;
+            overflow-y: auto;
+            z-index: 200;
+            display: none;
+            backdrop-filter: blur(6px);
+        }
+        .custom-options.show { display: block; }
+        .custom-options li {
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: #cfe6ff;
+            cursor: pointer;
+            margin: 4px 0;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            transition: background 0.12s ease, color 0.12s ease;
+        }
+        .custom-options li:hover,
+        .custom-options li.active {
+            background: rgba(255,255,255,0.04);
+            color: #ffffff;
+        }
+        .custom-options::-webkit-scrollbar { width: 8px; }
+        .custom-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 6px; }
 
         /* --- Welcome Screen (Empty State) --- */
         .welcome-screen {
@@ -450,20 +533,78 @@
                 display: flex !important; 
             }
 
+            /* Ensure left-side uses flex so we can reorder logo and burger */
+            .nav-container .left-side {
+                display: flex;
+                align-items: center;
+            }
+
+            /* Place burger where logo was on small screens */
+            .nav-container .left-side .burger {
+                order: 1;
+                margin-right: 15px;
+                margin-left: 0;
+            }
+            .nav-container .left-side .nav-logo {
+                order: 2;
+            }
+
+            .burger {
+                position: relative;
+                top: -7px;
+            }
+
+            .nav-logo {
+                position: relative;
+                left: -10px;
+            }
+
+            .nav-logo a {
+               position: relative;
+               top: -2px;
+            }
+
             .chat-sidebar {
-                position: absolute;
-                left: -260px;
+                position: fixed;
+                left: 0;
+                top: 60px;
                 height: 100%;
                 z-index: 100;
                 background: #000;
+                width: 260px;
+                transform: translateX(-100%);
+                transition: transform 0.28s ease;
             }
             .chat-sidebar.active {
-                left: 0;
+                transform: translateX(0);
             }
             .suggestions-grid {
                 grid-template-columns: 1fr;
             }
             .welcome-title { font-size: 1.5rem; }
+
+            /* Overlay behind sidebar to allow closing when tapping outside */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 90;
+                transition: opacity 0.15s ease;
+                opacity: 0;
+            }
+            .sidebar-overlay.show {
+                display: block;
+                opacity: 1;
+            }
+
+            .suggestions-grid {
+                display: none;
+            }
+
+            .suggestion-card {
+                display: none;
+            }
         }
 
         @keyframes slideIn {
@@ -552,6 +693,7 @@
             </div>
         </div>
     </nav>
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
     
     <div class="chat-layout">
         <aside class="chat-sidebar" id="sidebar">
@@ -572,7 +714,14 @@
                 
                 <div class="model-select-wrapper">
                     <i class="fas fa-robot" style="color: #10e6cc;"></i>
-                    <select id="modelSelect">
+
+                    <div class="custom-select" id="customModelSelect" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="current">GPT-4o (40 cr)</span>
+                        <i class="fas fa-chevron-down caret"></i>
+                        <ul class="custom-options" role="listbox"></ul>
+                    </div>
+
+                    <select id="modelSelect" style="display:none;">
                         <option value="gpt-5.1">GPT-5.1 (50 cr)</option>
                         <option value="gpt-5-mini">GPT-5 (30 cr)</option>
                         <option value="gpt-5-nano">GPT-5 Mini (25 cr)</option>
@@ -1015,11 +1164,99 @@
 
         // Mobile Sidebar Toggle (Optional logic if you add a burger button visible on mobile)
         const toggleBtn = document.getElementById('sidebarToggle');
-        if(toggleBtn) {
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        if (toggleBtn && sidebar) {
             toggleBtn.addEventListener('click', () => {
-                document.getElementById('sidebar').classList.toggle('active');
+                const opened = sidebar.classList.toggle('active');
+                if (sidebarOverlay) sidebarOverlay.classList.toggle('show', opened);
             });
         }
+
+        if (sidebarOverlay && sidebar) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('show');
+            });
+        }
+
+        /* Build custom select from native select and wire interactions */
+        (function(){
+            const native = document.getElementById('modelSelect');
+            const custom = document.getElementById('customModelSelect');
+            if (!native || !custom) return;
+
+            const optionsList = custom.querySelector('.custom-options');
+            const current = custom.querySelector('.current');
+
+            // Populate custom options from native select
+            Array.from(native.options).forEach(opt => {
+                const li = document.createElement('li');
+                li.textContent = opt.textContent;
+                li.dataset.value = opt.value;
+                if (opt.selected) li.classList.add('active');
+                optionsList.appendChild(li);
+            });
+
+            // set initial current
+            const selected = native.options[native.selectedIndex];
+            if (selected) current.textContent = selected.textContent;
+
+            function closeOptions(){
+                optionsList.classList.remove('show');
+                custom.setAttribute('aria-expanded','false');
+            }
+            function openOptions(){
+                optionsList.classList.add('show');
+                custom.setAttribute('aria-expanded','true');
+            }
+
+            custom.addEventListener('click', (e)=>{
+                e.stopPropagation();
+                const isOpen = optionsList.classList.contains('show');
+                if (isOpen) closeOptions(); else openOptions();
+            });
+
+            optionsList.addEventListener('click', (e)=>{
+                const li = e.target.closest('li');
+                if (!li) return;
+                // update native select
+                native.value = li.dataset.value;
+                // update UI
+                current.textContent = li.textContent;
+                optionsList.querySelectorAll('li').forEach(n=>n.classList.remove('active'));
+                li.classList.add('active');
+                closeOptions();
+                // trigger change event if needed
+                native.dispatchEvent(new Event('change'));
+            });
+
+            // close on outside click
+            document.addEventListener('click', (e)=>{
+                if (!custom.contains(e.target)) closeOptions();
+            });
+
+            // keyboard support
+            custom.addEventListener('keydown', (e)=>{
+                const items = Array.from(optionsList.querySelectorAll('li'));
+                const idx = items.findIndex(it => it.classList.contains('active'));
+                if (e.key === 'ArrowDown'){
+                    const next = items[Math.min(items.length-1, Math.max(0, idx+1))];
+                    if (next) next.click();
+                    e.preventDefault();
+                } else if (e.key === 'ArrowUp'){
+                    const prev = items[Math.max(0, idx-1)];
+                    if (prev) prev.click();
+                    e.preventDefault();
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    const isOpen = optionsList.classList.contains('show');
+                    if (!isOpen) openOptions(); else closeOptions();
+                    e.preventDefault();
+                } else if (e.key === 'Escape'){
+                    closeOptions();
+                }
+            });
+        })();
 
     </script>
 </body>

@@ -57,6 +57,7 @@ const navLinks = document.querySelectorAll('.nav-link');
 function init() {
     setupEventListeners();
     setupNavigation();
+    setupBurgerMenu();
     updateLoginButton(currentUserName, authToken);
     checkPaymentStatus();
 
@@ -616,4 +617,33 @@ function setupNavigation() {
 }
 
 // Initialize when DOM is loaded
+// Burger / Mobile menu setup
+function setupBurgerMenu() {
+    const burger = document.getElementById('burger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const overlay = document.getElementById('menuOverlay');
+
+    if (!burger || !mobileMenu || !overlay) return;
+
+    function closeMenu() {
+        burger.classList.remove('active');
+        mobileMenu.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+
+    burger.addEventListener('click', () => {
+        burger.classList.toggle('active');
+        mobileMenu.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    // Close menu when clicking a mobile link
+    document.querySelectorAll('.mobile-menu a').forEach(link => {
+        link.addEventListener('click', closeMenu);
+    });
+
+    // Close when clicking overlay
+    overlay.addEventListener('click', closeMenu);
+}
+
 document.addEventListener('DOMContentLoaded', init);

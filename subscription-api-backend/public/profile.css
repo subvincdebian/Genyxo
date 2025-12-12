@@ -1285,11 +1285,12 @@ body {
 @media (max-width: 768px) {
 
     .nav-container {
+        position: relative;
         flex-direction: row !important;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-start; /* place items left-to-right, push right-side with margin-left:auto */
         width: 100%;
-        gap: 0;
+        gap: 0.5rem;
     }
 
     .left-side {
@@ -1308,9 +1309,14 @@ body {
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        flex: 1;
+        /* use absolute positioning to ensure it's visible inside navbar */
+        margin-left: 0;
         flex: 0 0 auto !important;
         width: auto !important;
+        gap: 8px;
+        position: absolute;
+        right: 150px;
+        z-index: 1200;
     }
 
     .nav-links {
@@ -1333,6 +1339,7 @@ body {
         justify-content: space-between;
         cursor: pointer;
         z-index: 1100;
+        margin-left: 4px;
     }
 
     .burger span {
@@ -1411,8 +1418,7 @@ body {
         z-index: 2001;
 
         border-radius: 18px;
-        background: var(--glass-light);
-        backdrop-filter: blur(12px);
+        background: var(--primary-color);
         border: 1px solid var(--glass-border);
         padding: 20px !important;
         animation: slideDown 0.25s ease;
@@ -1495,10 +1501,62 @@ body {
         display: block;
     }
 
-      @keyframes slideDown {
+    @keyframes slideDown {
         from { transform: translateY(-15px); opacity: 0; }
         to   { transform: translateY(0); opacity: 1; }
     }
+
+    /* Additional mobile tweaks: keep burger + logo left-aligned and ensure login button visible */
+    .navbar {
+        padding: 0 10px;
+        box-sizing: border-box;
+    }
+
+    .nav-container {
+        padding: 0 6px 0 6px;
+    }
+
+    .left-side {
+        flex: 0 0 auto;
+        gap: 0.5rem;
+    }
+
+    .nav-logo {
+        position: absolute !important;
+        margin-left: 6px !important;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .profile-toggle-btn {
+        margin-right: 6px;
+        min-width: 40px;
+        padding: 0.35rem 0.6rem;
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Sidebar full width on small screens and avoid overflow */
+    .profile-page {
+        padding: 12px;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 0 16px 0;
+        box-sizing: border-box;
+        padding: 16px;
+    }
+
+    .main-content {
+        padding: 0 6px 40px 6px;
+    }
+    
 
     /* крестик */
     .close-profile-panel {
@@ -1534,19 +1592,25 @@ body {
         font-size: 1.3rem;
         display: flex;
         gap: 6px;
-        position: relative;
-        right: 40px;
+        position: static;
+        right: auto;
+        margin-left: 6px; /* keep logo near burger */
     }
 
-    .login-btn {
-        position: relative;
-        right: 100px;
-        max-width: 150px;
+    /* ensure login button is visible on the right */
+    .login-btn, .profile-toggle-btn {
+        position: relative !important;
+        right: auto !important;
+        margin: 0 6px 0 0;
+        max-width: 140px;
         height: 40px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        padding: 0.4rem 0.8rem;
+    }
+
+    .right-side {
+        padding-right: 8px; /* ensure extra space on right edge */
     }
     
     /* Уменьшаем аватар в кнопке */
@@ -1559,6 +1623,8 @@ body {
     .search-container {
         display: none !important;
     }
+    
+    .sidebar { width: 94%; max-width: 420px; margin: 0 auto 16px auto; box-sizing: border-box; padding: 16px; }
 }
 
 #toast-container {
