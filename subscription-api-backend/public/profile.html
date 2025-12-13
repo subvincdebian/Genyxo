@@ -134,7 +134,7 @@
 
     <div class="profile-page">
 
-    <aside class="sidebar">
+        <aside class="sidebar">
             <div class="sidebar-header">
 
                 <div class="avatar" id="avatarPreview"></div>
@@ -195,164 +195,165 @@
             </nav>
         </aside>
 
-    <main class="main-content">
+        <main class="main-content">
 
-        <h1 class="title" data-i18n="profile.main_title">Settings</h1>
+            <h1 class="title" data-i18n="profile.main_title">Settings</h1>
 
-        <div class="tabs">
-            <button class="tab active" data-i18n="profile.tabs.general">General</button>
-            <button class="tab" data-i18n="profile.tabs.notification">Notification</button>
-            <button class="tab" data-i18n="profile.tabs.availability">Availability</button>
-            <button class="tab" data-i18n="profile.tabs.security">Security</button>
-            <button class="tab" data-i18n="profile.tabs.connected">Connected accounts</button>
-            <button class="tab" data-i18n="profile.tabs.billing">Billing</button>
-        </div>
-
-        <section class="page active content-box" id="page-general">
-            <h2 data-i18n="profile.general.title">Basic info</h2>
-            <p class="sub" data-i18n="profile.general.subtitle">Edit your profile information</p>
-
-            <form class="form">
-                <label data-i18n="profile.general.label_name">Full name</label>
-                <input type="text" data-i18n="profile.general.placeholder_name" placeholder="John Doe" />
-
-                <label data-i18n="profile.general.label_email">Email</label>
-                <input type="email" data-i18n="profile.general.placeholder_email" placeholder="your@email.com" />
-
-                <label data-i18n="profile.general.label_location">Location</label>
-                <input type="text" data-i18n="profile.general.placeholder_location" placeholder="City, Country" />
-
-                <button class="save-btn" data-i18n="profile.general.save_btn">Save changes</button>
-            </form>
-        </section>
-
-        <div id="page-password" class="page">
-            <h2 data-i18n="profile.security.title">Password and Security</h2>
-
-            <div class="security-block">
-                <h3 class="security-block__title" data-i18n="profile.security.change_pwd_title">Change Password</h3>
-                <p class="security-block__description" data-i18n="profile.security.change_pwd_desc">For your security, we recommend creating a unique password that you don't use with <br> any other account on the network.</p>
-                <button id="openChangePassword" class="btn open-change-password" data-i18n="profile.security.change_pwd_btn">Change Password</button>
-
-                <h3 data-i18n="profile.security.logout_all_title">Log out of all devices</h3>
-                <p class="security-block__description" data-i18n="profile.security.logout_all_desc">Sign out of anywhere you use your account, including all browsers, phones, consoles, and other devices, except this page.</p>
-                <button class="btn danger" data-i18n="profile.security.logout_all_btn">Log out from all devices</button>
+            <div class="tabs">
+                <button class="tab active" data-i18n="profile.tabs.general">General</button>
+                <button class="tab" data-i18n="profile.tabs.notification">Notification</button>
+                <button class="tab" data-i18n="profile.tabs.availability">Availability</button>
+                <button class="tab" data-i18n="profile.tabs.security">Security</button>
+                <button class="tab" data-i18n="profile.tabs.connected">Connected accounts</button>
+                <button class="tab" data-i18n="profile.tabs.billing">Billing</button>
             </div>
-        </div>
 
-        <div class="modal glass-modal" id="changePasswordModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
-        <div class="glass-card" role="document">
-            <button class="modal-close" id="closeModal" aria-label="Close modal">&times;</button>
+            <section class="page active content-box" id="page-general">
+                <h2 data-i18n="profile.general.title">Basic info</h2>
+                <p class="sub" data-i18n="profile.general.subtitle">Edit your profile information</p>
 
-            <h2 id="modalTitle" data-i18n="profile.security.modal.title">Change Password</h2>
-            <p class="modal-sub" data-i18n="profile.security.modal.subtitle">Enter your current password and choose a new secure password.</p>
+                <form class="form">
+                    <label data-i18n="profile.general.label_name">Full name</label>
+                    <input type="text" data-i18n="profile.general.placeholder_name" placeholder="John Doe" />
 
-            <input type="text" style="display:none" autocomplete="username">
-            <input type="password" style="display:none" autocomplete="current-password">
+                    <label data-i18n="profile.general.label_email">Email</label>
+                    <input type="email" data-i18n="profile.general.placeholder_email" placeholder="your@email.com" />
 
-            <label class="field-label" data-i18n="profile.security.modal.label_current">Current password</label>
-            <input type="password" id="currentPassword" autocomplete="current-password" class="field">
+                    <label data-i18n="profile.general.label_location">Location</label>
+                    <input type="text" data-i18n="profile.general.placeholder_location" placeholder="City, Country" />
 
-        <label class="field-label" data-i18n="profile.security.modal.label_new">New password</label>
-           <div class="password-field">
-                <input type="password" id="newPassword" autocomplete="new-password" class="field" data-i18n="profile.security.modal.placeholder_new" placeholder="New password">
+                    <button class="save-btn" data-i18n="profile.general.save_btn">Save changes</button>
+                </form>
+            </section>
 
-                <button type="button" class="eye-btn" data-target="newPassword">
-                     <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <div id="page-password" class="page">
+                <h2 data-i18n="profile.security.title">Password and Security</h2>
+
+                <div class="security-block">
+                    <h3 class="security-block__title" data-i18n="profile.security.change_pwd_title">Change Password</h3>
+                    <p class="security-block__description" data-i18n="profile.security.change_pwd_desc">For your security, we recommend creating a unique password that you don't use with <br> any other account on the network.</p>
+                    <button id="openChangePassword" class="btn open-change-password" data-i18n="profile.security.change_pwd_btn">Change Password</button>
+
+                    <h3 data-i18n="profile.security.logout_all_title">Log out of all devices</h3>
+                    <p class="security-block__description" data-i18n="profile.security.logout_all_desc">Sign out of anywhere you use your account, including all browsers, phones, consoles, and other devices, except this page.</p>
+                    <button class="btn danger" data-i18n="profile.security.logout_all_btn">Log out from all devices</button>
+                </div>
+            </div>
+
+            <div class="modal glass-modal" id="changePasswordModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+            <div class="glass-card" role="document">
+                <button class="modal-close" id="closeModal" aria-label="Close modal">&times;</button>
+
+                <h2 id="modalTitle" data-i18n="profile.security.modal.title">Change Password</h2>
+                <p class="modal-sub" data-i18n="profile.security.modal.subtitle">Enter your current password and choose a new secure password.</p>
+
+                <input type="text" style="display:none" autocomplete="username">
+                <input type="password" style="display:none" autocomplete="current-password">
+
+                <label class="field-label" data-i18n="profile.security.modal.label_current">Current password</label>
+                <input type="password" id="currentPassword" autocomplete="current-password" class="field">
+
+            <label class="field-label" data-i18n="profile.security.modal.label_new">New password</label>
+            <div class="password-field">
+                    <input type="password" id="newPassword" autocomplete="new-password" class="field" data-i18n="profile.security.modal.placeholder_new" placeholder="New password">
+
+                    <button type="button" class="eye-btn" data-target="newPassword">
+                        <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+
+                <label class="field-label" data-i18n="profile.security.modal.label_confirm">Confirm new password</label>
+                <div class="password-field">
+                    <input type="password" id="confirmPassword" autocomplete="new-password" class="field" data-i18n="profile.security.modal.placeholder_confirm" placeholder="Confirm password">
+
+                    <button type="button" class="eye-btn" data-target="confirmPassword">
+                    <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
                         <circle cx="12" cy="12" r="3"></circle>
                     </svg>
-                </button>
-            </div>
-
-            <label class="field-label" data-i18n="profile.security.modal.label_confirm">Confirm new password</label>
-            <div class="password-field">
-                <input type="password" id="confirmPassword" autocomplete="new-password" class="field" data-i18n="profile.security.modal.placeholder_confirm" placeholder="Confirm password">
-
-                <button type="button" class="eye-btn" data-target="confirmPassword">
-                  <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                </button>
-            </div>
-
-            <div id="errors" class="errors" aria-live="polite"></div>
-
-            <div class="modal-actions">
-            <button id="savePassword" class="save" disabled data-i18n="profile.security.modal.btn_save">Save</button>
-            <button id="cancelPassword" class="cancel" data-i18n="profile.security.modal.btn_cancel">Cancel</button>
-            </div>
-        </div>
-        </div>
-
-        <div id="page-payment" class="page">
-            <h2 class="page-payment__title" data-i18n="profile.payment.title">Payment Settings</h2>
-            <p class="page-payment__description">
-                <span data-i18n="profile.payment.desc">Manage your account balance, transactions, and payment methods.</span> 
-                <a href="#" style="color: dodgerblue;" data-i18n="profile.payment.privacy_link">View privacy policy.</a>
-            </p>
-
-            <h2 class="page-payment__title" data-i18n="profile.payment.balance_title">Account balance</h2>
-            <p class="page-payment__description">
-                <span data-i18n="profile.payment.balance_desc">Use your account balance to purchase AI packs, use any AI Subscription versions etc. Balance is non-refundable.</span> 
-                <a href="#" style="color: dodgerblue;" data-i18n="profile.payment.terms_link">View terms</a>
-            </p>
-
-            <h2 class="page-payment__title" data-i18n="profile.payment.balance_label">Balance</h2>
-            <p class="page-payment__balance">0.00 USD</p>
-            <a href="#" class="menu-item page-payment__href" data-page="page-transactions" data-i18n="profile.payment.view_transactions_link">
-                View Transactions
-            </a>
-        </div>
-
-        <div id="page-transactions" class="page">
-            <h2 class="page-transactions__title" data-i18n="profile.transactions.title">Transactions</h2>
-            <p class="page-transactions__description" data-i18n="profile.transactions.desc">Your account's payment information, transactions.</p>
-        </div>
-
-        <div id="page-affiliate" class="page content-box">
-            <h2 data-i18n="affiliate.title">Affiliate Dashboard</h2>
-            <p class="sub" data-i18n="affiliate.desc">Invite friends and earn real money (20%) from every purchase they make.</p>
-
-            <div class="affiliate-stats">
-                <div class="stat-card glass-card">
-                    <div class="stat-title">Your Balance</div>
-                    <div class="stat-value text-green">$<span id="affBalance">0.00</span></div>
-                    <button class="action-btn primary-btn" onclick="requestPayout()" style="margin-top:10px; width:100%">Request Payout</button>
-                </div>
-                
-                <div class="stat-card glass-card">
-                    <div class="stat-title">Total Invited</div>
-                    <div class="stat-value"><span id="affInvited">0</span> Users</div>
-                </div>
-            </div>
-
-            <div class="glass-card referral-share-box" style="margin-top: 30px;">
-                <h3 style="margin-bottom:15px;">Your Referral Link</h3>
-                <div class="copy-row">
-                    <input type="text" id="affLinkInput" readonly value="Loading...">
-                    <button class="action-btn" id="copyAffBtn">
-                        <i class="fas fa-copy"></i> Copy
                     </button>
                 </div>
-                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">
-                    Share this link anywhere. When users register via this link, you get 20% of all their purchases forever.
-                </p>
+
+                <div id="errors" class="errors" aria-live="polite"></div>
+
+                <div class="modal-actions">
+                <button id="savePassword" class="save" disabled data-i18n="profile.security.modal.btn_save">Save</button>
+                <button id="cancelPassword" class="cancel" data-i18n="profile.security.modal.btn_cancel">Cancel</button>
+                </div>
+            </div>
             </div>
 
-            <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
-                <h3>How it works:</h3>
-                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.6;">
-                    <li>1. User buys "Start AI" ($1.50) → You get <strong>$0.30</strong></li>
-                    <li>2. User buys "AI Master" ($7.00) → You get <strong>$1.40</strong></li>
-                    <li>3. Minimum payout amount: $10.00</li>
-                    <li>4. Payouts are processed to USDT (TRC20) or PayPal.</li>
-                </ul>
+            <div id="page-payment" class="page">
+                <h2 class="page-payment__title" data-i18n="profile.payment.title">Payment Settings</h2>
+                <p class="page-payment__description">
+                    <span data-i18n="profile.payment.desc">Manage your account balance, transactions, and payment methods.</span> 
+                    <a href="#" style="color: dodgerblue;" data-i18n="profile.payment.privacy_link">View privacy policy.</a>
+                </p>
+
+                <h2 class="page-payment__title" data-i18n="profile.payment.balance_title">Account balance</h2>
+                <p class="page-payment__description">
+                    <span data-i18n="profile.payment.balance_desc">Use your account balance to purchase AI packs, use any AI Subscription versions etc. Balance is non-refundable.</span> 
+                    <a href="#" style="color: dodgerblue;" data-i18n="profile.payment.terms_link">View terms</a>
+                </p>
+
+                <h2 class="page-payment__title" data-i18n="profile.payment.balance_label">Balance</h2>
+                <p class="page-payment__balance">0.00 USD</p>
+                <a href="#" class="menu-item page-payment__href" data-page="page-transactions" data-i18n="profile.payment.view_transactions_link">
+                    View Transactions
+                </a>
             </div>
-        </div>
-    </main>
-</div>
+
+            <div id="page-transactions" class="page">
+                <h2 class="page-transactions__title" data-i18n="profile.transactions.title">Transactions</h2>
+                <p class="page-transactions__description" data-i18n="profile.transactions.desc">Your account's payment information, transactions.</p>
+            </div>
+
+            <div id="page-affiliate" class="page content-box">
+                <h2 data-i18n="affiliate.title">Affiliate Dashboard</h2>
+                <p class="sub" data-i18n="affiliate.desc">Invite friends and earn real money (20%) from every purchase they make.</p>
+
+                <div class="affiliate-stats">
+                    <div class="stat-card glass-card">
+                        <div class="stat-title">Your Balance</div>
+                        <div class="stat-value text-green">$<span id="affiliateBalance">0.00</span></div>
+                        <button class="action-btn primary-btn" onclick="requestPayout()" style="margin-top:10px; width:100%">Request Payout</button>
+                    </div>
+                    
+                    <div class="stat-card glass-card">
+                        <div class="stat-title">Total Invited</div>
+                        <div class="stat-value"><span id="invitedCount">0</span> Users</div>
+                    </div>
+                </div>
+
+                <div class="glass-card referral-share-box" style="margin-top: 30px;">
+                    <h3 style="margin-bottom:15px;">Your Referral Link</h3>
+                    <div class="copy-row">
+                        <input type="text" id="referralLinkInput" readonly value="Loading...">
+                        <button class="action-btn" id="copyAffBtn">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">
+                        Share this link anywhere. When users register via this link, you get 20% of all their purchases forever.
+                    </p>
+                </div>
+
+                <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
+                    <h3>How it works:</h3>
+                    <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.6;">
+                        <li>1. User buys "Start AI" ($1.50) → You get <strong>$0.30</strong></li>
+                        <li>2. User buys "AI Master" ($7.00) → You get <strong>$1.40</strong></li>
+                        <li>3. Minimum payout amount: $10.00</li>
+                        <li>4. Payouts are processed to USDT (TRC20) or PayPal.</li>
+                    </ul>
+                </div>
+            </div>
+            
+        </main>
+    </div>
 
     <div class="modal" id="langModal">
         <div class="modal-content glass" style="max-width: 400px;">

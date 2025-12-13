@@ -345,7 +345,9 @@ async function fetchUserData() {
             updateUIState(true, user);
             updateNotificationsBadge();
 
-            loadAffiliateData();
+            if (document.getElementById('affiliateBalance')) {
+                loadAffiliateData(); 
+            }
         } else {
             console.warn('Token expired or invalid');
             handleLogout();
@@ -660,6 +662,7 @@ function setupBurgerMenu() {
 }
 
 async function loadAffiliateData() {
+    const authToken = localStorage.getItem('authToken');
     // Перевіряємо, чи є токен. Якщо ні - виходимо.
     if (!authToken) return;
 
@@ -670,23 +673,34 @@ async function loadAffiliateData() {
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            headers: { 
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
         });
         
         if (response.ok) {
-            const data = await response.json();
+            const user = await response.json();
             
-            // Заповнюємо дані
-            if(document.getElementById('affBalance')) 
-                document.getElementById('affBalance').textContent = parseFloat(data.balance).toFixed(2);
+            const balanceElement = document.getElementById('affiliateBalance');
+            const invitedElement = document.getElementById('invitedCount');
+            const linkInput = document.getElementById('referralLinkInput');
             
-            if(document.getElementById('affInvited'))
-                document.getElementById('affInvited').textContent = data.invitedCount;
+            if (balanceElement) {
+                const formattedBalance = parseFloat(data.balance).toFixed(2); 
+                balanceElement.textContent = `${formattedBalance} USD`;
+            }
             
-            if(document.getElementById('affLinkInput'))
-                document.getElementById('affLinkInput').value = data.referralLink;
-
-            loadAffiliateData();
+            if (invitedElement) {
+                invitedElement.textContent = data.invitedCount;
+            }
+            
+            if (linkInput) {
+                linkInput.value = data.referralLink;
+            }
+        } else if (response.status === 404) {
+            console.warn('Affiliate stats not found, probably user just registered.');
+            // Якщо ендпоінт відсутній або користувач не знайдений
         } else {
             console.warn('Token expired or invalid');
             handleLogout();
