@@ -48,4 +48,11 @@ export class ProfileController {
     const userId = req.user.id;
     return this.usersService.getAffiliateStats(userId);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('affiliate') // Це створить шлях /profile/affiliate
+  async getAffiliateStats(@Request() req) {
+    // Викликаємо метод сервісу, який ми обговорювали
+    return this.usersService.getAffiliateStats(req.user.id);
+  }
 }

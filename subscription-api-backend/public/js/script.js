@@ -1,3 +1,11 @@
+const API_BASE_URL = 'https://genyxo.com';
+let authToken = localStorage.getItem('authToken') || null;
+let currentUserName = localStorage.getItem('userName') || 'My Profile';
+let currentUserEmail = localStorage.getItem('userEmail');
+let currentUserAvatar = localStorage.getItem('userAvatar');
+
+let currentProduct = null;
+
 const products = [
     { id: 1, price: "$1.50", image: "./images/startai.jpg" },
     { id: 2, price: "$2.00", image: "./images/aiexplorer.jpg" },
@@ -6,14 +14,6 @@ const products = [
     { id: 5, price: "$12.00", image: "./images/unlimitedpower.jpg" },
     { id: 6, price: "$25.00", image: "./images/aititan.jpg" },
 ];
-
-const API_BASE_URL = 'https://genyxo.com';
-let authToken = localStorage.getItem('authToken') || null;
-let currentUserName = localStorage.getItem('userName') || 'My Profile';
-let currentUserEmail = localStorage.getItem('userEmail');
-let currentUserAvatar = localStorage.getItem('userAvatar');
-
-let currentProduct = null;
 
 // --- DOM Elements ---
 const productsGrid = document.getElementById('productsGrid');
@@ -144,14 +144,14 @@ function updateUIState(isLoggedIn, userData = null) {
     }
 }
 
-function showToast(message, type = 'info') {
+function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     
     // Іконки
     const icons = {
         success: 'fa-check-circle',
         error: 'fa-exclamation-circle',
-        info: 'fa-info-circle'
+        success: 'fa-info-circle'
     };
 
     const toast = document.createElement('div');
@@ -163,11 +163,13 @@ function showToast(message, type = 'info') {
 
     container.appendChild(toast);
 
+    setTimeout(() => toast.style.animation = 'slideInToast 0.3s forwards', 10);
+
     // Видаляємо через 4 секунди
     setTimeout(() => {
         toast.classList.add('hiding');
         toast.addEventListener('animationend', () => toast.remove());
-    }, 4000);
+    }, 3000);
 }
 
 function checkPaymentStatus() {
