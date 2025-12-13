@@ -52,6 +52,14 @@ const searchInput = document.querySelector('.search-input');
 const exploreBtn = document.getElementById('exploreBtn');
 const navLinks = document.querySelectorAll('.nav-link');
 
+const urlParams = new URLSearchParams(window.location.search);
+const refId = urlParams.get('ref');
+
+if (refId) {
+    localStorage.setItem('referrerId', refId);
+    console.log('Referrer ID saved:', refId);
+}
+
 
 // --- INITIALIZATION ---
 function init() {
@@ -336,6 +344,8 @@ async function fetchUserData() {
 
             updateUIState(true, user);
             updateNotificationsBadge();
+
+            loadAffiliateData();
         } else {
             console.warn('Token expired or invalid');
             handleLogout();
@@ -430,10 +440,13 @@ async function handleSignupSubmit(e) {
         return;
     }
 
+    const savedRefId = localStorage.getItem('referrerId');
+
     const formData = {
         name: document.getElementById('signupName').value,
         email: document.getElementById('signupEmail').value,
-        password: password
+        password: document.getElementById('signupPassword').value,
+        referrerId: savedRefId ? Number(savedRefId) : null
     };
     
     try {
@@ -644,6 +657,65 @@ function setupBurgerMenu() {
 
     // Close when clicking overlay
     overlay.addEventListener('click', closeMenu);
+}
+
+async function loadAffiliateData() {
+    // Перевіряємо, чи є токен. Якщо ні - виходимо.
+    if (!authToken) return;
+
+    // Перевіряємо, чи ми на сторінці профілю (щоб не грузити зайве на головній)
+    // Якщо у тебе SPA (одна сторінка), цей if можна прибрати, але краще залишити перевірку на наявність елементів
+    const balanceEl = document.getElementById('affBalance');
+    if (!balanceEl) return; 
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Заповнюємо дані
+            if(document.getElementById('affBalance')) 
+                document.getElementById('affBalance').textContent = parseFloat(data.balance).toFixed(2);
+            
+            if(document.getElementById('affInvited'))
+                document.getElementById('affInvited').textContent = data.invitedCount;
+            
+            if(document.getElementById('affLinkInput'))
+                document.getElementById('affLinkInput').value = data.referralLink;
+
+            loadAffiliateData();
+        } else {
+            console.warn('Token expired or invalid');
+            handleLogout();
+        }
+    } catch (e) {
+        console.error("Affiliate load error:", e);
+    }
+}
+
+const copyAffBtn = document.getElementById('copyAffBtn');
+if (copyAffBtn) {
+    copyAffBtn.addEventListener('click', () => {
+        const input = document.getElementById('affLinkInput');
+        input.select();
+        document.execCommand('copy');
+        showToast('Referral link copied!', 'success');
+    });
+}
+
+function requestPayout() {
+    const balance = parseFloat(document.getElementById('affBalance').innerText);
+    if (balance < 10) {
+        showToast('Minimum withdrawal amount is $10.00', 'error');
+        return;
+    }
+    // Тут можна зробити реальний запит на бекенд
+    if(confirm(`Request payout of $${balance}? Support will contact you via email.`)) {
+         showToast('Request sent! Support will contact you shortly.', 'success');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);

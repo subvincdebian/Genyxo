@@ -36,7 +36,19 @@ export class AuthService {
     if (existingUser) {
         throw new UnauthorizedException('A user with this email already exists.');
     }
-    const user = await this.usersService.create(createUserDto);
-    return this.login(user); 
+
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    const newUser = await this.usersService.create({
+        email: createUserDto.email,
+        password: hashedPassword,
+        name: createUserDto.name,
+        referrerId: createUserDto.referrerId,
+    });
+    
+    // Якщо ти хешуєш пароль десь в іншому місці, то можна просто:
+    // const newUser = await this.usersService.create(createUserDto);
+
+    return this.login(newUser); 
   }
 }

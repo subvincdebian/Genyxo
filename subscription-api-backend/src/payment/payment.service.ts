@@ -134,18 +134,38 @@ export class PaymentService {
     return { status: 'success', newStatus };
   }
 
-  // Допоміжний метод (щоб не дублювати код нарахування)
   private async finalizeTransaction(transaction: Transaction) {
-      transaction.status = TransactionStatus.APPROVED;
-      await this.transactionRepo.save(transaction);
+    transaction.status = TransactionStatus.APPROVED;
+    await this.transactionRepo.save(transaction);
 
-      await this.usersService.addCredits(transaction.user.id, Number(transaction.creditsAmount));
+    const buyer = await this.usersService.findOneById(transaction.user.id);
+    if (!buyer) return;
 
-      await this.notificationsService.create(
-          transaction.user.id,
-          'Payment Successful! 🎉',
-          `Your account received ${transaction.creditsAmount} credits.`,
-          NotificationType.SYSTEM
-      );
+    await this.usersService.addCredits(buyer.id, Number(transaction.creditsAmount));
+
+    if (buyer.referrerId) {
+       const referrer = await this.usersService.findOneById(buyer.referrerId);
+          
+       if (referrer) {
+         const commissionRate = 0.20; // 20%
+         const commission = Number(transaction.amount) * commissionRate;
+
+         await this.usersService.addReferralBalance(referrer.id, commission);
+
+         await this.notificationsService.create(
+             referrer.id,
+             'New Earnings! 💰',
+             `You earned $${commission.toFixed(2)} from a referral purchase!`,
+             NotificationType.SYSTEM
+         );
+       }
+    }
+
+    await this.notificationsService.create(
+      buyer.id,
+      'Payment Successful! 🎉',
+      `Your account received ${transaction.creditsAmount} credits.`,
+      NotificationType.SYSTEM
+    );
   }
 }

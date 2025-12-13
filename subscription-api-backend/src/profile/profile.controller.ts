@@ -39,4 +39,11 @@ export class ProfileController {
     await this.usersService.updateUser(req.user.id, body);
     return { status: 'success' };
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('affiliate')
+  async getAffiliateInfo(@Request() req) {
+    const userId = req.user.id;
+    return this.usersService.getAffiliateStats(userId);
+  }
 }

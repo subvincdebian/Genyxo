@@ -178,10 +178,9 @@
                     <span data-i18n="profile.sidebar.transactions">Transactions</span>
                 </a>
 
-                <a href="#" class="menu-item" data-page="page-subscriptions">
-                    <svg width="20" height="20" fill="white" viewBox="0 0 24 24" class="am-1yzbym3"><path d="M16.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M13.621 2.25a2.25 2.25 0 0 0-1.59.659l-8.5 8.5a2.25 2.25 0 0 0 0 3.182l5.878 5.879a2.25 2.25 0 0 0 3.182 0l8.5-8.5a2.25 2.25 0 0 0 .659-1.591V4.5a2.25 2.25 0 0 0-2.25-2.25zm-.53 1.72a.75.75 0 0 1 .53-.22H19.5a.75.75 0 0 1 .75.75v5.879a.75.75 0 0 1-.22.53l-8.5 8.5a.75.75 0 0 1-1.06 0L4.59 13.53a.75.75 0 0 1 0-1.06z"></path>
-                    </svg>
-                    <span data-i18n="profile.sidebar.subscriptions">Subscriptions</span>
+                <a href="#" class="menu-item" data-page="page-affiliate">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <span>Affiliate Program</span>
                 </a>
 
                 <a href="#" class="menu-item">
@@ -312,8 +311,45 @@
             <p class="page-transactions__description" data-i18n="profile.transactions.desc">Your account's payment information, transactions.</p>
         </div>
 
-        <div id="page-subscriptions" class="page">
-            <h2 class="page-subscriptions__title" data-i18n="profile.subscriptions.title">Subscriptions</h2>
+        <div id="page-affiliate" class="page content-box">
+            <h2 data-i18n="affiliate.title">Affiliate Dashboard</h2>
+            <p class="sub" data-i18n="affiliate.desc">Invite friends and earn real money (20%) from every purchase they make.</p>
+
+            <div class="affiliate-stats">
+                <div class="stat-card glass-card">
+                    <div class="stat-title">Your Balance</div>
+                    <div class="stat-value text-green">$<span id="affBalance">0.00</span></div>
+                    <button class="action-btn primary-btn" onclick="requestPayout()" style="margin-top:10px; width:100%">Request Payout</button>
+                </div>
+                
+                <div class="stat-card glass-card">
+                    <div class="stat-title">Total Invited</div>
+                    <div class="stat-value"><span id="affInvited">0</span> Users</div>
+                </div>
+            </div>
+
+            <div class="glass-card referral-share-box" style="margin-top: 30px;">
+                <h3 style="margin-bottom:15px;">Your Referral Link</h3>
+                <div class="copy-row">
+                    <input type="text" id="affLinkInput" readonly value="Loading...">
+                    <button class="action-btn" id="copyAffBtn">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">
+                    Share this link anywhere. When users register via this link, you get 20% of all their purchases forever.
+                </p>
+            </div>
+
+            <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
+                <h3>How it works:</h3>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.6;">
+                    <li>1. User buys "Start AI" ($1.50) → You get <strong>$0.30</strong></li>
+                    <li>2. User buys "AI Master" ($7.00) → You get <strong>$1.40</strong></li>
+                    <li>3. Minimum payout amount: $10.00</li>
+                    <li>4. Payouts are processed to USDT (TRC20) or PayPal.</li>
+                </ul>
+            </div>
         </div>
     </main>
 </div>

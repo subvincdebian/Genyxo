@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength, IsOptional, IsInt, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateUserDto {
   
@@ -12,4 +13,10 @@ export class CreateUserDto {
 
   @IsOptional()
   name?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Referrer ID must be a number.' })
+  @IsInt({ message: 'Referrer ID must be an integer.' })
+  referrerId?: number;
 }
