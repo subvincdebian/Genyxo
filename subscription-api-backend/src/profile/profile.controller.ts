@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from '../users/users.service';
 import { Request as ExpressRequest } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 
 interface RequestWithUser extends ExpressRequest {
     user: { id: number, email: string, name: string };

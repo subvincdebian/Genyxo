@@ -148,10 +148,15 @@ export class PaymentService {
           
        if (referrer) {
          const commissionRate = 0.20; // 20%
-         const commission = Number(transaction.amount) * commissionRate;
+         
+         // Важливо: перетворюємо все в числа перед математикою
+         const purchaseAmount = Number(transaction.amount);
+         const commission = purchaseAmount * commissionRate;
 
+         // Викликаємо метод сервісу (перевір, що він додає, а не перезаписує)
          await this.usersService.addReferralBalance(referrer.id, commission);
 
+         // Відправляємо сповіщення
          await this.notificationsService.create(
              referrer.id,
              'New Earnings! 💰',

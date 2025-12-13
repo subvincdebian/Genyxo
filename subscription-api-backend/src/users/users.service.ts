@@ -58,8 +58,12 @@ export class UsersService {
   async addReferralBalance(userId: number, amountUsd: number): Promise<void> {
     const user = await this.findOneById(userId);
     if (user) {
-        const currentBalance = Number(user.referralBalance) || 0;
-        user.referralBalance = currentBalance + amountUsd;
+        // Використовуємо parseFloat для надійності
+        const currentBalance = parseFloat(user.referralBalance?.toString() || '0');
+        const addAmount = parseFloat(amountUsd.toString());
+        
+        user.referralBalance = currentBalance + addAmount;
+        
         await this.usersRepository.save(user);
     }
   }
@@ -83,7 +87,11 @@ export class UsersService {
 
   // Виправлена статистика
   async getAffiliateStats(userId: number) {
-    const user = await this.findOneById(userId);
+    // Шукаємо юзера і обов'язково вибираємо referralBalance
+    const user = await this.usersRepository.findOne({
+        where: { id: userId },
+        select: ['id', 'referralBalance'] // Явно вказуємо, що нам треба баланс
+    });
     
     if (!user) {
         throw new NotFoundException('User not found');
@@ -93,10 +101,15 @@ export class UsersService {
         where: { referrerId: userId }
     });
 
+    // Формуємо посилання. 
+    // ВАЖЛИВО: Заміни 'https://genyxo.com' на реальну адресу свого фронтенду, якщо він інший
+    // Наприклад: 'https://hostaisite-production.up.railway.app' або твій домен
+    const baseUrl = 'https://genyxo.com'; 
+
     return {
-        balance: Number(user.referralBalance || 0),
+        balance: Number(user.referralBalance || 0), // Гарантуємо, що це число
         invitedCount: invitedCount,
-        referralLink: `https://genyxo.com?ref=${user.id}` // Твоє посилання
+        referralLink: `${baseUrl}?ref=${user.id}`
     };
   }
 }

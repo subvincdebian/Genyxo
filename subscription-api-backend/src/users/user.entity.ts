@@ -3,8 +3,10 @@ import {
   Column, 
   PrimaryGeneratedColumn, 
   BeforeInsert,
-  OneToMany, 
-  CreateDateColumn
+  OneToMany,
+  CreateDateColumn,
+  JoinColumn,
+  ManyToOne
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Transaction } from './transaction.entity';
@@ -59,8 +61,18 @@ export class User {
   @Column({ type: 'int', nullable: true })
   referrerId: number | null;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
   referralBalance: number;
+
+  @Column({ nullable: true, unique: true })
+  referralCode: string;
+
+  @ManyToOne(() => User, user => user.referrals)
+  @JoinColumn({ name: 'referrerId' })
+  referrer: User;
+
+  @OneToMany(() => User, user => user.referrer)
+  referrals: User[];
 
   @BeforeInsert()
   async hashPassword() {

@@ -663,16 +663,15 @@ function setupBurgerMenu() {
 
 async function loadAffiliateData() {
     const authToken = localStorage.getItem('authToken');
-    // Перевіряємо, чи є токен. Якщо ні - виходимо.
     if (!authToken) return;
 
-    // Перевіряємо, чи ми на сторінці профілю (щоб не грузити зайве на головній)
-    // Якщо у тебе SPA (одна сторінка), цей if можна прибрати, але краще залишити перевірку на наявність елементів
-    const balanceEl = document.getElementById('affBalance');
-    if (!balanceEl) return; 
+    // Перевіряємо, чи існує блок на сторінці
+    const balanceElement = document.getElementById('affiliateBalance');
+    if (!balanceElement) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
+            method: 'GET',
             headers: { 
                 'Authorization': `Bearer ${authToken}`,
                 'Content-Type': 'application/json'
@@ -680,30 +679,27 @@ async function loadAffiliateData() {
         });
         
         if (response.ok) {
-            const user = await response.json();
+            const data = await response.json(); // Отримуємо об'єкт даних
             
-            const balanceElement = document.getElementById('affiliateBalance');
+            // 1. Оновлюємо баланс (ID з HTML: affiliateBalance)
+            // Якщо баланс прийшов як рядок, конвертуємо, якщо число - форматуємо
+            const rawBalance = parseFloat(data.balance || 0);
+            balanceElement.textContent = rawBalance.toFixed(2);
+
+            // 2. Оновлюємо лічильник запрошених (ID з HTML: invitedCount)
             const invitedElement = document.getElementById('invitedCount');
-            const linkInput = document.getElementById('referralLinkInput');
-            
-            if (balanceElement) {
-                const formattedBalance = parseFloat(data.balance).toFixed(2); 
-                balanceElement.textContent = `${formattedBalance} USD`;
-            }
-            
             if (invitedElement) {
-                invitedElement.textContent = data.invitedCount;
+                invitedElement.textContent = data.invitedCount || 0;
             }
             
+            // 3. Вставляємо посилання (ID з HTML: referralLinkInput)
+            const linkInput = document.getElementById('referralLinkInput');
             if (linkInput) {
-                linkInput.value = data.referralLink;
+                linkInput.value = data.referralLink || 'Error generating link';
             }
-        } else if (response.status === 404) {
-            console.warn('Affiliate stats not found, probably user just registered.');
-            // Якщо ендпоінт відсутній або користувач не знайдений
+
         } else {
-            console.warn('Token expired or invalid');
-            handleLogout();
+            console.warn('Failed to load affiliate stats');
         }
     } catch (e) {
         console.error("Affiliate load error:", e);
@@ -713,10 +709,20 @@ async function loadAffiliateData() {
 const copyAffBtn = document.getElementById('copyAffBtn');
 if (copyAffBtn) {
     copyAffBtn.addEventListener('click', () => {
-        const input = document.getElementById('affLinkInput');
-        input.select();
-        document.execCommand('copy');
-        showToast('Referral link copied!', 'success');
+        // ID з HTML: referralLinkInput (було affLinkInput)
+        const input = document.getElementById('referralLinkInput');
+        if (input && input.value) {
+            input.select();
+            input.setSelectionRange(0, 99999); // Для мобільних
+            navigator.clipboard.writeText(input.value).then(() => {
+                showToast('Referral link copied!', 'success');
+            }).catch(err => {
+                console.error('Copy failed', err);
+                // Фолбек, якщо clipboard API не працює
+                document.execCommand('copy'); 
+                showToast('Link copied!', 'success');
+            });
+        }
     });
 }
 
