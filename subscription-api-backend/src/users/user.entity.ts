@@ -56,10 +56,10 @@ export class User {
   @OneToMany(() => Conversation, (conversation) => conversation.user)
   conversations: Conversation[];
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   referrerId: number | null;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0, nullable: true })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   referralBalance: number;
 
   @BeforeInsert()
