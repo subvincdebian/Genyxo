@@ -178,7 +178,7 @@
                     <span data-i18n="profile.sidebar.transactions">Transactions</span>
                 </a>
 
-                <a href="#affiliate" class="menu-item" data-page="page-affiliate">
+                <a href="#" class="menu-item" data-page="page-affiliate">
                     <i class="fas fa-hand-holding-usd"></i>
                     <span>Affiliate Program</span>
                 </a>
@@ -793,32 +793,25 @@
             }, 420);
         });
         }
-        function shakeElements(elements) {
-            elements.forEach(el => {
-                el.classList.add("shake");
-
-                setTimeout(() => {
-                    el.classList.remove("shake");
-                }, 400);
-            });
-        }
 
         const profileToggleBtn = document.getElementById('loginBtn');
         const profileDropdown = document.getElementById('profilePanel');
 
-        profileToggleBtn.addEventListener('click', () => {
-            if (token) {
-                profileDropdown.classList.toggle('show');
-            }
-        });
+        if (profileToggleBtn) {
+            profileToggleBtn.addEventListener('click', () => {
+                if (token) {
+                    profileDropdown.classList.toggle('show');
+                }
+            });
 
-        document.addEventListener('click', (event) => {
-            const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
-            
-            if (!isClickInside && profileDropdown.classList.contains('show')) {
-                profileDropdown.classList.remove('show');
-            }
-        });
+            document.addEventListener('click', (event) => {
+                const isClickInside = profileToggleBtn.contains(event.target) || (profileDropdown && profileDropdown.contains(event.target));
+                
+                if (!isClickInside && profileDropdown && profileDropdown.classList.contains('show')) {
+                    profileDropdown.classList.remove('show');
+                }
+            });
+        }
 
     </script>
 
