@@ -7,7 +7,7 @@ const products = [
     { id: 6, price: "$25.00", image: "./images/aititan.jpg" },
 ];
 
-const API_BASE_URL = 'https://hostaisite-production.up.railway.app';
+const API_BASE_URL = 'https://genyxo.com';
 let authToken = localStorage.getItem('authToken') || null;
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
 let currentUserEmail = localStorage.getItem('userEmail');
