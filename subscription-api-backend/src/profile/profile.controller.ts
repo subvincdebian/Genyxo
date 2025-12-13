@@ -29,7 +29,8 @@ export class ProfileController {
         name: user.name,
         role: user.role,
         credits: user.credits,
-        avatar: user.avatar
+        avatar: user.avatar,
+        referralBalance: user.referralBalance || 0,
     };
   }
 

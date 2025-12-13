@@ -59,7 +59,7 @@ export class User {
   @Column({ nullable: true })
   referrerId: number | null;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0, nullable: true })
   referralBalance: number;
 
   @BeforeInsert()
