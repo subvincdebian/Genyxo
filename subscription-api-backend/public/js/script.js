@@ -410,6 +410,7 @@ async function handleLoginSubmit(e) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
         });
+
         const data = await response.json();
 
         if (response.ok) {
@@ -424,12 +425,16 @@ async function handleLoginSubmit(e) {
             await fetchUserData();
             closeLoginModal();
             const msg = window.i18n?.translations?.toasts?.welcome || 'Welcome back!';
-            showToast(msg, 'Welcome back!', 'success');
+
+            showToast(i18n.translate('toasts.welcome'), 'success');
+
+            loginModal.style.display = 'none';
         } else {
-            showToast(data.message || 'Incorrect credentials', 'error');
+            showToast(i18n.translate('toasts.login_error'), 'error');
         }
     } catch (error) {
-        showToast('Server connection failed.', 'error');
+        console.error('Login error:', error);
+        showToast(i18n.translate('toasts.server_error'), 'error');
     }
 }
 
@@ -472,12 +477,14 @@ async function handleSignupSubmit(e) {
 
             await fetchUserData();
             closeLoginModal();
-            showToast('Account created successfully!', 'success');
+            showToast(i18n.translate('toasts.account_created'), 'success');
+
+            loginModal.style.display = 'none';
         } else {
-            showToast(data.message || 'Registration failed', 'error');
+            showToast(i18n.translate('toasts.reg_failed'), 'error');
         }
     } catch (error) {
-        showToast('Server connection failed.', 'error');
+        showToast(i18n.translate('toasts.server_error'), 'error');
     }
 }
 
