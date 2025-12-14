@@ -602,6 +602,19 @@ body {
     opacity: 1;
 }
 
+/* Make glass-style cards visible when used inside page content (non-modal)
+   Modal cards rely on .modal.show to animate; content cards should be shown by default */
+.content-box .glass-card,
+.page .glass-card,
+.profile-page .glass-card,
+.glass-card.referral-share-box,
+.stat-card.glass-card {
+    transform: none !important;
+    opacity: 1 !important;
+    width: auto;
+    max-width: 100%;
+}
+
 /* Close button */
 .modal-close {
     position: absolute;
@@ -690,6 +703,57 @@ body {
     padding: 8px 12px;
     border-radius: 10px;
     cursor: pointer;
+}
+
+/* Generic action buttons used across pages (affiliate, copy, payout) */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-light);
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background .14s ease, transform .08s ease, box-shadow .12s ease;
+}
+
+.action-btn i { opacity: 0.9; }
+
+.action-btn:hover {
+    background: rgba(255,255,255,0.03);
+    transform: scale(1.005);
+}
+
+/* Primary variant (Request Payout) */
+.action-btn.primary-btn,
+.primary-btn {
+    background: linear-gradient(90deg, #10e6cc, #0ec4af);
+    color: #041;
+    border: none;
+    box-shadow: 0 8px 24px rgba(16,230,204,0.08);
+    transition: 0.2s;
+    justify-content: center;
+}
+
+.action-btn.primary-btn:hover,
+.primary-btn:hover {
+    filter: brightness(0.95);
+}
+
+/* Copy button styling — compact and matching site palette */
+#copyAffBtn {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-light);
+}
+
+#copyAffBtn:hover {
+    background: rgba(255,255,255,0.04);
 }
 
 /* appear animation for error and modal */
@@ -1695,6 +1759,10 @@ body {
     text-align: center;
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--glass-border);
+    /* make cards slightly taller for better visual balance */
+    min-height: 140px;
+    padding-top: 28px;
+    padding-bottom: 28px;
 }
 
 .stat-title {
@@ -1710,6 +1778,45 @@ body {
     font-weight: 800;
     font-family: 'Inter Tight', sans-serif;
     color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Special styling for the 'Total Invited' card (right column) */
+.affiliate-stats .stat-card:nth-child(2) {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+}
+
+.affiliate-stats .stat-card:nth-child(2)::before {
+    /* Font Awesome user icon (solid) — relies on FA being loaded on the page */
+    content: "\f007";
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 28px;
+    color: rgba(255,255,255,0.9);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.affiliate-stats .stat-card:nth-child(2) .stat-value {
+    font-size: 36px;
+    font-weight: 800;
+}
+
+.affiliate-stats .stat-card .stat-value span {
+    font-family: 'Inter Tight', sans-serif;
+}
+
+/* Add wallet/dollar icon to left card (Your Balance) to match visual language */
+.affiliate-stats .stat-card:nth-child(1)::before {
+    content: "\f155"; /* fa-dollar-sign */
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 28px;
+    color: #ffffff;
+    display: block;
+    margin-bottom: 8px;
 }
 
 .text-green {
@@ -1736,4 +1843,29 @@ body {
     .affiliate-stats {
         grid-template-columns: 1fr;
     }
+}
+
+/* Полоска скроллу(для всього сайту) */
+/* ширина скролу */
+::-webkit-scrollbar {
+  width: 8px;
+  transition: 0.3s;
+}
+
+/* фон скролбару */
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+  transition: 0.3s;
+}
+
+/* повзунок (thumb) */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #1a1a1a, #333333);
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+/* hover ефект */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #10e6cc, #cccccc);
 }

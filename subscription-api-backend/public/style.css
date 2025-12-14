@@ -415,7 +415,8 @@ body {
 }
 
 .product-price {
-    color: #4B72EE;
+    color: #2ecc71;
+    text-shadow: 0 0 18px rgba(46,204,113,0.18);
     font-size: 1.8rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
@@ -495,10 +496,10 @@ body {
     justify-content: center;
     width: 24px;
     height: 24px;
-    background: #6968E0;
+    background: linear-gradient(90deg, #10e6cc, #0ec4af);
     border-radius: 50%;
     flex-shrink: 0;
-    box-shadow: 0 0 10px rgba(76, 70, 239, 0.4);
+    box-shadow: 0 8px 20px rgba(16,230,204,0.08);
 }
 
 /* Сама іконка (галочка або блискавка) */
@@ -2137,4 +2138,29 @@ body {
 .profile-toggle-btn:hover {
     transform: scale(1.05);
     border-color: var(--text-light);
+}
+
+/* Полоска скроллу(для всього сайту) */
+/* ширина скролу */
+::-webkit-scrollbar {
+  width: 8px;
+  transition: 0.3s;
+}
+
+/* фон скролбару */
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+  transition: 0.3s;
+}
+
+/* повзунок (thumb) */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #1a1a1a, #333333);
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+/* hover ефект */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #10e6cc, #cccccc);
 }

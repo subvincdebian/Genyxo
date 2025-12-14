@@ -148,9 +148,13 @@ function updateUIState(isLoggedIn, userData = null) {
     }
 }
 
-function showToast(message, type = 'success') {
+function showToast(message, type = 'success', duration = 3000) {
     const container = document.getElementById('toast-container');
-    
+    if (!container) {
+        console.warn('Toast container not found');
+        return;
+    }
+
     // Іконки
     const icons = {
         success: 'fa-check-circle',
@@ -161,19 +165,51 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerHTML = `
-        <i class="fas ${icons[type]}"></i>
+        <i class="fas ${icons[type] || 'fa-info-circle'}"></i>
         <span>${message}</span>
     `;
 
     container.appendChild(toast);
 
-    setTimeout(() => toast.style.animation = 'slideInToast 0.3s forwards', 10);
+    // trigger slide-in animation immediately
+    // use requestAnimationFrame to ensure the element is in DOM
+    requestAnimationFrame(() => {
+        toast.style.animation = 'slideInToast 0.3s forwards';
+    });
 
-    // Видаляємо через 4 секунди
-    setTimeout(() => {
+    // schedule hiding
+    const hideMs = Number(duration) || 3000;
+    const hideAnimMs = 300; // should match .toast.hiding animation duration
+
+    const hideTimer = setTimeout(() => {
+        // clear any inline animation so CSS .hiding animation can run
+        toast.style.animation = '';
+        // force reflow to ensure the change is applied
+        void toast.offsetWidth;
+
+        // add hiding class to trigger slideOut animation (defined in CSS)
         toast.classList.add('hiding');
-        toast.addEventListener('animationend', () => toast.remove());
-    }, 3000);
+
+        // fallback: ensure removal after animation even if animationend doesn't fire
+        const removeFallback = setTimeout(() => {
+            if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+        }, hideAnimMs + 50);
+
+        // remove on animationend as well
+        toast.addEventListener('animationend', function onAnim(e) {
+            // ensure the event is for the hiding animation (transform/opacity)
+            if (e.target !== toast) return;
+            if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+            clearTimeout(removeFallback);
+            toast.removeEventListener('animationend', onAnim);
+        });
+    }, hideMs);
+
+    // return an object to allow manual clear if needed
+    return {
+        hideTimer,
+        element: toast
+    };
 }
 
 function checkPaymentStatus() {

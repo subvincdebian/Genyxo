@@ -543,11 +543,12 @@
             });
         }
 
-        document.querySelectorAll(".tab a").forEach(tab => {
+        // Tabs are buttons with class "tab" — listen on those instead of ".tab a"
+        document.querySelectorAll(".tab").forEach(tab => {
             tab.addEventListener("click", function(e) {
                 e.preventDefault();
 
-                document.querySelectorAll(".tab a")
+                document.querySelectorAll(".tab")
                     .forEach(t => t.classList.remove("active"));
 
                 this.classList.add("active");
