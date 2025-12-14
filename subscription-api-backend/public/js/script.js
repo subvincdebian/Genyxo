@@ -129,7 +129,9 @@ function updateUIState(isLoggedIn, userData = null) {
         }
 
         // Клас кнопки (щоб працював дропдаун)
-        loginBtn.classList.add('login-btn');
+        if (loginBtn) {
+            loginBtn.classList.add('login-btn');
+        }
         loginBtn.classList.add('profile-toggle-btn');
     } else {
         // Стан "Гість"
@@ -137,7 +139,9 @@ function updateUIState(isLoggedIn, userData = null) {
         if (navIcon) navIcon.style.display = 'inline-block';
         if (navAvatar) navAvatar.style.display = 'none';
         
-        loginBtn.classList.add('login-btn');
+        if (loginBtn) {
+            loginBtn.classList.add('login-btn');
+        }
         loginBtn.classList.remove('profile-toggle-btn');
         
         if (profilePanel) profilePanel.classList.remove('show');
@@ -610,9 +614,14 @@ function handleSearch(e) {
 
 // --- EVENT LISTENERS ---
 function setupEventListeners() {
-    loginBtn.addEventListener('click', handleLoginButtonClick);
-    closeLogin.addEventListener('click', closeLoginModal);
-    dropdownLogoutBtn.addEventListener('click', handleLogout); 
+    if (loginBtn)
+        loginBtn.addEventListener('click', handleLoginButtonClick);
+
+    if (closeLogin)
+        closeLogin.addEventListener('click', closeLoginModal);
+
+    if (dropdownLogoutBtn)
+        dropdownLogoutBtn.addEventListener('click', handleLogout);
     
     // 🔥 ЗАКРИТТЯ НОВОГО ВІКНА
     if (closeCheckoutBtn) {
@@ -624,12 +633,32 @@ function setupEventListeners() {
         });
     }
 
-    loginForm.addEventListener('submit', handleLoginSubmit);
-    signupForm.addEventListener('submit', handleSignupSubmit);
-    showSignup.addEventListener('click', (e) => { e.preventDefault(); showSignupForm(); });
-    showLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
-    searchInput.addEventListener('input', handleSearch);
-    exploreBtn.addEventListener('click', () => document.getElementById('products').scrollIntoView({ behavior: 'smooth' }));
+    if (loginForm)
+        loginForm.addEventListener('submit', handleLoginSubmit);
+
+    if (signupForm)
+        signupForm.addEventListener('submit', handleSignupSubmit);
+
+    if (showSignup)
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignupForm();
+        });
+
+    if (showLogin)
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            showLoginForm();
+        });
+
+    if (searchInput)
+        searchInput.addEventListener('input', handleSearch);
+
+    if (exploreBtn)
+        exploreBtn.addEventListener('click', () => {
+            const products = document.getElementById('products');
+            if (products) products.scrollIntoView({ behavior: 'smooth' });
+        });
 
     window.addEventListener('click', (e) => {
         if (!e.target.closest('.profile-container') && profilePanel.classList.contains('show')) {

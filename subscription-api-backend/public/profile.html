@@ -371,8 +371,6 @@
 
         const token = localStorage.getItem('authToken');
 
-        const notificationBadge = document.getElementById('notificationBadge');
-
         const burger = document.getElementById("burger");
         const mobileMenu = document.getElementById("mobileMenu");
         const overlay = document.getElementById("menuOverlay");
@@ -458,6 +456,7 @@
         loadProfileData();
 
         async function updateNotificationsBadge() {
+            const notificationBadge = document.getElementById('notificationBadge');
             if (!token) return;
 
             try {
