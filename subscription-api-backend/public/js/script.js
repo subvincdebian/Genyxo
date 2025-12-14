@@ -151,7 +151,7 @@ function showToast(message, type = 'success') {
     const icons = {
         success: 'fa-check-circle',
         error: 'fa-exclamation-circle',
-        success: 'fa-info-circle'
+        info: 'fa-info-circle'
     };
 
     const toast = document.createElement('div');
@@ -424,17 +424,23 @@ async function handleLoginSubmit(e) {
             
             await fetchUserData();
             closeLoginModal();
-            const msg = window.i18n?.translations?.toasts?.welcome || 'Welcome back!';
 
-            showToast(i18n.translate('toasts.welcome'), 'success');
+            const msg = window.i18n?.translations?.toasts?.welcome || 'Welcome back!';
+            showToast(msg, 'success');
 
             loginModal.style.display = 'none';
         } else {
-            showToast(i18n.translate('toasts.login_error'), 'error');
+            showToast(
+                window.i18n?.translations?.toasts?.login_error || 'Invalid email or password',
+                'error'
+            );
         }
     } catch (error) {
         console.error('Login error:', error);
-        showToast(i18n.translate('toasts.server_error'), 'error');
+        showToast(
+            window.i18n?.translations?.toasts?.server_error || 'Server error',
+            'error'
+        );
     }
 }
 
@@ -477,14 +483,23 @@ async function handleSignupSubmit(e) {
 
             await fetchUserData();
             closeLoginModal();
-            showToast(i18n.translate('toasts.account_created'), 'success');
+            showToast(
+                window.i18n?.translations?.toasts?.account_created || 'Welcome!',
+                'success'
+            );
 
             loginModal.style.display = 'none';
         } else {
-            showToast(i18n.translate('toasts.reg_failed'), 'error');
+            showToast(
+                window.i18n?.translations?.toasts?.reg_failed || 'Registration Failed',
+                'error'
+            );
         }
     } catch (error) {
-        showToast(i18n.translate('toasts.server_error'), 'error');
+        showToast(
+            window.i18n?.translations?.toasts?.server_error || 'Server error',
+            'error'
+        );
     }
 }
 

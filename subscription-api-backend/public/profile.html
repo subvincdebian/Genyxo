@@ -366,7 +366,6 @@
 
     <script>
 
-        const API_BASE_URL = 'https://genyxo.com';
         const token = localStorage.getItem('authToken');
 
         const notificationBadge = document.getElementById('notificationBadge');
@@ -562,8 +561,13 @@
 
                 const pageId = btn.getAttribute("data-page");
 
-                if(pageId && document.getElementById(pageId)){
+                if (pageId && document.getElementById(pageId)) {
                     document.getElementById(pageId).classList.add("active");
+
+                    // 🔥 ВАЖЛИВО
+                    if (pageId === 'page-affiliate' && typeof loadAffiliateData === 'function') {
+                        loadAffiliateData();
+                    }
                 }
 
                 document.querySelectorAll(".menu-item").forEach(b => b.classList.remove("active"));
