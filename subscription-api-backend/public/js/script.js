@@ -711,7 +711,7 @@ function handleSearch(e) {
 function setupEventListeners() {
 
     if (loginBtn) {
-        loginBtn.addEventListener('click', () => {
+        loginBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             
             if (loginBtn.classList.contains('profile-toggle-btn')) {
