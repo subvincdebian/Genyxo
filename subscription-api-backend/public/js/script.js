@@ -631,14 +631,15 @@ function updateLoginButton(name, token) {
 }
 
 function openLoginModal() {
-    if (!loginModal) return;
-    loginModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-
+    if (loginModal) {
+        loginModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
     if (logoutContainer) {
         logoutContainer.style.display = 'none';
     }
-    
+
     showLoginForm();
 }
 
@@ -715,7 +716,6 @@ function setupEventListeners() {
             
             if (loginBtn.classList.contains('profile-toggle-btn')) {
                 toggleProfilePanel(); 
-                
             } else {
                 openLoginModal();
             }
