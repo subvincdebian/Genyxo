@@ -10,8 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = urlParams.get('token');
 
     if (token) {
-        console.log("Google token found, logging in...");
-
+        console.log("Google token found, starting login process...");
         localStorage.setItem('authToken', token);
 
         window.history.replaceState({}, document.title, "/");
@@ -19,10 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchUserProfile(token);
 
         showToast('Successfully logged in with Google!', 'success');
+
     } else {
         // Якщо токена в URL немає, перевіряємо чи він є в пам'яті
         const savedToken = localStorage.getItem('authToken');
         if (savedToken) {
+            fetchUserProfile(savedToken);
+        } else {
+            // Якщо токена немає, просто оновлюємо UI до стану "не залогінений"
             updateAuthUI();
         }
     }
@@ -30,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchUserProfile(token) {
     try {
-        const res = await fetch(`${API_BASE_URL}/users/profile`, {
+        const res = await fetch(`${API_BASE_URL}/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -38,10 +41,18 @@ async function fetchUserProfile(token) {
             localStorage.setItem('userEmail', user.email);
             localStorage.setItem('userId', user.id);
             if (user.name) localStorage.setItem('userName', user.name);
+            if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
+
             updateAuthUI(); // Оновлюємо кнопки
+        } else {
+             // Якщо токен недійсний
+             localStorage.removeItem('authToken');
+             updateAuthUI();
         }
     } catch (e) {
         console.error("Profile fetch error", e);
+        localStorage.removeItem('authToken');
+        updateAuthUI();
     }
 }
 
@@ -63,8 +74,6 @@ const productsGrid = document.getElementById('productsGrid');
 const loginModal = document.getElementById('loginModal');
 const loginBtn = document.getElementById('loginBtn');
 const closeLogin = document.getElementById('closeLogin');
-const loginForm = document.getElementById('loginForm');
-const signupForm = document.getElementById('signupForm');
 const showSignup = document.getElementById('showSignup');
 const showLogin = document.getElementById('showLogin');
 const logoutContainer = document.getElementById('logoutContainer');
@@ -750,7 +759,7 @@ function setupEventListeners() {
                         showToast('Invalid email or password. Please try again.', 'error');
                     } 
                     // Якщо бекенд каже "User not found"
-                    else if (res.status === 404) {
+                    else if (res.status === 404 || data.message.includes('Incorrect email or password')) {
                         showToast('User does not exist. Please Sign Up first.', 'error');
                         // Можна навіть автоматично переключити на вкладку Sign Up тут
                         switchTab('signup'); 
@@ -766,15 +775,14 @@ function setupEventListeners() {
     }
 
     const signupForm = document.getElementById('signupForm');
-    let pollingInterval = null;
     if (signupForm) {
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const confirmPass = document.getElementById('confirmPassword').value;
-            const name = document.getElementById('signupName').value;
 
             if (password !== confirmPass) {
                 showToast('Passwords do not match', 'error');
