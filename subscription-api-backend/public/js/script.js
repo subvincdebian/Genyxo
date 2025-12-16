@@ -631,9 +631,14 @@ function updateLoginButton(name, token) {
 }
 
 function openLoginModal() {
+    if (!loginModal) return;
     loginModal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    logoutContainer.style.display = 'none';
+
+    if (logoutContainer) {
+        logoutContainer.style.display = 'none';
+    }
+    
     showLoginForm();
 }
 
@@ -706,17 +711,13 @@ function setupEventListeners() {
 
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
+            e.stopPropagation();
             
-            // ПЕРЕВІРКА СТАНУ:
             if (loginBtn.classList.contains('profile-toggle-btn')) {
-                // КОРИСТУВАЧ ЗАЛОГІНЕНИЙ -> Відкриваємо дропдаун/меню профілю
                 toggleProfilePanel(); 
                 
             } else {
-                // КОРИСТУВАЧ НЕ ЗАЛОГІНЕНИЙ -> Відкриваємо модалку Auth
-                if (authModal) authModal.style.display = 'flex';
-                // При відкритті логіну, показуємо вікно логіну за замовчуванням
-                showLoginForm(); 
+                openLoginModal();
             }
         });
     }
@@ -728,7 +729,7 @@ function setupEventListeners() {
     if (dropdownLogoutBtn) {
         dropdownLogoutBtn.addEventListener('click', handleLogout);
     }
-    // 🔥 ЗАКРИТТЯ НОВОГО ВІКНА
+
     if (closeCheckoutBtn) {
         closeCheckoutBtn.addEventListener('click', () => {
             checkoutModal.style.display = 'none';
@@ -741,7 +742,7 @@ function setupEventListeners() {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Зупиняємо перезавантаження
+            e.preventDefault();
             
             const email = loginForm.querySelector('input[type="email"]').value;
             const password = loginForm.querySelector('input[type="password"]').value;
@@ -756,23 +757,19 @@ function setupEventListeners() {
                 const data = await res.json();
 
                 if (res.ok) {
-                    // Зберігаємо токен
                     localStorage.setItem('authToken', data.access_token);
                     localStorage.setItem('userEmail', data.user.email);
                     localStorage.setItem('userId', data.user.id);
                     if(data.user.name) localStorage.setItem('userName', data.user.name);
 
-                    // Закриваємо модалку
                     document.getElementById('loginModal').style.display = 'none';
                     
-                    // Оновлюємо інтерфейс
                     updateUIState(true, user);
                     showToast('Welcome back!', 'success');
                 } else {
                     if (res.status === 401) {
                         showToast('Invalid email or password. Please try again.', 'error');
                     } 
-                    // Якщо бекенд каже "User not found"
                     else if (res.status === 404 || data.message.includes('Incorrect email or password')) {
                         showToast('User does not exist. Please Sign Up first.', 'error');
                         // Можна навіть автоматично переключити на вкладку Sign Up тут
@@ -933,8 +930,6 @@ function setupNavigation() {
     });
 }
 
-// Initialize when DOM is loaded
-// Burger / Mobile menu setup
 function setupBurgerMenu() {
     const burger = document.getElementById('burger');
     const mobileMenu = document.getElementById('mobileMenu');
@@ -954,12 +949,10 @@ function setupBurgerMenu() {
         overlay.classList.toggle('active');
     });
 
-    // Close menu when clicking a mobile link
     document.querySelectorAll('.mobile-menu a').forEach(link => {
         link.addEventListener('click', closeMenu);
     });
 
-    // Close when clicking overlay
     overlay.addEventListener('click', closeMenu);
 }
 
