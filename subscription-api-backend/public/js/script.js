@@ -68,6 +68,8 @@ const navLinks = document.querySelectorAll('.nav-link');
 const urlParams = new URLSearchParams(window.location.search);
 const refId = urlParams.get('ref');
 
+let pollingInterval = null;
+
 if (refId) {
     localStorage.setItem('referrerId', refId);
     console.log('Referrer ID saved:', refId);
@@ -683,7 +685,49 @@ function setupEventListeners() {
     }
 
     if (loginForm)
-        loginForm.addEventListener('submit', handleLoginSubmit);
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Зупиняємо перезавантаження
+            
+            // Зчитуємо дані з форми LOGIN (переконайся, що в HTML id правильні)
+            // В твоєму HTML (з попередніх файлів) поля вводу для логіну не мали ID, 
+            // тому давай використаємо querySelector всередині форми loginForm
+            const emailInput = loginForm.querySelector('input[type="email"]');
+            const passwordInput = loginForm.querySelector('input[type="password"]');
+            
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Зберігаємо токен
+                    localStorage.setItem('authToken', data.access_token);
+                    localStorage.setItem('userEmail', data.user.email);
+                    localStorage.setItem('userId', data.user.id);
+                    if(data.user.name) localStorage.setItem('userName', data.user.name);
+
+                    // Закриваємо модалку
+                    document.getElementById('loginModal').style.display = 'none';
+                    
+                    // Оновлюємо інтерфейс
+                    updateAuthUI();
+                    showToast('Welcome back!', 'success');
+                } else {
+                    // Якщо помилка (невірний пароль або не підтверджена пошта)
+                    showToast(data.message || 'Login failed', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Connection error', 'error');
+            }
+        });
 
     if (signupForm)
         signupForm.addEventListener('submit', async (e) => {
@@ -703,21 +747,19 @@ function setupEventListeners() {
                 const data = await res.json();
 
                 if (!res.ok) {
-                    // Показуємо красиву помилку (наприклад, з class-validator)
+                    document.getElementById('loginModal').style.display = 'none';
+                
+                    document.getElementById('verifyEmailModal').style.display = 'flex';
+                    
+                    startPolling(email, password);
+                } else {
                     let errorMsg = data.message;
                     if (Array.isArray(data.message)) errorMsg = data.message.join('<br>');
                     showToast(errorMsg || 'Registration failed', 'error');
-                } else {
-                    signupForm.reset();
-                    // Показуємо користувачу, що треба перевірити пошту
-                    alert('Account created! Please check your email to verify your account before logging in.');
-                    // Перемикаємо на логін
-                    signupForm.style.display = 'none';
-                    loginForm.style.display = 'block';
                 }
-            } catch (err) {
-                console.error(err);
-                showToast('Server error', 'error');
+            } catch (error) {
+                console.error(error);
+                showToast('Server error during registration', 'error');
             }
         });
 
@@ -752,6 +794,48 @@ function setupEventListeners() {
             document.body.style.overflow = 'auto';
         }
     });
+}
+
+function startPolling(email, password) {
+    if (pollingInterval) clearInterval(pollingInterval);
+    
+    pollingInterval = setInterval(async () => {
+        try {
+            // Пробуємо залогінитись "у фоновому режимі"
+            const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            // Якщо логін успішний (значить пошта підтверджена!)
+            if (res.ok) {
+                const data = await res.json();
+                stopPolling();
+                
+                // Авто-логін
+                localStorage.setItem('authToken', data.access_token);
+                localStorage.setItem('userEmail', data.user.email);
+                localStorage.setItem('userId', data.user.id);
+                
+                // Закриваємо модалку очікування
+                document.getElementById('verifyEmailModal').style.display = 'none';
+                
+                // Показуємо успіх
+                showToast('Email verified! Welcome!', 'success');
+                updateAuthUI();
+            }
+        } catch (e) {
+            // Ігноруємо помилки поки чекаємо
+        }
+    }, 3000); // Перевіряємо кожні 3 секунди
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
 }
 
 function setupNavigation() {
@@ -870,6 +954,16 @@ function requestPayout() {
     // Тут можна зробити реальний запит на бекенд
     if(confirm(`Request payout of $${balance}? Support will contact you via email.`)) {
          showToast('Request sent! Support will contact you shortly.', 'success');
+    }
+}
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = "none";
+        // Якщо закрили вікно верифікації, зупиняємо перевірку (щоб не грузило сервер)
+        if (event.target.id === 'verifyEmailModal') {
+            stopPolling();
+        }
     }
 }
 

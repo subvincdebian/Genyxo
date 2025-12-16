@@ -26,8 +26,8 @@ import { EmailModule } from './email/email.module';
         port: 587,
         secure: false,
         auth: {
-          user: 'info@genyxo.com', // ТУТ МАЄ БУТИ ТВОЯ ПОШТА
-          pass: process.env.ZOHO_APP_PASSWORD,  // ТУТ МАЄ БУТИ APP PASSWORD (не звичайний пароль)
+          user: 'info@genyxo.com',
+          pass: process.env.ZOHO_APP_PASSWORD,
         },
       },
       defaults: {
