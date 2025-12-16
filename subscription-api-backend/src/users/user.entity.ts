@@ -20,13 +20,13 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ unique: true, type: 'varchar', length: 255 })
   email: string;
 
   @Column({ nullable: true, select: false, type: 'varchar' })
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   name: string;
 
   @Column({ type: 'longtext', nullable: true })
@@ -75,7 +75,7 @@ export class User {
   @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
   referralBalance: number;
 
-  @Column({ nullable: true, unique: true, type: 'varchar' })
+  @Column({ nullable: true, unique: true, type: 'varchar', length: 255 })
   referralCode: string;
 
   @ManyToOne(() => User, user => user.referrals)
