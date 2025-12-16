@@ -8,7 +8,7 @@ import {
   ManyToOne
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Transaction } from './transaction.entity';
+import { Transaction } from '../transactions/transaction.entity';
 import { Message } from '../chat/message.entity';
 import { Conversation } from '../chat/conversation.entity';
 import { Role } from './role.enum';
@@ -23,7 +23,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ nullable: true, select: false })
+  @Column({ nullable: true, select: false, type: 'varchar' })
   password: string;
 
   @Column({ nullable: true })
@@ -42,13 +42,13 @@ export class User {
   @Column({ default: false })
   isEmailVerified: boolean;
 
-  @Column({ nullable: true, select: false })
+  @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
   verificationToken: string | null; // Токен для підтвердження пошти
 
-  @Column({ nullable: true, select: false })
+  @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
   googleId: string;
 
-  @Column({ nullable: true, select: false })
+  @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
   facebookId: string;
 
   @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 }) 
@@ -75,7 +75,7 @@ export class User {
   @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
   referralBalance: number;
 
-  @Column({ nullable: true, unique: true })
+  @Column({ nullable: true, unique: true, type: 'varchar' })
   referralCode: string;
 
   @ManyToOne(() => User, user => user.referrals)

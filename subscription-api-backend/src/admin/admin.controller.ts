@@ -4,7 +4,7 @@ import { AdminService } from './admin.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../users/role.enum';
 import { PaymentService } from '../payment/payment.service'; 
-import { TransactionStatus } from '../users/transaction.entity';
+import { TransactionStatus } from '../transactions/transaction.entity';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Controller('admin')
