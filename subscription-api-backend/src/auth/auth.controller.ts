@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Get, Query, UseGuards, Req, Res, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { AuthGuard } from '@nestjs/passport'; // Ось цей імпорт був потрібен
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -43,5 +43,22 @@ export class AuthController {
     const token = req.user.access_token;
     // Редірект на головну сторінку з токеном
     res.redirect(`https://genyxo.com?token=${token}`);
+  }
+
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLogin() {
+    // Passport автоматично редіректить на Facebook
+  }
+
+  @Get('facebook/callback')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLoginCallback(@Req() req, @Res() res) {
+    // req.user містить юзера, якого повернув validateOAuthLogin
+    const result = await this.authService.login(req.user);
+    
+    // Редірект на фронтенд з токеном
+    // Заміни https://genyxo.com на URL твого фронтенду, якщо він інший
+    res.redirect(`https://genyxo.com?token=${result.access_token}`);
   }
 }
