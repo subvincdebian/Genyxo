@@ -457,6 +457,7 @@
         }
 
         .chat-input {
+            resize: none;
             flex: 1;
             background: transparent;
             border: none;
@@ -465,6 +466,8 @@
             font-size: 1rem;
             outline: none;
             min-height: 50px;
+            max-height: 200px;
+            padding-top: 14px;
         }
 
         .send-btn {
@@ -795,7 +798,7 @@
 
             <div class="input-wrapper">
                 <div class="input-container">
-                    <input type="text" class="chat-input" id="userInput" data-i18n="chat.input_placeholder" placeholder="Send message..." autocomplete="off">
+                    <textarea class="chat-input" id="userInput" rows="1" placeholder="Ask AI anything..." autocomplete="off" data-i18n="chat.input_placeholder"></textarea>
                     <button class="send-btn" id="sendBtn">
                         <i class="fas fa-arrow-up"></i>
                     </button>
@@ -1282,6 +1285,21 @@
                 }
             });
         })();
+
+        const textarea = document.getElementById('userInput');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if(this.value === '') this.style.height = '50px';
+        });
+
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+                this.style.height = '50px';
+            }
+        });
 
     </script>
 </body>

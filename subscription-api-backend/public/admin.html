@@ -322,6 +322,7 @@
     </div>
 
     <script src="js/i18n.js"></script>
+    <script src="js/script.js"></script>
     
     <script>
         const API_BASE_URL = 'https://genyxo.com';
@@ -329,7 +330,6 @@
 
         if (!token) window.location.href = 'index.html';
 
-        // --- GLOBAL PAGINATION STATE ---
         let usersPage = 1;
         const usersLimit = 10;
         
@@ -339,7 +339,6 @@
         let ticketsPage = 1;
         const ticketsLimit = 10;
 
-        // --- HEADER & DROPDOWN LOGIC ---
         const profileToggleBtn = document.getElementById('loginBtn');
         const profileDropdown = document.getElementById('profilePanel');
         const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
@@ -361,7 +360,6 @@
             window.location.href = 'index.html';
         });
 
-        // Завантаження даних про адміна в хедер
         async function loadAdminProfile() {
             try {
                 const res = await fetch(`${API_BASE_URL}/profile`, {
@@ -369,7 +367,6 @@
                 });
                 if(res.ok) {
                     const user = await res.json();
-                    // Оновлюємо хедер
                     const navAvatar = document.getElementById('navAvatar');
                     const navUsername = document.getElementById('navUsername');
                     const menuName = document.getElementById('menuName');
@@ -398,16 +395,14 @@
             const nextBtn = document.getElementById(`next${type}Btn`);
             
             if(isLoading) {
-                // Блокуємо, щоб не клікали під час завантаження
                 if(prevBtn) prevBtn.disabled = true;
                 if(nextBtn) nextBtn.disabled = true;
             }
-            // Якщо isLoading = false, кнопки будуть розблоковані логікою updatePaginationUI
         }
 
         // --- 1. USERS ---
         async function loadUsers() {
-            setPaginationLoading('User', true); // БЛОКУЄМО КНОПКИ
+            setPaginationLoading('User', true);
             const refreshIcon = document.getElementById('refreshIconUsers');
             if (refreshIcon) refreshIcon.classList.add('spin');
 
@@ -454,13 +449,12 @@
                 console.error("Error in loadUsers:", e);          
             } finally {
                 if (refreshIcon) refreshIcon.classList.remove('spin');
-                // setPaginationLoading('User', false) - не потрібно, updatePaginationUI сам вирішить
             }   
         }
 
         // --- 2. TRANSACTIONS ---
         async function loadTransactions() {
-            setPaginationLoading('Tx', true); // БЛОКУЄМО
+            setPaginationLoading('Tx', true);
             const refreshIcon = document.getElementById('refreshIconTx');
             if (refreshIcon) refreshIcon.classList.add('spin');
 
@@ -523,7 +517,7 @@
 
         // --- 3. TICKETS ---
         async function loadAdminTickets() {
-            setPaginationLoading('Ticket', true); // БЛОКУЄМО
+            setPaginationLoading('Ticket', true);
             const refreshIcon = document.getElementById('refreshIconTickets');
             if(refreshIcon) refreshIcon.classList.add('spin');
 
@@ -582,17 +576,13 @@
             const nextBtn = document.getElementById(`next${type}Btn`);
             const infoSpan = document.getElementById(`${type.toLowerCase()}PageInfo`);
 
-            // Оновлюємо текст (Сторінка X з Y)
             if (infoSpan) {
                 infoSpan.textContent = `Page ${meta.page} of ${meta.lastPage} (Total: ${meta.total})`;
             }
 
-            // Оновлюємо кнопки та події
             if (prevBtn) {
-                // Кнопка неактивна, якщо це перша сторінка
                 prevBtn.disabled = meta.page <= 1;
                 
-                // Видаляємо старі лісенери через клонування (щоб не дублювалися кліки)
                 const newPrev = prevBtn.cloneNode(true);
                 prevBtn.parentNode.replaceChild(newPrev, prevBtn);
                 
@@ -604,7 +594,6 @@
             }
 
             if (nextBtn) {
-                // Кнопка неактивна, якщо це остання сторінка
                 nextBtn.disabled = meta.page >= meta.lastPage;
                 
                 const newNext = nextBtn.cloneNode(true);
@@ -631,8 +620,8 @@
                 if (res.ok) {
                     loadTransactions();
                     loadUsers();
-                } else { alert('Failed'); }
-            } catch (e) { alert('Server error'); }
+                } else { showToast("Failed!", "error");; }
+            } catch (e) { showToast("Server Error...", "error");; }
         }
 
         async function addCreditsPrompt(userId) {
@@ -669,13 +658,13 @@
                     body: JSON.stringify({ ticketId: currentTicketId, response: replyText })
                 });
                 if(res.ok) { closeReplyModal(); loadAdminTickets(); }
-                else { alert("Failed"); }
-            } catch(e) { alert("Server error"); }
+                else { showToast("Failed", "error");; }
+            } catch(e) { showToast("Server Error", "error");; }
         }
 
         // INIT
         document.addEventListener('DOMContentLoaded', () => {
-            loadAdminProfile(); // Вантажимо аватарку адміна
+            loadAdminProfile();
             setTimeout(() => {
                 loadUsers();
                 loadTransactions();

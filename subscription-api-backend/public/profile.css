@@ -1705,12 +1705,12 @@ body {
     min-width: 300px;
     padding: 16px 20px;
     border-radius: 12px;
-    background: rgba(20, 20, 20, 0.95);
+    background: rgba(20, 20, 20, 0.95) !important;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: white;
     font-size: 0.95rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     gap: 12px;
