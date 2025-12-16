@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common'; // <--- Додано NotFoundException
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from './message.entity';
-import { Conversation } from './conversation.entity'; // <--- Додано імпорт Conversation
+import { Conversation } from './conversation.entity';
 
 @Injectable()
 export class ChatService {
@@ -39,7 +39,6 @@ export class ChatService {
   async processMessage(userId: number, text: string, model: string, conversationId?: number) {
     let conversation: Conversation;
 
-    // Якщо ID немає — створюємо новий чат
     if (!conversationId) {
       conversation = this.conversationRepository.create({
         user: { id: userId },
@@ -47,20 +46,18 @@ export class ChatService {
       });
       await this.conversationRepository.save(conversation);
     } else {
-      // ВИПРАВЛЕННЯ ТУТ:
       const existingChat = await this.conversationRepository.findOne({ where: { id: conversationId } });
       
       if (!existingChat) {
           throw new NotFoundException('Chat not found');
       }
       
-      conversation = existingChat; // Тепер TypeScript знає, що тут точно не null
+      conversation = existingChat;
       
       conversation.updatedAt = new Date(); 
       await this.conversationRepository.save(conversation);
     }
 
-    // Зберігаємо User Message
     const userMsg = this.messageRepository.create({
       content: text,
       sender: 'user',
@@ -70,7 +67,6 @@ export class ChatService {
     });
     await this.messageRepository.save(userMsg);
 
-    // Отримуємо контекст для AI (останні 10 повідомлень цього чату)
     const history = await this.messageRepository.find({
         where: { conversation: { id: conversation.id } },
         order: { createdAt: 'ASC' },
@@ -82,10 +78,8 @@ export class ChatService {
         content: msg.content
     }));
 
-    // Логіка запиту до AI
     const aiResponse = await this.getAiResponse(apiMessages, model);
 
-    // Зберігаємо Bot Message
     const botMsg = this.messageRepository.create({
       content: aiResponse.reply,
       sender: 'bot',

@@ -1,15 +1,15 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  UseGuards, 
-  Request, 
-  ForbiddenException, 
-  BadRequestException, 
-  Get, 
-  Param,   // <--- Додано
-  Patch,   // <--- Додано
-  Delete   // <--- Додано
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  ForbiddenException,
+  BadRequestException,
+  Get,
+  Param,
+  Patch,
+  Delete
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatService } from './chat.service';
@@ -56,7 +56,6 @@ export class ChatController {
   @Post('message')
   async sendMessage(@Body() body: { message: string, model: string, conversationId?: number }, @Request() req) {
     const userId = req.user.id;
-    // Витягуємо змінні з body, щоб вони були доступні
     const { message, conversationId } = body;
     const selectedModel = body.model || 'gpt-4o-mini';
 
@@ -66,15 +65,12 @@ export class ChatController {
         throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
     }
 
-    // 1. Списання кредитів
     const isDeducted = await this.usersService.deductCredits(userId, cost);
 
     if (!isDeducted) {
         throw new ForbiddenException(`Not enough credits for ${selectedModel}. Price: ${cost} Credits.`);
     }
 
-    // 2. Обробка повідомлення (збереження, AI, історія) перенесена в сервіс
-    // Ми більше не викликаємо saveMessage вручну тут, бо processMessage це робить
     const result = await this.chatService.processMessage(
         userId, 
         message, 

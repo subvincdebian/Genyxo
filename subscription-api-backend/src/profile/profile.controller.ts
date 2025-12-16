@@ -1,12 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from '../users/users.service';
-import { Request as ExpressRequest } from 'express';
-import { v4 as uuidv4 } from 'uuid';
-
-interface RequestWithUser extends ExpressRequest {
-    user: { id: number, email: string, name: string };
-}
 
 @Controller('profile')
 export class ProfileController {
@@ -50,9 +44,8 @@ export class ProfileController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('affiliate') // Це створить шлях /profile/affiliate
+  @Get('affiliate')
   async getAffiliateStats(@Request() req) {
-    // Викликаємо метод сервісу, який ми обговорювали
     return this.usersService.getAffiliateStats(req.user.id);
   }
 }

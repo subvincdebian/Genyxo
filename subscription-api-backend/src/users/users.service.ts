@@ -7,10 +7,9 @@ import { User } from './user.entity';
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>, // Приватний репозиторій - це правильно
+    private usersRepository: Repository<User>,
   ) {}
 
-  // Для доступу до репозиторію в екстрених випадках (але краще через методи)
   get repo(): Repository<User> {
     return this.usersRepository;
   }
@@ -18,7 +17,6 @@ export class UsersService {
   async findOneByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({ 
         where: { email },
-        // Обов'язково додаємо googleId та facebookId, щоб перевіряти їх наявність
         select: ['id', 'email', 'password', 'role', 'name', 'credits', 'avatar', 'referrerId', 'referralBalance', 'isEmailVerified', 'googleId', 'facebookId'] 
     });
   }
@@ -30,7 +28,6 @@ export class UsersService {
     });
   }
 
-  // Новий метод для пошуку по токену верифікації
   async findByVerificationToken(token: string): Promise<User | null> {
     return this.usersRepository.findOne({ where: { verificationToken: token } });
   }

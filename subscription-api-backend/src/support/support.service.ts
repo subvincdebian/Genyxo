@@ -5,7 +5,7 @@ import { SupportTicket, TicketStatus, TicketPriority } from './support.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { EmailService } from '../email/email.service'; // <-- ІМПОРТУЄМО СЕРВІС ПОШТИ
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class SupportService {
@@ -13,7 +13,7 @@ export class SupportService {
     @InjectRepository(SupportTicket)
     private ticketRepo: Repository<SupportTicket>,
     private notificationsService: NotificationsService,
-    private emailService: EmailService, // <-- ДОДАЄМО В КОНСТРУКТОР
+    private emailService: EmailService,
   ) {}
 
   async create(userId: number, subject: string, message: string, priority?: TicketPriority) {
@@ -61,7 +61,7 @@ export class SupportService {
   async resolveTicket(ticketId: number, response: string) {
     const ticket = await this.ticketRepo.findOne({
       where: { id: ticketId },
-      relations: ['user'], // Важливо: ми тягнемо юзера, щоб знати його email
+      relations: ['user'],
     });
 
     if (!ticket) {
@@ -73,7 +73,6 @@ export class SupportService {
 
     await this.ticketRepo.save(ticket);
 
-    // 1. Сповіщення на сайті
     await this.notificationsService.create(
         ticket.user.id,
         'Support Reply 📩',
@@ -81,7 +80,6 @@ export class SupportService {
         NotificationType.SUPPORT
     );
 
-    // 2. Сповіщення на Email (НОВЕ)
     if (ticket.user.email) {
         await this.emailService.sendSupportReply(
             ticket.user.email,

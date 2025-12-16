@@ -43,7 +43,7 @@ export class User {
   isEmailVerified: boolean;
 
   @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
-  verificationToken: string | null; // Токен для підтвердження пошти
+  verificationToken: string | null;
 
   @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
   googleId: string;

@@ -11,10 +11,10 @@ export class Message {
   content: string;
 
   @Column()
-  sender: 'user' | 'bot'; // Хто відправив: користувач чи бот
+  sender: 'user' | 'bot';
 
   @Column()
-  model: string; // Яка модель використовувалася (GPT-4, DALL-E)
+  model: string;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -28,7 +28,6 @@ export class PaymentService {
     private notificationsService: NotificationsService
   ) {}
 
-  // 1. Створення посилання (NowPayments)
   async createPayment(userId: number, packId: number) {
     const pack = PACKS[packId];
     if (!pack) throw new BadRequestException('Package not found');
@@ -74,7 +73,6 @@ export class PaymentService {
     }
   }
 
-  // 2. Webhook (NowPayments)
   async handleWebhook(headers: any, body: any) {
     const signature = headers['x-nowpayments-sig'];
     if (!signature) return; 
@@ -114,7 +112,6 @@ export class PaymentService {
     return { status: 'ok' };
   }
 
-  // 🔥 3. Метод для АДМІНКИ (Виправлення помилки build)
   async updateTransactionStatus(txId: number, newStatus: TransactionStatus, adminId: number) {
     const transaction = await this.transactionRepo.findOne({ 
         where: { id: txId },
@@ -126,7 +123,6 @@ export class PaymentService {
     transaction.status = newStatus;
     await this.transactionRepo.save(transaction);
 
-    // Якщо адмін натиснув Approve - нараховуємо кредити
     if (newStatus === TransactionStatus.APPROVED) {
         await this.finalizeTransaction(transaction);
     }
@@ -149,14 +145,11 @@ export class PaymentService {
        if (referrer) {
          const commissionRate = 0.20; // 20%
          
-         // Важливо: перетворюємо все в числа перед математикою
          const purchaseAmount = Number(transaction.amount);
          const commission = purchaseAmount * commissionRate;
 
-         // Викликаємо метод сервісу (перевір, що він додає, а не перезаписує)
          await this.usersService.addReferralBalance(referrer.id, commission);
 
-         // Відправляємо сповіщення
          await this.notificationsService.create(
              referrer.id,
              'New Earnings! 💰',

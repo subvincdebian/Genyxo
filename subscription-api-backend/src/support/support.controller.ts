@@ -15,7 +15,6 @@ export class SupportController {
 
   @Post('create')
   async createTicket(@Request() req, @Body() dto: CreateTicketDto) {
-    // Передаємо пріоритет, якщо він є
     return this.supportService.create(req.user.id, dto.subject, dto.message, dto.priority);
   }
 
@@ -24,7 +23,6 @@ export class SupportController {
     return this.supportService.getUserTickets(req.user.id);
   }
 
-  // АДМІН: Всі тікети з пагінацією
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Get('admin/all')

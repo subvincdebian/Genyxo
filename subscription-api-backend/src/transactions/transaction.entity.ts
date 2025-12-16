@@ -19,21 +19,20 @@ export class Transaction {
   externalId: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  amount: number; // Сума в доларах/гривнях
+  amount: number;
 
   @Column()
-  creditsAmount: number; // Скільки кредитів нараховано
+  creditsAmount: number;
 
   @Column({ type: 'enum', enum: TransactionStatus, default: TransactionStatus.PENDING })
-  status: TransactionStatus; // 'PENDING', 'SUCCESS', 'FAILED'
+  status: TransactionStatus;
 
   @Column()
-  provider: string; // 'CRYPTO', 'WAYFORPAY', 'PAYPAL', 'NOWPAYMENTS
+  provider: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  // Зв'язок: Одна транзакція належить одному користувачу
   @ManyToOne(() => User, (user) => user.transactions)
   @JoinColumn({ name: 'userId' })
   user: User;
