@@ -24,20 +24,20 @@ export class ChatController {
 
   // Прайс-лист
   private readonly MODEL_PRICES = {
-    'gpt-5.1': 50,
-    'gpt-5-mini': 30,
-    'gpt-5-nano': 25,
+    'gpt-5.1': 150,
+    'gpt-5-mini': 70,
+    'gpt-5-nano': 45,
 
-    'gpt-4.1': 30,
-    'gpt-4.1-mini': 20,
+    'gpt-4.1': 55,
+    'gpt-4.1-mini': 25,
 
     'gpt-4o': 40,
-    'gpt-4o-mini': 40,
+    'gpt-4o-mini': 18,
 
-    'o1-preview': 40,
-    'o3-reasoning': 75,
+    'o1-preview': 90,
+    'o3-reasoning': 140,
 
-    'dall-e-3': 100
+    'dall-e-3': 120
   };
 
   @UseGuards(AuthGuard('jwt'))

@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile(savedToken);
         } else {
             // Якщо токена немає, просто оновлюємо UI до стану "не залогінений"
-            updateAuthUI();
+            updateUIState(false);
         }
     }
 });
@@ -43,28 +43,28 @@ async function fetchUserProfile(token) {
             if (user.name) localStorage.setItem('userName', user.name);
             if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
 
-            updateAuthUI(); // Оновлюємо кнопки
+            updateUIState(true, user); // Оновлюємо кнопки
         } else {
              // Якщо токен недійсний
              localStorage.removeItem('authToken');
-             updateAuthUI();
+             updateUIState(false);
         }
     } catch (e) {
         console.error("Profile fetch error", e);
         localStorage.removeItem('authToken');
-        updateAuthUI();
+        updateUIState(false);
     }
 }
 
 let currentProduct = null;
 
 const products = [
-    { id: 1, price: "$1.50", image: "./images/startai.jpg" },
-    { id: 2, price: "$2.00", image: "./images/aiexplorer.jpg" },
-    { id: 3, price: "$3.50", image: "./images/procreatorai.jpg" },
-    { id: 4, price: "$7.00", image: "./images/aimaster.jpg" },
-    { id: 5, price: "$12.00", image: "./images/unlimitedpower.jpg" },
-    { id: 6, price: "$25.00", image: "./images/aititan.jpg" },
+    { id: 1, price: "$2.49", image: "./images/startai.jpg" },
+    { id: 2, price: "$4.99", image: "./images/aiexplorer.jpg" },
+    { id: 3, price: "$9.99", image: "./images/procreatorai.jpg" },
+    { id: 4, price: "$18.99", image: "./images/aimaster.jpg" },
+    { id: 5, price: "$29.99", image: "./images/unlimitedpower.jpg" },
+    { id: 6, price: "$49.99", image: "./images/aititan.jpg" },
 ];
 
 // --- DOM Elements ---
@@ -752,7 +752,7 @@ function setupEventListeners() {
                     document.getElementById('loginModal').style.display = 'none';
                     
                     // Оновлюємо інтерфейс
-                    updateAuthUI();
+                    updateUIState(true, user);
                     showToast('Welcome back!', 'success');
                 } else {
                     if (res.status === 401) {
@@ -886,7 +886,7 @@ function startPolling(email, password) {
                 
                 // Показуємо успіх
                 showToast('Email verified! Welcome!', 'success');
-                updateAuthUI();
+                updateUIState(true, user);
             }
         } catch (e) {
             // Ігноруємо помилки поки чекаємо

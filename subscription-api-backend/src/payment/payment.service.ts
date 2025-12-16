@@ -9,12 +9,12 @@ import axios from 'axios';
 import * as crypto from 'crypto';
 
 export const PACKS: Record<number, { name: string, price: number, credits: number }> = {
-  1: { name: 'Start AI', price: 1.50, credits: 500 },
-  2: { name: 'AI Explorer', price: 2.00, credits: 1000 },
-  3: { name: 'Pro Creator', price: 3.50, credits: 2000 },
-  4: { name: 'AI Master', price: 7.00, credits: 5000 },
-  5: { name: 'Unlimited Power', price: 12.00, credits: 10000 },
-  6: { name: 'AI Titan', price: 25.00, credits: 25000 },
+  1: { name: 'Start AI', price: 2.49, credits: 750 },
+  2: { name: 'AI Explorer', price: 4.99, credits: 2000 },
+  3: { name: 'Pro Creator', price: 9.99, credits: 5000 },
+  4: { name: 'AI Master', price: 18.99, credits: 10000 },
+  5: { name: 'Unlimited Power', price: 29.99, credits: 20000 },
+  6: { name: 'AI Titan', price: 49.99, credits: 45000 },
 };
 
 @Injectable()
