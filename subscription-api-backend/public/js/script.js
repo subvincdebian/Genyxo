@@ -182,6 +182,7 @@ function updateUIState(isLoggedIn, userData = null) {
 
         // Клас кнопки (щоб працював дропдаун)
         if (loginBtn) {
+            loginBtn.classList.add('profile-toggle-btn');
             loginBtn.classList.add('login-btn');
         }
         loginBtn.classList.add('profile-toggle-btn');
@@ -193,8 +194,8 @@ function updateUIState(isLoggedIn, userData = null) {
         
         if (loginBtn) {
             loginBtn.classList.add('login-btn');
+            loginBtn.classList.remove('profile-toggle-btn');
         }
-        loginBtn.classList.remove('profile-toggle-btn');
         
         if (profilePanel) profilePanel.classList.remove('show');
     }
@@ -704,7 +705,20 @@ function handleSearch(e) {
 function setupEventListeners() {
 
     if (loginBtn) {
-        loginBtn.addEventListener('click', handleLoginButtonClick);
+        loginBtn.addEventListener('click', () => {
+            
+            // ПЕРЕВІРКА СТАНУ:
+            if (loginBtn.classList.contains('profile-toggle-btn')) {
+                // КОРИСТУВАЧ ЗАЛОГІНЕНИЙ -> Відкриваємо дропдаун/меню профілю
+                toggleProfilePanel(); 
+                
+            } else {
+                // КОРИСТУВАЧ НЕ ЗАЛОГІНЕНИЙ -> Відкриваємо модалку Auth
+                if (authModal) authModal.style.display = 'flex';
+                // При відкритті логіну, показуємо вікно логіну за замовчуванням
+                showLoginForm(); 
+            }
+        });
     }
 
     if (closeLogin) {
@@ -898,6 +912,12 @@ function stopPolling() {
     if (pollingInterval) {
         clearInterval(pollingInterval);
         pollingInterval = null;
+    }
+}
+
+function toggleProfilePanel() {
+    if (profilePanel) {
+        profilePanel.classList.toggle('show');
     }
 }
 
