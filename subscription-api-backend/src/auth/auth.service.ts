@@ -17,6 +17,10 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
 
+    if (!user || !user.password || !(await bcrypt.compare(pass, user.password))) {
+        return null; 
+    }
+
     if (user && user.password && (await bcrypt.compare(pass, user.password))) {
       if (!user.isEmailVerified) {
         throw new UnauthorizedException('Please verify your email first (check your spam folder).');
@@ -43,7 +47,12 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto) {
     const existingUser = await this.usersService.findOneByEmail(createUserDto.email);
+    
     if (existingUser) {
+        // Якщо він зареганий через Гугл, але пробує пароль - скажемо про це
+        if (existingUser.googleId) {
+             throw new ConflictException('User already exists via Google. Please Login with Google.');
+        }
         throw new ConflictException('User with this email already exists.');
     }
 

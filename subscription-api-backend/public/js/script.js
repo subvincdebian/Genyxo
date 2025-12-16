@@ -8,14 +8,42 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Перевірка чи повернулися ми з Google Auth
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
+
     if (token) {
+        console.log("Google token found, logging in...");
+
         localStorage.setItem('authToken', token);
-        // Очистити URL
+
         window.history.replaceState({}, document.title, "/");
-        updateAuthUI();
+        
+        fetchUserProfile(token);
+
         showToast('Successfully logged in with Google!', 'success');
+    } else {
+        // Якщо токена в URL немає, перевіряємо чи він є в пам'яті
+        const savedToken = localStorage.getItem('authToken');
+        if (savedToken) {
+            updateAuthUI();
+        }
     }
 });
+
+async function fetchUserProfile(token) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/users/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const user = await res.json();
+            localStorage.setItem('userEmail', user.email);
+            localStorage.setItem('userId', user.id);
+            if (user.name) localStorage.setItem('userName', user.name);
+            updateAuthUI(); // Оновлюємо кнопки
+        }
+    } catch (e) {
+        console.error("Profile fetch error", e);
+    }
+}
 
 let currentProduct = null;
 
@@ -665,15 +693,18 @@ function handleSearch(e) {
 
 // --- EVENT LISTENERS ---
 function setupEventListeners() {
-    if (loginBtn)
+
+    if (loginBtn) {
         loginBtn.addEventListener('click', handleLoginButtonClick);
+    }
 
-    if (closeLogin)
+    if (closeLogin) {
         closeLogin.addEventListener('click', closeLoginModal);
+    }
 
-    if (dropdownLogoutBtn)
+    if (dropdownLogoutBtn) {
         dropdownLogoutBtn.addEventListener('click', handleLogout);
-    
+    }
     // 🔥 ЗАКРИТТЯ НОВОГО ВІКНА
     if (closeCheckoutBtn) {
         closeCheckoutBtn.addEventListener('click', () => {
@@ -684,18 +715,13 @@ function setupEventListeners() {
         });
     }
 
-    if (loginForm)
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault(); // Зупиняємо перезавантаження
             
-            // Зчитуємо дані з форми LOGIN (переконайся, що в HTML id правильні)
-            // В твоєму HTML (з попередніх файлів) поля вводу для логіну не мали ID, 
-            // тому давай використаємо querySelector всередині форми loginForm
-            const emailInput = loginForm.querySelector('input[type="email"]');
-            const passwordInput = loginForm.querySelector('input[type="password"]');
-            
-            const email = emailInput.value;
-            const password = passwordInput.value;
+            const email = loginForm.querySelector('input[type="email"]').value;
+            const password = loginForm.querySelector('input[type="password"]').value;
 
             try {
                 const res = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -720,22 +746,40 @@ function setupEventListeners() {
                     updateAuthUI();
                     showToast('Welcome back!', 'success');
                 } else {
-                    // Якщо помилка (невірний пароль або не підтверджена пошта)
-                    showToast(data.message || 'Login failed', 'error');
+                    if (res.status === 401) {
+                        showToast('Invalid email or password. Please try again.', 'error');
+                    } 
+                    // Якщо бекенд каже "User not found"
+                    else if (res.status === 404) {
+                        showToast('User does not exist. Please Sign Up first.', 'error');
+                        // Можна навіть автоматично переключити на вкладку Sign Up тут
+                        switchTab('signup'); 
+                    } else {
+                        showToast(data.message || 'Login failed', 'error');
+                    }
                 }
             } catch (error) {
                 console.error(error);
                 showToast('Connection error', 'error');
             }
         });
+    }
 
-    if (signupForm)
+    const signupForm = document.getElementById('signupForm');
+    let pollingInterval = null;
+    if (signupForm) {
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            const name = document.getElementById('signupName').value;
+
+            if (password !== confirmPass) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
 
             try {
                 const res = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -749,40 +793,51 @@ function setupEventListeners() {
                 if (!res.ok) {
                     document.getElementById('loginModal').style.display = 'none';
                 
-                    document.getElementById('verifyEmailModal').style.display = 'flex';
-                    
-                    startPolling(email, password);
+                    const verifyModal = document.getElementById('verifyEmailModal');
+                    if (verifyModal) {
+                        verifyModal.style.display = 'flex';
+                        // Запускаємо перевірку пошти
+                        startPolling(email, password);
+                    } else {
+                        showToast('Registration successful! Please check your email.', 'success');
+                    }
                 } else {
-                    let errorMsg = data.message;
-                    if (Array.isArray(data.message)) errorMsg = data.message.join('<br>');
-                    showToast(errorMsg || 'Registration failed', 'error');
+                    if (res.status === 409) {
+                        showToast('This email is already registered. Please Log In.', 'error');
+                    } else {
+                        showToast(data.message || 'Registration failed', 'error');
+                    }
                 }
             } catch (error) {
-                console.error(error);
                 showToast('Server error during registration', 'error');
             }
         });
+    }
 
-    if (showSignup)
+    if (showSignup) {
         showSignup.addEventListener('click', (e) => {
             e.preventDefault();
             showSignupForm();
         });
+    }
 
-    if (showLogin)
+    if (showLogin) {
         showLogin.addEventListener('click', (e) => {
             e.preventDefault();
             showLoginForm();
         });
+    }
 
-    if (searchInput)
+    if (searchInput) {
         searchInput.addEventListener('input', handleSearch);
+    }
 
-    if (exploreBtn)
+    if (exploreBtn) {
         exploreBtn.addEventListener('click', () => {
             const products = document.getElementById('products');
             if (products) products.scrollIntoView({ behavior: 'smooth' });
         });
+    }
 
     window.addEventListener('click', (e) => {
         if (!e.target.closest('.profile-container') && profilePanel.classList.contains('show')) {
