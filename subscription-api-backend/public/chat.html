@@ -624,6 +624,54 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: flex-end; /* Кнопка завжди знизу, якщо текст росте */
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px; /* Округла форма */
+            padding: 10px 15px;
+            width: 100%;
+            transition: border-color 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: #10e6cc; /* Підсвітка всього блоку при фокусі */
+            box-shadow: 0 0 15px rgba(16, 230, 204, 0.1);
+        }
+
+        /* Саме поле вводу */
+        .chat-textarea {
+            flex: 1; /* Займає всю ширину */
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 1rem;
+            resize: none; /* Прибираємо куток розтягування */
+            max-height: 150px; /* Ліміт висоти */
+            padding: 4px 0; /* Щоб текст був по центру відносно кнопки */
+            line-height: 1.5;
+        }
+
+        /* Кнопка відправки */
+        .send-btn {
+            background: transparent;
+            border: none;
+            color: #10e6cc;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0 0 0 10px;
+            margin-bottom: 4px; /* Вирівнювання з текстом */
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -797,10 +845,10 @@
             </div>
 
             <div class="input-wrapper">
-                <div class="input-container">
-                    <textarea class="chat-input" id="userInput" rows="1" placeholder="Ask AI anything..." autocomplete="off" data-i18n="chat.input_placeholder"></textarea>
+                <div class="chat-input-wrapper">
+                    <textarea class="chat-textarea" id="userInput" rows="1" placeholder="Ask AI anything..." autocomplete="off" data-i18n="chat.input_placeholder"></textarea>
                     <button class="send-btn" id="sendBtn">
-                        <i class="fas fa-arrow-up"></i>
+                        <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
                 <div class="disclaimer" data-i18n="chat.disclaimer">
