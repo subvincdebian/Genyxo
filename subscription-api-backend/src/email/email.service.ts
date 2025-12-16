@@ -6,7 +6,7 @@ export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
 
   async sendVerificationEmail(email: string, token: string) {
-    const url = `https://genyxo.com/api/auth/verify?token=${token}`;
+    const url = `https://genyxo.com/auth/verify?token=${token}`;
 
     try {
       await this.mailerService.sendMail({
