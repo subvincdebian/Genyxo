@@ -331,52 +331,89 @@
     <!-- Login -->
     <div class="modal" id="loginModal">
         <div class="modal-content glass">
-            <div class="logout-container" id="logoutContainer" style="text-align: center; margin-top: 15px; display: none;">
-                <p id="welcomeMessage"></p>
-                <button class="submit-btn" id="logoutBtn" style="background-color: #e74c3c;">Log out of account</button>
-            </div>
-
             <span class="close-btn" id="closeLogin">&times;</span>
-            <h2 data-i18n="auth.login_title">Login / Sign Up</h2>
+            
+            <form id="loginForm" class="auth-form">
+                <h2 data-i18n="auth.login_title">Welcome Back</h2>
+                <p class="auth-subtitle">Login to access your workspace</p>
+                
+                <div class="social-login">
+                    <a href="https://genyxo.com/api/auth/google" class="social-btn google">
+                        <i class="fab fa-google"></i> Google
+                    </a>
+                    <a href="#" class="social-btn facebook" onclick="alert('Coming soon!')">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </a>
+                </div>
 
-            <form class="login-form" id="loginForm">
+                <div class="divider"><span>OR</span></div>
+
                 <div class="form-group">
-                    <input type="email" id="email" placeholder="Email Address" required>
+                    <label>Email</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <input type="password" id="password" placeholder="Password" required>
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
                 </div>
-                <div class="form-options">
-                    <label class="remember">
-                    <input type="checkbox">
-                    <span data-i18n="auth.remember_me">Remember me</span>
-                </label>
-                    <a href="#" class="forgot-link" data-i18n="auth.forgot_pass">Forgot password?</a>
-                </div>
-                    <button type="submit" class="submit-btn" data-i18n="auth.login_btn">Login</button>
+                
+                <button type="submit" class="submit-btn glow-on-hover">
+                    Sign In <i class="fas fa-arrow-right"></i>
+                </button>
+                
                 <div class="signup-link">
-                    <span data-i18n="auth.no_account">Don't have an account? </span>
-                    <a href="#" id="showSignup" data-i18n="auth.link_signup">Sign up</a>
+                    <span>New here? </span>
+                    <a href="#" id="showSignup">Create an account</a>
                 </div>
             </form>
 
-            <form class="signup-form" id="signupForm" style="display: none;">
+            <form id="signupForm" class="auth-form" style="display:none;">
+                <h2 data-i18n="auth.signup_title">Create Account</h2>
+                <p class="auth-subtitle">Join the future of AI tools</p>
+
+                <div class="social-login">
+                    <a href="https://genyxo.com/api/auth/google" class="social-btn google">
+                        <i class="fab fa-google"></i> Google
+                    </a>
+                </div>
+
+                <div class="divider"><span>OR</span></div>
+
                 <div class="form-group">
-                    <input type="text" id="signupName" data-i18n="auth.name_placeholder" placeholder="Full Name" required>
+                    <label>Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="signupName" placeholder="John Doe" required>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <input type="email" id="signupEmail" data-i18n="auth.email_placeholder" placeholder="Email Address" required>
+                    <label>Email</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <input type="password" id="signupPassword" data-i18n="auth.password_placeholder" placeholder="Password" required>
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="signupPassword" placeholder="Min 8 chars, A-Z, 0-9" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input type="password" id="confirmPassword" data-i18n="auth.confirm_password_placeholder" placeholder="Confirm Password" required>
-                </div>
-                    <button type="submit" class="submit-btn" data-i18n="auth.signup_btn">Create Account</button>
+
+                <button type="submit" class="submit-btn glow-on-hover">
+                    Register <i class="fas fa-user-plus"></i>
+                </button>
+                
                 <div class="signup-link">
-                    <span data-i18n="auth.has_account">Already have an account? </span>
-                    <a href="#" id="showLogin" data-i18n="auth.link_login">Login</a>
+                    <span>Already have an account? </span>
+                    <a href="#" id="showLogin">Log In</a>
                 </div>
             </form>
         </div>

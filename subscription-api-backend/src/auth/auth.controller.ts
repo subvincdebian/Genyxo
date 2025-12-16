@@ -1,31 +1,47 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, UseGuards, Req, Res, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
-
-class LoginUserDto {
-    email: string;
-    password: string;
-}
+import { AuthGuard } from '@nestjs/passport'; // Ось цей імпорт був потрібен
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  @UsePipes(ValidationPipe) 
   async register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() loginUserDto: LoginUserDto) {
-    const user = await this.authService.validateUser(loginUserDto.email, loginUserDto.password);
-    
+  async login(@Body() body) {
+    const user = await this.authService.validateUser(body.email, body.password);
     if (!user) {
-        throw new UnauthorizedException('Incorrect email or password');
+        // Помилки треба викидати через Exception класи, а не через HttpStatus
+        throw new UnauthorizedException('Invalid credentials');
     }
-    
-    return this.authService.login(user as any);
+    return this.authService.login(user);
+  }
+
+  @Get('verify')
+  async verify(@Query('token') token: string, @Res() res) {
+    const result = await this.authService.verifyEmail(token);
+    // Редірект на фронтенд з токеном
+    return res.redirect(`https://genyxo.com?token=${result.access_token}&hash=#success`);
+  }
+
+  // --- Google Routes ---
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() req) {
+      // Цей метод ініціює вхід через Google, тіло пусте
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    // req.user містить об'єкт, який повернув authService.login()
+    const token = req.user.access_token;
+    // Редірект на головну сторінку з токеном
+    res.redirect(`https://genyxo.com?token=${token}`);
   }
 }

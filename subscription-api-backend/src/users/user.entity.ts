@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn, 
   BeforeInsert,
   OneToMany,
-  CreateDateColumn,
   JoinColumn,
   ManyToOne
 } from 'typeorm';
@@ -24,7 +23,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ select: false })
+  @Column({ nullable: true, select: false })
   password: string;
 
   @Column({ nullable: true })
@@ -39,6 +38,18 @@ export class User {
     default: Role.USER,
   })
   role: Role;
+
+  @Column({ default: false })
+  isEmailVerified: boolean;
+
+  @Column({ nullable: true, select: false })
+  verificationToken: string | null; // Токен для підтвердження пошти
+
+  @Column({ nullable: true, select: false })
+  googleId: string;
+
+  @Column({ nullable: true, select: false })
+  facebookId: string;
 
   @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 }) 
   credits: number;
@@ -76,7 +87,9 @@ export class User {
 
   @BeforeInsert()
   async hashPassword() {
-    const salt = await bcrypt.genSalt();
-    this.password = await bcrypt.hash(this.password, salt);
+    if (this.password) {
+        const salt = await bcrypt.genSalt();
+        this.password = await bcrypt.hash(this.password, salt);
+    }
   }
 }

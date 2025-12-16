@@ -4,6 +4,19 @@ let currentUserName = localStorage.getItem('userName') || 'My Profile';
 let currentUserEmail = localStorage.getItem('userEmail');
 let currentUserAvatar = localStorage.getItem('userAvatar');
 
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Перевірка чи повернулися ми з Google Auth
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+        localStorage.setItem('authToken', token);
+        // Очистити URL
+        window.history.replaceState({}, document.title, "/");
+        updateAuthUI();
+        showToast('Successfully logged in with Google!', 'success');
+    }
+});
+
 let currentProduct = null;
 
 const products = [
@@ -673,7 +686,40 @@ function setupEventListeners() {
         loginForm.addEventListener('submit', handleLoginSubmit);
 
     if (signupForm)
-        signupForm.addEventListener('submit', handleSignupSubmit);
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    // Показуємо красиву помилку (наприклад, з class-validator)
+                    let errorMsg = data.message;
+                    if (Array.isArray(data.message)) errorMsg = data.message.join('<br>');
+                    showToast(errorMsg || 'Registration failed', 'error');
+                } else {
+                    signupForm.reset();
+                    // Показуємо користувачу, що треба перевірити пошту
+                    alert('Account created! Please check your email to verify your account before logging in.');
+                    // Перемикаємо на логін
+                    signupForm.style.display = 'none';
+                    loginForm.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Server error', 'error');
+            }
+        });
 
     if (showSignup)
         showSignup.addEventListener('click', (e) => {
