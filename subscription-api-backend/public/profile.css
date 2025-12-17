@@ -460,6 +460,11 @@ body {
     padding-bottom: 20px;
 }
 
+.affiliate-sidebar-title {
+    position: relative;
+    left: -13px;
+}
+
 .avatar {
     width: 70px;
     height: 70px;

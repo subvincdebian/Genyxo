@@ -17,6 +17,7 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            margin: 0;
         }
 
         .navbar {
@@ -94,7 +95,7 @@
         .chat-layout {
             display: flex;
             flex: 1;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 60px);
             position: relative;
             overflow: hidden;
         }
@@ -158,6 +159,7 @@
             flex-direction: column;
             position: relative;
             background: radial-gradient(circle at 50% 30%, rgba(20, 30, 60, 0.4), transparent 70%);
+            height: 100%;
         }
 
         .chat-header {
@@ -417,11 +419,14 @@
         .user .avatar { background: var(--text-light); color: black; }
 
         .input-wrapper {
-            padding: 1.5rem 2rem;
+            flex-shrink: 0;
+            padding: 1rem 2rem;
             max-width: 900px;
             margin: 0 auto;
             width: 100%;
             background: transparent;
+            z-index: 10;
+            position: relative;
         }
 
         .input-container {
@@ -456,24 +461,26 @@
         }
 
         .send-btn {
-            width: 45px;
-            height: 45px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: none;
-            background: var(--text-light);
-            color: black;
-            cursor: pointer;
+            background: white;
+            color: #111;              /* ← ВАЖНО */
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-            margin-right: 5px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: transform .2s, box-shadow .2s;
+            position: relative;
+            z-index: 2;               /* ← НА ВСЯКИЙ */
         }
 
         .send-btn:hover {
             transform: scale(1.05);
-            background: #fff;
             box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            color: inherit;
         }
         
         .send-btn:disabled {
@@ -590,13 +597,14 @@
             }
 
             .input-wrapper {
-                transform: translateY(-45px);
-                transition: transform 0.18s ease;
-                z-index: 50;
+                transform: none !important; 
+                padding: 10px 15px !important;
+                position: relative;
+                bottom: 0;
             }
 
             .messages-container {
-                padding-bottom: calc(2rem + 70px);
+                padding-bottom: 20px;
             }
         }
 
@@ -606,15 +614,16 @@
         }
 
         .chat-input-wrapper {
+            position: relative;
             display: flex;
-            align-items: flex-end;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 10px 15px;
+            align-items: flex-end; /* Текст растет вверх, кнопка внизу */
+            gap: 10px;
+            padding: 8px 15px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            box-sizing: border-box;
             width: 100%;
-            transition: border-color 0.3s;
-            backdrop-filter: blur(10px);
         }
 
         .chat-input-wrapper:focus-within {
@@ -630,26 +639,21 @@
             color: white;
             font-size: 1rem;
             resize: none;
-            max-height: 150px;
-            padding: 4px 0;
-            line-height: 1.5;
+            line-height: 1.4;
+            padding: 8px 0;
+            min-height: 24px;   /* Высота одной строки */
+            max-height: 160px;  /* Максимум 6-8 строк, потом скролл */
+            overflow-y: auto;
+            box-sizing: border-box;
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
-        .send-btn {
-            background: transparent;
-            border: none;
-            color: #10e6cc;
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0 0 0 10px;
-            margin-bottom: 4px;
-            transition: transform 0.2s;
-        }
+        .send-btn i {
+            pointer-events: none;
+        }       
 
-        .send-btn:hover {
-            transform: scale(1.1);
-            color: #fff;
-        }
     </style>
 
     <script>
@@ -741,7 +745,7 @@
 
                             <a href="mailto:info@genyxo.com" class="menu-item">
                                 <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
-                                <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 190px;" title="Mail us"></i>
+                                <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
                             </a>
 
                         </div>
@@ -885,10 +889,12 @@
             loadConversations();
         });
 
+        /*
         if (!token) {
             window.location.href = 'index.html';
             showToast("Please log in first", "error"); 
         }
+            */
 
         async function loadConversations() {
             try {
@@ -1187,9 +1193,6 @@
         }
 
         sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
 
         document.addEventListener('DOMContentLoaded', () => {
             if(window.i18n && typeof window.i18n.init === 'function') {
@@ -1287,20 +1290,34 @@
         })();
 
         const textarea = document.getElementById('userInput');
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-            if(this.value === '') this.style.height = '50px';
-        });
+
+        function adjustHeight() {
+            textarea.style.height = 'auto'; 
+            // Устанавливаем высоту контента
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+            
+            // УДАЛИЛИ window.scrollTo(...) — это и вызывало «съезд» страницы
+        }
+
+        textarea.addEventListener('input', adjustHeight);
 
         textarea.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-                this.style.height = '50px';
-            }
-        });
+            if (e.key === 'Enter') {    
+                if (e.shiftKey) {
+                    return; 
+                } else {
+                    e.preventDefault(); 
+                    e.stopImmediatePropagation(); 
 
+                    const text = textarea.value.trim();
+                    if (text !== "") {
+                        sendMessage();
+                        textarea.value = '';
+                        textarea.style.height = 'auto'; 
+                    }
+                }
+            }
+        }, true);
     </script>
 </body>
 </html>
