@@ -211,7 +211,7 @@ body::before {
     gap: 0.5rem;
     font-weight: 600;
     max-width: 150px;
-    height: 35px;
+    height: 40px;
 }
 
 .login-btn:hover {
@@ -2315,7 +2315,7 @@ html.auth-active .login-btn {
     border-radius: 25px;
     width: 135px;
     position: relative;
-    height: 35px;
+    height: 50px;
 }
 
 html.auth-active .login-btn::before {
