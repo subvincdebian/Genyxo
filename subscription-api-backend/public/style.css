@@ -2313,14 +2313,14 @@ html.auth-active .login-btn {
     font-size: 0 !important;
     background: var(--text-light); 
     border-radius: 25px;
-    width: 150px;
+    width: 135px;
     position: relative;
 }
 
 html.auth-active .login-btn::before {
     content: "";
     font-family: "Font Awesome 6 Free";
-    font-weight: 700;
+    font-weight: 400;
     font-size: 1rem;
     color: var(--text-dark);
     position: absolute;
