@@ -10,9 +10,17 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+h1, h2, h3, .nav-logo {
+    letter-spacing: -0.02em;
+}
+
 ::selection {
     background: rgba(16, 230, 204, 0.3);
     color: white;
+}
+
+button:active {
+    transform: scale(0.96);
 }
 
 :root {
@@ -1803,4 +1811,24 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #10e6cc, #cccccc);
+}
+
+#profilePanel {
+    display: none !important; /* Ховаємо панель профілю */
+}
+#loginBtn {
+    display: flex !important; /* Показуємо кнопку входу */
+}
+
+/* Коли скрипт знайшов токен і додав клас 'auth-active' (коли юзер УВІЙШОВ): */
+html.auth-active #profilePanel {
+    display: flex !important; /* Показуємо профіль */
+}
+html.auth-active #loginBtn {
+    display: none !important; /* Ховаємо кнопку входу */
+}
+
+/* Додатково: ховаємо кнопку реєстрації в меню, якщо увійшов */
+html.auth-active .nav-links a[href="#signup"] {
+    display: none !important; 
 }

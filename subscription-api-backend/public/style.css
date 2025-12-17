@@ -6,6 +6,10 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+h1, h2, h3, .nav-logo {
+    letter-spacing: -0.02em;
+}
+
 ::selection {
     background: rgba(16, 230, 204, 0.3);
     color: white;
@@ -593,6 +597,7 @@ body::before {
     width: 48px;
     height: 48px;
     border-radius: 50%;
+    opacity: 0.8;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -602,8 +607,10 @@ body::before {
 }
 
 .social-icon:hover {
+    opacity: 1;
     background: white;
-    transform: translateY(-4px);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(16, 230, 204, 0.2);
 }
 
 .social-icon svg {
@@ -2299,4 +2306,24 @@ body::before {
 @keyframes skeleton-loading {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
+}
+
+#profilePanel {
+    display: none !important; /* Ховаємо панель профілю */
+}
+#loginBtn {
+    display: flex !important; /* Показуємо кнопку входу */
+}
+
+/* Коли скрипт знайшов токен і додав клас 'auth-active' (коли юзер УВІЙШОВ): */
+html.auth-active #profilePanel {
+    display: flex !important; /* Показуємо профіль */
+}
+html.auth-active #loginBtn {
+    display: none !important; /* Ховаємо кнопку входу */
+}
+
+/* Додатково: ховаємо кнопку реєстрації в меню, якщо увійшов */
+html.auth-active .nav-links a[href="#signup"] {
+    display: none !important; 
 }

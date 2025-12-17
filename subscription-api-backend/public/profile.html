@@ -7,6 +7,15 @@
     <title data-i18n="profile.title">Profile - Genyxo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="profile.css">
+
+    <script>
+        (function() {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                document.documentElement.classList.add('auth-active');
+            }
+        })();
+    </script>
 </head>
 <body>
     

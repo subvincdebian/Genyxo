@@ -133,6 +133,16 @@
         
         .nav-link { margin-right: 0; }
     </style>
+
+    <script>
+        (function() {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                document.documentElement.classList.add('auth-active');
+            }
+        })();
+    </script>
+    
 </head>
 <body>
     
