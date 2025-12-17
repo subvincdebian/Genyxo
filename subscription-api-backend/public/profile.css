@@ -1812,23 +1812,3 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #10e6cc, #cccccc);
 }
-
-html.auth-active #loginBtn {
-    display: none !important; /* Ховаємо кнопку входу */
-}
-
-html.auth-active #profilePanel {
-    display: flex !important; /* Показуємо профіль */
-    align-items: center !important; /* Рівняємо по вертикалі (ОЦЕ БУЛО ПРОПУЩЕНО) */
-    gap: 15px; /* Відступ між елементами */
-}
-
-/* 2. Якщо юзер ГІСТЬ (немає класу auth-active) */
-html:not(.auth-active) #profilePanel {
-    display: none !important; /* Ховаємо профіль */
-}
-
-html:not(.auth-active) #loginBtn {
-    display: flex !important; /* Показуємо вхід */
-    align-items: center !important; /* Рівняємо по вертикалі */
-}
