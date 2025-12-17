@@ -1,4 +1,3 @@
-# Dockerfile
 # Використовуємо офіційний образ Node.js
 FROM node:20
 

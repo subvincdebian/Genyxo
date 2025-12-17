@@ -878,7 +878,7 @@
 
         if (!token) {
             window.location.href = 'index.html';
-            alert('Please log in first.');
+            showToast("Please log in first", "error"); 
         }
 
         async function loadConversations() {
@@ -1158,7 +1158,7 @@
                     if(chat) chat.title = newTitle;
                     renderHistoryList();
                 }
-            } catch(e) { alert("Error renaming chat"); }
+            } catch(e) { showToast("Error Renaming Chat!", "error");  }
         }
 
         window.deleteChat = async function(id) {
@@ -1174,7 +1174,7 @@
                     renderHistoryList();
                     if(currentChatId === id) startNewChat();
                 }
-            } catch(e) { alert("Error deleting chat"); }
+            } catch(e) { showToast("Error Deleting Chat!", "error");  }
         }
 
         sendBtn.addEventListener('click', sendMessage);

@@ -60,8 +60,8 @@
                             <div class="user-details">
                                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" class="avatar-big dropdown-avatar">
                                 <div class="user-text">
-                                    <h3 id="menuName" data-i18n="nav.userload">Loading...</h3>
-                                    <p id="menuEmail" data-i18n="nav.emailload">loading@email.com</p>
+                                    <h3 id="menuName">Loading...</h3>
+                                    <p id="menuEmail">loading@email.com</p>
                                 </div>
                             </div>
                             <span class="plan-badge" data-i18n="menu.plan_free">Free</span>
@@ -400,6 +400,7 @@
 
         if (!token) {
             window.location.href = 'index.html';
+            showToast("Please log in first", "error"); 
         }
 
         async function loadProfileData() {
@@ -487,7 +488,7 @@
             if (!file) return;
 
             if (file.size > 50 * 1024 * 1024) {
-                alert("Файл занадто великий! Максимум 50MB.");
+                showToast("The file is too big! Maximum 50MB.", "error"); 
                 return;
             }
 
@@ -509,9 +510,9 @@
                     });
 
                     if (response.ok) {
-                        alert("Аватар оновлено!");
+                        showToast("Avatar Succesfully Updated!", "success"); 
                     } else {
-                        alert("Помилка збереження");
+                        showToast("Loading Failed!", "error"); 
                     }
                 } catch (error) {
                     console.error("Error uploading avatar:", error);
@@ -536,7 +537,7 @@
                     },
                     body: JSON.stringify({ name: newName })
                 });
-                alert("Дані збережено!");
+                showToast("Data Saved!", "success"); 
                 document.getElementById('profileName').textContent = newName;
             });
         }
@@ -764,6 +765,7 @@
         function shakeElements(elements) {
         elements.forEach(el => {
             el.classList.remove('shake');
+
             void el.offsetWidth;
             el.classList.add('shake');
 

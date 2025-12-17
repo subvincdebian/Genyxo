@@ -88,7 +88,6 @@ class LanguageManager {
     }
 }
 
-// Ініціалізація
 window.i18n = new LanguageManager();
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,11 +1,11 @@
 const API_BASE_URL = 'https://genyxo.com';
+
 let authToken = localStorage.getItem('authToken') || null;
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
 let currentUserEmail = localStorage.getItem('userEmail');
 let currentUserAvatar = localStorage.getItem('userAvatar');
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Перевірка чи повернулися ми з Google Auth
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
 
@@ -20,12 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Successfully logged in with Google!', 'success');
 
     } else {
-        // Якщо токена в URL немає, перевіряємо чи він є в пам'яті
         const savedToken = localStorage.getItem('authToken');
         if (savedToken) {
             fetchUserProfile(savedToken);
         } else {
-            // Якщо токена немає, просто оновлюємо UI до стану "не залогінений"
             updateUIState(false);
         }
     }
@@ -43,9 +41,8 @@ async function fetchUserProfile(token) {
             if (user.name) localStorage.setItem('userName', user.name);
             if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
 
-            updateUIState(true, user); // Оновлюємо кнопки
+            updateUIState(true, user);
         } else {
-             // Якщо токен недійсний
              localStorage.removeItem('authToken');
              updateUIState(false);
         }
@@ -95,7 +92,7 @@ const notificationBadge = document.getElementById('notificationBadge');
 // Checkout Elements (НОВІ)
 const checkoutModal = document.getElementById('checkoutModal');
 const closeCheckoutBtn = document.getElementById('closeCheckout');
-const payBtn = document.getElementById('payBtn'); // Кнопка "Proceed to Payment"
+const payBtn = document.getElementById('payBtn');
 
 // Search & Nav
 const searchInput = document.querySelector('.search-input');
@@ -154,33 +151,27 @@ function init() {
 
 function updateUIState(isLoggedIn, userData = null) {
     if (isLoggedIn && userData) {
-        // Кнопка навігації
         if (navUsername) navUsername.textContent = userData.name || userData.email || 'User';
         if (navIcon) navIcon.style.display = 'none';
         
         if (navAvatar) {
             navAvatar.style.display = 'block';
-            // Якщо аватарки немає - дефолтна (Dicebear)
             navAvatar.src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name || 'User'}`;
         }
 
-        // Меню профілю
         if (menuName) menuName.textContent = userData.name || 'User';
         if (menuEmail) menuEmail.textContent = userData.email || '';
         
-        // Аватарка в меню
         if (dropdownAvatars) {
             dropdownAvatars.forEach(img => {
                 img.src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name || 'User'}`;
             });
         }
         
-        // Кредити (якщо передані, інакше чекаємо fetch)
         if (userData.credits !== undefined && menuCredits) {
              menuCredits.textContent = parseFloat(userData.credits).toLocaleString();
         }
 
-        // Клас кнопки (щоб працював дропдаун)
         if (loginBtn) {
             loginBtn.classList.add('profile-toggle-btn');
             loginBtn.classList.add('login-btn');
@@ -208,7 +199,6 @@ function showToast(message, type = 'success', duration = 3000) {
         return;
     }
 
-    // Іконки
     const icons = {
         success: 'fa-check-circle',
         error: 'fa-exclamation-circle',
@@ -224,33 +214,24 @@ function showToast(message, type = 'success', duration = 3000) {
 
     container.appendChild(toast);
 
-    // trigger slide-in animation immediately
-    // use requestAnimationFrame to ensure the element is in DOM
     requestAnimationFrame(() => {
         toast.style.animation = 'slideInToast 0.3s forwards';
     });
 
-    // schedule hiding
     const hideMs = Number(duration) || 3000;
-    const hideAnimMs = 300; // should match .toast.hiding animation duration
+    const hideAnimMs = 300;
 
     const hideTimer = setTimeout(() => {
-        // clear any inline animation so CSS .hiding animation can run
         toast.style.animation = '';
-        // force reflow to ensure the change is applied
         void toast.offsetWidth;
 
-        // add hiding class to trigger slideOut animation (defined in CSS)
         toast.classList.add('hiding');
 
-        // fallback: ensure removal after animation even if animationend doesn't fire
         const removeFallback = setTimeout(() => {
             if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
         }, hideAnimMs + 50);
 
-        // remove on animationend as well
         toast.addEventListener('animationend', function onAnim(e) {
-            // ensure the event is for the hiding animation (transform/opacity)
             if (e.target !== toast) return;
             if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
             clearTimeout(removeFallback);
@@ -258,7 +239,6 @@ function showToast(message, type = 'success', duration = 3000) {
         });
     }, hideMs);
 
-    // return an object to allow manual clear if needed
     return {
         hideTimer,
         element: toast
@@ -267,13 +247,11 @@ function showToast(message, type = 'success', duration = 3000) {
 
 function checkPaymentStatus() {
     if (window.location.hash === '#success') {
-        // Очищаємо хеш, щоб при перезавантаженні не стріляло знову
         history.pushState("", document.title, window.location.pathname + window.location.search);
         
         const msg = window.i18n?.translations?.toasts?.payment_success || 'Payment successful!';
         showToast(msg, 'Payment successful! Credits added.', 'success');
         
-        // Запуск конфетті
         var duration = 3 * 1000;
         var animationEnd = Date.now() + duration;
         var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
@@ -300,39 +278,31 @@ function checkPaymentStatus() {
     }
 }
 
-// 1. Відкриття вікна
 function openCheckout(product) {
     currentProduct = product;
     
-    // Якщо не залогінений - просимо увійти
     if (!authToken) {
         openLoginModal();
         return;
     }
 
-    // Отримуємо переклади або ставимо заглушки
     const productTrans = (window.i18n && i18n.translations.products_data && i18n.translations.products_data[product.id]) 
                          ? i18n.translations.products_data[product.id] 
                          : { name: 'AI Pack', credits_label: 'Credits' };
 
-    // Заповнюємо дані в HTML
     document.getElementById('checkoutImg').src = product.image;
     document.getElementById('checkoutName').textContent = productTrans.name;
-    // Витягуємо тільки цифри для бейджа
     document.getElementById('checkoutCredits').textContent = productTrans.credits_label.replace(/\D/g, ''); 
     document.getElementById('checkoutPrice').textContent = product.price;
     document.getElementById('checkoutTotal').textContent = product.price;
 
-    // Показуємо модалку
     checkoutModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Блокуємо скрол фону
+    document.body.style.overflow = 'hidden';
 }
 
-// 2. Логіка оплати (Перехід на NowPayments)
 async function processPayment() {
     if (!authToken || !currentProduct) return;
 
-    // Анімація завантаження
     payBtn.classList.add('loading');
     payBtn.disabled = true;
 
@@ -351,7 +321,6 @@ async function processPayment() {
         const data = await response.json();
 
         if (response.ok && data.url) {
-            // 🔥 ПЕРЕАДРЕСАЦІЯ НА ОПЛАТУ
             window.location.href = data.url;
         } else {
             showToast(`Error: ${data.message || 'Failed to create payment'}`, 'error');
@@ -366,7 +335,6 @@ async function processPayment() {
     }
 }
 
-// --- PRODUCTS GRID ---
 function loadProducts() {
     if (!productsGrid) {
         console.error("Element with ID 'productsGrid' not found!");
@@ -375,7 +343,6 @@ function loadProducts() {
 
     productsGrid.innerHTML = '';
     
-    // Перевірка наявності перекладів
     if (!window.i18n || !window.i18n.translations || !window.i18n.translations.products_data) {
         console.warn("Localization data not fully loaded yet.");
         return; 
@@ -412,11 +379,9 @@ function loadProducts() {
         productsGrid.appendChild(productCard);
     });
 
-    // 🔥 ВАЖЛИВО: Підключаємо нову функцію openCheckout
     document.querySelectorAll('.buy-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            // Знаходимо ID і відкриваємо НОВЕ вікно
-            const btnElement = e.target.closest('.buy-btn'); // Захист від кліку по тексту всередині кнопки
+            const btnElement = e.target.closest('.buy-btn');
             const productId = parseInt(btnElement.getAttribute('data-id'));
             const product = products.find(p => p.id === productId);
             openCheckout(product);
@@ -424,7 +389,6 @@ function loadProducts() {
     });
 }
 
-// --- USER & PROFILE ---
 async function fetchUserData() {
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
@@ -491,7 +455,6 @@ async function updateNotificationsBadge() {
     } catch (e) { console.error(e); }
 }
 
-// --- AUTH HANDLERS ---
 async function handleLoginSubmit(e) {
     e.preventDefault();
     const email = document.getElementById('email').value;
@@ -596,7 +559,6 @@ async function handleSignupSubmit(e) {
     }
 }
 
-// --- UI HELPERS ---
 function handleLoginButtonClick(e) {
     e.stopPropagation();
     if (authToken) {
@@ -660,7 +622,6 @@ function showLoginForm() {
     loginForm.style.display = 'block';
 }
 
-// Search
 function handleSearch(e) {
     const searchTerm = e.target.value.toLowerCase();
     
@@ -679,7 +640,6 @@ function handleSearch(e) {
         return;
     }
 
-    // Рендер відфільтрованих (копія коду з loadProducts)
     filteredProducts.forEach(product => {
         const productTrans = translations[product.id.toString()];
         const featuresHtml = productTrans.features.map(f => `<li><i class="fas fa-check"></i> ${f}</li>`).join('');
@@ -707,7 +667,6 @@ function handleSearch(e) {
     });
 }
 
-// --- EVENT LISTENERS ---
 function setupEventListeners() {
 
     if (loginBtn) {
@@ -772,7 +731,6 @@ function setupEventListeners() {
                     } 
                     else if (res.status === 404 || data.message.includes('Incorrect email or password')) {
                         showToast('User does not exist. Please Sign Up first.', 'error');
-                        // Можна навіть автоматично переключити на вкладку Sign Up тут
                         switchTab('signup'); 
                     } else {
                         showToast(data.message || 'Login failed', 'error');
@@ -815,7 +773,6 @@ function setupEventListeners() {
                     const verifyModal = document.getElementById('verifyEmailModal');
                     if (verifyModal) {
                         verifyModal.style.display = 'flex';
-                        // Запускаємо перевірку пошти
                         startPolling(email, password);
                     } else {
                         showToast('Registration successful! Please check your email.', 'success');
@@ -862,7 +819,6 @@ function setupEventListeners() {
         if (!e.target.closest('.profile-container') && profilePanel.classList.contains('show')) {
             profilePanel.classList.remove('show');
         }
-        // Закриття checkout по кліку на фон
         if (e.target === checkoutModal) {
             checkoutModal.style.display = 'none';
             document.body.style.overflow = 'auto';
@@ -875,34 +831,29 @@ function startPolling(email, password) {
     
     pollingInterval = setInterval(async () => {
         try {
-            // Пробуємо залогінитись "у фоновому режимі"
             const res = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
             
-            // Якщо логін успішний (значить пошта підтверджена!)
             if (res.ok) {
                 const data = await res.json();
                 stopPolling();
                 
-                // Авто-логін
                 localStorage.setItem('authToken', data.access_token);
                 localStorage.setItem('userEmail', data.user.email);
                 localStorage.setItem('userId', data.user.id);
                 
-                // Закриваємо модалку очікування
                 document.getElementById('verifyEmailModal').style.display = 'none';
                 
-                // Показуємо успіх
                 showToast('Email verified! Welcome!', 'success');
                 updateUIState(true, user);
             }
         } catch (e) {
-            // Ігноруємо помилки поки чекаємо
+            
         }
-    }, 3000); // Перевіряємо кожні 3 секунди
+    }, 3000); 
 }
 
 function stopPolling() {
@@ -960,7 +911,6 @@ async function loadAffiliateData() {
     const authToken = localStorage.getItem('authToken');
     if (!authToken) return;
 
-    // Перевіряємо, чи існує блок на сторінці
     const balanceElement = document.getElementById('affiliateBalance');
     if (!balanceElement) return;
 
@@ -974,20 +924,16 @@ async function loadAffiliateData() {
         });
         
         if (response.ok) {
-            const data = await response.json(); // Отримуємо об'єкт даних
+            const data = await response.json();
             
-            // 1. Оновлюємо баланс (ID з HTML: affiliateBalance)
-            // Якщо баланс прийшов як рядок, конвертуємо, якщо число - форматуємо
             const rawBalance = parseFloat(data.balance || 0);
             balanceElement.textContent = rawBalance.toFixed(2);
 
-            // 2. Оновлюємо лічильник запрошених (ID з HTML: invitedCount)
             const invitedElement = document.getElementById('invitedCount');
             if (invitedElement) {
                 invitedElement.textContent = data.invitedCount || 0;
             }
             
-            // 3. Вставляємо посилання (ID з HTML: referralLinkInput)
             const linkInput = document.getElementById('referralLinkInput');
             if (linkInput) {
                 linkInput.value = data.referralLink || 'Error generating link';
@@ -1004,16 +950,14 @@ async function loadAffiliateData() {
 const copyAffBtn = document.getElementById('copyAffBtn');
 if (copyAffBtn) {
     copyAffBtn.addEventListener('click', () => {
-        // ID з HTML: referralLinkInput (було affLinkInput)
         const input = document.getElementById('referralLinkInput');
         if (input && input.value) {
             input.select();
-            input.setSelectionRange(0, 99999); // Для мобільних
+            input.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(input.value).then(() => {
                 showToast('Referral link copied!', 'success');
             }).catch(err => {
                 console.error('Copy failed', err);
-                // Фолбек, якщо clipboard API не працює
                 document.execCommand('copy'); 
                 showToast('Link copied!', 'success');
             });
@@ -1027,7 +971,6 @@ function requestPayout() {
         showToast('Minimum withdrawal amount is $10.00', 'error');
         return;
     }
-    // Тут можна зробити реальний запит на бекенд
     if(confirm(`Request payout of $${balance}? Support will contact you via email.`)) {
          showToast('Request sent! Support will contact you shortly.', 'success');
     }
@@ -1036,7 +979,6 @@ function requestPayout() {
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = "none";
-        // Якщо закрили вікно верифікації, зупиняємо перевірку (щоб не грузило сервер)
         if (event.target.id === 'verifyEmailModal') {
             stopPolling();
         }

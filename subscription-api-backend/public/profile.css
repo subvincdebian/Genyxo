@@ -43,18 +43,16 @@ body {
     font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/*navigation bar*/
-
 .left-side {
     display: flex;
     align-items: center;
-    gap: 2rem; /* відстань між логотипом і пошуком */
+    gap: 2rem;
 }
 
 .right-side {
     display: flex;
     align-items: center;
-    gap: 2rem; /* відстань між навігацією і кнопкою логіну */
+    gap: 2rem;
 }
 
 .navbar {
@@ -257,15 +255,12 @@ body {
     color: var(--text-light);
 }
 
-
-/* Загальна сітка */
 .profile-page {
     display: flex;
     padding: 20px;
     gap: 25px;
 }
 
-/* Ліва панель */
 .sidebar {
     width: 260px;
     background: #121212;
@@ -285,7 +280,6 @@ body {
     color: #8a8a8a;
 }
 
-/* Меню */
 .menu {
     display: flex;
     flex-direction: column;
@@ -320,7 +314,6 @@ body {
     color: #fff;
 }
 
-/* Правий контент */
 .main-content {
     flex: 1;
 }
@@ -338,7 +331,6 @@ body {
     padding-bottom: 10px;
 }
 
-/* Each tab */
 .tab {
     position: relative;
     background: none;
@@ -350,12 +342,10 @@ body {
     transition: color .2s ease;
 }
 
-/* Hover */
 .tab:hover {
     color: #ffffff;
 }
 
-/* Underline animation */
 .tab::after {
     content: '';
     position: absolute;
@@ -367,23 +357,19 @@ body {
     transition: width .3s ease;
 }
 
-/* Hover underline */
 .tab:hover::after {
     width: 100%;
 }
 
-/* Active tab */
 .tab.active {
     color: #ffffff;
     font-weight: 600;
 }
 
-/* Active underline */
 .tab.active::after {
     width: 100%;
 }
 
-/* Content block */
 .content-box {
     background: #121212;
     padding: 25px;
@@ -400,7 +386,6 @@ body {
     color: #9b9b9b;
 }
 
-/* Form */
 .form {
     display: flex;
     flex-direction: column;
@@ -437,7 +422,6 @@ body {
     opacity: 0.85;
 }
 
-/* Адаптив */
 @media (max-width: 900px) {
     .profile-page {
         flex-direction: column;
@@ -491,7 +475,6 @@ body {
     text-align: center;
 }
 
-/* Оновлені стилі меню */
 .menu-item {
     display: flex;
     align-items: center;
@@ -583,7 +566,6 @@ body {
     padding: 28px;
 }
 
-/* Glass card */
 .glass-card {
     width: 420px;
     max-width: calc(100% - 48px);
@@ -601,14 +583,11 @@ body {
     font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
 
-/* When modal is visible */
 .modal.show .glass-card {
     transform: scale(1);
     opacity: 1;
 }
 
-/* Make glass-style cards visible when used inside page content (non-modal)
-   Modal cards rely on .modal.show to animate; content cards should be shown by default */
 .content-box .glass-card,
 .page .glass-card,
 .profile-page .glass-card,
@@ -620,7 +599,6 @@ body {
     max-width: 100%;
 }
 
-/* Close button */
 .modal-close {
     position: absolute;
     right: 12px;
@@ -635,7 +613,6 @@ body {
 }
 .modal-close:hover { background: rgba(255,255,255,0.02); }
 
-/* Titles */
 .glass-card h2 {
     margin: 2px 0 6px 0;
     font-size: 20px;
@@ -643,7 +620,6 @@ body {
 }
 .modal-sub { margin: 0 0 12px 0; color: rgba(230,236,241,0.6); font-size: 13px; }
 
-/* Fields */
 .field-label { font-size: 13px; color: rgba(230,236,241,0.7); margin-top: 10px; display:block; }
 .field {
     width: 100%;
@@ -662,7 +638,6 @@ body {
     border-color: rgba(16,185,129,0.9);
 }
 
-/* Errors area */
 .errors {
     margin-top: 12px;
     min-height: 22px;
@@ -681,7 +656,6 @@ body {
     color: #ffd7d7;
 }
 
-/* Buttons */
 .modal-actions {
     display:flex;
     justify-content:flex-end;
@@ -710,7 +684,6 @@ body {
     cursor: pointer;
 }
 
-/* Generic action buttons used across pages (affiliate, copy, payout) */
 .action-btn {
     display: inline-flex;
     align-items: center;
@@ -732,7 +705,6 @@ body {
     transform: scale(1.005);
 }
 
-/* Primary variant (Request Payout) */
 .action-btn.primary-btn,
 .primary-btn {
     background: linear-gradient(90deg, #10e6cc, #0ec4af);
@@ -748,7 +720,6 @@ body {
     filter: brightness(0.95);
 }
 
-/* Copy button styling — compact and matching site palette */
 #copyAffBtn {
     padding: 10px 14px;
     border-radius: 10px;
@@ -761,13 +732,11 @@ body {
     background: rgba(255,255,255,0.04);
 }
 
-/* appear animation for error and modal */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* make modal visible as flex (outer container) */
 .modal.show { display: flex; }
 
 .shake {
@@ -783,13 +752,11 @@ body {
     100% { transform: translateX(0); }
 }
 
-/* Password input wrapper */
 .password-field {
     position: relative;
     width: 100%;
 }
 
-/* eye button */
 .eye-btn {
     position: absolute;
     right: 12px;
@@ -810,10 +777,8 @@ body {
     opacity: 0.85;
 }
 
-/* subtle background on hover */
 .eye-btn:hover { background: rgba(255,255,255,0.03); opacity: 1; }
 
-/* the svg stroke style — thin rounded line like Discord */
 .eye-icon {
     width: 20px;
     height: 20px;
@@ -827,11 +792,8 @@ body {
     pointer-events: none;
 }
 
-/* eye-off variant will be toggled by adding .active to the button */
 .eye-btn.active .eye-icon { stroke: #8be5c3; transform: scale(1.02); }
 
-/* style for 'eye-off' path when toggled (we swap svg content in JS) */
-/* shake animation (re-usable) */
 @keyframes shake {
   0% { transform: translateX(0); }
   20% { transform: translateX(-6px); }
@@ -903,7 +865,6 @@ body {
     font-size: 32px;
 }
 
-/* Маленька аватарка в кнопці навігації */
 .nav-avatar-small {
     width: 24px;
     height: 24px;
@@ -912,7 +873,6 @@ body {
     border: 1px solid var(--text-light);
 }
 
-/* Основна панель (випадаюче меню) */
 .profile-dropdown {
     display: none;
     position: absolute;
@@ -936,7 +896,6 @@ body {
     display: block;
 }
 
-/* 1. Header Section */
 .dropdown-header {
     display: flex;
     justify-content: space-between;
@@ -983,7 +942,6 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* 2. Credits Card (Сірий блок посередині) */
 .credits-card {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 16px;
@@ -1046,7 +1004,6 @@ body {
     transform: scale(1.02);
 }
 
-/* 3. Menu Items */
 .dropdown-menu {
     display: flex;
     flex-direction: column;
@@ -1087,7 +1044,6 @@ body {
     color: var(--text-gray);
 }
 
-/* 4. Logout Footer */
 .dropdown-footer {
     padding-top: 10px;
     border-top: 1px dashed rgba(255, 255, 255, 0.2);
@@ -1350,14 +1306,13 @@ body {
     pointer-events: auto;
 }
 
-/* ===== MOBILE ONLY ===== */
 @media (max-width: 768px) {
 
     .nav-container {
         position: relative;
         flex-direction: row !important;
         align-items: center;
-        justify-content: flex-start; /* place items left-to-right, push right-side with margin-left:auto */
+        justify-content: flex-start;
         width: 100%;
         gap: 0.5rem;
     }
@@ -1367,7 +1322,7 @@ body {
         flex: 0 1 auto;
         display: flex;
         align-items: center;
-        justify-content: flex-start; /* <-- ключ */
+        justify-content: flex-start;
         margin: 0;
         padding: 0;
         gap: 0.5rem;
@@ -1378,7 +1333,6 @@ body {
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        /* use absolute positioning to ensure it's visible inside navbar */
         margin-left: 0;
         flex: 0 0 auto !important;
         width: auto !important;
@@ -1420,7 +1374,6 @@ body {
         transition: 0.3s ease;
     }
 
-    /* MOBILE MENU */
     .mobile-menu {
         position: fixed;
         top: 0;
@@ -1451,7 +1404,6 @@ body {
         font-size: 1.4rem;
     }
 
-    /* OVERLAY */
     .menu-overlay {
         display: none;
         position: fixed;
@@ -1493,7 +1445,6 @@ body {
         animation: slideDown 0.25s ease;
     }
 
-     /* USER HEADER */
     #profilePanel .user-header {
         flex-direction: row;
         align-items: center;
@@ -1518,7 +1469,6 @@ body {
         padding: 4px 10px;
     }
 
-    /* CREDITS BOX */
     .credits-box {
         flex-direction: column;
         align-items: center;
@@ -1540,7 +1490,6 @@ body {
         font-size: 1rem;
     }
 
-    /* MENU ITEMS */
     .profile-menu .menu-item,
     .logout-box .menu-item {
         font-size: 1rem;
@@ -1555,7 +1504,6 @@ body {
         font-size: 1.1rem;
     }
 
-      /* затемнение фона */
     .profile-container::before {
         content: '';
         position: fixed;
@@ -1575,7 +1523,6 @@ body {
         to   { transform: translateY(0); opacity: 1; }
     }
 
-    /* Additional mobile tweaks: keep burger + logo left-aligned and ensure login button visible */
     .navbar {
         padding: 0 10px;
         box-sizing: border-box;
@@ -1609,7 +1556,6 @@ body {
         text-overflow: ellipsis;
     }
 
-    /* Sidebar full width on small screens and avoid overflow */
     .profile-page {
         padding: 12px;
     }
@@ -1626,8 +1572,6 @@ body {
         padding: 0 6px 40px 6px;
     }
     
-
-    /* крестик */
     .close-profile-panel {
         display: block;
         position: absolute;
@@ -1649,7 +1593,6 @@ body {
         background: rgba(255,255,255,0.25);
     }
 
-    /* уменьшаем высоту navbar */
     .navbar {
         padding: 0.6rem 1.2rem;
         height: 65px;
@@ -1663,10 +1606,9 @@ body {
         gap: 6px;
         position: static;
         right: auto;
-        margin-left: 6px; /* keep logo near burger */
+        margin-left: 6px;
     }
 
-    /* ensure login button is visible on the right */
     .login-btn, .profile-toggle-btn {
         position: relative !important;
         left: 150px !important;
@@ -1679,16 +1621,14 @@ body {
     }
 
     .right-side {
-        padding-right: 8px; /* ensure extra space on right edge */
+        padding-right: 8px;
     }
     
-    /* Уменьшаем аватар в кнопке */
     .nav-avatar-small {
         width: 22px;
         height: 22px;
     }
 
-    /* скрываем поиск в мобильной версии */
     .search-container {
         display: none !important;
     }
@@ -1723,7 +1663,6 @@ body {
     animation: slideInToast 0.3s forwards;
 }
 
-/* Кольори статусів */
 .toast.success { border-left: 4px solid #2ecc71; }
 .toast.success i { color: #2ecc71; }
 
@@ -1764,7 +1703,6 @@ body {
     text-align: center;
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--glass-border);
-    /* make cards slightly taller for better visual balance */
     min-height: 140px;
     padding-top: 28px;
     padding-bottom: 28px;
@@ -1788,13 +1726,11 @@ body {
     gap: 8px;
 }
 
-/* Special styling for the 'Total Invited' card (right column) */
 .affiliate-stats .stat-card:nth-child(2) {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
 }
 
 .affiliate-stats .stat-card:nth-child(2)::before {
-    /* Font Awesome user icon (solid) — relies on FA being loaded on the page */
     content: "\f007";
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
@@ -1813,9 +1749,8 @@ body {
     font-family: 'Inter Tight', sans-serif;
 }
 
-/* Add wallet/dollar icon to left card (Your Balance) to match visual language */
 .affiliate-stats .stat-card:nth-child(1)::before {
-    content: "\f155"; /* fa-dollar-sign */
+    content: "\f155";
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     font-size: 28px;
@@ -1850,27 +1785,22 @@ body {
     }
 }
 
-/* Полоска скроллу(для всього сайту) */
-/* ширина скролу */
 ::-webkit-scrollbar {
   width: 8px;
   transition: 0.3s;
 }
 
-/* фон скролбару */
 ::-webkit-scrollbar-track {
   background: #0a0a0a;
   transition: 0.3s;
 }
 
-/* повзунок (thumb) */
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #1a1a1a, #333333);
   border-radius: 10px;
   transition: 0.3s;
 }
 
-/* hover ефект */
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #10e6cc, #cccccc);
 }

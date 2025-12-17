@@ -320,7 +320,10 @@
         const API_BASE_URL = 'https://genyxo.com';
         const token = localStorage.getItem('authToken');
 
-        if (!token) window.location.href = 'index.html';
+        if (!token) {
+            window.location.href = 'index.html';
+            showToast("Please log in first", "error"); 
+        }
 
         let usersPage = 1;
         const usersLimit = 10;
@@ -605,8 +608,8 @@
                 if (res.ok) {
                     loadTransactions();
                     loadUsers();
-                } else { showToast("Failed!", "error");; }
-            } catch (e) { showToast("Server Error...", "error");; }
+                } else { showToast("Failed!", "error"); }
+            } catch (e) { showToast("Server Error...", "error"); }
         }
 
         async function addCreditsPrompt(userId) {
@@ -642,8 +645,8 @@
                     body: JSON.stringify({ ticketId: currentTicketId, response: replyText })
                 });
                 if(res.ok) { closeReplyModal(); loadAdminTickets(); }
-                else { showToast("Failed", "error");; }
-            } catch(e) { showToast("Server Error", "error");; }
+                else { showToast("Failed", "error"); }
+            } catch(e) { showToast("Server Error", "error"); }
         }
 
         document.addEventListener('DOMContentLoaded', () => {

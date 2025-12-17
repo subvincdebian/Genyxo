@@ -423,8 +423,8 @@
                             <div class="user-details">
                                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" class="avatar-big dropdown-avatar">
                                 <div class="user-text">
-                                    <h3 id="menuName" data-i18n="nav.userload">Loading...</h3>
-                                    <p id="menuEmail" data-i18n="nav.emailload">loading@email.com</p>
+                                    <h3 id="menuName">Loading...</h3>
+                                    <p id="menuEmail">loading@email.com</p>
                                 </div>
                             </div>
                         </div>
@@ -514,7 +514,10 @@
         const API_BASE_URL = 'https://genyxo.com';
         const token = localStorage.getItem('authToken');
 
-       if (!token) window.location.href = 'index.html';
+       if (!token) {
+            window.location.href = 'index.html';
+            showToast("Please log in first", "error"); 
+        }
 
         const SUPPORTED_LANGUAGES = {
             'en': 'English',
