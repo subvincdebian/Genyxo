@@ -387,12 +387,10 @@
             overlay.classList.toggle("active");
         });
 
-        // Закрытие меню при клике на ссылку
         document.querySelectorAll(".mobile-menu a").forEach(link => {
             link.addEventListener("click", closeMenu);
         });
 
-        // Закрытие при клике на overlay (пустая область вокруг меню)
         overlay.addEventListener("click", closeMenu);
 
             document.getElementById('closeProfilePanel').addEventListener('click', () => {
@@ -543,7 +541,6 @@
             });
         }
 
-        // Tabs are buttons with class "tab" — listen on those instead of ".tab a"
         document.querySelectorAll(".tab").forEach(tab => {
             tab.addEventListener("click", function(e) {
                 e.preventDefault();
@@ -567,7 +564,6 @@
                 if (pageId && document.getElementById(pageId)) {
                     document.getElementById(pageId).classList.add("active");
 
-                    // 🔥 ВАЖЛИВО
                     if (pageId === 'page-affiliate' && typeof loadAffiliateData === 'function') {
                         loadAffiliateData();
                     }
@@ -600,15 +596,12 @@
 
         if (!modal) return;
 
-        // Find the trigger(s):
         const triggers = [
-            ...$$('.open-change-password'),           // explicit class
-            ...($$('#openChangePassword') || []),     // explicit id (if any)
-            // fallback: any button/link with "Change Password" text
+            ...$$('.open-change-password'),
+            ...($$('#openChangePassword') || []),
             ...$$('button, a').filter(el => typeof el.textContent === 'string' && el.textContent.trim().toLowerCase().includes('change password'))
         ];
 
-        // ensure unique set
         const uniqueTriggers = Array.from(new Set(triggers));
 
         uniqueTriggers.forEach(t => {
@@ -619,18 +612,15 @@
         });
 
         function openModal() {
-            // reset fields & errors
             inputCurrent.value = '';
             inputNew.value = '';
             inputConfirm.value = '';
             errorsBox.innerHTML = '';
             btnSave.disabled = true;
 
-            // show
             modal.classList.add('show');
             modal.setAttribute('aria-hidden', 'false');
 
-            // focus first field after animation
             setTimeout(() => inputCurrent.focus(), 180);
         }
 
@@ -641,21 +631,17 @@
             modal.style.display = "none";
         }
 
-        // Close actions
         btnClose?.addEventListener('click', closeModal);
         btnCancel?.addEventListener('click', closeModal);
 
-        // click outside to close
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
 
-        // ESC to close
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
         });
 
-        // Validation logic
         function validate() {
             const cur = inputCurrent.value.trim();
             const neu = inputNew.value.trim();
@@ -668,7 +654,6 @@
             if (cur && neu && cur === neu) errors.push('New password must be different from current password.');
             if (neu && conf && neu !== conf) errors.push('New password and confirmation do not match.');
 
-            // render errors
             errorsBox.innerHTML = '';
             if (errors.length) {
                 shakeElements([inputCurrent, inputNew, inputConfirm]);
@@ -684,17 +669,13 @@
             }
         }
 
-        // Attach listeners
         [inputCurrent, inputNew, inputConfirm].forEach(inp => {
             inp.addEventListener('input', () => {
-            // quick UX: hide errors while typing then revalidate
             validate();
             });
         });
 
-        // Save click
         btnSave.addEventListener('click', async () => {
-            // final validate
             validate();
             if (btnSave.disabled) return;
 
@@ -747,7 +728,6 @@
             }
         });
 
-        // Toggle eye buttons (works for both inputs). Put this after other scripts.
         document.addEventListener('click', (e) => {
         const btn = e.target.closest('.eye-btn');
         if (!btn) return;
@@ -757,28 +737,22 @@
         const input = document.getElementById(targetId);
         if (!input) return;
 
-        // toggle input type
         const isPassword = input.type === 'password';
         input.type = isPassword ? 'text' : 'password';
 
-        // visually toggle active state on button
         btn.classList.toggle('active', isPassword);
 
-        // replace svg content: eye (open) vs eye-off (closed) — Discord-like shapes
         const svg = btn.querySelector('svg');
         if (!svg) return;
 
         if (isPassword) {
-            // now showing text -> show "eye-off" (closed) icon
             svg.innerHTML = `
             <path d="M3 3l18 18" stroke="currentColor"></path>
             <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
             <circle cx="12" cy="12" r="3"></circle>
             `;
-            // make stroke color via CSS (.eye-btn.active .eye-icon sets color)
             svg.classList.add('eye-off');
         } else {
-            // now hiding text -> show "eye" (open) icon
             svg.innerHTML = `
             <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
             <circle cx="12" cy="12" r="3"></circle>
@@ -787,11 +761,9 @@
         }
         });
 
-        // SHAKE helper (already had earlier, but ensure it's present)
         function shakeElements(elements) {
         elements.forEach(el => {
-            el.classList.remove('shake'); // restart animation if present
-            // force reflow to restart
+            el.classList.remove('shake');
             void el.offsetWidth;
             el.classList.add('shake');
 

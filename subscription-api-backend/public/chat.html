@@ -61,7 +61,6 @@
         }
         .chat-options-btn:hover { color: white; }
 
-        /* Dropdown Menu */
         .options-dropdown {
             position: absolute;
             right: 10px;
@@ -92,7 +91,6 @@
             background: black;
         }
 
-        /* --- Chat Layout Grid --- */
         .chat-layout {
             display: flex;
             flex: 1;
@@ -101,7 +99,6 @@
             overflow: hidden;
         }
 
-        /* --- Sidebar (Left) --- */
         .chat-sidebar {
             width: 260px;
             background: rgba(0, 0, 0, 0.4);
@@ -151,12 +148,10 @@
             gap: 5px;
         }
 
-        /* Custom Scrollbar for dark theme */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
 
-        /* --- Main Area (Right) --- */
         .chat-main {
             flex: 1;
             display: flex;
@@ -165,7 +160,6 @@
             background: radial-gradient(circle at 50% 30%, rgba(20, 30, 60, 0.4), transparent 70%);
         }
 
-        /* --- Header inside Chat (Model Select) --- */
         .chat-header {
             padding: 15px 2rem;
             display: flex;
@@ -198,7 +192,6 @@
             width: 100%;
         }
 
-        /* Make dropdown options readable (dark text on light background) */
         .model-select-wrapper select option {
             color: #fff;
             background: black;
@@ -206,16 +199,13 @@
             border: none;
         }
 
-        /* Slightly highlight when focused */
         .model-select-wrapper select:focus {
             box-shadow: 0 4px 16px rgba(0,0,0,0.4);
             border-radius: 16px;
         }
         
-        /* Removed native pseudo-arrow to avoid duplicate caret (we use a single .caret icon) */
         .model-select-wrapper::after { display: none; }
 
-        /* Custom select styles */
         .custom-select {
             position: relative;
             display: flex;
@@ -235,7 +225,6 @@
         .custom-select .current { flex: 1; font-weight: 600; }
         .custom-select .caret { color: rgba(255,255,255,0.7); }
 
-        /* Robot icon styling to separate it visually */
         .model-select-wrapper .fa-robot {
             display: inline-flex;
             align-items: center;
@@ -287,7 +276,6 @@
         .custom-options::-webkit-scrollbar { width: 8px; }
         .custom-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 6px; }
 
-        /* --- Welcome Screen (Empty State) --- */
         .welcome-screen {
             flex: 1;
             display: flex;
@@ -323,7 +311,6 @@
             line-height: 1.5;
         }
 
-        /* Suggestion Cards */
         .suggestions-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -362,7 +349,6 @@
             line-height: 1.4;
         }
 
-        /* --- Chat Messages Area --- */
         .messages-container {
             flex: 1;
             overflow-y: auto;
@@ -430,7 +416,6 @@
         .bot .avatar { background: rgba(16, 230, 204, 0.2); color: #10e6cc; }
         .user .avatar { background: var(--text-light); color: black; }
 
-        /* --- Input Area --- */
         .input-wrapper {
             padding: 1.5rem 2rem;
             max-width: 900px;
@@ -504,7 +489,6 @@
             margin-top: 10px;
         }
 
-        /* Typing Animation */
         .typing-indicator {
             display: none;
             padding: 10px 20px;
@@ -523,7 +507,6 @@
         .dot:nth-child(1) { animation-delay: -0.32s; }
         .dot:nth-child(2) { animation-delay: -0.16s; }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
 
             #sidebarToggle {
@@ -536,13 +519,11 @@
                 display: flex !important; 
             }
 
-            /* Ensure left-side uses flex so we can reorder logo and burger */
             .nav-container .left-side {
                 display: flex;
                 align-items: center;
             }
 
-            /* Place burger where logo was on small screens */
             .nav-container .left-side .burger {
                 order: 1;
                 margin-right: 15px;
@@ -586,7 +567,6 @@
             }
             .welcome-title { font-size: 1.5rem; }
 
-            /* Overlay behind sidebar to allow closing when tapping outside */
             .sidebar-overlay {
                 display: none;
                 position: fixed;
@@ -627,10 +607,10 @@
 
         .chat-input-wrapper {
             display: flex;
-            align-items: flex-end; /* Кнопка завжди знизу, якщо текст росте */
+            align-items: flex-end;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px; /* Округла форма */
+            border-radius: 20px;
             padding: 10px 15px;
             width: 100%;
             transition: border-color 0.3s;
@@ -638,25 +618,23 @@
         }
 
         .chat-input-wrapper:focus-within {
-            border-color: #10e6cc; /* Підсвітка всього блоку при фокусі */
+            border-color: #10e6cc;
             box-shadow: 0 0 15px rgba(16, 230, 204, 0.1);
         }
 
-        /* Саме поле вводу */
         .chat-textarea {
-            flex: 1; /* Займає всю ширину */
+            flex: 1;
             background: transparent;
             border: none;
             outline: none;
             color: white;
             font-size: 1rem;
-            resize: none; /* Прибираємо куток розтягування */
-            max-height: 150px; /* Ліміт висоти */
-            padding: 4px 0; /* Щоб текст був по центру відносно кнопки */
+            resize: none;
+            max-height: 150px;
+            padding: 4px 0;
             line-height: 1.5;
         }
 
-        /* Кнопка відправки */
         .send-btn {
             background: transparent;
             border: none;
@@ -664,7 +642,7 @@
             cursor: pointer;
             font-size: 1.2rem;
             padding: 0 0 0 10px;
-            margin-bottom: 4px; /* Вирівнювання з текстом */
+            margin-bottom: 4px;
             transition: transform 0.2s;
         }
 
@@ -891,21 +869,17 @@
         const menuCredits = document.getElementById('menuCredits');
         const dropdownAvatar = document.getElementById('dropdownAvatar');
         
-        // Config
         const API_BASE_URL = 'https://genyxo.com';
         const token = localStorage.getItem('authToken');
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadConversations(); // Завантажуємо список чатів при старті
+            loadConversations();
         });
 
-        // Check Auth
         if (!token) {
             window.location.href = 'index.html';
             alert('Please log in first.');
         }
-
-        // --- Logic ---
 
         async function loadConversations() {
             try {
@@ -916,7 +890,6 @@
                     conversations = await res.json();
                     renderHistoryList();
                     
-                    // Якщо є чати - відкриваємо останній, інакше New Chat
                     if (conversations.length > 0 && !currentChatId) {
                         selectChat(conversations[0].id);
                     } else if (conversations.length === 0) {
@@ -926,7 +899,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // 2. Рендер списку зліва
         function renderHistoryList() {
             historyList.innerHTML = '';
 
@@ -961,16 +933,14 @@
             });
         }
 
-        // 3. Вибір чату (завантаження історії)
         async function selectChat(id) {
             if (currentChatId === id) return;
             
             currentChatId = id;
-            renderHistoryList(); // Оновити підсвітку активного
+            renderHistoryList();
             
-            // UI: Показати завантаження або очистити
             chatBox.innerHTML = ''; 
-            toggleChatView(true); // Перемикаємо на вигляд чату
+            toggleChatView(true);
 
             try {
                 const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
@@ -988,18 +958,15 @@
             startNewChat();
         };
 
-        // 4. Функція "Новий Чат"
         function startNewChat() {
             currentChatId = null;
-            chatBox.innerHTML = ''; // Очистити повідомлення
-            renderHistoryList(); // Прибрати активний клас
-            toggleChatView(false); // Показати Welcome Screen
+            chatBox.innerHTML = '';
+            renderHistoryList();
+            toggleChatView(false);
             
-            // Оновити URL без перезавантаження (опціонально)
             history.pushState({}, '', window.location.pathname);
         }
 
-        // 1. Toggle between Welcome Screen and Chat List
         function toggleChatView(hasMessages) {
             if (hasMessages) {
                 welcomeScreen.style.display = 'none';
@@ -1010,14 +977,12 @@
             }
         }
 
-        // 2. Click suggestion card
         window.useSuggestion = function(cardElement) {
             const text = cardElement.querySelector('.suggestion-text').innerText;
             userInput.value = text;
             sendMessage();
         }
 
-        // 3. Send Message logic
         async function sendMessage() {
             const text = userInput.value.trim();
             const model = document.getElementById('modelSelect').value;
@@ -1027,7 +992,7 @@
             userInput.value = '';
             typingIndicator.style.display = 'flex';
             chatBox.scrollTop = chatBox.scrollHeight;
-            toggleChatView(true); // Ховаємо welcome screen
+            toggleChatView(true);
 
             try {
                 const res = await fetch(`${API_BASE_URL}/chat/message`, {
@@ -1039,7 +1004,7 @@
                     body: JSON.stringify({ 
                         message: text, 
                         model: model,
-                        conversationId: currentChatId // 🔥 ВАЖЛИВО: відправляємо ID поточного чату
+                        conversationId: currentChatId
                     })
                 });
 
@@ -1050,10 +1015,8 @@
                     appendMessage('bot', data.botReply, model);
                     updateBalanceUI(data.creditsLeft);
 
-                    // Якщо це був новий чат, нам повернувся conversationId
                     if (!currentChatId && data.conversationId) {
                         currentChatId = data.conversationId;
-                        // Додаємо новий чат в список і рендеримо
                         conversations.unshift({ id: data.conversationId, title: data.title });
                         renderHistoryList();
                     }
@@ -1069,7 +1032,6 @@
             
             const icon = sender === 'bot' ? 'fa-robot' : 'fa-user';
             
-            // Convert Markdown if bot
             let contentHTML = text;
             if (sender === 'bot' && typeof marked !== 'undefined' && !text.includes('<img')) {
                 contentHTML = marked.parse(text);
@@ -1107,10 +1069,8 @@
             creditBalanceEl.textContent = `${amount} Credits`;
         }
 
-        // 4. Load History & Profile
         async function initChat() {
             try {
-                // Load Profile for credits
                 const profileRes = await fetch(`${API_BASE_URL}/profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1125,7 +1085,6 @@
                     if (menuCredits) menuCredits.textContent = user.credits || 0;
                 }
 
-                // Load History
                 const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1139,7 +1098,7 @@
                             appendMessage(msg.sender, msg.content, msg.model);
                         });
                     } else {
-                        toggleChatView(false); // Show Welcome Screen
+                        toggleChatView(false);
                     }
                 }
             } catch (e) {
@@ -1161,8 +1120,7 @@
         }
 
         window.toggleDropdown = function(e, id) {
-            e.stopPropagation(); // Щоб не спрацював клік на chat-title
-            // Закрити всі інші
+            e.stopPropagation();
             document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
             const dropdown = document.getElementById(`dropdown-${id}`);
             if(dropdown) dropdown.classList.toggle('show');
@@ -1181,12 +1139,10 @@
             });
         }
 
-        // Закриття дропдаунів при кліку в будь-якому місці
         window.addEventListener('click', () => {
             document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
         });
 
-        // 7. Перейменування
         window.renameChat = async function(id) {
             const newTitle = prompt("New chat name:");
             if(!newTitle) return;
@@ -1205,7 +1161,6 @@
             } catch(e) { alert("Error renaming chat"); }
         }
 
-        // 8. Видалення
         window.deleteChat = async function(id) {
             if(!confirm("Delete this chat?")) return;
 
@@ -1222,15 +1177,12 @@
             } catch(e) { alert("Error deleting chat"); }
         }
 
-        // Events
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
 
-        // Init
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if i18n is loaded, otherwise wait a bit or let i18n.js handle it
             if(window.i18n && typeof window.i18n.init === 'function') {
                 window.i18n.init().then(initChat);
             } else {
@@ -1238,7 +1190,6 @@
             }
         });
 
-        // Mobile Sidebar Toggle (Optional logic if you add a burger button visible on mobile)
         const toggleBtn = document.getElementById('sidebarToggle');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -1256,7 +1207,6 @@
             });
         }
 
-        /* Build custom select from native select and wire interactions */
         (function(){
             const native = document.getElementById('modelSelect');
             const custom = document.getElementById('customModelSelect');
@@ -1265,7 +1215,6 @@
             const optionsList = custom.querySelector('.custom-options');
             const current = custom.querySelector('.current');
 
-            // Populate custom options from native select
             Array.from(native.options).forEach(opt => {
                 const li = document.createElement('li');
                 li.textContent = opt.textContent;
@@ -1274,7 +1223,6 @@
                 optionsList.appendChild(li);
             });
 
-            // set initial current
             const selected = native.options[native.selectedIndex];
             if (selected) current.textContent = selected.textContent;
 
@@ -1296,23 +1244,18 @@
             optionsList.addEventListener('click', (e)=>{
                 const li = e.target.closest('li');
                 if (!li) return;
-                // update native select
                 native.value = li.dataset.value;
-                // update UI
                 current.textContent = li.textContent;
                 optionsList.querySelectorAll('li').forEach(n=>n.classList.remove('active'));
                 li.classList.add('active');
                 closeOptions();
-                // trigger change event if needed
                 native.dispatchEvent(new Event('change'));
             });
 
-            // close on outside click
             document.addEventListener('click', (e)=>{
                 if (!custom.contains(e.target)) closeOptions();
             });
 
-            // keyboard support
             custom.addEventListener('keydown', (e)=>{
                 const items = Array.from(optionsList.querySelectorAll('li'));
                 const idx = items.findIndex(it => it.classList.contains('active'));

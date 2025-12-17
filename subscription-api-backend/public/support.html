@@ -111,7 +111,6 @@
             border: 1px solid var(--text-light);
         }
 
-        /* Основна панель (випадаюче меню) */
         .profile-dropdown {
             display: none;
             position: absolute;
@@ -135,7 +134,6 @@
             display: block;
         }
 
-        /* 1. Header Section */
         .dropdown-header {
             display: flex;
             justify-content: space-between;
@@ -182,7 +180,6 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* 2. Credits Card (Сірий блок посередині) */
         .credits-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 16px;
@@ -245,7 +242,6 @@
             transform: scale(1.02);
         }
 
-        /* 3. Menu Items */
         .dropdown-menu {
             display: flex;
             flex-direction: column;
@@ -286,7 +282,6 @@
             color: var(--text-gray);
         }
 
-        /* 4. Logout Footer */
         .dropdown-footer {
             padding-top: 10px;
             border-top: 1px dashed rgba(255, 255, 255, 0.2);
@@ -334,7 +329,6 @@
             }
         }
 
-        /* Support title adjustments: keep headset icon visible and nudge title right */
         .support-container .title {
             display: flex;
             align-items: center;
@@ -489,8 +483,9 @@
     </div>
 
     <script src="js/i18n.js"></script>
+    <script src="js/script.js"></script>
+
     <script>
-        // Helper to get text safely even if async load isn't finished perfectly
         function getTrans(key, fallback) {
             if (window.i18n && window.i18n.translations) {
                 const keys = key.split('.');
@@ -503,7 +498,6 @@
             return fallback;
         }
 
-        const API_BASE_URL = 'https://genyxo.com';
         const token = localStorage.getItem('authToken');
 
         if (!token) window.location.href = 'index.html';
@@ -609,7 +603,6 @@
 
         updateNotificationsBadge();
 
-        // 1. Завантаження тікетів
         async function loadTickets() {
             try {
                 const res = await fetch(`${API_BASE_URL}/support/my-tickets`, {
@@ -679,7 +672,6 @@
             }
         }
 
-        // 2. Створення тікета
         document.getElementById('createTicketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const subject = document.getElementById('ticketSubject').value;
@@ -720,12 +712,9 @@
             }
         });
 
-        // Initialize tickets (wait slightly for i18n if needed or run immediately)
         setTimeout(loadTickets, 100);
 
     </script>
-    <script src="js/i18n.js"></script>
-    <script src="js/script.js"></script>
 
 </body>
 </html>

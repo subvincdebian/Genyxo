@@ -9,14 +9,12 @@
     <link rel="stylesheet" href="profile.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Додаткові стилі для адмінки, щоб перекрити деякі моменти з profile.css */
         body {
-            padding-top: 0; /* Скидаємо відступ, якщо він є в profile.css, бо тут своя структура */
+            padding-top: 0;
         }
         
         .admin-container { max-width: 1400px; margin: 100px auto; padding: 20px; }
         
-        /* Стилі таблиць */
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -35,7 +33,6 @@
         }
         .data-table th { color: var(--text-light); background: rgba(255,255,255,0.1); font-weight: 600; }
         
-        /* Ширини колонок */
         .col-id { width: 60px; }
         .col-email { width: 220px; }
         .col-name { width: 180px; }
@@ -63,7 +60,6 @@
             font-weight: 600;
         }
 
-        /* Support Tickets Styles */
         .status-badge {
             padding: 4px 8px;
             border-radius: 8px;
@@ -82,7 +78,6 @@
         .priority-medium { background-color: #f1c40f; color: #111; }
         .priority-high { background-color: #e74c3c; color: #fff; }
 
-        /* Pagination Controls */
         .pagination-controls {
             display: flex;
             justify-content: flex-end;
@@ -102,7 +97,7 @@
             border-radius: 8px;
             transition: 0.2s;
         }
-        /* Стиль для відключених кнопок */
+
         .pagination-controls button:disabled {
             cursor: not-allowed;
             opacity: 0.3;
@@ -112,7 +107,6 @@
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Modals */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.85);
@@ -126,7 +120,6 @@
         }
         .primary-btn { background: #10e6cc; color: black; border: none; }
         
-        /* Виправлення навігації для Admin Panel */
         .navbar {
             padding: 0.8rem 2rem;
             height: 80px;
@@ -138,7 +131,6 @@
             gap: 2rem;
         }
         
-        /* Прибираємо старі посилання навігації, якщо треба */
         .nav-link { margin-right: 0; }
     </style>
 </head>
@@ -388,9 +380,7 @@
             }
         }
 
-        // --- HELPER TO DISABLE/ENABLE BUTTONS ---
         function setPaginationLoading(type, isLoading) {
-            // type = 'User', 'Tx', 'Ticket'
             const prevBtn = document.getElementById(`prev${type}Btn`);
             const nextBtn = document.getElementById(`next${type}Btn`);
             
@@ -400,7 +390,6 @@
             }
         }
 
-        // --- 1. USERS ---
         async function loadUsers() {
             setPaginationLoading('User', true);
             const refreshIcon = document.getElementById('refreshIconUsers');
@@ -452,7 +441,6 @@
             }   
         }
 
-        // --- 2. TRANSACTIONS ---
         async function loadTransactions() {
             setPaginationLoading('Tx', true);
             const refreshIcon = document.getElementById('refreshIconTx');
@@ -515,7 +503,6 @@
             }
         }
 
-        // --- 3. TICKETS ---
         async function loadAdminTickets() {
             setPaginationLoading('Ticket', true);
             const refreshIcon = document.getElementById('refreshIconTickets');
@@ -570,7 +557,6 @@
             }
         }
 
-        // --- GENERIC PAGINATION UI UPDATE ---
         function updatePaginationUI(type, meta) {
             const prevBtn = document.getElementById(`prev${type}Btn`);
             const nextBtn = document.getElementById(`next${type}Btn`);
@@ -607,7 +593,6 @@
             }
         }
 
-        // --- ACTIONS ---
         async function processTx(id, action) {
             const endpoint = action === 'approve' ? 'approve-transaction' : 'decline-transaction';
             if(!confirm(`Are you sure you want to ${action.toUpperCase()}?`)) return;
@@ -636,7 +621,6 @@
             }
         }
 
-        // Reply Modal
         let currentTicketId = null;
         function openReplyModal(id, userMessage) {
             currentTicketId = id;
@@ -662,7 +646,6 @@
             } catch(e) { showToast("Server Error", "error");; }
         }
 
-        // INIT
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminProfile();
             setTimeout(() => {
