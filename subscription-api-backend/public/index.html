@@ -15,6 +15,10 @@
             if (token) {
                 document.documentElement.classList.add('auth-active');
             }
+            document.documentElement.style.visibility = 'hidden';
+            window.addEventListener('DOMContentLoaded', () => {
+                document.documentElement.style.visibility = 'visible';
+            });
         })();
     </script>
 </head>

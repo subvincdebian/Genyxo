@@ -2308,21 +2308,22 @@ body::before {
     100% { background-position: -200% 0; }
 }
 
-html.auth-active #loginBtn {
+.nav-profile, .nav-notifications, .admin-link {
     display: none !important;
 }
 
-html.auth-active #profilePanel {
-    display: flex !important;
-    align-items: center !important;
-    gap: 15px;
-}
-
-html:not(.auth-active) #profilePanel {
+/* Прячем кнопку входа, если авторизация УЖЕ активна */
+html.auth-active .login-btn {
     display: none !important;
 }
 
-html:not(.auth-active) #loginBtn {
-    display: flex !important;
-    align-items: center !important;
+/* Показываем элементы профиля только при наличии класса .auth-active */
+html.auth-active .nav-profile, 
+html.auth-active .nav-notifications {
+    display: flex !important; /* или block, в зависимости от верстки */
+}
+
+/* Если есть элементы админа */
+html.auth-active.is-admin .admin-link {
+    display: block !important;
 }
