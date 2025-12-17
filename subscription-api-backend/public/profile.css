@@ -1813,22 +1813,22 @@ body {
   background: linear-gradient(180deg, #10e6cc, #cccccc);
 }
 
-#profilePanel {
-    display: none !important; /* Ховаємо панель профілю */
-}
-#loginBtn {
-    display: flex !important; /* Показуємо кнопку входу */
-}
-
-/* Коли скрипт знайшов токен і додав клас 'auth-active' (коли юзер УВІЙШОВ): */
-html.auth-active #profilePanel {
-    display: flex !important; /* Показуємо профіль */
-}
 html.auth-active #loginBtn {
     display: none !important; /* Ховаємо кнопку входу */
 }
 
-/* Додатково: ховаємо кнопку реєстрації в меню, якщо увійшов */
-html.auth-active .nav-links a[href="#signup"] {
-    display: none !important; 
+html.auth-active #profilePanel {
+    display: flex !important; /* Показуємо профіль */
+    align-items: center !important; /* Рівняємо по вертикалі (ОЦЕ БУЛО ПРОПУЩЕНО) */
+    gap: 15px; /* Відступ між елементами */
+}
+
+/* 2. Якщо юзер ГІСТЬ (немає класу auth-active) */
+html:not(.auth-active) #profilePanel {
+    display: none !important; /* Ховаємо профіль */
+}
+
+html:not(.auth-active) #loginBtn {
+    display: flex !important; /* Показуємо вхід */
+    align-items: center !important; /* Рівняємо по вертикалі */
 }
