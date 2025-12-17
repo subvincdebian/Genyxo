@@ -2308,22 +2308,21 @@ body::before {
     100% { background-position: -200% 0; }
 }
 
-#profilePanel {
-    display: none !important; /* Ховаємо панель профілю */
-}
-#loginBtn {
-    display: flex !important; /* Показуємо кнопку входу */
-}
-
-/* Коли скрипт знайшов токен і додав клас 'auth-active' (коли юзер УВІЙШОВ): */
-html.auth-active #profilePanel {
-    display: flex !important; /* Показуємо профіль */
-}
 html.auth-active #loginBtn {
-    display: none !important; /* Ховаємо кнопку входу */
+    display: none !important;
 }
 
-/* Додатково: ховаємо кнопку реєстрації в меню, якщо увійшов */
-html.auth-active .nav-links a[href="#signup"] {
-    display: none !important; 
+html.auth-active #profilePanel {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px;
+}
+
+html:not(.auth-active) #profilePanel {
+    display: none !important;
+}
+
+html:not(.auth-active) #loginBtn {
+    display: flex !important;
+    align-items: center !important;
 }
