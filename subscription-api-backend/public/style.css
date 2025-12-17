@@ -2311,32 +2311,30 @@ body::before {
 html.auth-active .login-btn {
     color: transparent !important;
     font-size: 0 !important;
-    
-    min-width: 110px; 
-    height: 40px;
-    background: var(--text-light);
-
-}   
-
-html.auth-active .login-btn * {
-    color: var(--text-dark);
-    font-size: 1rem;
-}
-
-html.auth-active .login-btn {
+    background: var(--text-light); 
+    border-radius: 25px;
+    width: 110px;
     position: relative;
-    overflow: hidden;
 }
 
-html.auth-active .login-btn::after {
-    content: "";
+html.auth-active .login-btn::before {
+    content: "\f007";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--text-dark);
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 200%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: loading-shimmer 1.5s infinite;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+html.auth-active .login-btn span, 
+html.auth-active .login-btn img,
+html.auth-active .login-btn i {
+    font-size: 1rem !important;
+    color: var(--text-dark) !important;
+    visibility: visible !important;
 }
 
 @keyframes loading-shimmer {
