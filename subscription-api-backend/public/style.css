@@ -2308,15 +2308,37 @@ body::before {
     100% { background-position: -200% 0; }
 }
 
-.profile-dropdown, .nav-notifications {
-    display: none !important;
+html.auth-active .login-btn {
+    color: transparent !important;
+    font-size: 0 !important;
+    
+    min-width: 110px; 
+    height: 40px;
+    background: var(--text-light);
+
+}   
+
+html.auth-active .login-btn * {
+    color: var(--text-dark);
+    font-size: 1rem;
 }
 
 html.auth-active .login-btn {
-    display: none !important;
+    position: relative;
+    overflow: hidden;
 }
 
-html.auth-active .profile-dropdown, 
-html.auth-active .nav-notifications {
-    display: flex !important;
+html.auth-active .login-btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    100% { transform: translateX(100%); }
 }
