@@ -335,6 +335,182 @@ async function processPayment() {
     }
 }
 
+function getSvgIllustration(id) {
+    // Тут зберігаються коди для всіх 6 карток
+    const illustrations = {
+        1: `
+        <svg class="svg-illustration" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="200" cy="200" r="150" fill="url(#glow1)" opacity="0.3"/>
+            <path d="M200 80 L220 200 L200 240 L180 200 Z" fill="#ffffff" stroke="#10b981" stroke-width="2"/>
+            <circle cx="200" cy="140" r="15" fill="#0a0a0a" stroke="#10b981" stroke-width="2"/>
+            <circle cx="200" cy="140" r="8" fill="#10b981" opacity="0.5"/>
+            <path d="M180 180 L160 220 L180 210 Z" fill="#10b981"/>
+            <path d="M220 180 L240 220 L220 210 Z" fill="#10b981"/>
+            <path d="M185 240 Q190 270 195 290 L190 260 L185 240 Z" fill="#10b981" opacity="0.8"/>
+            <path d="M200 240 Q200 280 200 310 L200 270 L200 240 Z" fill="#10b981"/>
+            <path d="M215 240 Q210 270 205 290 L210 260 L215 240 Z" fill="#10b981" opacity="0.8"/>
+            <circle cx="120" cy="150" r="6" fill="#10b981"/>
+            <circle cx="280" cy="150" r="6" fill="#10b981"/>
+            <circle cx="140" cy="100" r="4" fill="#10b981" opacity="0.7"/>
+            <circle cx="260" cy="100" r="4" fill="#10b981" opacity="0.7"/>
+            <line x1="120" y1="150" x2="180" y2="160" stroke="#10b981" stroke-width="1" opacity="0.3"/>
+            <line x1="280" y1="150" x2="220" y2="160" stroke="#10b981" stroke-width="1" opacity="0.3"/>
+            <circle cx="150" cy="90" r="2" fill="#ffffff" opacity="0.6"/>
+            <circle cx="250" cy="110" r="2" fill="#ffffff" opacity="0.6"/>
+            <defs><radialGradient id="glow1"><stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></radialGradient></defs>
+        </svg>`,
+        
+        2: `
+        <svg class="svg-illustration" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="200" cy="200" r="140" fill="url(#glow2)" opacity="0.25"/>
+            <circle cx="200" cy="200" r="120" stroke="#10b981" stroke-width="3"/>
+            <circle cx="200" cy="200" r="100" stroke="#10b981" stroke-width="1.5" opacity="0.4"/>
+            <line x1="200" y1="80" x2="200" y2="110" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
+            <line x1="320" y1="200" x2="290" y2="200" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+            <line x1="200" y1="320" x2="200" y2="290" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+            <line x1="80" y1="200" x2="110" y2="200" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+            <line x1="250" y1="150" x2="270" y2="130" stroke="#10b981" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+            <line x1="250" y1="250" x2="270" y2="270" stroke="#10b981" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+            <line x1="150" y1="250" x2="130" y2="270" stroke="#10b981" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+            <line x1="150" y1="150" x2="130" y2="130" stroke="#10b981" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+            <path d="M200 200 L190 140 L200 150 L210 140 Z" fill="#10b981"/>
+            <path d="M200 200 L190 260 L200 250 L210 260 Z" fill="#10b981" opacity="0.5"/>
+            <circle cx="200" cy="200" r="8" fill="#0a0a0a" stroke="#10b981" stroke-width="2"/>
+            <circle cx="200" cy="80" r="8" fill="#10b981"/>
+            <circle cx="280" cy="120" r="6" fill="#10b981" opacity="0.8"/>
+            <circle cx="320" cy="200" r="6" fill="#10b981" opacity="0.7"/>
+            <circle cx="280" cy="280" r="6" fill="#10b981" opacity="0.7"/>
+            <circle cx="200" cy="320" r="6" fill="#10b981" opacity="0.7"/>
+            <circle cx="120" cy="280" r="6" fill="#10b981" opacity="0.7"/>
+            <circle cx="80" cy="200" r="6" fill="#10b981" opacity="0.7"/>
+            <circle cx="120" cy="120" r="6" fill="#10b981" opacity="0.8"/>
+            <path d="M 200 200 Q 240 160, 280 120" stroke="#ffffff" stroke-width="1.5" opacity="0.3" stroke-dasharray="3 3"/>
+            <defs><radialGradient id="glow2"><stop offset="0%" stop-color="#10b981" stop-opacity="0.5"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></radialGradient></defs>
+        </svg>`,
+
+        3: `
+        <svg class="svg-illustration" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="200" cy="200" rx="160" ry="140" fill="url(#glow3)" opacity="0.3"/>
+            <rect x="140" y="100" width="120" height="40" rx="5" fill="#10b981" opacity="0.2" stroke="#10b981" stroke-width="2"/>
+            <rect x="140" y="140" width="120" height="140" rx="5" fill="none" stroke="#10b981" stroke-width="3"/>
+            <path d="M170 280 L200 320 L230 280 Z" fill="#10b981"/>
+            <rect x="180" y="280" width="40" height="15" fill="#10b981" opacity="0.6"/>
+            <circle cx="165" cy="120" r="8" fill="#10b981"/>
+            <circle cx="200" cy="120" r="8" fill="#10b981"/>
+            <circle cx="235" cy="120" r="8" fill="#10b981"/>
+            <rect x="150" y="155" width="100" height="110" rx="3" fill="#0a0a0a" stroke="#10b981" stroke-width="1.5"/>
+            <path d="M 170 180 Q 175 175, 180 180 Q 185 175, 190 180 Q 195 175, 200 180 Q 205 175, 210 180 Q 215 175, 220 180 Q 225 175, 230 180" stroke="#10b981" stroke-width="2" fill="none" opacity="0.8"/>
+            <path d="M 170 200 Q 175 195, 180 200 Q 185 195, 190 200 Q 195 195, 200 200 Q 205 195, 210 200 Q 215 195, 220 200 Q 225 195, 230 200" stroke="#10b981" stroke-width="2" fill="none" opacity="0.6"/>
+            <path d="M 170 220 Q 175 215, 180 220 Q 185 215, 190 220 Q 195 215, 200 220 Q 205 215, 210 220 Q 215 215, 220 220 Q 225 215, 230 220" stroke="#10b981" stroke-width="2" fill="none" opacity="0.4"/>
+            <circle cx="170" cy="180" r="3" fill="#10b981"/>
+            <circle cx="190" cy="180" r="3" fill="#10b981"/>
+            <circle cx="210" cy="180" r="3" fill="#10b981"/>
+            <circle cx="230" cy="180" r="3" fill="#10b981"/>
+            <path d="M 280 140 L 285 150 L 295 145 L 287 155 L 295 165 L 285 160 L 280 170 L 275 160 L 265 165 L 273 155 L 265 145 L 275 150 Z" fill="#10b981" opacity="0.7"/>
+            <path d="M 120 170 L 123 177 L 131 174 L 125 181 L 131 189 L 123 186 L 120 193 L 117 186 L 109 189 L 115 181 L 109 174 L 117 177 Z" fill="#10b981" opacity="0.6"/>
+            <path d="M 270 240 L 272 245 L 278 243 L 274 248 L 278 254 L 272 252 L 270 257 L 268 252 L 262 254 L 266 248 L 262 243 L 268 245 Z" fill="#10b981" opacity="0.5"/>
+            <defs><radialGradient id="glow3"><stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></radialGradient></defs>
+        </svg>`,
+
+        4: `
+        <svg class="svg-illustration" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="200" cy="200" r="150" fill="url(#glow4)" opacity="0.3"/>
+            <path d="M 120 220 L 140 160 L 170 190 L 200 140 L 230 190 L 260 160 L 280 220 Z" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="3"/>
+            <rect x="120" y="220" width="160" height="30" rx="5" fill="#10b981"/>
+            <circle cx="140" cy="160" r="8" fill="#ffffff" stroke="#10b981" stroke-width="2"/>
+            <circle cx="200" cy="140" r="10" fill="#ffffff" stroke="#10b981" stroke-width="2"/>
+            <circle cx="260" cy="160" r="8" fill="#ffffff" stroke="#10b981" stroke-width="2"/>
+            <circle cx="140" cy="160" r="4" fill="#10b981"/>
+            <circle cx="200" cy="140" r="5" fill="#10b981"/>
+            <circle cx="260" cy="160" r="4" fill="#10b981"/>
+            <ellipse cx="200" cy="280" rx="70" ry="60" fill="none" stroke="#10b981" stroke-width="3"/>
+            <path d="M 150 260 Q 160 250, 170 260" stroke="#10b981" stroke-width="2" fill="none"/>
+            <path d="M 170 270 Q 180 260, 190 270" stroke="#10b981" stroke-width="2" fill="none"/>
+            <path d="M 190 280 Q 200 270, 210 280" stroke="#10b981" stroke-width="2" fill="none"/>
+            <path d="M 210 270 Q 220 260, 230 270" stroke="#10b981" stroke-width="2" fill="none"/>
+            <path d="M 230 260 Q 240 250, 250 260" stroke="#10b981" stroke-width="2" fill="none"/>
+            <line x1="140" y1="168" x2="160" y2="250" stroke="#10b981" stroke-width="1.5" opacity="0.3"/>
+            <line x1="200" y1="150" x2="200" y2="220" stroke="#10b981" stroke-width="1.5" opacity="0.3"/>
+            <line x1="260" y1="168" x2="240" y2="250" stroke="#10b981" stroke-width="1.5" opacity="0.3"/>
+            <circle cx="100" cy="200" r="4" fill="#10b981" opacity="0.6"><animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/></circle>
+            <circle cx="300" cy="200" r="4" fill="#10b981" opacity="0.6"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite"/></circle>
+            <circle cx="150" cy="150" r="3" fill="#ffffff" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="2.2s" repeatCount="indefinite"/></circle>
+            <circle cx="250" cy="150" r="3" fill="#ffffff" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="1.8s" repeatCount="indefinite"/></circle>
+            <defs><radialGradient id="glow4"><stop offset="0%" stop-color="#10b981" stop-opacity="0.5"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></radialGradient></defs>
+        </svg>`,
+
+        5: `
+        <svg class="svg-illustration" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="200" cy="200" r="140" stroke="#10b981" stroke-width="2" opacity="0.3">
+                <animate attributeName="r" values="140;150;140" dur="3s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="200" r="120" stroke="#10b981" stroke-width="2" opacity="0.4">
+                <animate attributeName="r" values="120;130;120" dur="2.5s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="200" r="100" stroke="#10b981" stroke-width="3" opacity="0.5">
+                <animate attributeName="r" values="100;110;100" dur="2s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.4;0.6;0.4" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="200" r="60" fill="url(#powerGlow)" stroke="#10b981" stroke-width="4"/>
+            <path d="M 160 200 C 160 180, 180 180, 200 200 C 220 220, 240 220, 240 200 C 240 180, 220 180, 200 200 C 180 220, 160 220, 160 200" stroke="#ffffff" stroke-width="3" fill="none"/>
+            <path d="M 200 140 L 195 170 L 205 165 L 200 190" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 260 200 L 230 195 L 235 205 L 210 200" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 200 260 L 205 230 L 195 235 L 200 210" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 140 200 L 170 205 L 165 195 L 190 200" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 245 155 L 225 175 L 235 175 L 215 195" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+            <path d="M 245 245 L 225 225 L 235 225 L 215 205" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+            <path d="M 155 245 L 175 225 L 165 225 L 185 205" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+            <path d="M 155 155 L 175 175 L 165 175 L 185 195" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+            <circle cx="200" cy="100" r="8" fill="#10b981"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/></circle>
+            <circle cx="280" cy="140" r="6" fill="#10b981"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.7s" repeatCount="indefinite"/></circle>
+            <circle cx="300" cy="200" r="8" fill="#10b981"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.9s" repeatCount="indefinite"/></circle>
+            <circle cx="280" cy="260" r="6" fill="#10b981"><animate attributeName="opacity" values="0.5;1;0.5" dur="2.1s" repeatCount="indefinite"/></circle>
+            <circle cx="200" cy="300" r="8" fill="#10b981"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.6s" repeatCount="indefinite"/></circle>
+            <circle cx="120" cy="260" r="6" fill="#10b981"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite"/></circle>
+            <circle cx="100" cy="200" r="8" fill="#10b981"><animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/></circle>
+            <circle cx="120" cy="140" r="6" fill="#10b981"><animate attributeName="opacity" values="0.5;1;0.5" dur="2.2s" repeatCount="indefinite"/></circle>
+            <defs><radialGradient id="powerGlow"><stop offset="0%" stop-color="#10b981" stop-opacity="0.8"/><stop offset="50%" stop-color="#10b981" stop-opacity="0.4"/><stop offset="100%" stop-color="#0a0a0a" stop-opacity="0"/></radialGradient></defs>
+        </svg>`,
+
+        6: `
+        <svg class="svg-illustration" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 100 320 L 150 250 L 180 280 L 200 160 L 220 280 L 250 250 L 300 320 Z" fill="url(#titanGrad)" stroke="#10b981" stroke-width="3"/>
+            <path d="M 180 280 L 200 160 L 220 280" fill="#10b981" opacity="0.8"/>
+            <circle cx="200" cy="140" r="40" stroke="#10b981" stroke-width="2" opacity="0.6"/>
+            <circle cx="200" cy="140" r="30" stroke="#10b981" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="200" cy="140" r="20" stroke="#10b981" stroke-width="2"/>
+            <circle cx="200" cy="140" r="12" fill="#10b981"><animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/></circle>
+            <circle cx="200" cy="140" r="6" fill="#ffffff"/>
+            <path d="M 200 100 L 235 120 L 235 160 L 200 180 L 165 160 L 165 120 Z" stroke="#10b981" stroke-width="2" fill="none" opacity="0.4"/>
+            <line x1="200" y1="140" x2="200" y2="80" stroke="#10b981" stroke-width="2"><animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/></line>
+            <line x1="200" y1="140" x2="260" y2="100" stroke="#10b981" stroke-width="2" opacity="0.7"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.3s" repeatCount="indefinite"/></line>
+            <line x1="200" y1="140" x2="280" y2="160" stroke="#10b981" stroke-width="2" opacity="0.6"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.5s" repeatCount="indefinite"/></line>
+            <line x1="200" y1="140" x2="140" y2="100" stroke="#10b981" stroke-width="2" opacity="0.7"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.7s" repeatCount="indefinite"/></line>
+            <line x1="200" y1="140" x2="120" y2="160" stroke="#10b981" stroke-width="2" opacity="0.6"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.9s" repeatCount="indefinite"/></line>
+            <circle cx="200" cy="80" r="6" fill="#10b981"/>
+            <circle cx="260" cy="100" r="5" fill="#10b981"/>
+            <circle cx="280" cy="160" r="5" fill="#10b981"/>
+            <circle cx="140" cy="100" r="5" fill="#10b981"/>
+            <circle cx="120" cy="160" r="5" fill="#10b981"/>
+            <circle cx="150" cy="250" r="6" fill="#10b981" opacity="0.8"/>
+            <circle cx="180" cy="280" r="6" fill="#10b981" opacity="0.8"/>
+            <circle cx="220" cy="280" r="6" fill="#10b981" opacity="0.8"/>
+            <circle cx="250" cy="250" r="6" fill="#10b981" opacity="0.8"/>
+            <circle cx="160" cy="270" r="2" fill="#ffffff" opacity="0.6"><animate attributeName="cy" values="270;140;270" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.8;0" dur="4s" repeatCount="indefinite"/></circle>
+            <circle cx="190" cy="290" r="2" fill="#ffffff" opacity="0.6"><animate attributeName="cy" values="290;140;290" dur="5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.8;0" dur="5s" repeatCount="indefinite"/></circle>
+            <circle cx="210" cy="290" r="2" fill="#ffffff" opacity="0.6"><animate attributeName="cy" values="290;140;290" dur="4.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.8;0" dur="4.5s" repeatCount="indefinite"/></circle>
+            <circle cx="240" cy="270" r="2" fill="#ffffff" opacity="0.6"><animate attributeName="cy" values="270;140;270" dur="5.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.8;0" dur="5.5s" repeatCount="indefinite"/></circle>
+            <path d="M 190 75 L 195 65 L 200 70 L 205 65 L 210 75" stroke="#10b981" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="200" cy="65" r="3" fill="#10b981"/>
+            <defs><linearGradient id="titanGrad" x1="200" y1="160" x2="200" y2="320" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#10b981" stop-opacity="0.6"/><stop offset="100%" stop-color="#10b981" stop-opacity="0.1"/></linearGradient></defs>
+        </svg>`
+    };
+
+    return illustrations[id] || '<img src="https://via.placeholder.com/300x200?text=Product" alt="Product">';
+}
+
 function loadProducts() {
     if (!productsGrid) {
         console.error("Element with ID 'productsGrid' not found!");
@@ -358,12 +534,15 @@ function loadProducts() {
             <li><span class="feature-icon"><i class="fas fa-check"></i></span>${feature}</li>
         `).join('');
 
+        // Отримуємо SVG замість картинки
+        const illustrationHtml = getSvgIllustration(product.id);
+
         const productCard = document.createElement('div');
         productCard.className = 'product-card glass';
 
         productCard.innerHTML = `
             <div class="product-image">
-                <img src="${product.image}" alt="${productTrans.name}" onerror="this.src='https://via.placeholder.com/300x200?text=Product'">
+                ${illustrationHtml}
             </div>
             <div class="product-info">
                 <h3 class="product-name">${productTrans.name}</h3>

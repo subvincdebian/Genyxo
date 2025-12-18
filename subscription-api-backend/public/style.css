@@ -105,8 +105,10 @@ body::before {
     color: var(--text-light);
 }
 
-.nav-logo i {
-    color: var(--text-light);
+.logo-icon {
+    width: 26px;
+    height: 26px;
+    margin-top: 2px;
 }
 
 .search-container {
@@ -2340,4 +2342,99 @@ html.auth-active .login-btn i {
 
 @keyframes loading-shimmer {
     100% { transform: translateX(100%); }
+}
+
+.product-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important; /* Більш закруглені кути виглядають сучасніше */
+    padding: 0 !important; /* Обнуляємо внутрішні відступи, щоб картинка лягла ідеально */
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5), /* Основна тінь */
+        inset 0 0 20px rgba(255, 255, 255, 0.02); /* Внутрішня глибина */
+    position: relative;
+}
+
+/* Світловий блік зверху карти (ефект скла) */
+.product-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(16, 230, 204, 0.4), transparent);
+    z-index: 1;
+}
+
+.product-card:hover {
+    transform: translateY(-12px);
+    border-color: rgba(16, 230, 204, 0.4) !important;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.7), 
+        0 0 25px rgba(16, 230, 204, 0.15); /* Неонове підсвічування при ховері */
+}
+
+/* Сцена для картинки */
+.product-image {
+    width: 100%;
+    height: 240px;
+    background: radial-gradient(circle at 50% 50%, rgba(16, 230, 204, 0.12) 0%, transparent 75%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Текстова частина під картинкою */
+.product-info {
+    padding: 25px; /* Повертаємо відступи для тексту */
+}
+
+/* Кнопка "Купити", яка гармоніює з глибиною */
+.buy-btn {
+    background: linear-gradient(90deg, #10e6cc 0%, #0db8a3 100%);
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(16, 230, 204, 0.3);
+    transition: all 0.3s ease;
+}
+
+.buy-btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 20px rgba(16, 230, 204, 0.5);
+    filter: brightness(1.1);
+}
+
+/* Анімація левітації для всіх SVG */
+.svg-illustration {
+    width: 85%;
+    height: 85%;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+    animation: floatingMain 5s ease-in-out infinite;
+}
+
+@keyframes floatingMain {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(1deg); }
+}
+
+/* Додаткові мікро-анімації для деталей всередині SVG */
+.animate-pulse-slow { animation: pulseSvg 3s infinite; }
+.animate-spin-slow { animation: spinSvg 8s linear infinite; }
+
+@keyframes pulseSvg {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes spinSvg {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
