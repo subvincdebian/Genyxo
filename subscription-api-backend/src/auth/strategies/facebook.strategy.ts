@@ -14,8 +14,8 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       clientID: configService.get<string>('FACEBOOK_APP_ID')!,
       clientSecret: configService.get<string>('FACEBOOK_APP_SECRET')!,
       callbackURL: 'https://hostaisite-production.up.railway.app/auth/facebook/callback',
-      scope: 'email',
-      profileFields: ['emails', 'name', 'photos'],
+      scope: ['email', 'public_profile'],
+      profileFields: ['id', 'emails', 'name', 'picture.type(large)'],
     });
   }
 
@@ -26,20 +26,15 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     done: (err: any, result: any, info?: any) => void,
   ): Promise<any> {
     const { name, emails, photos, id } = profile;
-    
+
     const user = {
-      email: emails && emails[0] ? emails[0].value : null,
+      email: (emails && emails[0]) ? emails[0].value : `fb.${id}@no-email.facebook.com`,
+      
       firstName: name.givenName,
       lastName: name.familyName,
-      picture: photos && photos[0] ? photos[0].value : null,
+      picture: (photos && photos[0]) ? photos[0].value : null,
       id: id,
     };
-
-    // Якщо пошти немає (телефонний логін FB), треба обробляти окремо, 
-    // але поки припустимо, що пошта є.
-    if (!user.email) {
-        return done(null, false, { message: 'Facebook account must have an email' });
-    }
 
     const result = await this.authService.validateOAuthLogin(user, 'facebook');
     done(null, result);
