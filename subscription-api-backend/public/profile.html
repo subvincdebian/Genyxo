@@ -404,8 +404,11 @@
 
         overlay.addEventListener("click", closeMenu);
 
-            document.getElementById('closeProfilePanel').addEventListener('click', () => {
-            profilePanel.classList.remove('show');
+        document.getElementById('closeProfilePanel').addEventListener('click', () => {
+            const panel = document.getElementById('profilePanel');
+            if (panel) {
+                panel.classList.remove('show');
+            }
             document.querySelector('.profile-container').classList.remove('active');
         });
 
@@ -786,8 +789,8 @@
         });
         }
 
-        const profileToggleBtn = document.getElementById('loginBtn');
-        const profileDropdown = document.getElementById('profilePanel');
+        /* const profileToggleBtn = document.getElementById('loginBtn');
+        const profileDropdown = document.getElementById('profilePanel'); 
 
         if (profileToggleBtn) {
             profileToggleBtn.addEventListener('click', () => {
@@ -803,7 +806,7 @@
                     profileDropdown.classList.remove('show');
                 }
             });
-        }
+        } */
 
     </script>
 
