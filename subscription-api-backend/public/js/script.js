@@ -513,7 +513,6 @@ function getSvgIllustration(id) {
 
 function loadProducts() {
     if (!productsGrid) {
-        console.error("Element with ID 'productsGrid' not found!");
         return;
     }
 
