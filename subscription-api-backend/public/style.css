@@ -2777,3 +2777,170 @@ html.auth-active .login-btn i {
     .button-group { flex-direction: column; }
     .btn { width: 100%; }
 }
+
+.about-section {
+    position: relative;
+    width: 100%;
+    padding: 80px 20px;
+    background-color: #0a0a0a; /* Темний фон сторінки */
+    overflow: hidden; /* Щоб фонова пляма не вилазила */
+    color: white;
+}
+
+/* Зелена розмита пляма на фоні */
+.about-bg-blur {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background-color: rgba(16, 185, 129, 0.05); /* Зелений #10b981 з прозорістю */
+    border-radius: 50%;
+    filter: blur(100px); /* Сильне розмиття */
+    z-index: 1;
+    pointer-events: none;
+}
+
+.about-container {
+    position: relative;
+    max-width: 1150px;
+    margin: 0 auto;
+    z-index: 2; /* Щоб контент був над фоном */
+}
+
+/* Стилі заголовка */
+.about-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.about-title {
+    font-size: 2.5rem;
+    color: white;
+    display: inline-block;
+    position: relative;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+/* Градієнтна лінія під заголовком */
+.title-underline {
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, transparent, #10b981, transparent);
+    border-radius: 99px;
+}
+
+/* Стилі тексту */
+.about-text-content {
+    max-width: 800px;
+    margin: 0 auto 4rem auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.about-text-content p {
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.about-text-content .text-secondary {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* === СІТКА КАРТОК (GRID) === */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+    gap: 2rem;
+    width: 100%;
+}
+
+/* === СТИЛІ КАРТКИ === */
+.feature-card {
+    background-color: rgba(26, 26, 26, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); /* Для Safari */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: all 0.3s ease; /* Плавна анімація всього */
+    cursor: default;
+}
+
+/* Ефекти при наведенні (HOVER) */
+.feature-card:hover {
+    border-color: rgba(16, 185, 129, 0.3); /* Зелена рамка */
+    transform: scale(1.05); /* Збільшення картки */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Іконка в кружечку */
+.card-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.card-icon-bg {
+    width: 4rem; /* 64px */
+    height: 4rem;
+    background-color: rgba(16, 185, 129, 0.1); /* Слабкий зелений фон */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+/* При наведенні на картку, іконка стає яскравішою */
+.feature-card:hover .card-icon-bg {
+    background-color: rgba(16, 185, 129, 0.2);
+}
+
+.feature-card h3 {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* === АДАПТИВНІСТЬ (MOBILE RESPONSIVE) === */
+/* Якщо екран менше 1024px (планшет), робимо 2 колонки або 1 */
+@media (max-width: 1024px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Якщо екран менше 768px (телефон) */
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr; /* Одна колонка на всю ширину */
+        gap: 1.5rem;
+    }
+    
+    .about-title {
+        font-size: 2rem;
+    }
+    
+    .about-bg-blur {
+        width: 100%; /* Зменшуємо пляму */
+    }
+}
