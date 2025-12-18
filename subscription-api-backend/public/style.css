@@ -29,6 +29,15 @@ h1, h2, h3, .nav-logo {
     --text-light: #ffffff;
     --text-gray: #cccccc;
     --text-dark: #000000;
+    --hero-bg: #0a0a0a;
+    --hero-accent: #10b981;
+    --hero-text: #ffffff;
+    --hero-text-muted: #9ca3af;
+    --gx-bg: #0a0a0a;
+    --gx-primary: #10b981;
+    --gx-text: #ffffff;
+    --gx-gray: #9ca3af;
+    --gx-border: rgba(255, 255, 255, 0.1);
 }
 
 body {
@@ -243,15 +252,6 @@ body::before {
     radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1), transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05), transparent 50%);
     z-index: -1;
-}
-
-.hero-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    max-width: 1200px;
-    width: 100%;
-    align-items: center;
 }
 
 .hero-text {
@@ -2437,4 +2437,343 @@ html.auth-active .login-btn i {
 @keyframes spinSvg {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+.genyxo-hero {
+    position: relative;
+    background-color: var(--gx-bg);
+    color: var(--gx-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Фоновий градієнт (Glow) */
+.hero-glow-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vw;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(10, 10, 10, 0) 80%);
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+/* --- HEADER --- */
+.genyxo-header {
+    border-bottom: 1px solid var(--gx-border);
+    padding: 16px 0;
+    background: rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(8px);
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    border: 1px solid var(--gx-border);
+}
+
+.brand-name {
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+}
+
+/* --- MAIN CONTENT --- */
+.hero-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 60px;
+    padding-bottom: 120px;
+    gap: 40px;
+}
+
+/* Ліва колонка (Текст) */
+.text-column {
+    flex: 1;
+    max-width: 600px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 999px;
+    color: var(--gx-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 24px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+}
+
+.main-title {
+    font-size: 3.75rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+}
+
+.highlight-text {
+    background: linear-gradient(to right, #ffffff, #9ca3af);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.description {
+    font-size: 1.125rem;
+    color: var(--gx-gray);
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 90%;
+}
+
+.button-group {
+    display: flex;
+    gap: 16px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: white;
+    color: black;
+    border: none;
+}
+.btn-primary:hover {
+    background: #e5e5e5;
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: white;
+}
+
+/* --- ORBIT SYSTEM (Анімація) --- */
+.visual-column {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 500px;
+    position: relative;
+}
+
+.orbit-system {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.core-planet {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+    z-index: 10;
+}
+
+.core-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid var(--gx-primary);
+    opacity: 0;
+    animation: pulseCore 3s infinite;
+}
+
+.orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.inner-orbit {
+    width: 200px;
+    height: 200px;
+    animation: spinRight 20s linear infinite;
+}
+
+.outer-orbit {
+    width: 320px;
+    height: 320px;
+    animation: spinLeft 30s linear infinite;
+}
+
+.orbit-item {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin-left: -20px;
+    margin-top: -20px;
+}
+
+.icon-box {
+    width: 100%;
+    height: 100%;
+    background: #151515;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gx-gray);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.icon-box svg {
+    width: 20px;
+    height: 20px;
+}
+
+.inner-orbit .item-1 { transform: rotate(0deg) translate(100px) rotate(0deg); }
+.inner-orbit .item-2 { transform: rotate(180deg) translate(100px) rotate(-180deg); }
+
+.outer-orbit .item-3 { transform: rotate(0deg) translate(160px) rotate(0deg); }
+.outer-orbit .item-4 { transform: rotate(120deg) translate(160px) rotate(-120deg); }
+.outer-orbit .item-5 { transform: rotate(240deg) translate(160px) rotate(-240deg); }
+
+.inner-orbit .orbit-item .icon-box { animation: spinLeft 20s linear infinite; }
+.outer-orbit .orbit-item .icon-box { animation: spinRight 30s linear infinite; }
+
+
+.powered-badge {
+    position: absolute;
+    bottom: -20px;
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 10px 20px;
+    border-radius: 99px;
+    color: var(--gx-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    animation: floatBadge 6s ease-in-out infinite;
+}
+
+.bottom-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    line-height: 0;
+    z-index: 1;
+}
+.bottom-wave svg {
+    width: 100%;
+    height: auto;
+}
+
+@keyframes spinRight {
+    100% { transform: rotate(360deg); }
+}
+@keyframes spinLeft {
+    100% { transform: rotate(-360deg); }
+}
+@keyframes pulseCore {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+@keyframes floatBadge {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 992px) {
+    .hero-content {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding-top: 20px;
+    }
+    
+    .text-column { max-width: 100%; }
+    
+    .button-group { justify-content: center; }
+    
+    .main-title { font-size: 2.5rem; }
+    
+    .orbit-system {
+        transform: scale(0.8);
+    }
+}
+
+@media (max-width: 480px) {
+    .orbit-system {
+        transform: scale(0.65);
+        margin: -40px 0;
+    }
+    
+    .main-title { font-size: 2rem; }
+    
+    .button-group { flex-direction: column; }
+    .btn { width: 100%; }
 }
