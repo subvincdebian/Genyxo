@@ -280,11 +280,6 @@ function checkPaymentStatus() {
 
 function openCheckout(product) {
     currentProduct = product;
-    
-    if (!authToken) {
-        openLoginModal();
-        return;
-    }
 
     const productTrans = (window.i18n && i18n.translations.products_data && i18n.translations.products_data[product.id]) 
                          ? i18n.translations.products_data[product.id] 
@@ -301,7 +296,13 @@ function openCheckout(product) {
 }
 
 async function processPayment() {
-    if (!authToken || !currentProduct) return;
+    if (!authToken) {
+        checkoutModal.style.display = 'none';
+        openLoginModal();
+        return;
+    }
+
+    if (!currentProduct) return;
 
     payBtn.classList.add('loading');
     payBtn.disabled = true;
