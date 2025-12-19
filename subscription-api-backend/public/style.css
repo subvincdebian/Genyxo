@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Arimo:ital,wght@0,400..700;1,400..700&family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -568,6 +570,22 @@ body::before {
     border-top: 1px solid var(--glass-border);
 }
 
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.footer-logo-title {
+    position: relative;
+    top: 10px;
+    left: 5px;
+}
+
 .footer-content {
     max-width: 1300px;
     margin: 0 auto;
@@ -812,7 +830,7 @@ body::before {
 .submit-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
-    background: var(--text-gray);
+    background: black;
 }
 
 .signup-link {
@@ -1709,187 +1727,6 @@ body::before {
     }
 }
 
-/*
-.checkout-modal {
-    max-width: 700px;
-    padding: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.checkout-modal h2 {
-    padding: 20px 30px;
-    margin: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.checkout-container {
-    display: flex;
-    flex-direction: row;
-}
-
-@media (max-width: 700px) {
-    .checkout-container {
-        flex-direction: column;
-    }
-}
-
-.checkout-details {
-    flex: 1.2;
-    padding: 30px;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.product-preview {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.product-preview img {
-    width: 80px;
-    height: 80px;
-    border-radius: 12px;
-    object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.product-text h3 {
-    font-size: 1.4rem;
-    margin-bottom: 5px;
-    color: white;
-}
-
-.credits-badge {
-    display: inline-block;
-    background: rgba(16, 230, 204, 0.15);
-    color: #10e6cc;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.payment-methods-preview .label {
-    font-size: 0.9rem;
-    color: #ccc;
-    margin-bottom: 10px;
-}
-
-.icons-row {
-    display: flex;
-    gap: 15px;
-    font-size: 1.8rem;
-    color: #fff;
-    margin-bottom: 10px;
-    opacity: 0.8;
-}
-
-.usdt-icon {
-    font-weight: bold;
-    color: #2ecc71;
-}
-
-.sub-label {
-    font-size: 0.8rem;
-    color: #666;
-}
-
-.checkout-summary {
-    flex: 1;
-    padding: 30px;
-    background: rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    color: #ccc;
-    font-size: 1rem;
-}
-
-.free-text {
-    color: #2ecc71;
-}
-
-.divider {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 15px 0;
-}
-
-.summary-row.total {
-    color: white;
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 25px;
-}
-
-.pay-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.pay-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(118, 75, 162, 0.4);
-}
-
-.pay-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.terms-text {
-    text-align: center;
-    font-size: 0.75rem;
-    color: #666;
-    margin-top: 15px;
-}
-
-.spinner {
-    display: none;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 1s ease-in-out infinite;
-    position: absolute;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.pay-btn.loading .btn-text {
-    opacity: 0;
-}
-
-.pay-btn.loading .spinner {
-    display: block;
-} 
-*/
-
 .checkout-content {
     max-width: 450px;
     padding: 0;
@@ -2584,9 +2421,10 @@ html.auth-active .login-btn i {
 }
 
 .btn-primary {
-    background: white;
+    background: #10B981;
     color: black;
     border: none;
+    box-shadow: 0 2px 4px #10B981;
 }
 .btn-primary:hover {
     background: #e5e5e5;
@@ -2601,6 +2439,14 @@ html.auth-active .login-btn i {
 .btn-outline:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: white;
+}
+
+.trust-badge {
+    margin-top: 35px;
+    font-size: 0.85rem;
+    color: #FFFFFF66;
+    gap: 10px;
+    font-family: "Arimo", sans-serif;
 }
 
 /* --- ORBIT SYSTEM (Анімація) --- */
@@ -2858,7 +2704,7 @@ html.auth-active .login-btn i {
 /* === СІТКА КАРТОК (GRID) === */
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     width: 100%;
 }
@@ -2871,14 +2717,14 @@ html.auth-active .login-btn i {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
     padding: 2rem;
-    transition: all 0.3s ease; /* Плавна анімація всього */
+    transition: all 0.3s ease;
     cursor: default;
 }
 
 /* Ефекти при наведенні (HOVER) */
 .feature-card:hover {
-    border-color: rgba(16, 185, 129, 0.3); /* Зелена рамка */
-    transform: scale(1.05); /* Збільшення картки */
+    border-color: rgba(16, 185, 129, 0.3);
+    transform: scale(1.05);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -2891,9 +2737,9 @@ html.auth-active .login-btn i {
 }
 
 .card-icon-bg {
-    width: 4rem; /* 64px */
+    width: 4rem;
     height: 4rem;
-    background-color: rgba(16, 185, 129, 0.1); /* Слабкий зелений фон */
+    background-color: rgba(16, 185, 129, 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -2932,7 +2778,7 @@ html.auth-active .login-btn i {
 /* Якщо екран менше 768px (телефон) */
 @media (max-width: 768px) {
     .features-grid {
-        grid-template-columns: 1fr; /* Одна колонка на всю ширину */
+        grid-template-columns: 1fr;
         gap: 1.5rem;
     }
     
@@ -2941,6 +2787,6 @@ html.auth-active .login-btn i {
     }
     
     .about-bg-blur {
-        width: 100%; /* Зменшуємо пляму */
+        width: 100%;
     }
 }

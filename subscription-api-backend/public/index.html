@@ -172,9 +172,27 @@
                 </p>
 
                 <div class="button-group">
-                    <button class="btn btn-primary">Get Started</button>
+                    <button class="btn btn-primary" onclick="window.location.hash = '#products'">View Packages</button>
                     <button class="btn btn-outline">View Demo</button>
                 </div>
+
+                <div class="trust-badge">
+                    <span class="badge-icon">
+                        <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 3px; position: relative; top: 3px;">
+                            <path d="M6.00008 14C6.00008 14 11.3334 11.3334 11.3334 7.33335V2.66669L6.00008 0.666687L0.666748 2.66669V7.33335C0.666748 11.3334 6.00008 14 6.00008 14Z" stroke="white" stroke-opacity="0.4" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    Secure Payment
+
+                    <span class="badge-icon" style="margin-left: 20px;">
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 3px; position: relative; top: 3px;">
+                            <path d="M14.0001 6.72384V7.33717C13.9993 8.77478 13.5337 10.1736 12.673 11.3251C11.8122 12.4765 10.6023 13.3188 9.22365 13.7264C7.84504 14.1341 6.37159 14.0851 5.02306 13.5869C3.67454 13.0887 2.52318 12.1679 1.74072 10.9619C0.958259 9.75586 0.586609 8.32921 0.681199 6.89471C0.77579 5.46021 1.33155 4.09472 2.2656 3.00188C3.19965 1.90905 4.46194 1.14742 5.86421 0.8306C7.26648 0.513776 8.73359 0.658727 10.0468 1.24384" stroke="white" stroke-opacity="0.4" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M14.0002 2.00385L7.3335 8.67718L5.3335 6.67718" stroke="white" stroke-opacity="0.4" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    Lifetime Access
+                </div>
+
             </div>
 
             <div class="visual-column">
@@ -241,7 +259,7 @@
     </section>
 
     <!-- About -->
-    <section class="about-section">
+    <section class="about-section" id="about">
         <div class="about-bg-blur"></div>
         
         <div class="about-container">
@@ -312,7 +330,10 @@
     <footer class="footer animate-on-scroll" style="animation: fadeInUp 1s ease;">
         <div class="footer-content">
             <div class="footer-section">
-                <h3>Genyxo</h3>
+                <span class="footer-logo">
+                    <img src="./images/logo.svg" class="logo-icon" alt="Logo">
+                    <h3 class="footer-logo-title">Genyxo</h3>
+                </span>
                 <p data-i18n="footer.desc_1">Manual access to the latest AI models in one place.</p>
                 <p data-i18n="footer.desc_2">Fast, transparent, no overpayments.</p>
                 
