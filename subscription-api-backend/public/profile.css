@@ -1,5 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
+:root {
+    --primary-color: #000000;
+    --dark-color: #0a0a0a;
+    --darker-color: #050505;
+    --glass-light: rgba(255, 255, 255, 0.132);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-light: #ffffff;
+    --text-gray: #cccccc;
+    --text-dark: #000000;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 html,body { height:100%; margin:0; }
 
@@ -10,33 +21,9 @@ html,body { height:100%; margin:0; }
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-h1, h2, h3, .nav-logo {
-    letter-spacing: -0.02em;
-}
-
 ::selection {
     background: rgba(16, 230, 204, 0.3);
     color: white;
-}
-
-button:active {
-    transform: scale(0.96);
-}
-
-:root {
-    --primary-color: #000000;
-    --primary-light: #333333;
-    --secondary-color: #1a1a1a;
-    --accent-color: #2d2d2d;
-    --dark-color: #0a0a0a;
-    --darker-color: #050505;
-    --light-color: #f8fafc;
-    --glass-light: rgba(255, 255, 255, 0.132);
-    --glass-dark: rgba(0, 0, 0, 0.3);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --text-light: #ffffff;
-    --text-gray: #cccccc;
-    --text-dark: #000000;
 }
 
 body {
@@ -49,6 +36,14 @@ body {
     -webkit-font-smoothing:antialiased;
     -moz-osx-font-smoothing:grayscale;
     font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+h1, h2, h3, .nav-logo {
+    letter-spacing: -0.02em;
+}
+
+button:active {
+    transform: scale(0.96);
 }
 
 .left-side {

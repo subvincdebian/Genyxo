@@ -1,5 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Arimo:ital,wght@0,400..700;1,400..700&family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
+:root {
+    --primary-color: #000000;
+    --primary-light: #333333;
+    --secondary-color: #1a1a1a;
+    --dark-color: #0a0a0a;
+    --darker-color: #050505;
+    --glass-light: rgba(255, 255, 255, 0.132);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-light: #ffffff;
+    --text-gray: #cccccc;
+    --text-dark: #000000;
+    --hero-text: #ffffff;
+    --gx-bg: #0a0a0a;
+    --gx-primary: #10b981;
+    --gx-text: #ffffff;
+    --gx-gray: #9ca3af;
+    --gx-border: rgba(255, 255, 255, 0.1);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -8,38 +27,9 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-h1, h2, h3, .nav-logo {
-    letter-spacing: -0.02em;
-}
-
 ::selection {
     background: rgba(16, 230, 204, 0.3);
     color: white;
-}
-
-:root {
-    --primary-color: #000000;
-    --primary-light: #333333;
-    --secondary-color: #1a1a1a;
-    --accent-color: #2d2d2d;
-    --dark-color: #0a0a0a;
-    --darker-color: #050505;
-    --light-color: #f8fafc;
-    --glass-light: rgba(255, 255, 255, 0.132);
-    --glass-dark: rgba(0, 0, 0, 0.3);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --text-light: #ffffff;
-    --text-gray: #cccccc;
-    --text-dark: #000000;
-    --hero-bg: #0a0a0a;
-    --hero-accent: #10b981;
-    --hero-text: #ffffff;
-    --hero-text-muted: #9ca3af;
-    --gx-bg: #0a0a0a;
-    --gx-primary: #10b981;
-    --gx-text: #ffffff;
-    --gx-gray: #9ca3af;
-    --gx-border: rgba(255, 255, 255, 0.1);
 }
 
 body {
@@ -62,6 +52,10 @@ body::before {
     pointer-events: none;
     z-index: -1;
     opacity: 0.4;
+}
+
+h1, h2, h3, .nav-logo {
+    letter-spacing: -0.02em;
 }
 
 .glass {
@@ -995,15 +989,6 @@ body::before {
 
     .nav-links {
         gap: 1rem;
-    }
-
-    .hero-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-
-    .hero-visual {
-        order: -1;
     }
 
     .footer-content {
@@ -1947,13 +1932,13 @@ html.auth-active .login-btn i {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 24px !important; /* Більш закруглені кути виглядають сучасніше */
-    padding: 0 !important; /* Обнуляємо внутрішні відступи, щоб картинка лягла ідеально */
+    border-radius: 24px !important;
+    padding: 0 !important;
     overflow: hidden;
     transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     box-shadow: 
-        0 10px 30px rgba(0, 0, 0, 0.5), /* Основна тінь */
-        inset 0 0 20px rgba(255, 255, 255, 0.02); /* Внутрішня глибина */
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(255, 255, 255, 0.02);
     position: relative;
 }
 
@@ -1974,10 +1959,9 @@ html.auth-active .login-btn i {
     border-color: rgba(16, 230, 204, 0.4) !important;
     box-shadow: 
         0 20px 40px rgba(0, 0, 0, 0.7), 
-        0 0 25px rgba(16, 230, 204, 0.15); /* Неонове підсвічування при ховері */
+        0 0 25px rgba(16, 230, 204, 0.15);
 }
 
-/* Сцена для картинки */
 .product-image {
     width: 100%;
     height: 240px;
@@ -1989,12 +1973,10 @@ html.auth-active .login-btn i {
     position: relative;
 }
 
-/* Текстова частина під картинкою */
 .product-info {
-    padding: 25px; /* Повертаємо відступи для тексту */
+    padding: 25px;
 }
 
-/* Кнопка "Купити", яка гармоніює з глибиною */
 .buy-btn {
     background: linear-gradient(90deg, #10e6cc 0%, #0db8a3 100%);
     border: none;
@@ -2011,7 +1993,6 @@ html.auth-active .login-btn i {
     filter: brightness(1.1);
 }
 
-/* Анімація левітації для всіх SVG */
 .svg-illustration {
     width: 85%;
     height: 85%;
@@ -2024,7 +2005,6 @@ html.auth-active .login-btn i {
     50% { transform: translateY(-15px) rotate(1deg); }
 }
 
-/* Додаткові мікро-анімації для деталей всередині SVG */
 .animate-pulse-slow { animation: pulseSvg 3s infinite; }
 .animate-spin-slow { animation: spinSvg 8s linear infinite; }
 
@@ -2049,7 +2029,6 @@ html.auth-active .login-btn i {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Фоновий градієнт (Glow) */
 .hero-glow-bg {
     position: absolute;
     top: 50%;
@@ -2071,7 +2050,6 @@ html.auth-active .login-btn i {
     z-index: 2;
 }
 
-/* --- HEADER --- */
 .genyxo-header {
     border-bottom: 1px solid var(--gx-border);
     padding: 16px 0;
@@ -2106,7 +2084,6 @@ html.auth-active .login-btn i {
     letter-spacing: -0.02em;
 }
 
-/* --- MAIN CONTENT --- */
 .hero-content {
     flex: 1;
     display: flex;
@@ -2117,7 +2094,6 @@ html.auth-active .login-btn i {
     gap: 40px;
 }
 
-/* Ліва колонка (Текст) */
 .text-column {
     flex: 1;
     max-width: 600px;
@@ -2390,8 +2366,8 @@ html.auth-active .login-btn i {
     position: relative;
     width: 100%;
     padding: 80px 20px;
-    background-color: #0a0a0a; /* Темний фон сторінки */
-    overflow: hidden; /* Щоб фонова пляма не вилазила */
+    background-color: #0a0a0a;
+    overflow: hidden;
     color: white;
 }
 
@@ -2417,7 +2393,6 @@ html.auth-active .login-btn i {
     z-index: 2; /* Щоб контент був над фоном */
 }
 
-/* Стилі заголовка */
 .about-header {
     text-align: center;
     margin-bottom: 3rem;
@@ -2432,7 +2407,6 @@ html.auth-active .login-btn i {
     font-weight: 600;
 }
 
-/* Градієнтна лінія під заголовком */
 .title-underline {
     position: absolute;
     bottom: -8px;
@@ -2443,7 +2417,6 @@ html.auth-active .login-btn i {
     border-radius: 99px;
 }
 
-/* Стилі тексту */
 .about-text-content {
     max-width: 800px;
     margin: 0 auto 4rem auto;
@@ -2475,7 +2448,7 @@ html.auth-active .login-btn i {
 .feature-card {
     background-color: rgba(26, 26, 26, 0.8);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px); /* Для Safari */
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
     padding: 2rem;
@@ -2483,14 +2456,12 @@ html.auth-active .login-btn i {
     cursor: default;
 }
 
-/* Ефекти при наведенні (HOVER) */
 .feature-card:hover {
     border-color: rgba(16, 185, 129, 0.3);
     transform: scale(1.05);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* Іконка в кружечку */
 .card-icon-wrapper {
     display: flex;
     justify-content: center;
@@ -2509,7 +2480,6 @@ html.auth-active .login-btn i {
     transition: background-color 0.3s ease;
 }
 
-/* При наведенні на картку, іконка стає яскравішою */
 .feature-card:hover .card-icon-bg {
     background-color: rgba(16, 185, 129, 0.2);
 }
@@ -2530,8 +2500,12 @@ html.auth-active .login-btn i {
 }
 
 /* === АДАПТИВНІСТЬ (MOBILE RESPONSIVE) === */
-/* Якщо екран менше 1024px (планшет), робимо 2 колонки або 1 */
 @media (max-width: 1024px) {
+    .hero-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
     .features-grid {
         grid-template-columns: repeat(2, 1fr);
     }
