@@ -700,23 +700,31 @@ function updateUserUI(user) {
 }
 
 async function updateNotificationsBadge() {
-    if (!authToken) return;
+    const token = localStorage.getItem('authToken'); 
+    if (!token) return;
+
+    const badge = document.getElementById('notificationBadge');
+    if (!badge) return;
+
     try {
         const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
+
         if (response.ok) {
             const data = await response.json();
-            if (notificationBadge) {
-                if (data.count > 0) {
-                    notificationBadge.style.display = 'inline-block';
-                    notificationBadge.textContent = data.count > 99 ? '99+' : data.count;
-                } else {
-                    notificationBadge.style.display = 'none';
-                }
+            const count = data.count;
+
+            if (count > 0) {
+                badge.style.display = 'flex';
+                badge.innerText = count > 99 ? '99+' : count;
+            } else {
+                badge.style.display = 'none';
             }
         }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.warn("Could not update badge:", e);
+    }
 }
 
 async function handleLoginSubmit(e) {
@@ -1248,5 +1256,5 @@ window.onclick = function(event) {
         }
     }
 }
-
+setInterval(updateNotificationsBadge, 60000);
 document.addEventListener('DOMContentLoaded', init);

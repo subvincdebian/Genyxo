@@ -403,51 +403,6 @@
         });
 
         overlay.addEventListener("click", closeMenu);
-        
-        /*
-
-        document.getElementById('closeProfilePanel').addEventListener('click', () => {
-            const panel = document.getElementById('profilePanel');
-            if (panel) {
-                panel.classList.remove('show');
-            }
-            document.querySelector('.profile-container').classList.remove('active');
-        });
-        */
-
-        if (!token) {
-            window.location.href = 'index.html';
-            showToast("Please log in first", "error"); 
-        }
-
-        async function updateNotificationsBadge() {
-            const notificationBadge = document.getElementById('notificationBadge');
-            if (!token) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const count = data.count;
-
-                    if (notificationBadge) {
-                        if (count > 0) {
-                            notificationBadge.style.display = 'inline-block';
-                            notificationBadge.textContent = count > 99 ? '99+' : count;
-                        } else {
-                            notificationBadge.style.display = 'none';
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("Error checking notifications:", e);
-            }
-        }
-
-        updateNotificationsBadge();
 
         document.getElementById("avatarInput").addEventListener("change", function(event) {
             const file = event.target.files[0];
@@ -649,9 +604,7 @@
             btnSave.disabled = true;
             btnSave.textContent = 'Saving...';
 
-            // simulate async request (replace with your real API call)
             try {
-            // Example: simulate delay
             await new Promise(r => setTimeout(r, 900));
 
             // TODO: here you would call your backend API to change password.
@@ -659,14 +612,12 @@
             // const res = await fetch('/api/change-password', { method: 'POST', body: JSON.stringify({ current: inputCurrent.value, new: inputNew.value }) });
             // handle response/res.errors etc.
 
-            // On success:
             errorsBox.innerHTML = '';
             const ok = document.createElement('div');
             ok.className = 'error-item';
             ok.style.background = 'rgba(55, 179, 122, 0.06)';
             ok.style.borderLeftColor = 'rgba(55,179,122,0.9)';
             ok.style.color = '#bff3d0';
-            // Get success text from i18n if possible, otherwise fallback
             ok.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.success) 
                 ? window.i18n.translations.profile.security.modal.success 
                 : 'Password changed successfully.';
@@ -740,25 +691,6 @@
             }, 420);
         });
         }
-
-        /* const profileToggleBtn = document.getElementById('loginBtn');
-        const profileDropdown = document.getElementById('profilePanel'); 
-
-        if (profileToggleBtn) {
-            profileToggleBtn.addEventListener('click', () => {
-                if (token) {
-                    profileDropdown.classList.toggle('show');
-                }
-            });
-
-            document.addEventListener('click', (event) => {
-                const isClickInside = profileToggleBtn.contains(event.target) || (profileDropdown && profileDropdown.contains(event.target));
-                
-                if (!isClickInside && profileDropdown && profileDropdown.classList.contains('show')) {
-                    profileDropdown.classList.remove('show');
-                }
-            });
-        } */
 
     </script>
 

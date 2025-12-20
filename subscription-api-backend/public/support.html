@@ -245,34 +245,6 @@
             return fallback;
         }
 
-        async function updateNotificationsBadge() {
-            if (!token) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const count = data.count;
-                    const badge = document.getElementById('notificationBadge');
-
-                    if (badge) {
-                        if (count > 0) {
-                            badge.style.display = 'inline-block';
-                            badge.textContent = count > 99 ? '99+' : count;
-                        } else {
-                            badge.style.display = 'none';
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("Error checking notifications:", e);
-            }
-        }
-        updateNotificationsBadge();
-
         async function loadTickets() {
             
             if (!token) return;

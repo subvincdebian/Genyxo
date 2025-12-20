@@ -6,6 +6,16 @@ const SUPPORTED_LANGUAGES = {
     'fr': 'Français'
 };
 
+const FLAGS = {
+    'en': '🇺🇸',
+    'uk': '🇺🇦',
+    'es': '🇪🇸',
+    'de': '🇩🇪',
+    'fr': '🇫🇷'
+};
+
+const langMenuBtn = document.querySelector('[data-i18n="menu.language"]')?.parentElement;
+
 class LanguageManager {
     constructor() {
         this.currentLang = localStorage.getItem('appLang') || this.detectBrowserLang() || 'en';
@@ -94,15 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.i18n.init();
 });
 
-const FLAGS = {
-    'en': '🇺🇸',
-    'uk': '🇺🇦',
-    'es': '🇪🇸',
-    'de': '🇩🇪',
-    'fr': '🇫🇷'
-};
-
-const langMenuBtn = document.querySelector('[data-i18n="menu.language"]')?.parentElement;
 
 if (langMenuBtn) {
     langMenuBtn.addEventListener('click', (e) => {

@@ -224,70 +224,6 @@
     <script>
 
         const token = localStorage.getItem('authToken');
-
-       /* if (!token) {
-            window.location.href = 'index.html';
-            showToast("Please log in first", "error"); 
-        }
-
-        const SUPPORTED_LANGUAGES = {
-            'en': 'English',
-            'uk': 'Українська',
-            'es': 'Español',
-            'de': 'Deutsch',
-            'fr': 'Français'
-        };
-
-        const FLAGS = {
-            'en': '🇺🇸', 'uk': '🇺🇦', 'es': '🇪🇸', 'de': '🇩🇪', 'fr': '🇫🇷'
-        };
-
-        async function handleLangSelect(lang) {
-            if (window.i18n) {
-                await window.i18n.changeLanguage(lang);
-            } else {
-                localStorage.setItem('appLang', lang);
-                location.reload();
-            }
-            document.getElementById('langModal').style.display = 'none';
-            
-            const langDisplay = document.getElementById('currentLangDisplay');
-            if(langDisplay) langDisplay.textContent = `${SUPPORTED_LANGUAGES[lang]} >`;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const langMenuBtn = document.getElementById('langMenuBtn');
-            if (langMenuBtn) {
-                langMenuBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    openLangModal();
-                });
-            }
-
-            const closeLangBtn = document.getElementById('closeLangModal');
-            if (closeLangBtn) {
-                closeLangBtn.addEventListener('click', () => {
-                    document.getElementById('langModal').style.display = 'none';
-                });
-            }
-            
-            window.addEventListener('click', (e) => {
-                const modal = document.getElementById('langModal');
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-            
-            loadProfileData();
-        });
-
-        document.addEventListener('click', (event) => {
-            const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
-            if (!isClickInside && profileDropdown.classList.contains('show')) {
-                profileDropdown.classList.remove('show');
-            }
-        });
-        */
         
         function safeTranslate(path, defaultText) {
             if (!window.i18n || !window.i18n.translations) return defaultText;
@@ -299,25 +235,6 @@
             }
             return res || defaultText;
         }
-
-        async function updateNotificationsBadge() {
-            if (!token) return;
-            try {
-                const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    const count = data.count;
-                    const badge = document.getElementById('notificationBadge');
-                    if (badge) {
-                        badge.style.display = count > 0 ? 'inline-block' : 'none';
-                        badge.textContent = count > 99 ? '99+' : count;
-                    }
-                }
-            } catch (e) { console.error(e); }
-        }
-        updateNotificationsBadge();
 
         async function loadNotifications() {
             const localToken = localStorage.getItem('authToken');
