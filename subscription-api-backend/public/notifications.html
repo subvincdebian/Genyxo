@@ -229,10 +229,10 @@
         const API_BASE_URL = 'https://genyxo.com';
         const token = localStorage.getItem('authToken');
 
-       /* if (!token) {
+       if (!token) {
             window.location.href = 'index.html';
             showToast("Please log in first", "error"); 
-        } */
+        }
 
         const SUPPORTED_LANGUAGES = {
             'en': 'English',
@@ -408,23 +408,6 @@
             
         }
 
-        async function updateNotificationsBadge() {
-            if (!token) return;
-            try {
-                const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    const count = data.count;
-                    const badge = document.getElementById('notificationBadge');
-                    if (badge) {
-                        badge.style.display = count > 0 ? 'inline-block' : 'none';
-                        badge.textContent = count > 99 ? '99+' : count;
-                    }
-                }
-            } catch (e) { console.error(e); }
-        }
         updateNotificationsBadge();
 
         async function loadNotifications() {
