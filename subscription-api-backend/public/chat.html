@@ -1076,11 +1076,13 @@
                 const profileRes = await fetch(`${API_BASE_URL}/profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+
                 if (profileRes.ok) {
                     const user = await profileRes.json();
                     updateBalanceUI(user.credits || 0);
 
                     if (navAvatarImg) navAvatarImg.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+                    
                     const dropdownAv = document.getElementById('dropdownAvatars');
                     if (dropdownAv) dropdownAv.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
                     
@@ -1094,7 +1096,8 @@
                 });
                 
                 const contentType = historyRes.headers.get("content-type");
-                if (historyRes.ok && contentType && contentType.indexOf("application/json") !== -1) {
+                
+                if (historyRes.ok && contentType && contentType.includes("application/json")) {
                     const history = await historyRes.json();
                     
                     if (Array.isArray(history) && history.length > 0) {
@@ -1106,11 +1109,12 @@
                         toggleChatView(false);
                     }
                 } else {
-                    console.warn("Server returned non-JSON response for chat history:", await historyRes.text());
-                    toggleChatView(false);
+                    console.warn("Chat history is unavailable or returned an error. Loading empty chat.");
+                    toggleChatView(false); 
                 }
+
             } catch (e) {
-                console.error("Init Error:", e);
+                console.error("Critical initialization error:", e);
                 toggleChatView(false);
             }
         }

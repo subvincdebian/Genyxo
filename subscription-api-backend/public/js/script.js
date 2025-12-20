@@ -154,7 +154,18 @@ function updateBalanceUI(amount) {
 }
 
 function updateUIState(isLoggedIn, userData = null) {
+    const navUsername = document.getElementById('navUsername');
+    const navIcon = document.getElementById('navIcon');
+    const navAvatar = document.getElementById('navAvatar');
+    const menuName = document.getElementById('menuName');
+    const menuEmail = document.getElementById('menuEmail');
+    const menuCredits = document.getElementById('menuCredits');
+    const loginBtn = document.getElementById('loginBtn');
+    const profilePanel = document.getElementById('profilePanel');
+    const dropdownAvatars = document.querySelectorAll('.dropdown-avatar');
+
     if (isLoggedIn && userData) {
+        // Якщо користувач увійшов:
         if (navUsername) navUsername.textContent = userData.name || userData.email || 'User';
         if (navIcon) navIcon.style.display = 'none';
         
@@ -182,7 +193,7 @@ function updateUIState(isLoggedIn, userData = null) {
         }
 
     } else {
-        // Стан "Гість"
+        // Якщо гість:
         if (navUsername) navUsername.textContent = 'Register / Login';
         if (navIcon) navIcon.style.display = 'inline-block';
         if (navAvatar) navAvatar.style.display = 'none';
@@ -856,10 +867,15 @@ function handleLogout() {
 }
 
 function updateLoginButton(name, token) {
+    const navUsername = document.getElementById('navUsername');
+    const navIcon = document.getElementById('navIcon');
+    const navAvatar = document.getElementById('navAvatar');
+    const profilePanel = document.getElementById('profilePanel');
+
     if (token) {
         if (navUsername) navUsername.textContent = name;
         if (navIcon) navIcon.style.display = 'none'; 
-        if (navAvatar) navAvatar.style.display = 'block';
+        if (navAvatar) navAvatar.style.display = 'block'; 
     } else {
         if (navUsername) navUsername.textContent = 'Register / Login';
         if (navIcon) navIcon.style.display = 'inline-block';
