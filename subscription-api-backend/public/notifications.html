@@ -66,75 +66,6 @@
             --accent: #10e6cc;
         }
 
-        .right-side {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .nav-link {
-            color: var(--text-light);
-            text-decoration: none;
-            transition: color 0.3s ease;
-            position: relative;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            color: var(--text-light);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--text-light);
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover::after, .nav-link.active::after {
-            width: 100%;
-        }
-
-        .profile-toggle-btn {
-            background: var(--text-light);
-            border: none;
-            border-radius: 25px;
-            padding: 0.75rem 1.5rem;
-            color: var(--text-dark);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-        }
-
-        .profile-toggle-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
-            background: var(--text-gray);
-        }
-
-        .nav-avatar-small {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            margin-right: 8px;
-            border: 1px solid var(--text-light);
-        }
-
         .profile-dropdown {
             display: none;
             position: absolute;
@@ -156,137 +87,6 @@
 
         .profile-dropdown.show {
             display: block;
-        }
-
-        .dropdown-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .user-details {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .dropdown-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .user-text h3 {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-light);
-            margin-bottom: 2px;
-        }
-
-        .user-text p {
-            font-size: 0.8rem;
-            color: var(--text-gray);
-            max-width: 140px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .plan-badge {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-gray);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .credits-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .credits-top {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .credits-amount {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .icon-flask {
-            font-size: 1.5rem;
-        }
-
-        .amount-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-light);
-        }
-
-        .info-icon {
-            color: var(--text-gray);
-            font-size: 0.9rem;
-            cursor: pointer;
-            opacity: 0.6;
-        }
-
-        .credits-meta {
-            font-size: 0.85rem;
-            color: var(--text-gray);
-            margin-bottom: 15px;
-            opacity: 0.8;
-        }
-
-        .upgrade-full-btn {
-            width: 100%;
-            background: var(--text-light);
-            color: black;
-            border: none;
-            padding: 10px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .upgrade-full-btn:hover {
-            background: #e0e0e0;
-            transform: scale(1.02);
-        }
-
-        .dropdown-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 12px;
-            border-radius: 10px;
-            color: var(--text-light);
-            text-decoration: none;
-            transition: background 0.2s;
-            font-size: 0.95rem;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
         }
 
         .menu-item:hover {
@@ -525,10 +325,10 @@
         const API_BASE_URL = 'https://genyxo.com';
         const token = localStorage.getItem('authToken');
 
-       if (!token) {
+       /* if (!token) {
             window.location.href = 'index.html';
             showToast("Please log in first", "error"); 
-        }
+        } */
 
         const SUPPORTED_LANGUAGES = {
             'en': 'English',

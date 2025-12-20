@@ -147,7 +147,7 @@ button:active {
     display: flex;
     align-items: center;
     gap: 2rem;
-    }
+}
 
 .nav-link {
     color: var(--text-light);
@@ -289,17 +289,6 @@ button:active {
     display: flex;
     flex-direction: column;
     gap: 8px;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    border-radius: 8px;
-    color: #c7c7c7;
-    text-decoration: none;
-    transition: 0.2s;
 }
 
 .menu-item svg {
@@ -483,17 +472,6 @@ button:active {
     font-size: 14px;
     color: #8a8a8a;
     text-align: center;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 10px;
-    color: #c7c7c7;
-    text-decoration: none;
-    transition: 0.25s;
 }
 
 .menu-item svg,
@@ -751,15 +729,6 @@ button:active {
 
 .shake {
     animation: shake 0.35s ease;
-}
-
-@keyframes shake {
-    0% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-6px); }
-    80% { transform: translateX(6px); }
-    100% { transform: translateX(0); }
 }
 
 .password-field {
@@ -1131,11 +1100,6 @@ button:active {
 
 .close-profile-panel {
     display: none;
-}
-
-@keyframes dropdownFade {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
