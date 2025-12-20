@@ -222,10 +222,8 @@
     <script src="js/script.js"></script>
 
     <script>
-        const API_BASE_URL = 'https://genyxo.com';
-        const token = localStorage.getItem('authToken');
 
-       if (!token) {
+       /* if (!token) {
             window.location.href = 'index.html';
             showToast("Please log in first", "error"); 
         }
@@ -280,6 +278,14 @@
             
             loadProfileData();
         });
+
+        document.addEventListener('click', (event) => {
+            const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
+            if (!isClickInside && profileDropdown.classList.contains('show')) {
+                profileDropdown.classList.remove('show');
+            }
+        });
+        */
         
         function safeTranslate(path, defaultText) {
             if (!window.i18n || !window.i18n.translations) return defaultText;
@@ -291,16 +297,6 @@
             }
             return res || defaultText;
         }
-
-        const profileToggleBtn = document.getElementById('loginBtn');
-        const profileDropdown = document.getElementById('profilePanel');
-
-        document.addEventListener('click', (event) => {
-            const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
-            if (!isClickInside && profileDropdown.classList.contains('show')) {
-                profileDropdown.classList.remove('show');
-            }
-        });
 
         async function updateNotificationsBadge() {
             if (!token) return;
@@ -322,9 +318,12 @@
         updateNotificationsBadge();
 
         async function loadNotifications() {
+            const localToken = localStorage.getItem('authToken');
+            if (!localToken) return;
+
             try {
                 const res = await fetch(`${API_BASE_URL}/notifications`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${localToken}` }
                 });
                 const list = await res.json();
                 const container = document.getElementById('notifList');
@@ -340,8 +339,7 @@
                     let icon = 'fa-bell';
                     if(n.type === 'SYSTEM' || n.title.includes('Payment')) icon = 'fa-wallet';
                     if(n.type === 'SUPPORT') icon = 'fa-headset';
-                    if(n.title.includes('Welcome')) icon = 'fa-party-horn'; // fa-party-horn може не бути в безкоштовній версії, замініть на fa-star
-
+                    
                     return `
                     <div class="notif-card ${n.isRead ? '' : 'unread'}" onclick="markRead(${n.id}, this)">
                         <div class="notif-icon"><i class="fas ${icon}"></i></div>
@@ -360,32 +358,63 @@
         }
 
         async function markRead(id, element) {
+            const localToken = localStorage.getItem('authToken');
             element.classList.remove('unread');
             await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
                 method: 'PATCH',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${localToken}` }
             });
+            if(typeof updateNotificationsBadge === 'function') {
+                updateNotificationsBadge();
+            }
         }
         
         async function markAllRead() {
+            const localToken = localStorage.getItem('authToken');
             const confirmText = safeTranslate('notifications.confirm_read_all', 'Mark all as read?');
             if(!confirm(confirmText)) return;
             
             try {
-
                 await fetch(`${API_BASE_URL}/notifications/read-all`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${localToken}` }
                 });
 
                 loadNotifications();
-
-                showToast(safeTranslate('toasts.marked_all_success', 'All notifications marked as read.'), 'success');
+                showToast('All marked as read', 'success');
+                
+                if(typeof updateNotificationsBadge === 'function') {
+                    updateNotificationsBadge();
+                }
                 
             } catch (e) {
-                showToast(safeTranslate('toasts.mark_all_fail', 'Failed to mark notifications.'), 'error');
+                showToast('Failed to mark notifications.', 'error');
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const t = localStorage.getItem('authToken');
+            if (!t) {
+                window.location.href = 'index.html';
+            } else {
+                loadNotifications();
+            }
+            
+            const langMenuBtn = document.getElementById('langMenuBtn');
+            if (langMenuBtn) {
+                langMenuBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const modal = document.getElementById('langModal');
+                    if(modal) modal.style.display = 'flex';
+                });
+            }
+            const closeLangBtn = document.getElementById('closeLangModal');
+            if (closeLangBtn) {
+                closeLangBtn.addEventListener('click', () => {
+                    document.getElementById('langModal').style.display = 'none';
+                });
+            }
+        });
     </script>
 </body>
 </html>

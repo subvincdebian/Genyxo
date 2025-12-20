@@ -242,16 +242,10 @@
             return fallback;
         }
 
-        const API_BASE_URL = 'https://genyxo.com';
-        const token = localStorage.getItem('authToken');
-
-        if (!token) {
+        /* if (!token) {
             window.location.href = 'index.html';
             showToast("Please log in first", "error"); 
         }
-
-        const profileToggleBtn = document.getElementById('loginBtn');
-        const profileDropdown = document.getElementById('profilePanel');
 
         document.addEventListener('click', (event) => {
             const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
@@ -259,7 +253,7 @@
             if (!isClickInside && profileDropdown.classList.contains('show')) {
                 profileDropdown.classList.remove('show');
             }
-        });
+        }); */
 
         async function updateNotificationsBadge() {
             if (!token) return;
@@ -291,9 +285,13 @@
         updateNotificationsBadge();
 
         async function loadTickets() {
+            const localToken = localStorage.getItem('authToken');
+            
+            if (!localToken) return;
+
             try {
                 const res = await fetch(`${API_BASE_URL}/support/my-tickets`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${localToken}` }
                 });
                 const tickets = await res.json();
                 const container = document.getElementById('ticketList');
@@ -361,6 +359,7 @@
 
         document.getElementById('createTicketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const localToken = localStorage.getItem('authToken');
             const subject = document.getElementById('ticketSubject').value;
             const message = document.getElementById('ticketMessage').value;
             const priority = document.getElementById('ticketPriority').value;
@@ -370,32 +369,34 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${localToken}`
                     },
                     body: JSON.stringify({ subject, message, priority })
                 });
 
                 if (res.ok) {
                     if (typeof showToast === 'function') {
-                        showToast(i18n.t('support.toast_success', 'Ticket created successfully!'), 'success');
+                        showToast('Ticket created successfully!', 'success');
                     } else {
                         alert('Ticket created!');
                     }
                     document.getElementById('createTicketForm').reset();
                     loadTickets();
                 } else {
-                    if (typeof showToast === 'function') {
-                        showToast(i18n.t('support.toast_error', 'Error creating ticket.'), 'error');
-                    } else {
-                        alert('Error creating ticket');
-                    }
+                    showToast('Error creating ticket.', 'error');
                 }
             } catch (e) {
-                if (typeof showToast === 'function') {
-                    showToast(i18n.t('support.toast_server_error', 'Server error. Please try again later.'), 'error');
-                } else {
-                    alert('Server error');
-                }
+                showToast('Server error. Please try again later.', 'error');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const t = localStorage.getItem('authToken');
+            if (!t) {
+                window.location.href = 'index.html';
+            } else {
+                loadTickets();
+                updateNotificationsBadge();
             }
         });
 
