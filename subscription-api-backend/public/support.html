@@ -9,6 +9,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="profile.css"> 
     <style>
+
+        :root {
+            --text-light: #ffffff;
+            --text-gray: #aaaaaa;
+            --text-dark: #121212;
+            --accent: #10e6cc;
+        }
+
         .support-container { max-width: 900px; margin: 100px auto; padding: 20px; }
         .ticket-form { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 16px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.1); }
         .ticket-list { display: flex; flex-direction: column; gap: 15px; }
@@ -36,11 +44,20 @@
         }
         .reply-label { color: #10e6cc; font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 5px; }
 
-        :root {
-            --text-light: #ffffff;
-            --text-gray: #aaaaaa;
-            --text-dark: #121212;
-            --accent: #10e6cc;
+        .support-container .title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .support-container .title i {
+            display: inline-block !important;
+            opacity: 1 !important;
+            color: var(--text-light) !important;
+            font-size: 1.05em;
         }
 
         .profile-dropdown {
@@ -66,87 +83,11 @@
             display: block;
         }
 
-        .menu-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .menu-item i {
-            width: 24px;
-            margin-right: 10px;
-            color: var(--text-gray);
-            text-align: center;
-        }
-
-        .lang-val {
-            margin-left: auto;
-            font-size: 0.8rem;
-            color: var(--text-gray);
-        }
-
-        .dropdown-footer {
-            padding-top: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.2);
-        }
-
-        .logout-item {
-            color: #ff6b6b;
-        }
-
-        .logout-item:hover {
-            background: rgba(255, 107, 107, 0.1);
-        }
-
-        .logout-item i {
-            color: #ff6b6b;
-        }
-
-        @keyframes dropdownFade {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .nav-badge {
-            background-color: #ff4757;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 10px;
-            min-width: 20px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(255, 71, 87, 0.4);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
-        }
-
         @media (max-width: 768px) {
            .login-btn, .profile-toggle-btn {
                position: relative !important;
                left: 150px !important;
             }
-        }
-
-        .support-container .title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-left: 10px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .support-container .title i {
-            display: inline-block !important;
-            opacity: 1 !important;
-            color: var(--text-light) !important;
-            font-size: 1.05em;
-        }
-
-        @media (max-width: 768px) {
             .support-container .title { margin-left: 16px; }
         }
 
