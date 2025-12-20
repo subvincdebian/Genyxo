@@ -1157,9 +1157,18 @@ function stopPolling() {
 }
 
 function toggleProfilePanel() {
+    const profilePanel = document.getElementById('profilePanel');
     if (profilePanel) {
         profilePanel.classList.toggle('show');
     }
+}
+
+const avatarBtn = document.getElementById('profileToggleBtn');
+if (avatarBtn) {
+    avatarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleProfilePanel();
+    });
 }
 
 function setupNavigation() {
