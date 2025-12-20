@@ -236,13 +236,6 @@ async function loadProfileData() {
             if (elements.loginBtn) {
                 elements.loginBtn.classList.remove('login-btn');
                 elements.loginBtn.classList.add('profile-toggle-btn');
-                
-                const profileDropdown = document.getElementById('profilePanel');
-                elements.loginBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (profileDropdown) profileDropdown.classList.toggle('show');
-                    else window.location.href = 'index.html';
-                };
             }
 
             if (elements.menuName) elements.menuName.textContent = user.name || 'User';

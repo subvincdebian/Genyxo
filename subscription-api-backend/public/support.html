@@ -230,6 +230,9 @@
     <script src="js/script.js"></script>
     
     <script>
+
+        const token = localStorage.getItem('authToken');
+
         function getTrans(key, fallback) {
             if (window.i18n && window.i18n.translations) {
                 const keys = key.split('.');
@@ -241,19 +244,6 @@
             }
             return fallback;
         }
-
-        /* if (!token) {
-            window.location.href = 'index.html';
-            showToast("Please log in first", "error"); 
-        }
-
-        document.addEventListener('click', (event) => {
-            const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
-            
-            if (!isClickInside && profileDropdown.classList.contains('show')) {
-                profileDropdown.classList.remove('show');
-            }
-        }); */
 
         async function updateNotificationsBadge() {
             if (!token) return;
@@ -281,17 +271,15 @@
                 console.error("Error checking notifications:", e);
             }
         }
-
         updateNotificationsBadge();
 
         async function loadTickets() {
-            const localToken = localStorage.getItem('authToken');
             
-            if (!localToken) return;
+            if (!token) return;
 
             try {
                 const res = await fetch(`${API_BASE_URL}/support/my-tickets`, {
-                    headers: { 'Authorization': `Bearer ${localToken}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const tickets = await res.json();
                 const container = document.getElementById('ticketList');
@@ -359,7 +347,7 @@
 
         document.getElementById('createTicketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const localToken = localStorage.getItem('authToken');
+            const token = localStorage.getItem('authToken');
             const subject = document.getElementById('ticketSubject').value;
             const message = document.getElementById('ticketMessage').value;
             const priority = document.getElementById('ticketPriority').value;
@@ -369,7 +357,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localToken}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ subject, message, priority })
                 });
