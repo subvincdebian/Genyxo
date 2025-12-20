@@ -340,27 +340,6 @@
         let ticketsPage = 1;
         const ticketsLimit = 10;
 
-        const profileToggleBtn = document.getElementById('loginBtn');
-        const profileDropdown = document.getElementById('profilePanel');
-        const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
-
-        profileToggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (event) => {
-            const isClickInside = profileToggleBtn.contains(event.target) || profileDropdown.contains(event.target);
-            if (!isClickInside && profileDropdown.classList.contains('show')) {
-                profileDropdown.classList.remove('show');
-            }
-        });
-
-        dropdownLogoutBtn.addEventListener('click', () => {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        });
-
         async function loadAdminProfile() {
             try {
                 const res = await fetch(`${API_BASE_URL}/profile`, {
