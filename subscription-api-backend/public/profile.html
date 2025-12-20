@@ -417,57 +417,6 @@
             showToast("Please log in first", "error"); 
         }
 
-        async function loadProfileData() {
-            if (!token) return;
-
-            try {
-
-                const navUsername = document.getElementById('navUsername');
-                const navIcon = document.getElementById('navIcon');
-                const navAvatar = document.getElementById('navAvatar');
-                const loginBtn = document.getElementById('loginBtn');
-
-                const response = await fetch(`${API_BASE_URL}/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const user = await response.json();
-
-                document.getElementById('profileName').textContent = user.name || 'User';
-
-                if (user.id) {
-                    navUsername.textContent = user.name || 'Profile';
-                    navIcon.style.display = 'none';
-                    navAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                    navAvatar.style.display = 'inline-block';
-                    
-                    loginBtn.classList.remove('login-btn');
-                    loginBtn.classList.add('profile-toggle-btn');
-                    
-                    document.getElementById('menuName').textContent = user.name || 'User';
-                    document.getElementById('menuEmail').textContent = user.email || '';
-                    document.getElementById('menuCredits').textContent = (user.credits || 0).toLocaleString();
-                    document.querySelector('.dropdown-avatar').src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                    
-                    document.getElementById('avatarPreview').style.backgroundImage = `url('${user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}')`;
-                }
-                
-                if (user.avatar) {
-                    document.getElementById('avatarPreview').style.backgroundImage = `url('${user.avatar}')`;
-                }
-                
-                const nameInput = document.querySelector('input[placeholder="John Doe"]');
-                if(nameInput) nameInput.value = user.name || '';
-                
-                const emailInput = document.querySelector('input[placeholder="your@email.com"]');
-                if(emailInput) emailInput.value = user.email || '';
-
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        loadProfileData();
-
         async function updateNotificationsBadge() {
             const notificationBadge = document.getElementById('notificationBadge');
             if (!token) return;

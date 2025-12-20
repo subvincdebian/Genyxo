@@ -10,13 +10,6 @@
     <link rel="stylesheet" href="profile.css"> 
     <style>
 
-        :root {
-            --text-light: #ffffff;
-            --text-gray: #aaaaaa;
-            --text-dark: #121212;
-            --accent: #10e6cc;
-        }
-
         .support-container { max-width: 900px; margin: 100px auto; padding: 20px; }
         .ticket-form { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 16px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.1); }
         .ticket-list { display: flex; flex-direction: column; gap: 15px; }
@@ -267,67 +260,6 @@
                 profileDropdown.classList.remove('show');
             }
         });
-
-        async function loadProfileData() {
-
-            if (!token) return;
-
-            try {
-                const navUsername = document.getElementById('navUsername');
-                const navIcon = document.getElementById('navIcon');
-                const navAvatar = document.getElementById('navAvatar');
-                const loginBtn = document.getElementById('loginBtn');
-                
-                const menuName = document.getElementById('menuName');
-                const menuEmail = document.getElementById('menuEmail');
-                const menuCredits = document.getElementById('menuCredits');
-                const dropdownAvatar = document.querySelector('.dropdown-avatar');
-
-                const response = await fetch(`${API_BASE_URL}/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (!response.ok) throw new Error('Failed to fetch profile');
-                
-                const user = await response.json();
-
-                if (user.id) {
-                    if(navUsername) navUsername.textContent = user.name || 'Profile';
-                    if(navIcon) navIcon.style.display = 'none';
-                    
-                    if(navAvatar) {
-                        navAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                        navAvatar.style.display = 'inline-block';
-                    }
-                    
-                    if(loginBtn) {
-                        loginBtn.classList.remove('login-btn');
-                        loginBtn.classList.add('profile-toggle-btn');
-                    }
-
-                    if(menuName) menuName.textContent = user.name || 'User';
-                    if(menuEmail) menuEmail.textContent = user.email || '';
-                    if(menuCredits) menuCredits.textContent = (user.credits || 0).toLocaleString();
-                    if(dropdownAvatar) dropdownAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                }
-
-                const profileDropdown = document.getElementById('profilePanel');
-                
-                loginBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (token) {
-                        profileDropdown.classList.toggle('show');
-                    } else {
-                         window.location.href = 'index.html';
-                    }
-                };
-
-            } catch (e) {
-                console.error("Error loading profile:", e);
-            }
-        }
-
-        loadProfileData();
 
         async function updateNotificationsBadge() {
             if (!token) return;

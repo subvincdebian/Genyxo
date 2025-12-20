@@ -114,15 +114,19 @@ if (langMenuBtn) {
 function openLangModal() {
     const modal = document.getElementById('langModal');
     const grid = document.getElementById('langGrid');
-    
+            
+    const currentLang = (window.i18n && window.i18n.currentLang) 
+                        ? window.i18n.currentLang 
+                        : (localStorage.getItem('appLang') || 'en');
+
     grid.innerHTML = Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => `
-        <button class="lang-btn ${code === window.i18n.currentLang ? 'active' : ''}" onclick="selectLanguage('${code}')">
+        <button class="lang-btn ${code === currentLang ? 'active' : ''}" onclick="handleLangSelect('${code}')">
             <span class="lang-flag">${FLAGS[code]}</span>
             <span>${name}</span>
-            ${code === window.i18n.currentLang ? '<i class="fas fa-check" style="margin-left:auto;"></i>' : ''}
+            ${code === currentLang ? '<i class="fas fa-check" style="margin-left:auto;"></i>' : ''}
         </button>
     `).join('');
-    
+            
     modal.style.display = 'flex';
 }
 

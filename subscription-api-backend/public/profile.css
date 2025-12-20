@@ -9,6 +9,7 @@
     --text-light: #ffffff;
     --text-gray: #cccccc;
     --text-dark: #000000;
+    --accent: #10e6cc;
 }
 
 *, *::before, *::after { box-sizing: border-box; }

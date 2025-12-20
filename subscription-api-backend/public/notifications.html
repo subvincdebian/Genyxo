@@ -10,11 +10,6 @@
     <link rel="stylesheet" href="profile.css">
     <style>
 
-        :root {
-            --text-light: #ffffff;
-            --text-gray: #aaaaaa;
-        }
-
         .notif-container { max-width: 800px; margin: 100px auto; padding: 20px; }
         
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -223,7 +218,8 @@
         </div>
     </div>
 
-    <script src="i18n.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/script.js"></script>
 
     <script>
         const API_BASE_URL = 'https://genyxo.com';
@@ -245,55 +241,6 @@
         const FLAGS = {
             'en': '🇺🇸', 'uk': '🇺🇦', 'es': '🇪🇸', 'de': '🇩🇪', 'fr': '🇫🇷'
         };
-
-        function showToast(message, type = 'info', duration = 3000) {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            let iconClass = 'fa-info-circle';
-            if (type === 'success') iconClass = 'fa-check-circle';
-            if (type === 'error') iconClass = 'fa-times-circle';
-
-            toast.innerHTML = `
-                <i class="fas ${iconClass} toast-icon"></i>
-                <span>${message}</span>
-            `;
-
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, duration);
-        }
-
-        function openLangModal() {
-            const modal = document.getElementById('langModal');
-            const grid = document.getElementById('langGrid');
-            
-            const currentLang = (window.i18n && window.i18n.currentLang) 
-                                ? window.i18n.currentLang 
-                                : (localStorage.getItem('appLang') || 'en');
-
-            grid.innerHTML = Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => `
-                <button class="lang-btn ${code === currentLang ? 'active' : ''}" onclick="handleLangSelect('${code}')">
-                    <span class="lang-flag">${FLAGS[code]}</span>
-                    <span>${name}</span>
-                    ${code === currentLang ? '<i class="fas fa-check" style="margin-left:auto;"></i>' : ''}
-                </button>
-            `).join('');
-            
-            modal.style.display = 'flex';
-        }
 
         async function handleLangSelect(lang) {
             if (window.i18n) {
@@ -357,57 +304,23 @@
             }
         });
 
-        async function loadProfileData() {
+        async function updateNotificationsBadge() {
             if (!token) return;
             try {
-                const navUsername = document.getElementById('navUsername');
-                const navIcon = document.getElementById('navIcon');
-                const navAvatar = document.getElementById('navAvatar');
-                const loginBtn = document.getElementById('loginBtn');
-                const menuName = document.getElementById('menuName');
-                const menuEmail = document.getElementById('menuEmail');
-                const menuCredits = document.getElementById('menuCredits');
-                const dropdownAvatar = document.querySelector('.dropdown-avatar');
-
-                const response = await fetch(`${API_BASE_URL}/profile`, {
+                const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
-                if (!response.ok) throw new Error('Failed to fetch profile');
-                const user = await response.json();
-
-                if (user.id) {
-                    if(navUsername) navUsername.textContent = user.name || safeTranslate('nav.profile', 'Profile');
-                    if(navIcon) navIcon.style.display = 'none';
-                    if(navAvatar) {
-                        navAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                        navAvatar.style.display = 'inline-block';
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.count;
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        badge.style.display = count > 0 ? 'inline-block' : 'none';
+                        badge.textContent = count > 99 ? '99+' : count;
                     }
-                    if(loginBtn) {
-                        loginBtn.classList.remove('login-btn');
-                        loginBtn.classList.add('profile-toggle-btn');
-                    }
-                    if(menuName) menuName.textContent = user.name || safeTranslate('menu.profile', 'User');
-                    if(menuEmail) menuEmail.textContent = user.email || '';
-                    if(menuCredits) menuCredits.textContent = (user.credits || 0).toLocaleString();
-                    if(dropdownAvatar) dropdownAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
                 }
-
-                loginBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (token) profileDropdown.classList.toggle('show');
-                    else window.location.href = 'index.html';
-                };
-                
-               
-                document.getElementById('dropdownLogoutBtn').onclick = () => {
-                    localStorage.removeItem('authToken');
-                    window.location.href = 'index.html';
-                };
-            } catch (e) { console.error("Error loading profile:", e); }
-            
+            } catch (e) { console.error(e); }
         }
-
         updateNotificationsBadge();
 
         async function loadNotifications() {

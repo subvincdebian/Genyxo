@@ -192,6 +192,91 @@ function updateUIState(isLoggedIn, userData = null) {
     }
 }
 
+async function loadProfileData() {
+    if (!token) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        const user = await response.json();
+
+        const elements = {
+            navUsername: document.getElementById('navUsername'),
+            navIcon: document.getElementById('navIcon'),
+            navAvatar: document.getElementById('navAvatar'),
+            loginBtn: document.getElementById('loginBtn'),
+            menuName: document.getElementById('menuName'),
+            menuEmail: document.getElementById('menuEmail'),
+            menuCredits: document.getElementById('menuCredits'),
+            dropdownAvatar: document.querySelector('.dropdown-avatar')
+        };
+
+        if (user.id) {
+            const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+
+            if (elements.navUsername) elements.navUsername.textContent = user.name || 'Profile';
+            
+            if (elements.navIcon) elements.navIcon.style.display = 'none';
+            
+            if (elements.navAvatar) {
+                elements.navAvatar.src = avatarUrl;
+                elements.navAvatar.style.display = 'inline-block';
+            }
+
+            if (elements.loginBtn) {
+                elements.loginBtn.classList.remove('login-btn');
+                elements.loginBtn.classList.add('profile-toggle-btn');
+                
+                const profileDropdown = document.getElementById('profilePanel');
+                elements.loginBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (profileDropdown) profileDropdown.classList.toggle('show');
+                    else window.location.href = 'index.html';
+                };
+            }
+
+            if (elements.menuName) elements.menuName.textContent = user.name || 'User';
+            if (elements.menuEmail) elements.menuEmail.textContent = user.email || '';
+            if (elements.menuCredits) elements.menuCredits.textContent = (user.credits || 0).toLocaleString();
+            if (elements.dropdownAvatar) elements.dropdownAvatar.src = avatarUrl;
+        }
+
+        const profileName = document.getElementById('profileName');
+        if (profileName) profileName.textContent = user.name || 'User';
+
+        const avatarPreview = document.getElementById('avatarPreview');
+        if (avatarPreview && user.avatar) {
+            avatarPreview.style.backgroundImage = `url('${user.avatar}')`;
+        } else if (avatarPreview && user.name) {
+             avatarPreview.style.backgroundImage = `url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}')`;
+        }
+
+        const nameInput = document.querySelector('input[placeholder="John Doe"]');
+        if (nameInput) nameInput.value = user.name || '';
+
+        const emailInput = document.querySelector('input[placeholder="your@email.com"]');
+        if (emailInput) emailInput.value = user.email || '';
+
+        const logoutBtn = document.getElementById('dropdownLogoutBtn');
+        if (logoutBtn) {
+            logoutBtn.onclick = () => {
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
+            };
+        }
+
+    } catch (e) {
+        console.error("Error loading profile:", e);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadProfileData();
+});
+
 function showToast(message, type = 'success', duration = 3000) {
     const container = document.getElementById('toast-container');
     if (!container) {
