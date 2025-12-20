@@ -1081,7 +1081,9 @@
                     updateBalanceUI(user.credits || 0);
 
                     if (navAvatarImg) navAvatarImg.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                    if (dropdownAvatars) dropdownAvatars.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+                    const dropdownAv = document.getElementById('dropdownAvatars');
+                    if (dropdownAv) dropdownAv.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+                    
                     if (menuName) menuName.textContent = user.name || 'User';
                     if (menuEmail) menuEmail.textContent = user.email || '';
                     if (menuCredits) menuCredits.textContent = user.credits || 0;
@@ -1091,10 +1093,11 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
-                if (historyRes.ok) {
+                const contentType = historyRes.headers.get("content-type");
+                if (historyRes.ok && contentType && contentType.indexOf("application/json") !== -1) {
                     const history = await historyRes.json();
                     
-                    if (history.length > 0) {
+                    if (Array.isArray(history) && history.length > 0) {
                         toggleChatView(true);
                         history.forEach(msg => {
                             appendMessage(msg.sender, msg.content, msg.model);
@@ -1102,9 +1105,13 @@
                     } else {
                         toggleChatView(false);
                     }
+                } else {
+                    console.warn("Server returned non-JSON response for chat history:", await historyRes.text());
+                    toggleChatView(false);
                 }
             } catch (e) {
                 console.error("Init Error:", e);
+                toggleChatView(false);
             }
         }
 

@@ -180,7 +180,7 @@ function updateUIState(isLoggedIn, userData = null) {
             loginBtn.classList.add('profile-toggle-btn');
             loginBtn.classList.add('login-btn');
         }
-        loginBtn.classList.add('profile-toggle-btn');
+
     } else {
         // Стан "Гість"
         if (navUsername) navUsername.textContent = 'Register / Login';
@@ -857,14 +857,15 @@ function handleLogout() {
 
 function updateLoginButton(name, token) {
     if (token) {
-        navUsername.textContent = name;
-        navIcon.style.display = 'none'; 
-        navAvatar.style.display = 'block'; 
+        if (navUsername) navUsername.textContent = name;
+        if (navIcon) navIcon.style.display = 'none'; 
+        if (navAvatar) navAvatar.style.display = 'block';
     } else {
-        navUsername.textContent = 'Register / Login';
-        navIcon.style.display = 'inline-block';
-        navAvatar.style.display = 'none';
-        profilePanel.classList.remove('show');
+        if (navUsername) navUsername.textContent = 'Register / Login';
+        if (navIcon) navIcon.style.display = 'inline-block';
+        if (navAvatar) navAvatar.style.display = 'none';
+        
+        if (profilePanel) profilePanel.classList.remove('show');
     }
 }
 
