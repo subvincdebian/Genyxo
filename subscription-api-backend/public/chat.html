@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <script src="i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
@@ -705,7 +704,7 @@
                         
                         <div class="dropdown-header">
                             <div class="user-details">
-                                <img src="" alt="Avatar" class="avatar-big dropdown-avatar" id="dropdownAvatar">
+                                <img src="" alt="Avatar" class="avatar-big dropdown-avatar" id="dropdownAvatars">
                                 <div class="user-text">
                                     <h3 id="menuName">Loading...</h3>
                                     <p id="menuEmail">loading@gmail.com</p>
@@ -859,10 +858,15 @@
         </div>
     </div>
 
+    <script src="js/i18n.js"></script>
+    <script src="js/script.js"></script>
+
     <script>
 
         let currentChatId = null; 
         let conversations = [];
+
+        const token = localStorage.getItem('authToken');
 
         const chatBox = document.getElementById('chatBox');
         const welcomeScreen = document.getElementById('welcomeScreen');
@@ -873,28 +877,15 @@
 
         const historyList = document.getElementById('historyList');
 
-        const profileToggleBtn = document.getElementById('profileToggleBtn');
-        const profilePanel = document.getElementById('profilePanel');
-        const closeProfilePanel = document.getElementById('closeProfilePanel');
-        const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
         const navAvatarImg = document.getElementById('navAvatarImg');
 
-        const menuName = document.getElementById('menuName');
-        const menuEmail = document.getElementById('menuEmail');
-        const menuCredits = document.getElementById('menuCredits');
-        const dropdownAvatar = document.getElementById('dropdownAvatar');
-        
-        const API_BASE_URL = 'https://genyxo.com';
-        const token = localStorage.getItem('authToken');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
 
         document.addEventListener('DOMContentLoaded', () => {
             loadConversations();
         });
-
-        if (!token) {
-            window.location.href = 'index.html';
-            showToast("Please log in first", "error"); 
-        }
 
         async function loadConversations() {
             try {
@@ -1080,10 +1071,6 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function updateBalanceUI(amount) {
-            creditBalanceEl.textContent = `${amount} Credits`;
-        }
-
         async function initChat() {
             try {
                 const profileRes = await fetch(`${API_BASE_URL}/profile`, {
@@ -1094,7 +1081,7 @@
                     updateBalanceUI(user.credits || 0);
 
                     if (navAvatarImg) navAvatarImg.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                    if (dropdownAvatar) dropdownAvatar.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+                    if (dropdownAvatars) dropdownAvatars.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
                     if (menuName) menuName.textContent = user.name || 'User';
                     if (menuEmail) menuEmail.textContent = user.email || '';
                     if (menuCredits) menuCredits.textContent = user.credits || 0;
@@ -1121,37 +1108,11 @@
             }
         }
 
-        if (profileToggleBtn) {
-            profileToggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                profilePanel.classList.toggle('show');
-            });
-        }
-
-        if (closeProfilePanel) {
-            closeProfilePanel.addEventListener('click', () => {
-                profilePanel.classList.remove('show');
-            });
-        }
-
         window.toggleDropdown = function(e, id) {
             e.stopPropagation();
             document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
             const dropdown = document.getElementById(`dropdown-${id}`);
             if(dropdown) dropdown.classList.toggle('show');
-        }
-
-        window.addEventListener('click', (e) => {
-            if (profilePanel && profilePanel.classList.contains('show') && !e.target.closest('.profile-container')) {
-                profilePanel.classList.remove('show');
-            }
-        });
-
-        if (dropdownLogoutBtn) {
-            dropdownLogoutBtn.addEventListener('click', () => {
-                localStorage.removeItem('authToken');
-                window.location.href = 'index.html';
-            });
         }
 
         window.addEventListener('click', () => {
@@ -1202,9 +1163,6 @@
             }
         });
 
-        const toggleBtn = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
         if (toggleBtn && sidebar) {
             toggleBtn.addEventListener('click', () => {
                 const opened = sidebar.classList.toggle('active');
@@ -1293,10 +1251,7 @@
 
         function adjustHeight() {
             textarea.style.height = 'auto'; 
-            // Устанавливаем высоту контента
             textarea.style.height = (textarea.scrollHeight) + 'px';
-            
-            // УДАЛИЛИ window.scrollTo(...) — это и вызывало «съезд» страницы
         }
 
         textarea.addEventListener('input', adjustHeight);

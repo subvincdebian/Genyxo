@@ -149,6 +149,10 @@ function init() {
     });
 }
 
+function updateBalanceUI(amount) {
+    creditBalanceEl.textContent = `${amount} Credits`;
+}
+
 function updateUIState(isLoggedIn, userData = null) {
     if (isLoggedIn && userData) {
         if (navUsername) navUsername.textContent = userData.name || userData.email || 'User';
