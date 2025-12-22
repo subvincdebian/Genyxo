@@ -2,6 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import { v4 as uuidv4 } from 'uuid';
+
+const REFERRAL_REWARDS: Record<number, number> = {
+  1: 0.7, // Start AI
+  2: 0.7, // AI Explorer
+  3: 1.0, // Pro Creator
+  4: 1.0, // AI Master
+  5: 1.0, // Unlimited Power
+  6: 1.0  // AI Titan
+};
 
 @Injectable()
 export class UsersService {
@@ -51,6 +61,27 @@ export class UsersService {
 
   async save(user: User): Promise<User> {
     return this.usersRepository.save(user);
+  }
+
+  async generateUniqueReferralCode(): Promise<string> {
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let isUnique = false;
+    let code = '';
+
+    while (!isUnique) {
+      // Генеруємо код на 7 символів
+      code = '';
+      for (let i = 0; i < 7; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+
+      // Перевіряємо в базі, чи вже існує такий код
+      const existing = await this.usersRepository.findOne({ where: { referralCode: code } });
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+    return code;
   }
 
   async addCredits(userId: number, amount: number): Promise<void> {
@@ -111,5 +142,46 @@ export class UsersService {
         invitedCount: invitedCount,
         referralLink: `${baseUrl}?ref=${user.id}`
     };
+  }
+
+  async processReferralBonus(buyerId: number, packId: number): Promise<void> {
+    // 1. Шукаємо покупця разом з даними про його реферера
+    const buyer = await this.usersRepository.findOne({
+        where: { id: buyerId },
+        select: ['id', 'referrerId', 'isReferralPaid']
+    });
+
+    // 2. Перевірки: чи є реферер і чи НЕ була вже виплата за цього юзера
+    if (!buyer || !buyer.referrerId || buyer.isReferralPaid) {
+        return; // Виходимо, якщо умов не дотримано
+    }
+
+    const rewardAmount = REFERRAL_REWARDS[packId] || 0;
+    if (rewardAmount <= 0) return;
+
+    // 3. Використовуємо транзакцію бази даних, щоб уникнути подвійних нарахувань при збоях
+    await this.usersRepository.manager.transaction(async (transactionalEntityManager) => {
+        // Повторна перевірка всередині транзакції для безпеки (Locking)
+        const lockedBuyer = await transactionalEntityManager.findOne(User, {
+            where: { id: buyerId },
+            lock: { mode: 'pessimistic_write' }
+        });
+
+        if (!lockedBuyer || lockedBuyer.isReferralPaid) return;
+
+        // Нараховуємо кошти рефереру
+        await transactionalEntityManager.increment(User, 
+            { id: buyer.referrerId }, 
+            'referralBalance', 
+            rewardAmount
+        );
+
+        // Позначаємо покупця як "оплаченого" для партнерки
+        await transactionalEntityManager.update(User, buyerId, { 
+            isReferralPaid: true 
+        });
+        
+        console.log(`[Affiliate] Reward $${rewardAmount} paid to User ${buyer.referrerId} for User ${buyerId} (Pack ${packId})`);
+    });
   }
 }

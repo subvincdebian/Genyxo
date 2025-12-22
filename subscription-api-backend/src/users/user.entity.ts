@@ -85,6 +85,9 @@ export class User {
   @OneToMany(() => User, user => user.referrer)
   referrals: User[];
 
+  @Column({ default: false })
+  isReferralPaid: boolean;
+
   @BeforeInsert()
   async hashPassword() {
     if (this.password) {

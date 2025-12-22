@@ -15,6 +15,9 @@ export class Transaction {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ type: 'int', nullable: true })
+  packId: number;
+
   @Column({ nullable: true })
   externalId: string;
 

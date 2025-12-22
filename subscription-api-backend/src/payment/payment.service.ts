@@ -33,11 +33,12 @@ export class PaymentService {
     if (!pack) throw new BadRequestException('Package not found');
 
     const transaction = this.transactionRepo.create({
+      user: { id: userId },
       amount: pack.price,
       creditsAmount: pack.credits,
+      packId: packId,
       status: TransactionStatus.PENDING,
       provider: 'NOWPAYMENTS',
-      user: { id: userId }
     });
 
     await this.transactionRepo.save(transaction);
@@ -139,30 +140,16 @@ export class PaymentService {
 
     await this.usersService.addCredits(buyer.id, Number(transaction.creditsAmount));
 
-    if (buyer.referrerId) {
-       const referrer = await this.usersService.findOneById(buyer.referrerId);
-          
-       if (referrer) {
-         const commissionRate = 0.20; // 20%
-         
-         const purchaseAmount = Number(transaction.amount);
-         const commission = purchaseAmount * commissionRate;
-
-         await this.usersService.addReferralBalance(referrer.id, commission);
-
-         await this.notificationsService.create(
-             referrer.id,
-             'New Earnings! 💰',
-             `You earned $${commission.toFixed(2)} from a referral purchase!`,
-             NotificationType.SYSTEM
-         );
-       }
+    try {
+        await this.usersService.processReferralBonus(buyer.id, transaction.packId);
+    } catch (error) {
+        console.error('Affiliate bonus error:', error);
     }
 
     await this.notificationsService.create(
       buyer.id,
-      'Payment Successful! 🎉',
-      `Your account received ${transaction.creditsAmount} credits.`,
+      'Payment Successful! ✅',
+      `You have successfully purchased ${transaction.creditsAmount} credits.`,
       NotificationType.SYSTEM
     );
   }
