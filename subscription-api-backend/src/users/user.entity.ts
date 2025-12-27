@@ -63,6 +63,12 @@ export class User {
   @OneToMany(() => Message, (message) => message.user) 
   messages: Message[];
 
+  @Column({ nullable: true })
+  requestId: string;
+
+  @Column({ default: 'text' })
+  type: 'text' | 'video';
+
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[];
 

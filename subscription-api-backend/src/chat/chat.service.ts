@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from './message.entity';
 import { Conversation } from './conversation.entity';
+import { FalService } from './fal.service';
+import * as fal from "@fal-ai/serverless-client";
 
 @Injectable()
 export class ChatService {
@@ -12,10 +14,34 @@ export class ChatService {
 
   constructor(
     private configService: ConfigService,
+    private falService: FalService,
     @InjectRepository(Message) private messageRepository: Repository<Message>,
     @InjectRepository(Conversation) private conversationRepository: Repository<Conversation>,
   ) {
     this.openai = new OpenAI({ apiKey: this.configService.get('OPENAI_API_KEY') });
+  }
+
+  async saveMessage(conversation: Conversation, content: string, sender: 'user' | 'bot', model: string, userId: number, requestId?: string) {
+    const msg = this.messageRepository.create({
+        content,
+        sender,
+        model,
+        conversation,
+        user: { id: userId } as any,
+        requestId
+    });
+    return this.messageRepository.save(msg);
+  }
+
+  async getHistory(conversationId: number) {
+    const messages = await this.messageRepository.find({
+        where: { conversation: { id: conversationId } },
+        order: { createdAt: 'ASC' }
+    });
+    return messages.map(m => ({
+        role: m.sender === 'bot' ? 'assistant' : 'user',
+        content: m.content
+    }));
   }
 
   async getUserConversations(userId: number) {
@@ -37,63 +63,64 @@ export class ChatService {
   }
 
   async processMessage(userId: number, text: string, model: string, conversationId?: number) {
-    let conversation: Conversation;
+    let conversation = await this.getOrCreateConversation(userId, conversationId);
+    await this.saveMessage(conversation, text, 'user', model, userId);
 
-    if (!conversationId) {
-      conversation = this.conversationRepository.create({
-        user: { id: userId },
-        title: text.substring(0, 30) + '...', 
-      });
-      await this.conversationRepository.save(conversation);
+    if (model.includes('video')) {
+        const requestId = await this.falService.triggerVideoGeneration(text, model);
+
+        const botMsg = this.messageRepository.create({
+            content: "🎬 Video generating... Wait 1-2 minutes please.",
+            sender: 'bot',
+            model,
+            conversation,
+            user: { id: userId } as any,
+            requestId: requestId
+        });
+        const savedBotMsg = await this.messageRepository.save(botMsg);
+
+        return { 
+            botReply: savedBotMsg.content, 
+            conversationId: conversation.id, 
+            messageId: savedBotMsg.id,
+            status: 'processing' 
+        };
     } else {
-      const existingChat = await this.conversationRepository.findOne({ where: { id: conversationId } });
-      
-      if (!existingChat) {
-          throw new NotFoundException('Chat not found');
-      }
-      
-      conversation = existingChat;
-      
-      conversation.updatedAt = new Date(); 
-      await this.conversationRepository.save(conversation);
+        const history = await this.getHistory(conversation.id);
+        const aiResponse = await this.getAiResponse(history, model);
+
+        const botMsg = await this.saveMessage(conversation, aiResponse.reply, 'bot', model, userId);
+
+        return { 
+            botReply: botMsg.content, 
+            conversationId: conversation.id,
+            messageId: botMsg.id,
+            status: 'done'
+        };
     }
+  }
 
-    const userMsg = this.messageRepository.create({
-      content: text,
-      sender: 'user',
-      model,
-      conversation,
-      user: { id: userId } 
-    });
-    await this.messageRepository.save(userMsg);
+  private async getOrCreateConversation(userId: number, conversationId?: number) {
+    if (conversationId) {
+        const chat = await this.conversationRepository.findOne({ where: { id: conversationId } });
+        if (!chat) throw new NotFoundException('Chat not found');
+        return chat;
+    }
+    return this.conversationRepository.save(
+        this.conversationRepository.create({ user: { id: userId }, title: "New Chat" })
+    );
+  }
 
-    const history = await this.messageRepository.find({
-        where: { conversation: { id: conversation.id } },
-        order: { createdAt: 'ASC' },
-        take: 10
-    });
-    
-    const apiMessages = history.map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
-        content: msg.content
-    }));
+  async getMessageById(id: number) {
+    return this.messageRepository.findOne({ where: { id } });
+  }
 
-    const aiResponse = await this.getAiResponse(apiMessages, model);
-
-    const botMsg = this.messageRepository.create({
-      content: aiResponse.reply,
-      sender: 'bot',
-      model,
-      conversation,
-      user: { id: userId }
-    });
-    await this.messageRepository.save(botMsg);
-
-    return { 
-        botReply: aiResponse.reply, 
-        conversationId: conversation.id,
-        title: conversation.title 
-    };
+  async updateVideoUrl(requestId: string, videoUrl: string) {
+    const message = await this.messageRepository.findOne({ where: { requestId } });
+    if (message) {
+        message.content = videoUrl;
+        await this.messageRepository.save(message);
+    }
   }
 
   async getAiResponse(messagesHistory: any[], model: string = 'gpt-4o-mini') {
@@ -118,7 +145,6 @@ export class ChatService {
               tokensUsed = 50;
           } else {
               replyText = "Sorry, the image could not be generated.";
-              tokensUsed = 0;
           }
       } 
       else {
@@ -138,6 +164,32 @@ export class ChatService {
     } catch (error) {
       console.error('OpenAI Error:', error.response?.data || error.message);
       return { reply: "There was an error connecting to AI. Check your API key and balance.", tokensUsed: 0 };
+    }
+  }
+
+  async generateVideo(prompt: string, model: string) {
+    try {
+        // Використовуємо метод subscribe, але Senior-підхід — це Webhooks
+        // Для простоти поки залишимо очікування, але з логікою статусів
+        const result: any = await fal.subscribe(`fal-ai/${model}`, {
+            input: {
+                prompt: prompt,
+                video_size: "landscape",
+                duration: "5"
+            },
+            logs: true,
+            onQueueUpdate: (update) => {
+                console.log(`Queue update for ${model}:`, update.status);
+            },
+        });
+
+        return {
+            videoUrl: result.video?.url,
+            requestId: result.request_id 
+        };
+    } catch (error) {
+        console.error("Kling Generation Error:", error);
+        throw new Error("Failed to generate video");
     }
   }
 

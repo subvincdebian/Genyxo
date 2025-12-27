@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",
+    "@fal-ai/serverless-client": "^0.15.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",

@@ -790,16 +790,17 @@
                     </div>
 
                     <select id="modelSelect" style="display:none;">
-                        <option value="gpt-5.1">GPT-5.1 (150 cr)</option>
+                        <option value="gpt-5.1" selected>GPT-5.1 (150 cr)</option>
                         <option value="gpt-5-mini">GPT-5 (70 cr)</option>
                         <option value="gpt-5-nano">GPT-5 Mini (45 cr)</option>
                         <option value="gpt-4.1">GPT-4.1 (55 cr)</option>
                         <option value="gpt-4.1-mini">GPT-4 Mini (25 cr)</option>
-                        <option value="gpt-4o" selected>GPT-4o (40 cr)</option>
+                        <option value="gpt-4o">GPT-4o (40 cr)</option>
                         <option value="gpt-4o-mini">GPT-4o Mini (18 cr)</option>
                         <option value="o1-preview">GPT-o1 (90 cr)</option>
                         <option value="o3-reasoning">GPT-o3 Reasoning (140 cr)</option>
                         <option value="dall-e-3">DALL-E Image (120 cr)</option>
+                        <option value="kling-video">Kling Video (500 cr)</option>
                     </select>
                 </div>
             </div>
@@ -990,68 +991,99 @@
         }
 
         async function sendMessage() {
-            const text = userInput.value.trim();
-            const model = document.getElementById('modelSelect').value;
+            const textarea = document.getElementById('userInput');
+            const text = textarea.value.trim();
+            const modelSelect = document.getElementById('modelSelect');
+            const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o-mini';
+
             if (!text) return;
 
+            textarea.value = '';
+            textarea.style.height = 'auto';
+
             appendMessage('user', text);
-            userInput.value = '';
-            typingIndicator.style.display = 'flex';
-            chatBox.scrollTop = chatBox.scrollHeight;
-            toggleChatView(true);
 
             try {
-                const res = await fetch(`${API_BASE_URL}/chat/message`, {
+                const response = await fetch(`${API_BASE_URL}/chat/message`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     },
                     body: JSON.stringify({ 
                         message: text, 
-                        model: model,
-                        conversationId: currentChatId
+                        model: selectedModel, 
+                        conversationId: window.currentChatId
                     })
                 });
 
-                const data = await res.json();
-                typingIndicator.style.display = 'none';
+                const data = await response.json();
 
-                if (res.ok) {
-                    appendMessage('bot', data.botReply, model);
-                    updateBalanceUI(data.creditsLeft);
+                if (!response.ok) throw new Error(data.message || 'Error');
 
-                    if (!currentChatId && data.conversationId) {
-                        currentChatId = data.conversationId;
-                        conversations.unshift({ id: data.conversationId, title: data.title });
-                        renderHistoryList();
-                    }
+                if (data.conversationId) window.currentChatId = data.conversationId;
+
+                const botMsgDiv = appendMessage('bot', data.botReply);
+
+                if (selectedModel.includes('video')) {
+                    const messageId = data.messageId; 
+                    startVideoPolling(messageId, botMsgDiv);
                 }
-            } catch (e) {
-                console.error(e);
+
+                if (data.creditsLeft !== undefined) {
+                    document.getElementById('userCredits').innerText = data.creditsLeft;
+                }
+
+            } catch (err) {
+                showToast(err.message, 'error');
             }
         }
 
-        function appendMessage(sender, text, model = '') {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}`;
-            
-            const icon = sender === 'bot' ? 'fa-robot' : 'fa-user';
-            
-            let contentHTML = text;
-            if (sender === 'bot' && typeof marked !== 'undefined' && !text.includes('<img')) {
-                contentHTML = marked.parse(text);
-            }
+        async function startVideoPolling(messageId, element) {
+            let attempts = 0;
+            const maxAttempts = 50;
 
-            msgDiv.innerHTML = `
-                <div class="avatar"><i class="fas ${icon}"></i></div>
-                <div class="message-content">
-                    ${contentHTML}
-                </div>
-            `;
+            const interval = setInterval(async () => {
+                attempts++;
+                try {
+                    const res = await fetch(`${API_BASE_URL}/chat/message-status/${messageId}`, {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                    });
+                    const data = await res.json();
+
+                    if (data.isReady) {
+                        element.innerHTML = `
+                            <div class="video-container">
+                                <video controls width="100%" style="border-radius:12px; border: 1px solid #444;">
+                                    <source src="${data.videoUrl}" type="video/mp4">
+                                </video>
+                                <a href="${data.videoUrl}" target="_blank" class="download-link">Download video</a>
+                            </div>
+                        `;
+                        clearInterval(interval);
+                    }
+                    
+                    if (attempts > maxAttempts) {
+                        element.innerHTML = "❌ Timed out. Check back later in history.";
+                        clearInterval(interval);
+                    }
+                } catch (e) {
+                    console.error("Status error:", e);
+                }
+            }, 5000);
+        }
+
+        function appendMessage(sender, content) {
+            const chatMessages = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}-message`;
             
-            chatBox.appendChild(msgDiv);
-            scrollToBottom();
+            msgDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return msgDiv.querySelector('.message-content');
         }
 
         function appendError(msg) {
@@ -1164,7 +1196,7 @@
             } catch(e) { showToast("Error Deleting Chat!", "error");  }
         }
 
-        sendBtn.addEventListener('click', sendMessage);
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
 
         document.addEventListener('DOMContentLoaded', () => {
             if(window.i18n && typeof window.i18n.init === 'function') {
@@ -1268,6 +1300,13 @@
         textarea.addEventListener('input', adjustHeight);
 
         textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {    
+                e.preventDefault(); 
+                sendMessage();
+            }
+        }, true);
+
+        /* textarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {    
                 if (e.shiftKey) {
                     return; 
@@ -1283,7 +1322,7 @@
                     }
                 }
             }
-        }, true);
+        }, true); */
     </script>
 </body>
 </html>

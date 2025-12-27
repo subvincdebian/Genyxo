@@ -24,4 +24,10 @@ export class Message {
 
   @ManyToOne(() => User)
   user: User;
+
+  @Column({ nullable: true })
+  requestId: string;
+
+  @Column({ default: 'text' })
+  type: 'text' | 'video';
 }

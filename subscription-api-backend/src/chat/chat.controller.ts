@@ -9,20 +9,22 @@ import {
   Get,
   Param,
   Patch,
-  Delete
+  Delete,
+  NotFoundException
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatService } from './chat.service';
 import { UsersService } from '../users/users.service';
+import { FalService } from './fal.service';
 
 @Controller('chat')
 export class ChatController {
   constructor(
     private chatService: ChatService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private falService: FalService
   ) {}
 
-  // Прайс-лист
   private readonly MODEL_PRICES = {
     'gpt-5.1': 150,
     'gpt-5-mini': 70,
@@ -37,7 +39,10 @@ export class ChatController {
     'o1-preview': 90,
     'o3-reasoning': 140,
 
-    'dall-e-3': 120
+    'dall-e-3': 120,
+
+    'kling-video': 500,
+    'luma-video': 450,
   };
 
   @UseGuards(AuthGuard('jwt'))
@@ -56,35 +61,24 @@ export class ChatController {
   @Post('message')
   async sendMessage(@Body() body: { message: string, model: string, conversationId?: number }, @Request() req) {
     const userId = req.user.id;
-    const { message, conversationId } = body;
-    const selectedModel = body.model || 'gpt-4o-mini';
+    const { message, conversationId, model } = body;
+    const selectedModel = model || 'gpt-4o-mini';
 
     const cost = this.MODEL_PRICES[selectedModel];
-
-    if (!cost) {
-        throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
-    }
+    if (!cost) throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
 
     const isDeducted = await this.usersService.deductCredits(userId, cost);
+    if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
 
-    if (!isDeducted) {
-        throw new ForbiddenException(`Not enough credits for ${selectedModel}. Price: ${cost} Credits.`);
-    }
-
-    const result = await this.chatService.processMessage(
-        userId, 
-        message, 
-        selectedModel, 
-        conversationId
-    );
-
+    const result = await this.chatService.processMessage(userId, message, selectedModel, conversationId);
     const newBalance = await this.usersService.getBalance(userId);
 
     return {
       botReply: result.botReply,
       conversationId: result.conversationId,
-      creditsLeft: newBalance,
-      title: result.title
+      messageId: result.messageId,
+      status: result.status,
+      creditsLeft: newBalance
     };
   }
 
@@ -98,5 +92,30 @@ export class ChatController {
   @Delete('conversation/:id')
   async delete(@Param('id') id: number, @Request() req) {
       return this.chatService.deleteConversation(req.user.id, id);
+  }
+
+  @Post('webhook/video')
+  async handleFalWebhook(@Body() data: any) {
+      const { request_id, status, payload } = data;
+
+      if (status === 'COMPLETED' && payload?.video?.url) {
+          await this.chatService.updateVideoUrl(request_id, payload.video.url);
+      } else if (status === 'ERROR') {
+          await this.chatService.updateVideoUrl(request_id, "❌ Error Generating Video.");
+      }
+      return { status: 'ok' };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('message-status/:id')
+  async getMessageStatus(@Param('id') id: number) {
+      const message = await this.chatService.getMessageById(id);
+      if (!message) throw new NotFoundException('Message not found');
+
+      const isReady = message.content.startsWith('http');
+      return {
+          isReady: isReady,
+          videoUrl: isReady ? message.content : null
+      };
   }
 }
