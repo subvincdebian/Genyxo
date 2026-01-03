@@ -210,16 +210,16 @@
 
             <h1 class="title" data-i18n="profile.main_title">Settings</h1>
 
-            <div class="tabs">
-                <button class="tab active" data-i18n="profile.tabs.general">General</button>
+            <div class="tabs profile-nav">
+                <button class="tab active" data-tab="general-section" data-i18n="profile.tabs.general">General</button>
                 <button class="tab" data-i18n="profile.tabs.notification">Notification</button>
                 <button class="tab" data-i18n="profile.tabs.availability">Availability</button>
                 <button class="tab" data-i18n="profile.tabs.security">Security</button>
                 <button class="tab" data-i18n="profile.tabs.connected">Connected accounts</button>
-                <button class="tab" data-i18n="profile.tabs.billing">Billing</button>
+                <button class="tab" data-tab="billing-section" data-i18n="profile.tabs.billing">Billing</button>
             </div>
 
-            <section class="page active content-box" id="page-general">
+            <section class="page active tab-content content-box" id="general-section">
                 <h2 data-i18n="profile.general.title">Basic info</h2>
                 <p class="sub" data-i18n="profile.general.subtitle">Edit your profile information</p>
 
@@ -236,6 +236,65 @@
                     <button class="save-btn" data-i18n="profile.general.save_btn">Save changes</button>
                 </form>
             </section>
+
+            <div id="billing-section" class="tab-content" style="display: none;">
+                <div class="billing-page-header">
+                    <h2 class="billing-title">Billing & Subscription</h2>
+                    <p class="billing-subtitle">Manage your payment methods and billing history</p>
+                </div>
+
+                <div class="billing-card-section">
+                    <h3 class="section-label">Payment Methods</h3>
+                    <div class="payment-methods-grid">
+                        <div class="method-card">
+                            <div class="card-info">
+                                <div class="card-icon-wrapper">
+                                    <i class="fa-brands fa-cc-visa"></i>
+                                </div>
+                                <div class="card-details">
+                                    <p class="card-number">Visa ending in 4242</p>
+                                    <p class="card-expiry">Expires 12/26</p>
+                                </div>
+                            </div>
+                            <span class="badge-default">Default</span>
+                        </div>
+                        
+                        <button class="add-method-btn">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Add payment method</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-section">
+                    <h3 class="section-label">Billing History</h3>
+                    <div class="table-responsive">
+                        <table class="billing-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Receipt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-body">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="pagination" class="pagination-container"></div>
+                </div>
+
+                <div class="billing-footer">
+                    <div class="security-info">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <div>
+                            <h4>Secure Payment Processing</h4>
+                            <p>All payments are processed securely through industry-standard encryption. Your payment information is never stored on our servers. You can manage your credits at any time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div id="page-password" class="page">
                 <h2 data-i18n="profile.security.title">Password and Security</h2>

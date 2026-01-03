@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from '../users/users.service';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { Transaction } from '../transactions/transaction.entity';
 
 @Controller('profile')
 export class ProfileController {
@@ -47,5 +49,30 @@ export class ProfileController {
   @Get('affiliate')
   async getAffiliateStats(@Request() req) {
     return this.usersService.getAffiliateStats(req.user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('transactions')
+  async getTransactions(@Request() req, @Query() paginationQuery: PaginationQueryDto) {
+    const { page = 1, limit = 10 } = paginationQuery;
+    const userId = req.user.id;
+
+    const [items, total] = await this.usersService.repo.manager.findAndCount(Transaction, {
+      where: { user: { id: userId } },
+      order: { createdAt: 'DESC' } as any,
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    return {
+      items,
+      meta: {
+        totalItems: total,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    };
   }
 }

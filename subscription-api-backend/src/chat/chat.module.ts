@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
 import { Message } from './message.entity';
 import { Conversation } from './conversation.entity';
+import { FalService } from './fal.service';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { Conversation } from './conversation.entity';
     UsersModule, 
     TypeOrmModule.forFeature([Message, Conversation]) 
   ],
-  providers: [ChatService],
+  providers: [ChatService, FalService],
   controllers: [ChatController],
   exports: [ChatService],
 })

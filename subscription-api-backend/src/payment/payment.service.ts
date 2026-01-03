@@ -5,8 +5,10 @@ import { Transaction, TransactionStatus } from '../transactions/transaction.enti
 import { UsersService } from '../users/users.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as crypto from 'crypto';
+import Stripe from 'stripe';
 
 export const PACKS: Record<number, { name: string, price: number, credits: number }> = {
   1: { name: 'Start AI', price: 2.49, credits: 750 },
@@ -20,13 +22,19 @@ export const PACKS: Record<number, { name: string, price: number, credits: numbe
 @Injectable()
 export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
+  private stripe: Stripe;
 
   constructor(
     @InjectRepository(Transaction)
     private transactionRepo: Repository<Transaction>,
     private usersService: UsersService,
-    private notificationsService: NotificationsService
-  ) {}
+    private notificationsService: NotificationsService,
+    private configService: ConfigService,
+  ) {
+    this.stripe = new Stripe(this.configService.get<string>('STRIPE_SECRET_KEY')!, {
+      apiVersion: '2023-10-16',
+    });
+  }
 
   async createPayment(userId: number, packId: number) {
     const pack = PACKS[packId];

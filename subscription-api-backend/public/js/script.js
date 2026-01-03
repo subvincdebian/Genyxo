@@ -1278,6 +1278,168 @@ function requestPayout() {
     }
 }
 
+/* async function loadTransactionHistory(page = 1) {
+    const tbody = document.getElementById('transactions-body');
+    const paginationContainer = document.getElementById('pagination-controls');
+    
+    // Сеньйор-деталь: показуємо завантаження
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Завантаження історії...</td></tr>';
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/profile/transactions?page=${page}&limit=5`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        const data = await res.json();
+        
+        // 1. ПЕРЕВІРКА ТУТ: якщо транзакцій немає
+        if (!data.items || data.items.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center; padding: 60px; color: var(--text-gray);">
+                        <i class="fas fa-receipt" style="font-size: 3rem; display: block; margin-bottom: 15px; opacity: 0.3;"></i>
+                        У вас поки немає транзакцій.
+                    </td>
+                </tr>`;
+            paginationContainer.innerHTML = ''; // Прибираємо пагінацію, якщо пусто
+            return;
+        }
+
+        // 2. Якщо дані є, малюємо таблицю
+        tbody.innerHTML = data.items.map(tx => `
+            <tr>
+                <td><span style="opacity: 0.5; font-size: 0.8rem;">#</span>${tx.id}</td>
+                <td>${new Date(tx.createdAt).toLocaleDateString()}</td>
+                <td><b style="color: var(--accent);">+${tx.creditsAmount}</b></td>
+                <td>$${tx.amount}</td>
+                <td><span class="status-badge status-${tx.status.toLowerCase()}">${tx.status}</span></td>
+            </tr>
+        `).join('');
+
+        renderPagination(data.meta);
+    } catch (err) {
+        console.error("History load error:", err);
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #ff4d4d;">Помилка завантаження даних</td></tr>';
+    }
+} */
+
+async function loadTransactionHistory(page = 1) {
+    const tbody = document.getElementById('transactions-body');
+    if (!tbody) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/profile/transactions?page=${page}&limit=5`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        
+        const data = await response.json();
+
+        // Рендеримо рядки
+        tbody.innerHTML = data.items.map(tx => `
+            <tr>
+                <td>${new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                <td>$${tx.amount}</td>
+                <td>
+                    <span class="status-badge status-${tx.status.toLowerCase()}">
+                        ${tx.status.charAt(0) + tx.status.slice(1).toLowerCase()}
+                    </span>
+                </td>
+                <td>
+                    <a href="#" class="receipt-link">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        Details
+                    </a>
+                </td>
+            </tr>
+        `).join('');
+
+        renderPagination(Math.ceil(data.total / 5), page);
+
+    } catch (err) {
+        console.error("Failed to load transactions", err);
+    }
+}
+
+// Функція покупки
+async function purchasePack(packId) {
+    const btn = event.target; // Отримуємо кнопку, на яку натиснули
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    try {
+        const res = await fetch(`${API_BASE_URL}/payment/buy`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ packId })
+        });
+        const result = await res.json();
+        
+        if (result.url) {
+            window.location.href = result.url; // Перенаправлення на оплату
+        } else {
+            showToast('Something went wrong', 'error');
+        }
+    } catch (err) {
+        btn.disabled = false;
+        btn.innerText = 'Get Credits';
+        showToast('Payment initialization failed', 'error');
+    }
+}
+
+// Рендер кнопок пагінації
+function renderPagination(meta) {
+    const container = document.getElementById('pagination-controls');
+    let html = '';
+    for (let i = 1; i <= meta.totalPages; i++) {
+        html += `<button class="${i === meta.currentPage ? 'active' : ''}" onclick="loadTransactionHistory(${i})">${i}</button>`;
+    }
+    container.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const navButtons = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTabId = btn.getAttribute('data-tab');
+            if (!targetTabId) return;
+
+            console.log('Switching to tab:', targetTabId); // Для дебагу
+
+            // 1. Керування кнопками: знімаємо active з усіх, додаємо поточній
+            navButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 2. Керування контентом
+            tabContents.forEach(content => {
+                // Ховаємо миттєво для зміни логіки
+                content.style.display = 'none';
+                content.style.opacity = '0';
+            });
+
+            // 3. Показуємо цільову вкладку
+            const targetTab = document.getElementById(targetTabId);
+            if (targetTab) {
+                targetTab.style.display = 'block';
+                // Плавна поява (Senior UX)
+                setTimeout(() => {
+                    targetTab.style.opacity = '1';
+                }, 50);
+                
+                // Спеціальна логіка для Billing
+                if (targetTabId === 'billing-section') {
+                    loadTransactionHistory(1);
+                    // Оновлюємо відображення кредитів з локального сховища або сервера
+                    const credits = localStorage.getItem('userCredits') || '0';
+                    document.getElementById('display-credits').innerText = credits;
+                }
+            }
+        });
+    });
+});
+
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = "none";
