@@ -94,9 +94,6 @@ export class User {
   @Column({ default: false })
   isReferralPaid: boolean;
 
-  @Column({ nullable: true })
-  stripeCustomerId: string;
-
   @BeforeInsert()
   async hashPassword() {
     if (this.password) {
