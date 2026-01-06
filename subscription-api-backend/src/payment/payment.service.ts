@@ -54,9 +54,9 @@ export class PaymentService {
           price_currency: 'usd',
           order_id: transaction.id.toString(),
           order_description: `Purchase: ${pack.name}`,
-          ipn_callback_url: 'https://hostaisite-production.up.railway.app/payment/webhook',
-          success_url: 'https://hostaisite-production.up.railway.app/#success', 
-          cancel_url: 'https://hostaisite-production.up.railway.app/#cancel', 
+          ipn_callback_url: 'https://genyxo.com/payment/webhook',
+          success_url: 'https://genyxo.com/#success', 
+          cancel_url: 'https://genyxo.com/#cancel', 
         },
         {
           headers: {
