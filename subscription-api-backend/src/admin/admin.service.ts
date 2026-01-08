@@ -20,6 +20,7 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.userRepo.findAndCount({
+      select: ['id', 'email', 'name', 'role', 'credits'],
       order: { id: 'DESC' },
       take: limit,
       skip: skip,
