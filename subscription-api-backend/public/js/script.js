@@ -56,12 +56,12 @@ async function fetchUserProfile(token) {
 let currentProduct = null;
 
 const products = [
-    { id: 1, price: "$2.49", image: "./images/startai.jpg" },
-    { id: 2, price: "$4.99", image: "./images/aiexplorer.jpg" },
-    { id: 3, price: "$9.99", image: "./images/procreatorai.jpg" },
-    { id: 4, price: "$18.99", image: "./images/aimaster.jpg" },
-    { id: 5, price: "$29.99", image: "./images/unlimitedpower.jpg" },
-    { id: 6, price: "$49.99", image: "./images/aititan.jpg" },
+    { id: 1, price: "$3.99", image: "./images/startai.jpg" },
+    { id: 2, price: "$9.99", image: "./images/aiexplorer.jpg" },
+    { id: 3, price: "$24.99", image: "./images/procreatorai.jpg" },
+    { id: 4, price: "$49.99", image: "./images/aimaster.jpg" },
+    { id: 5, price: "$99.99", image: "./images/unlimitedpower.jpg" },
+    { id: 6, price: "$219.99", image: "./images/aititan.jpg" },
 ];
 
 // --- DOM Elements ---
