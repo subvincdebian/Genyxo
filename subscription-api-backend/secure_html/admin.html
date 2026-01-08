@@ -12,6 +12,7 @@
     <style>
         body {
             padding-top: 0;
+            display: none;
         }
         
         .admin-container { max-width: 1400px; margin: 100px auto; padding: 20px; }
@@ -132,8 +133,35 @@
     <script>
         (function() {
             const token = localStorage.getItem('authToken');
-            if (token) {
-                document.documentElement.classList.add('auth-active');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                // 2. Декодируем payload токена (вторая часть JWT)
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const payload = JSON.parse(jsonPayload);
+
+                // 3. Проверяем Роль (она есть в вашем payload согласно auth.service.ts)
+                if (payload.role !== 'admin') {
+                    alert('Access Denied: You are not an administrator.');
+                    window.location.href = 'index.html';
+                } else {
+                    // 4. Если всё ок, показываем страницу после загрузки DOM
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.body.style.display = 'block';
+                    });
+                }
+            } catch (e) {
+                console.error("Invalid token", e);
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
             }
         })();
     </script>
@@ -384,11 +412,16 @@
             if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/users?page=${usersPage}&limit=${usersLimit}`, {
+                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/users?page=${usersPage}&limit=${usersLimit}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
-                if (!res.ok) throw new Error('Access Denied');
+                if (res.status === 403 || res.status === 401) {
+                    alert("Session expired or access denied.");
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'index.html';
+                    return;
+                }
                 
                 const result = await res.json();
                 const users = result.data ? result.data : result; 
@@ -435,7 +468,7 @@
             if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/transactions?page=${txPage}&limit=${txLimit}`, {
+                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/transactions?page=${txPage}&limit=${txLimit}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -497,7 +530,7 @@
             if(refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                const res = await fetch(`${API_BASE_URL}/support/admin/all?page=${ticketsPage}&limit=${ticketsLimit}`, {
+                const res = await fetch(`${API_BASE_URL}/support/are-you-sure-you-want-to-admin/all?page=${ticketsPage}&limit=${ticketsLimit}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                 });
@@ -585,7 +618,7 @@
             const endpoint = action === 'approve' ? 'approve-transaction' : 'decline-transaction';
             if(!confirm(`Are you sure you want to ${action.toUpperCase()}?`)) return;
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/${endpoint}`, {
+                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/${endpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ txId: id })
@@ -600,7 +633,7 @@
         async function addCreditsPrompt(userId) {
             const amount = prompt("How many credits to add?");
             if (amount) {
-                await fetch(`${API_BASE_URL}/admin/add-credits`, {
+                await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/add-credits`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ userId: Number(userId), amount: Number(amount) })
@@ -624,7 +657,7 @@
             const replyText = document.getElementById('replyInput').value;
             if (!replyText.trim()) { alert("Enter a reply"); return; }
             try {
-                const res = await fetch(`${API_BASE_URL}/support/admin/resolve`, {
+                const res = await fetch(`${API_BASE_URL}/support/are-you-sure-you-want-to-admin/resolve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ ticketId: currentTicketId, response: replyText })
