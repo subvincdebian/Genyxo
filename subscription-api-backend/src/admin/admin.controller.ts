@@ -40,6 +40,11 @@ export class AdminController {
     return this.adminService.getAllTransactions(paginationQuery);
   }
 
+  @Get('tickets')
+  async getAllTickets(@Query() paginationQuery: PaginationQueryDto) {
+    return this.adminService.getAllAdminTickets(paginationQuery);
+  }
+
   @Post('add-credits')
   async addCredits(@Request() req, @Body() body: { userId: number, amount: number }) {
     this.checkAdmin(req.user);
