@@ -357,7 +357,8 @@
     
     <script>
 
-        const token = localStorage.getItem('authToken');
+        var token = localStorage.getItem('authToken');
+        const API_BASE_URL = 'https://genyxo.com';
 
         let usersPage = 1;
         const usersLimit = 10;
