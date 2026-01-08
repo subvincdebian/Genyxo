@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = '/'; // Отправляем на логин если нет токена
+        } else {
+            // Делаем запрос к админке программно, передавая токен
+            fetch('/are-you-sure-you-want-to-admin/panel', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(res => {
+                if (res.ok) return res.text();
+                throw new Error('Unauthorized');
+            })
+            .then(html => {
+                document.open();
+                document.write(html); // "Рисуем" полученную админку
+                document.close();
+            })
+            .catch(() => window.location.href = '/');
+        }
+    </script>
+</head>
+<body>
+    
+</body>
+</html>
