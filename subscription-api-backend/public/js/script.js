@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://genyxo.com';
+var API_BASE_URL = 'https://genyxo.com';
 
 let authToken = localStorage.getItem('authToken') || null;
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
