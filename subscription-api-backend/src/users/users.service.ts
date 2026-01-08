@@ -5,12 +5,12 @@ import { User } from './user.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 const REFERRAL_REWARDS: Record<number, number> = {
-  1: 0.7, // Start AI
-  2: 0.7, // AI Explorer
-  3: 1.0, // Pro Creator
-  4: 1.0, // AI Master
-  5: 1.0, // Unlimited Power
-  6: 1.0  // AI Titan
+  1: 1, // Start AI
+  2: 1, // AI Explorer
+  3: 2.5, // Pro Creator
+  4: 5, // AI Master
+  5: 10, // Unlimited Power
+  6: 22  // AI Titan
 };
 
 @Injectable()
@@ -43,15 +43,10 @@ export class UsersService {
   }
 
   async create(userData: Partial<User>): Promise<User> {
-    const newUser = this.usersRepository.create(userData);
-    
-    if (userData.referrerId) {
-        const referrer = await this.findOneById(userData.referrerId);
-        if (!referrer) {
-            newUser.referrerId = null;
-        }
+    if (!userData.referralCode) {
+      userData.referralCode = await this.generateUniqueReferralCode();
     }
-
+    const newUser = this.usersRepository.create(userData);
     return this.usersRepository.save(newUser);
   }
 
