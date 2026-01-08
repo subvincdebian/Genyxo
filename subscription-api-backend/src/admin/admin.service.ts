@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
-import { Transaction } from '../transactions/transaction.entity';
-import { TransactionStatus } from '../transactions/transaction.entity';
+import { Transaction, TransactionStatus } from '../transactions/transaction.entity';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { SupportTicket } from '../support/support.entity';
 
 @Injectable()
 export class AdminService {
@@ -16,6 +16,8 @@ export class AdminService {
     private userRepo: Repository<User>,
     @InjectRepository(Transaction)
     private transactionRepo: Repository<Transaction>,
+    @InjectRepository(SupportTicket) 
+    private ticketRepo: Repository<SupportTicket>,
   ) {}
 
   async getAllUsers(paginationQuery: PaginationQueryDto) {
@@ -64,7 +66,7 @@ export class AdminService {
     const { page = 1, limit = 10 } = paginationQuery;
     const skip = (page - 1) * limit;
 
-    const [data, total] = await this.transactionRepo.findAndCount({
+    const [data, total] = await this.ticketRepo.findAndCount({
       order: { id: 'DESC' },
       relations: ['user'],
       take: limit,

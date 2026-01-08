@@ -530,7 +530,7 @@
             if(refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                const res = await fetch(`${API_BASE_URL}/support/are-you-sure-you-want-to-admin/all?page=${ticketsPage}&limit=${ticketsLimit}`, {
+                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/all?page=${ticketsPage}&limit=${ticketsLimit}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                 });
@@ -684,7 +684,7 @@
         }
 
         document.body.style.display = 'block';
-        
+
         loadAdminProfile();
         loadUsers();
         loadTransactions();
