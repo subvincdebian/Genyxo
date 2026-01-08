@@ -667,14 +667,14 @@
             } catch(e) { showToast("Server Error", "error"); }
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        /* document.addEventListener('DOMContentLoaded', async () => {
             loadAdminProfile();
             await Promise.all([
                 loadUsers(),
                 loadTransactions(),
                 loadAdminTickets()
             ]);
-        });
+        }); */
 
         window.onclick = function(event) {
             const modal = document.getElementById('replyModal');
@@ -682,6 +682,13 @@
                 closeReplyModal();
             }
         }
+
+        document.body.style.display = 'block';
+        
+        loadAdminProfile();
+        loadUsers();
+        loadTransactions();
+        loadAdminTickets();
     </script>
 </body>
 </html>
