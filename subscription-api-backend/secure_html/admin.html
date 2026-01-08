@@ -530,7 +530,7 @@
             if(refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/all?page=${ticketsPage}&limit=${ticketsLimit}`, {
+                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/tickets?page=${ticketsPage}&limit=${ticketsLimit}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                 });
@@ -657,7 +657,7 @@
             const replyText = document.getElementById('replyInput').value;
             if (!replyText.trim()) { alert("Enter a reply"); return; }
             try {
-                const res = await fetch(`${API_BASE_URL}/support/are-you-sure-you-want-to-admin/resolve`, {
+                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/resolve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ ticketId: currentTicketId, response: replyText })
