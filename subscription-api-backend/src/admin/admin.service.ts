@@ -8,6 +8,9 @@ import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Injectable()
 export class AdminService {
+  getAllAdminTickets(paginationQuery: PaginationQueryDto) {
+    throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(User)
     private userRepo: Repository<User>,
@@ -37,6 +40,27 @@ export class AdminService {
   }
 
   async getAllTransactions(paginationQuery: PaginationQueryDto) {
+    const { page = 1, limit = 10 } = paginationQuery;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.transactionRepo.findAndCount({
+      order: { id: 'DESC' },
+      relations: ['user'],
+      take: limit,
+      skip: skip,
+    });
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getAllTickets(paginationQuery: PaginationQueryDto) {
     const { page = 1, limit = 10 } = paginationQuery;
     const skip = (page - 1) * limit;
 

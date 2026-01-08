@@ -41,8 +41,8 @@ export class AdminController {
   }
 
   @Get('tickets')
-  async getAllTickets(@Query() paginationQuery: PaginationQueryDto) {
-    return this.adminService.getAllAdminTickets(paginationQuery);
+  async getTickets(@Query() paginationQuery: PaginationQueryDto) {
+    return this.adminService.getAllTickets(paginationQuery);
   }
 
   @Post('add-credits')
