@@ -128,6 +128,134 @@
         }
         
         .nav-link { margin-right: 0; }
+
+        @media (max-width: 900px) {
+    
+            /* 1. Отступы для контейнера, чтобы не прилипало к краям */
+            .admin-container {
+                padding: 15px;
+                margin-top: 80px; /* Отступ от шапки */
+                width: 100%;
+                max-width: 100%;
+            }
+
+            /* 2. Заголовки секций делаем компактнее */
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .section-header button {
+                width: 100%; /* Кнопка Refresh на всю ширину */
+                justify-content: center;
+                padding: 12px;
+            }
+
+            /* 3. МАГИЯ ТАБЛИЦ: Превращаем таблицу в блоки */
+            .data-table, 
+            .data-table thead, 
+            .data-table tbody, 
+            .data-table th, 
+            .data-table td, 
+            .data-table tr { 
+                display: block; 
+            }
+
+            /* Скрываем шапку таблицы (ID, Email, Name...), она не нужна в карточках */
+            .data-table thead tr { 
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            /* Стилизуем строку как КАРТОЧКУ */
+            .data-table tr { 
+                margin-bottom: 20px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                padding: 15px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+
+            /* Стилизуем ячейки внутри карточки */
+            .data-table td { 
+                /* Делаем ячейку flex-контейнером */
+                border: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+                position: relative;
+                padding-left: 0;
+                padding-right: 0;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                display: flex;
+                justify-content: space-between; /* Текст слева и справа */
+                align-items: center;
+                text-align: right;
+                color: var(--text-light);
+                font-size: 0.95rem;
+                white-space: normal; /* Разрешаем перенос текста */
+                overflow: visible;
+            }
+
+            .data-table td:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-top: 10px;
+                display: block; /* Кнопки действий на всю ширину */
+            }
+
+            /* 4. DATA LABEL: Добавляем названия полей слева */
+            .data-table td::before { 
+                content: attr(data-label); /* Берет текст из HTML атрибута */
+                font-weight: 700;
+                color: var(--text-gray);
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                margin-right: 20px;
+                text-align: left;
+                min-width: 80px; /* Чтобы все выровнялось красиво */
+            }
+
+            /* Специфика для ID (делаем его менее заметным или наоборот ярким) */
+            .data-table td:first-child {
+                background: rgba(255,255,255,0.02);
+                margin: -15px -15px 10px -15px;
+                padding: 10px 15px;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                border-radius: 12px 12px 0 0;
+                font-family: 'Inter Tight', sans-serif;
+                font-weight: bold;
+                color: #10e6cc;
+            }
+
+            /* Кнопки действий на мобильном */
+            .col-action button {
+                width: 100%;
+                margin-top: 5px;
+                padding: 12px;
+                font-size: 1rem;
+            }
+            
+            /* Исправление для кнопок транзакций (Approve/Decline) */
+            .col-action div {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                width: 100%;
+            }
+
+            /* Пагинация */
+            .pagination-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .pagination-controls button {
+                width: 100%;
+                padding: 12px;
+            }
+        }
     </style>
 
     <script>
@@ -431,35 +559,30 @@
                 tbody.innerHTML = '';
                 
                 if (users.length === 0) {
-                     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No users found</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No users found</td></tr>`;
                 } else {
                     users.forEach(u => {
                         const roleBadge = u.role === 'admin' ? '<span class="badge badge-admin">ADMIN</span>' : 'User';
                         const userName = u.name ? u.name : '-';
                         const userCredits = u.credits ? u.credits : '0.00';
 
+                        // ОБРАТИ ВНИМАНИЕ НА data-label=""
                         tbody.innerHTML += `
                             <tr>
-                                <td>${u.id}</td>
-                                <td title="${u.email}">${u.email}</td>
-                                <td>${userName}</td>
-                                <td>${roleBadge}</td>
-                                <td><strong>${userCredits}</strong></td>
-                                <td style="text-align:right;">
+                                <td data-label="ID">#${u.id}</td>
+                                <td data-label="Email" title="${u.email}">${u.email}</td>
+                                <td data-label="Name">${userName}</td>
+                                <td data-label="Role">${roleBadge}</td>
+                                <td data-label="Credits"><strong>${userCredits}</strong></td>
+                                <td data-label="Action" style="text-align:right;">
                                     <button class="action-btn" onclick="addCreditsPrompt(${u.id})">+ Credits</button>
                                 </td>
                             </tr>
                         `;
                     });
                 }
-                
                 updatePaginationUI('User', meta);
-
-            } catch (e) {
-                console.error("Error in loadUsers:", e);          
-            } finally {
-                if (refreshIcon) refreshIcon.classList.remove('spin');
-            }   
+            } catch (e) { console.error(e); } finally { if (refreshIcon) refreshIcon.classList.remove('spin'); }
         }
 
         async function loadTransactions() {
@@ -491,10 +614,11 @@
 
                         let actionBtns = '';
                         if (tx.status === 'PENDING') {
+                            // Используем div для кнопок, чтобы CSS Grid сработал на мобильном
                             actionBtns = `
                                 <div style="display: flex; gap: 5px; justify-content: flex-end;">
-                                    <button class="action-btn" style="background: #2ecc71; color: white;" onclick="processTx(${tx.id}, 'approve')">✓</button>
-                                    <button class="action-btn" style="background: #e74c3c; color: white;" onclick="processTx(${tx.id}, 'decline')">✕</button>
+                                    <button class="action-btn" style="background: #2ecc71; color: white;" onclick="processTx(${tx.id}, 'approve')">✓ Approve</button>
+                                    <button class="action-btn" style="background: #e74c3c; color: white;" onclick="processTx(${tx.id}, 'decline')">✕ Decline</button>
                                 </div>
                             `;
                         } else {
@@ -502,26 +626,24 @@
                         }
                         const userEmail = tx.user ? tx.user.email : 'Unknown User';
                         const dateStr = new Date(tx.createdAt).toLocaleString();
+                        
+                        // ДОБАВЛЕНЫ data-label
                         tbody.innerHTML += `
                             <tr>
-                                <td>${tx.id}</td>
-                                <td title="${userEmail}">${userEmail}</td>
-                                <td>$${tx.amount}</td>
-                                <td>${tx.creditsAmount}</td>
-                                <td><span class="badge ${statusClass}">${tx.status}</span></td>
-                                <td>${tx.provider}</td>
-                                <td>${dateStr}</td>
-                                <td>${actionBtns}</td> 
+                                <td data-label="ID">Transaction #${tx.id}</td>
+                                <td data-label="User" title="${userEmail}">${userEmail}</td>
+                                <td data-label="Amount" style="color:#10e6cc; font-weight:bold;">$${tx.amount}</td>
+                                <td data-label="Credits">+${tx.creditsAmount}</td>
+                                <td data-label="Status"><span class="badge ${statusClass}">${tx.status}</span></td>
+                                <td data-label="Method">${tx.provider}</td>
+                                <td data-label="Date">${dateStr}</td>
+                                <td data-label="Actions">${actionBtns}</td> 
                             </tr>
                         `;
                     });
                 }
                 updatePaginationUI('Tx', meta);
-            } catch (e) {
-                console.error("Error in loadTransactions:", e);          
-            } finally {
-                if (refreshIcon) refreshIcon.classList.remove('spin');
-            }
+            } catch (e) { console.error(e); } finally { if (refreshIcon) refreshIcon.classList.remove('spin'); }
         }
 
         async function loadAdminTickets() {
@@ -551,17 +673,18 @@
                             const priorityClass = `status-badge priority-${t.priority ? t.priority.toLowerCase() : 'medium'}`;
                             const creationDate = new Date(t.createdAt).toLocaleDateString('uk-UA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                             
+                            // ДОБАВЛЕНЫ data-label
                             return `
                                 <tr data-ticket-id="${t.id}">
-                                    <td>${t.id}</td>
-                                    <td>${t.user ? (t.user.name || t.user.email) : 'Unknown'}</td>
-                                    <td title="${t.message}">${t.subject}</td>
-                                    <td><span class="${priorityClass}">${t.priority || 'MEDIUM'}</span></td>
-                                    <td><span class="${statusClass}">${t.status}</span></td>
-                                    <td>${creationDate}</td>
-                                    <td style="text-align:right;">
+                                    <td data-label="Ticket ID">Ticket #${t.id}</td>
+                                    <td data-label="User">${t.user ? (t.user.name || t.user.email) : 'Unknown'}</td>
+                                    <td data-label="Subject" style="font-weight:600; color:white;">${t.subject}</td>
+                                    <td data-label="Priority"><span class="${priorityClass}">${t.priority || 'MEDIUM'}</span></td>
+                                    <td data-label="Status"><span class="${statusClass}">${t.status}</span></td>
+                                    <td data-label="Created">${creationDate}</td>
+                                    <td data-label="Action" style="text-align:right;">
                                         ${t.status !== 'CLOSED' ? `
-                                            <button class="action-btn" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">Reply</button>
+                                            <button class="action-btn primary-btn" style="width:100%" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">Reply</button>
                                         ` : `<span style="color: #2ecc71;">Resolved</span>`}
                                     </td>
                                 </tr>
@@ -571,11 +694,7 @@
                     }
                     updatePaginationUI('Ticket', meta);
                 }
-            } catch (e) {
-                console.error('Error loading tickets:', e);
-            } finally {
-                 if(refreshIcon) refreshIcon.classList.remove('spin');
-            }
+            } catch (e) { console.error(e); } finally { if(refreshIcon) refreshIcon.classList.remove('spin'); }
         }
 
         function updatePaginationUI(type, meta) {
