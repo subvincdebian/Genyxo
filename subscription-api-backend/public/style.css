@@ -1459,7 +1459,6 @@ html.auth-active .login-btn i {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
     padding: 0;
-    overflow: hidden;
     transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     box-shadow: 
         0 10px 30px rgba(0, 0, 0, 0.5),
@@ -1496,6 +1495,7 @@ html.auth-active .login-btn i {
     align-items: center;
     justify-content: center;
     position: relative;
+    overflow: hidden;
 }
 
 .product-info {

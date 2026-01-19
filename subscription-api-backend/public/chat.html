@@ -1306,6 +1306,16 @@
             }
         }, true);
 
+        // Ждем небольшую задержку, пока i18n.js отработает
+    setTimeout(() => {
+        const input = document.getElementById('userInput');
+        if (input && input.value.trim() !== "") {
+            // Берем текст, который ошибочно попал в value, и переносим его в placeholder
+            input.placeholder = input.value;
+            input.value = ""; // Очищаем поле
+        }
+    }, 100);
+
         /* textarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {    
                 if (e.shiftKey) {

@@ -74,7 +74,6 @@
                                     <p id="menuEmail">loading@email.com</p>
                                 </div>
                             </div>
-                            <span class="plan-badge" data-i18n="menu.plan_free">Free</span>
                         </div>
 
                         <div class="credits-card">
@@ -82,13 +81,12 @@
                                 <div class="credits-amount">
                                     <span class="icon-flask">🪙</span>
                                     <span class="amount-number" id="menuCredits">70</span>
-                                    <i class="fas fa-info-circle info-icon" data-i18n="menu.details_title" title="Details"></i>
+                                    <i class="fas fa-info-circle info-icon" title="Details"></i>
                                 </div>
                             </div>
-                            <div class="credits-meta" data-i18n="menu.meta_info">
-                                Free | 0 Credits | $0.0/mo
-                            </div>
-                            <button class="upgrade-full-btn" data-i18n="nav.profileupgrade">Upgrade</button>
+                            <a href="index.html#products" style="text-decoration:none;">
+                                <button class="upgrade-full-btn">Buy Credits</button>
+                            </a>
                         </div>
 
                         <div class="dropdown-menu">
@@ -194,15 +192,6 @@
                     <span class="affiliate-sidebar-title" data-i18n="profile.sidebar.affiliate">Affiliate Program</span>
                 </a>
 
-                <a href="#" class="menu-item">
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                        <circle cx="6" cy="7" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
-                        <circle cx="18" cy="7" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
-                        <path d="M3 21v-2c0-2.2 1.8-4 4-4" stroke="currentColor" stroke-width="2"/>
-                        <path d="M21 21v-2c0-2.2-1.8-4-4-4" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                    <span data-i18n="profile.sidebar.groups">Group sessions</span>
-                </a>
             </nav>
         </aside>
 
@@ -210,16 +199,7 @@
 
             <h1 class="title" data-i18n="profile.main_title">Settings</h1>
 
-            <div class="tabs profile-nav">
-                <button class="tab active" data-tab="general-section" data-i18n="profile.tabs.general">General</button>
-                <button class="tab" data-i18n="profile.tabs.notification">Notification</button>
-                <button class="tab" data-i18n="profile.tabs.availability">Availability</button>
-                <button class="tab" data-i18n="profile.tabs.security">Security</button>
-                <button class="tab" data-i18n="profile.tabs.connected">Connected accounts</button>
-                <button class="tab" data-tab="billing-section" data-i18n="profile.tabs.billing">Billing</button>
-            </div>
-
-            <section class="page active tab-content content-box" id="general-section">
+            <section class="page active content-box" id="page-general">
                 <h2 data-i18n="profile.general.title">Basic info</h2>
                 <p class="sub" data-i18n="profile.general.subtitle">Edit your profile information</p>
 
@@ -237,66 +217,7 @@
                 </form>
             </section>
 
-            <div id="billing-section" class="tab-content" style="display: none;">
-                <div class="billing-page-header">
-                    <h2 class="billing-title">Billing & Subscription</h2>
-                    <p class="billing-subtitle">Manage your payment methods and billing history</p>
-                </div>
-
-                <div class="billing-card-section">
-                    <h3 class="section-label">Payment Methods</h3>
-                    <div class="payment-methods-grid">
-                        <div class="method-card">
-                            <div class="card-info">
-                                <div class="card-icon-wrapper">
-                                    <i class="fa-brands fa-cc-visa"></i>
-                                </div>
-                                <div class="card-details">
-                                    <p class="card-number">Visa ending in 4242</p>
-                                    <p class="card-expiry">Expires 12/26</p>
-                                </div>
-                            </div>
-                            <span class="badge-default">Default</span>
-                        </div>
-                        
-                        <button class="add-method-btn">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Add payment method</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="history-section">
-                    <h3 class="section-label">Billing History</h3>
-                    <div class="table-responsive">
-                        <table class="billing-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Receipt</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactions-body">
-                                </tbody>
-                        </table>
-                    </div>
-                    <div id="pagination" class="pagination-container"></div>
-                </div>
-
-                <div class="billing-footer">
-                    <div class="security-info">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <div>
-                            <h4>Secure Payment Processing</h4>
-                            <p>All payments are processed securely through industry-standard encryption. Your payment information is never stored on our servers. You can manage your credits at any time.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="page-password" class="page">
+            <div id="page-password" class="page content-box">
                 <h2 data-i18n="profile.security.title">Password and Security</h2>
 
                 <div class="security-block">
@@ -357,23 +278,65 @@
             </div>
 
             <div id="page-payment" class="page">
-                <h2 class="page-payment__title" data-i18n="profile.payment.title">Payment Settings</h2>
-                <p class="page-payment__description">
-                    <span data-i18n="profile.payment.desc">Manage your account balance, transactions, and payment methods.</span> 
-                    <a href="#" style="color: dodgerblue;" data-i18n="profile.payment.privacy_link">View privacy policy.</a>
-                </p>
 
-                <h2 class="page-payment__title" data-i18n="profile.payment.balance_title">Account balance</h2>
-                <p class="page-payment__description">
-                    <span data-i18n="profile.payment.balance_desc">Use your account balance to purchase AI packs, use any AI Subscription versions etc. Balance is non-refundable.</span> 
-                    <a href="#" style="color: dodgerblue;" data-i18n="profile.payment.terms_link">View terms</a>
-                </p>
+                <div>
+                <div class="billing-page-header">
+                    <h2 class="billing-title">Billing & Subscription</h2>
+                    <p class="billing-subtitle">Manage your payment methods and billing history</p>
+                </div>
 
-                <h2 class="page-payment__title" data-i18n="profile.payment.balance_label">Balance</h2>
-                <p class="page-payment__balance">0.00 USD</p>
-                <a href="#" class="menu-item page-payment__href" data-page="page-transactions" data-i18n="profile.payment.view_transactions_link">
-                    View Transactions
-                </a>
+                <div class="billing-card-section">
+                    <h3 class="section-label">Payment Methods</h3>
+                    <div class="payment-methods-grid">
+                        <div class="method-card">
+                            <div class="card-info">
+                                <div class="card-icon-wrapper">
+                                    <i class="fa-brands fa-cc-visa"></i>
+                                </div>
+                                <div class="card-details">
+                                    <p class="card-number">Visa ending in 4242</p>
+                                    <p class="card-expiry">Expires 12/26</p>
+                                </div>
+                            </div>
+                            <span class="badge-default">Default</span>
+                        </div>
+                        
+                        <button class="add-method-btn">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Add payment method</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-section">
+                    <h3 class="section-label">Billing History</h3>
+                    <div class="table-responsive">
+                        <table class="billing-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Receipt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-body">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="pagination" class="pagination-container"></div>
+                </div>
+
+                <div class="billing-footer">
+                    <div class="security-info">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <div>
+                            <h4>Secure Payment Processing</h4>
+                            <p>All payments are processed securely through industry-standard encryption. Your payment information is never stored on our servers. You can manage your credits at any time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             </div>
 
             <div id="page-transactions" class="page">
@@ -383,7 +346,7 @@
 
             <div id="page-affiliate" class="page content-box">
                 <h2 data-i18n="affiliate.title">Affiliate Dashboard</h2>
-                <p class="sub" data-i18n="affiliate.desc">Invite friends and earn real money (20%) from every purchase they make.</p>
+                <p class="sub" data-i18n="affiliate.desc">Invite friends and earn real money (10%) from every purchase they make.</p>
 
                 <div class="affiliate-stats">
                     <div class="stat-card glass-card">
@@ -407,7 +370,7 @@
                         </button>
                     </div>
                     <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">
-                        Share this link anywhere. When users register via this link, you get 20% of all their purchases forever.
+                        Share this link anywhere. When users register via this link, you get 10% of all their purchases forever.
                     </p>
                 </div>
 
@@ -522,17 +485,6 @@
                 document.getElementById('profileName').textContent = newName;
             });
         }
-
-        document.querySelectorAll(".tab").forEach(tab => {
-            tab.addEventListener("click", function(e) {
-                e.preventDefault();
-
-                document.querySelectorAll(".tab")
-                    .forEach(t => t.classList.remove("active"));
-
-                this.classList.add("active");
-            });
-        });
 
         document.querySelectorAll(".menu-item").forEach(btn => {
             btn.addEventListener("click", () => {
