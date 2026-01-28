@@ -885,6 +885,8 @@
         </div>
     </div>
 
+    <div id="toast-container" class="toast-container"></div>ы
+
     <script src="js/i18n.js"></script>
     <script src="js/script.js"></script>
 
@@ -967,22 +969,29 @@
         }
 
         function appendMessage(sender, text, type = 'text') {
-            const container = document.getElementById('chatMessages'); 
+            const container = document.getElementById('chatBox'); 
     
             if (!container) {
-                console.error("Контейнер сообщений не найден! Проверь ID в HTML.");
+                console.error("Message container not found! Check the ID in the HTML.");
                 return;
             }
 
             const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}-message`;
+            msgDiv.className = `message ${sender}-message animate__animated animate__fadeInUp`;
             
-            msgDiv.innerHTML = `<div class="message-content">${text}</div>`;
+            if (type === 'video') {
+                msgDiv.innerHTML = `<video src="${text}" controls style="max-width: 100%; border-radius: 12px;"></video>`;
+            } else {
+                msgDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+            }
             
             container.appendChild(msgDiv);
-            container.scrollTop = container.scrollHeight;
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth'
+            });
             
-            return msgDiv.querySelector('.message-content');
+            // return msgDiv.querySelector('.message-content');
         }
 
         async function selectChat(id) {
@@ -1080,7 +1089,8 @@
                         document.getElementById('creditBalance').innerText = `${data.creditsLeft} Credits`;
                     }
                 } else {
-                    appendMessage('bot', "❌ Error: " + (data.message || "Failed to get response"));
+                    showToast(data.message || 'Error sending message', 'error');
+                    appendMessage('bot', '❌ ' + (data.message || 'Connection error'));
                 }
 
             } catch (err) {
