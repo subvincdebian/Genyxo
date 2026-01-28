@@ -559,6 +559,37 @@
         .send-btn i {
             pointer-events: none;
         }
+
+        #creditsBtn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        #creditsBtn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ffd700; /* Золотистая рамка при наведении */
+            transform: translateY(-1px);
+        }
+
+        #creditsBtn i {
+            font-size: 14px;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4));
+        }
+
+        #creditBalance {
+            font-weight: 600;
+            font-size: 14px;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+        }
         
         @media (max-width: 768px) {
 
@@ -868,7 +899,6 @@
         let conversations = [];
 
         const token = localStorage.getItem('authToken');
-        const API_BASE_URL = 'https://genyxo.com';
 
         const chatBox = document.getElementById('chatBox');
         const welcomeScreen = document.getElementById('welcomeScreen');
@@ -985,10 +1015,13 @@
             }
         }
 
-        window.useSuggestion = function(cardElement) {
-            const text = cardElement.querySelector('.suggestion-text').innerText;
-            userInput.value = text;
-            sendMessage();
+        function useSuggestion(text) {
+            const textarea = document.getElementById('userInput');
+            if (textarea) {
+                textarea.value = text;
+                textarea.focus();
+                adjustHeight(); // Чтобы поле расширилось под текст подсказки
+            }
         }
 
         async function sendMessage() {
@@ -1038,6 +1071,12 @@
             } catch (err) {
                 showToast(err.message, 'error');
             }
+        }
+
+        window.useSuggestion = function(cardElement) {
+            const text = cardElement.querySelector('.suggestion-text').innerText;
+            userInput.value = text;
+            sendMessage();
         }
 
         async function startVideoPolling(messageId, element) {
@@ -1302,20 +1341,20 @@
 
         textarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {    
-                e.preventDefault(); 
+                e.preventDefault();
                 sendMessage();
             }
-        }, true);
+        });
 
-        setTimeout(() => {
-            const input = document.getElementById('userInput');
-            if (input) {
-                if (input.value.trim() !== "") {
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const input = document.getElementById('userInput');
+                if (input && input.value.length > 0) {
                     input.placeholder = input.value;
-                    input.value = ""; 
+                    input.value = "";
                 }
-            }
-        }, 300);
+            }, 500);
+        });
     </script>
 </body>
 </html>
