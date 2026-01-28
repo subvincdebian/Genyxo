@@ -561,34 +561,29 @@
         }
 
         #creditsBtn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
             border-radius: 12px;
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            margin-right: 10px;
+            padding: 6px 14px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         #creditsBtn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #ffd700; /* Золотистая рамка при наведении */
-            transform: translateY(-1px);
+            border-color: #ffd700;
+            transform: translateY(-2px) scale(1.02);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
         }
 
         #creditsBtn i {
-            font-size: 14px;
-            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4));
+            color: #ffd700;
+            animation: coin-glow 2s infinite alternate;
         }
 
-        #creditBalance {
-            font-weight: 600;
-            font-size: 14px;
-            color: #e0e0e0;
-            font-family: 'Inter', sans-serif;
+        @keyframes coin-glow {
+            from { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4)); }
+            to { filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)); }
         }
         
         @media (max-width: 768px) {
@@ -971,6 +966,25 @@
             });
         }
 
+        function appendMessage(sender, text, type = 'text') {
+            const container = document.getElementById('chatMessages'); 
+    
+            if (!container) {
+                console.error("Контейнер сообщений не найден! Проверь ID в HTML.");
+                return;
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}-message`;
+            
+            msgDiv.innerHTML = `<div class="message-content">${text}</div>`;
+            
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+            
+            return msgDiv.querySelector('.message-content');
+        }
+
         async function selectChat(id) {
             if (currentChatId === id) return;
             
@@ -1053,19 +1067,20 @@
 
                 const data = await response.json();
 
-                if (!response.ok) throw new Error(data.message || 'Error');
-
-                if (data.conversationId) window.currentChatId = data.conversationId;
-
-                const botMsgDiv = appendMessage('bot', data.botReply);
-
-                if (selectedModel.includes('video')) {
-                    const messageId = data.messageId; 
-                    startVideoPolling(messageId, botMsgDiv);
-                }
-
-                if (data.creditsLeft !== undefined) {
-                    document.getElementById('userCredits').innerText = data.creditsLeft;
+                if (response.ok) {
+                    if (!currentConversationId && data.conversationId) {
+                        currentConversationId = data.conversationId;
+                        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + currentConversationId;
+                        window.history.pushState({path:newUrl}, '', newUrl);
+                    }
+                    
+                    appendMessage('bot', data.botReply);
+                    
+                    if (data.creditsLeft !== undefined) {
+                        document.getElementById('creditBalance').innerText = `${data.creditsLeft} Credits`;
+                    }
+                } else {
+                    appendMessage('bot', "❌ Error: " + (data.message || "Failed to get response"));
                 }
 
             } catch (err) {
@@ -1111,19 +1126,6 @@
                     console.error("Status error:", e);
                 }
             }, 5000);
-        }
-
-        function appendMessage(sender, content) {
-            const chatMessages = document.getElementById('chatMessages');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}-message`;
-            
-            msgDiv.innerHTML = `<div class="message-content">${content}</div>`;
-            
-            chatMessages.appendChild(msgDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            return msgDiv.querySelector('.message-content');
         }
 
         function appendError(msg) {
