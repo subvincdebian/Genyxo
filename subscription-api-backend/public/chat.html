@@ -688,14 +688,14 @@
                     <a href="chat.html" class="nav-link active">Chat</a>
                 </div>
 
-                <button class="login-btn" id="loginBtn" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); min-width: auto; padding: 0.5rem 1rem;">
+                <button class="login-btn" id="creditsBtn" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); min-width: auto; padding: 0.5rem 1rem;">
                     <i class="fas fa-coins" style="color: #ffd700;"></i>
                     <span id="creditBalance" style="margin-left: 8px;">0 Credits</span>
                 </button>
 
                 <div class="profile-container" style="display: flex; gap: 10px; align-items: center;">
 
-                    <button class="login-btn" id="profileToggleBtn" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                    <button class="login-btn" id="profileToggleBtn" id="loginBtn" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 35px; height: 35px;" alt="Avatar">
                     </button>
                     
@@ -868,6 +868,7 @@
         let conversations = [];
 
         const token = localStorage.getItem('authToken');
+        const API_BASE_URL = 'https://genyxo.com';
 
         const chatBox = document.getElementById('chatBox');
         const welcomeScreen = document.getElementById('welcomeScreen');
@@ -1307,14 +1308,16 @@
         }, true);
 
         // Ждем небольшую задержку, пока i18n.js отработает
-    setTimeout(() => {
-        const input = document.getElementById('userInput');
-        if (input && input.value.trim() !== "") {
-            // Берем текст, который ошибочно попал в value, и переносим его в placeholder
-            input.placeholder = input.value;
-            input.value = ""; // Очищаем поле
-        }
-    }, 100);
+        setTimeout(() => {
+            const input = document.getElementById('userInput');
+            if (input) {
+                // Если внутри textarea есть текст, переносим его в placeholder и очищаем поле
+                if (input.value.trim() !== "") {
+                    input.placeholder = input.value;
+                    input.value = ""; 
+                }
+            }
+        }, 300);
 
         /* textarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {    
