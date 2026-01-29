@@ -39,7 +39,7 @@
     "products_data": {
         "1": {
             "name": "Start AI",
-            "credits_label": "500 credits",
+            "credits_label": "750 credits",
             "features": [
                 "Access to basic AI models",
                 "Standard support",
@@ -48,7 +48,7 @@
         },
         "2": {
             "name": "AI Explorer",
-            "credits_label": "1,000 credits",
+            "credits_label": "2,000 credits",
             "features": [
                 "Access to advanced AI models",
                 "Priority support",
@@ -57,7 +57,7 @@
         },
         "3": {
             "name": "Pro Creator",
-            "credits_label": "2,000 credits",
+            "credits_label": "5,000 credits",
             "features": [
                 "All AI models included",
                 "VIP support",
@@ -66,7 +66,7 @@
         },
         "4": {
             "name": "AI Master",
-            "credits_label": "5,000 credits",
+            "credits_label": "10,000 credits",
             "features": [
                 "All AI models",
                 "24/7 Premium support",
@@ -75,7 +75,7 @@
         },
         "5": {
             "name": "Unlimited Power",
-            "credits_label": "10,000 credits",
+            "credits_label": "20,000 credits",
             "features": [
                 "All features",
                 "Dedicated support manager",
@@ -84,7 +84,7 @@
         },
         "6": {
             "name": "AI Titan",
-            "credits": "25,000 credits",
+            "credits_label": "45,000 credits",
             "features": [
                 "Unlimited everything",
                 "White-label options",
