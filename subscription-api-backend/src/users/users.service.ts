@@ -18,6 +18,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+
+    @InjectRepository(Transaction)
     private transactionRepository: Repository<Transaction>,
   ) {}
 

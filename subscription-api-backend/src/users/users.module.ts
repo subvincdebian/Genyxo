@@ -6,7 +6,7 @@ import { Transaction } from '../transactions/transaction.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Transaction]),
+    TypeOrmModule.forFeature([User, Transaction]), 
   ],
   providers: [UsersService],
   exports: [UsersService],
