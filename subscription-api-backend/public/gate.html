@@ -7,9 +7,8 @@
     <script>
         var token = localStorage.getItem('authToken');
         if (!token) {
-            window.location.href = '/'; // Отправляем на логин если нет токена
+            window.location.href = '/';
         } else {
-            // Делаем запрос к админке программно, передавая токен
             fetch('/are-you-sure-you-want-to-admin/panel', {
                 headers: { 'Authorization': 'Bearer ' + token }
             })
@@ -19,7 +18,7 @@
             })
             .then(html => {
                 document.open();
-                document.write(html); // "Рисуем" полученную админку
+                document.write(html);
                 document.close();
             })
             .catch(() => window.location.href = '/');

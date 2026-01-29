@@ -10,6 +10,12 @@ export enum TransactionStatus {
   PARTIALLY_PAID = 'PARTIALLY_PAID' // Якщо скинули менше ніж треба
 }
 
+export enum TransactionType {
+  PURCHASE = 'PURCHASE', // Пополнение баланса
+  SPEND = 'SPEND',       // Трата на ИИ
+  REFUND = 'REFUND'      // Возврат при ошибке
+}
+
 @Entity('transactions')
 export class Transaction {
   @PrimaryGeneratedColumn()
@@ -39,4 +45,14 @@ export class Transaction {
   @ManyToOne(() => User, (user) => user.transactions)
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @Column({
+    type: 'enum',
+    enum: TransactionType,
+    default: TransactionType.PURCHASE
+  })
+  type: TransactionType;
+
+  @Column({ nullable: true })
+  description: string;
 }

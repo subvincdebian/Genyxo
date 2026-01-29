@@ -76,6 +76,10 @@
         .status-in_progress { background-color: #3498db; color: #fff; }
         .status-closed { background-color: #2ecc71; color: #fff; }
 
+        .status-spent { color: #ff9f43; font-weight: bold; }   /* Оранжевый - трата */
+        .status-refund { color: #48dbfb; font-weight: bold; }  /* Голубой - возврат */
+        .status-approved { color: #1dd1a1; font-weight: bold; } /* Зеленый - покупка */
+
         .priority-low { background-color: #34495e; color: #fff; }
         .priority-medium { background-color: #f1c40f; color: #111; }
         .priority-high { background-color: #e74c3c; color: #fff; }
@@ -428,6 +432,33 @@
             </div>
         </div>
 
+        <div class="glass" style="padding: 25px;">
+            <div class="section-header">
+                <h2><i class="fas fa-robot"></i> <span data-i18n="admin.logs_title">Logs</span></h2>
+                <button onclick="loadTransactions()" class="action-btn">
+                    <i id="refreshIconTx" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
+                </button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="col-id">ID</th>
+                        <th class="col-user">User</th>
+                        <th style="width: 100px;">Credits Change</th>
+                        <th style="width: 100px;">Type</th>
+                        <th class="col-date">Date</th>
+                        <th class="col-action">Action / Model</th>
+                    </tr>
+                </thead>
+                <tbody id="usageTableBody"></tbody>
+            </table>
+             <div class="pagination-controls">
+                <button id="prevTxBtn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <span id="txPageInfo">Page 1</span>
+                <button id="nextTxBtn" disabled>Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+
         <div class="glass" style="padding: 25px; margin-top: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-headset"></i> <span data-i18n="admin.tickets_title">Support Tickets</span></h2>
@@ -591,59 +622,56 @@
             if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
-                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/transactions?page=${txPage}&limit=${txLimit}`, {
+                const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/transactions`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
-                if (!res.ok) return;
-
                 const result = await res.json();
-                const transactions = result.data ? result.data : result;
-                const meta = result.meta || { page: 1, lastPage: 1, total: transactions.length };
+                const transactions = result.data;
 
-                const tbody = document.getElementById('transactionsTable');
-                tbody.innerHTML = '';
+                const purchaseBody = document.getElementById('purchaseTableBody');
+                const usageBody = document.getElementById('usageLogsTableBody');
                 
-                if (transactions.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No transactions found</td></tr>`;
-                } else {
-                    transactions.forEach(tx => {
-                        let statusClass = 'badge-pending';
-                        if (tx.status === 'APPROVED') statusClass = 'badge-success';
-                        if (tx.status === 'DECLINED') statusClass = 'badge-admin';
+                purchaseBody.innerHTML = '';
+                usageBody.innerHTML = '';
 
-                        let actionBtns = '';
-                        if (tx.status === 'PENDING') {
-                            // Используем div для кнопок, чтобы CSS Grid сработал на мобильном
-                            actionBtns = `
-                                <div style="display: flex; gap: 5px; justify-content: flex-end;">
-                                    <button class="action-btn" style="background: #2ecc71; color: white;" onclick="processTx(${tx.id}, 'approve')">✓ Approve</button>
-                                    <button class="action-btn" style="background: #e74c3c; color: white;" onclick="processTx(${tx.id}, 'decline')">✕ Decline</button>
-                                </div>
-                            `;
-                        } else {
-                            actionBtns = '-';
-                        }
-                        const userEmail = tx.user ? tx.user.email : 'Unknown User';
-                        const dateStr = new Date(tx.createdAt).toLocaleString();
-                        
-                        // ДОБАВЛЕНЫ data-label
-                        tbody.innerHTML += `
+                transactions.forEach(tx => {
+                    const date = new Date(tx.createdAt).toLocaleString();
+                    const userEmail = tx.user?.email || 'N/A';
+                    
+                    if (tx.type === 'PURCHASE' || !tx.type) { 
+                        purchaseBody.innerHTML += `
                             <tr>
-                                <td data-label="ID">Transaction #${tx.id}</td>
-                                <td data-label="User" title="${userEmail}">${userEmail}</td>
-                                <td data-label="Amount" style="color:#10e6cc; font-weight:bold;">$${tx.amount}</td>
-                                <td data-label="Credits">+${tx.creditsAmount}</td>
-                                <td data-label="Status"><span class="badge ${statusClass}">${tx.status}</span></td>
-                                <td data-label="Method">${tx.provider}</td>
-                                <td data-label="Date">${dateStr}</td>
-                                <td data-label="Actions">${actionBtns}</td> 
+                                <td>${tx.id}</td>
+                                <td style="word-break: break-all;">${userEmail}</td>
+                                <td>$${tx.amount}</td>
+                                <td style="color: #1dd1a1">+${tx.creditsAmount}</td>
+                                <td>${tx.provider}</td>
+                                <td><span class="status-approved">${tx.status}</span></td>
+                                <td>${date}</td>
                             </tr>
                         `;
-                    });
-                }
-                updatePaginationUI('Tx', meta);
-            } catch (e) { console.error(e); } finally { if (refreshIcon) refreshIcon.classList.remove('spin'); }
+                    } 
+                    else {
+                        const isRefund = tx.type === 'REFUND';
+                        const statusClass = isRefund ? 'status-refund' : 'status-spent';
+                        const prefix = tx.creditsAmount > 0 ? '+' : '';
+                        
+
+                        usageBody.innerHTML += `
+                            <tr>
+                                <td>${tx.id}</td>
+                                <td style="word-break: break-all;">${userEmail}</td>
+                                <td>${tx.description || 'AI Request'}</td>
+                                <td style="color: ${color}; font-weight: bold;">${tx.creditsAmount > 0 ? '+' : ''}${tx.creditsAmount}</td>
+                                <td><span class="${statusClass}">${tx.type}</span></td>
+                                <td>${date}</td>
+                            </tr>
+                        `;
+                    }
+                });
+            } catch (e) {
+                console.error("Error loading transactions:", e);
+            }
         }
 
         async function loadAdminTickets() {

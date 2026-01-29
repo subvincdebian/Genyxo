@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { Transaction, TransactionStatus, TransactionType } from '../transactions/transaction.entity';
 
 const REFERRAL_REWARDS: Record<number, number> = {
   1: 1, // Start AI
@@ -18,6 +18,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private transactionRepository: Repository<Transaction>,
   ) {}
 
   get repo(): Repository<User> {
@@ -64,13 +65,11 @@ export class UsersService {
     let code = '';
 
     while (!isUnique) {
-      // Генеруємо код на 7 символів
       code = '';
       for (let i = 0; i < 7; i++) {
         code += characters.charAt(Math.floor(Math.random() * characters.length));
       }
 
-      // Перевіряємо в базі, чи вже існує такий код
       const existing = await this.usersRepository.findOne({ where: { referralCode: code } });
       if (!existing) {
         isUnique = true;
@@ -85,7 +84,7 @@ export class UsersService {
       const currentCredits = Number(user.credits) || 0;
       const creditsToAdd = Number(amount) || 0;
       user.credits = currentCredits + creditsToAdd;
-      await this.usersRepository.save(user);
+      await this.usersRepository.increment({ id: userId }, 'credits', amount);
     }
   }
 
@@ -100,15 +99,14 @@ export class UsersService {
   }
 
   async deductCredits(userId: number, amount: number): Promise<boolean> {
-    const user = await this.findOneById(userId);
-    if (!user) return false;
+    const result = await this.usersRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ credits: () => `credits - ${amount}` })
+      .where("id = :id AND credits >= :amount", { id: userId, amount })
+      .execute();
 
-    const currentCredits = Number(user.credits) || 0;
-    if (currentCredits < amount) return false;
-
-    user.credits = currentCredits - amount;
-    await this.usersRepository.save(user);
-    return true;
+    return (result.affected ?? 0) > 0;
   }
 
   async getBalance(userId: number): Promise<number> {
@@ -140,23 +138,19 @@ export class UsersService {
   }
 
   async processReferralBonus(buyerId: number, packId: number): Promise<void> {
-    // 1. Шукаємо покупця разом з даними про його реферера
     const buyer = await this.usersRepository.findOne({
         where: { id: buyerId },
         select: ['id', 'referrerId', 'isReferralPaid']
     });
 
-    // 2. Перевірки: чи є реферер і чи НЕ була вже виплата за цього юзера
     if (!buyer || !buyer.referrerId || buyer.isReferralPaid) {
-        return; // Виходимо, якщо умов не дотримано
+        return;
     }
 
     const rewardAmount = REFERRAL_REWARDS[packId] || 0;
     if (rewardAmount <= 0) return;
 
-    // 3. Використовуємо транзакцію бази даних, щоб уникнути подвійних нарахувань при збоях
     await this.usersRepository.manager.transaction(async (transactionalEntityManager) => {
-        // Повторна перевірка всередині транзакції для безпеки (Locking)
         const lockedBuyer = await transactionalEntityManager.findOne(User, {
             where: { id: buyerId },
             lock: { mode: 'pessimistic_write' }
@@ -164,19 +158,30 @@ export class UsersService {
 
         if (!lockedBuyer || lockedBuyer.isReferralPaid) return;
 
-        // Нараховуємо кошти рефереру
         await transactionalEntityManager.increment(User, 
             { id: buyer.referrerId }, 
             'referralBalance', 
             rewardAmount
         );
 
-        // Позначаємо покупця як "оплаченого" для партнерки
         await transactionalEntityManager.update(User, buyerId, { 
             isReferralPaid: true 
         });
         
         console.log(`[Affiliate] Reward $${rewardAmount} paid to User ${buyer.referrerId} for User ${buyerId} (Pack ${packId})`);
     });
+  }
+
+  async logTransaction(userId: number, amount: number, type: TransactionType, description: string) {
+    const tx = this.transactionRepository.create({
+        user: { id: userId },
+        creditsAmount: amount,
+        amount: 0,
+        status: TransactionStatus.APPROVED,
+        type: type,
+        description: description,
+        provider: 'INTERNAL'
+    });
+    return this.transactionRepository.save(tx);
   }
 }

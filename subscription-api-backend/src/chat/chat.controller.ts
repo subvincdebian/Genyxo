@@ -10,12 +10,14 @@ import {
   Param,
   Patch,
   Delete,
-  NotFoundException
+  NotFoundException,
+  InternalServerErrorException
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatService } from './chat.service';
 import { UsersService } from '../users/users.service';
 import { FalService } from './fal.service';
+import { TransactionType } from 'src/transactions/transaction.entity';
 
 @Controller('chat')
 export class ChatController {
@@ -60,26 +62,53 @@ export class ChatController {
   @UseGuards(AuthGuard('jwt'))
   @Post('message')
   async sendMessage(@Body() body: { message: string, model: string, conversationId?: number }, @Request() req) {
-    const userId = req.user.id;
-    const { message, conversationId, model } = body;
-    const selectedModel = model || 'gpt-4o-mini';
+      const userId = req.user.id;
+      const { message, conversationId, model } = body;
+      const selectedModel = model || 'gpt-4o-mini';
 
-    const cost = this.MODEL_PRICES[selectedModel];
-    if (!cost) throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
+      const cost = this.MODEL_PRICES[selectedModel];
+      if (!cost) throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
 
-    const isDeducted = await this.usersService.deductCredits(userId, cost);
-    if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
+      const isDeducted = await this.usersService.deductCredits(userId, cost);
+      if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
 
-    const result = await this.chatService.processMessage(userId, message, selectedModel, conversationId);
-    const newBalance = await this.usersService.getBalance(userId);
+      try {
+          const isDeducted = await this.usersService.deductCredits(userId, cost);
+          if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
 
-    return {
-      botReply: result.botReply,
-      conversationId: result.conversationId,
-      messageId: result.messageId,
-      status: result.status,
-      creditsLeft: newBalance
-    };
+          await this.usersService.logTransaction(
+              userId, 
+              -cost,
+              TransactionType.SPEND, 
+              `Used AI Model: ${selectedModel}`
+          );
+
+          const result = await this.chatService.processMessage(userId, message, selectedModel, conversationId);
+          const newBalance = await this.usersService.getBalance(userId);
+
+          return {
+              botReply: result.botReply,
+              conversationId: result.conversationId,
+              messageId: result.messageId,
+              status: result.status,
+              creditsLeft: newBalance
+          };
+      } catch (error) {
+          await this.usersService.addCredits(userId, cost);
+
+          await this.usersService.logTransaction(
+            userId, 
+            cost, 
+            TransactionType.REFUND, 
+            `Refund for failed ${selectedModel} request`
+          );
+          
+          console.error('API Error, credits returned:', error.response?.data || error.message);
+          
+          throw new InternalServerErrorException(
+              "The AI service is temporarily unavailable. Your credits have been refunded."
+          );
+      }
   }
 
   @UseGuards(AuthGuard('jwt'))
