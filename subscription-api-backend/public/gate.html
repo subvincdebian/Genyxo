@@ -16,10 +16,17 @@
                 if (res.ok) return res.text();
                 throw new Error('Unauthorized');
             })
-            .then(html => {
+            /* .then(html => {
                 document.open();
                 document.write(html);
                 document.close();
+            })*/
+           .then(html => {
+                document.body.innerHTML = html;
+                const scripts = document.body.getElementsByTagName('script');
+                for (let i = 0; i < scripts.length; i++) {
+                    eval(scripts[i].innerText);
+                }
             })
             .catch(() => window.location.href = '/');
         }

@@ -604,16 +604,17 @@
         }
 
         function filterUsers() {
-            const term = document.getElementById('userSearch').value.toLowerCase();
-            const rows = document.querySelectorAll('#userTableBody tr');
+            const input = document.getElementById('userSearchInput');
+            const tableBody = document.getElementById('usersTable');
+            
+            if (!input || !tableBody) return;
+
+            const term = input.value.toLowerCase();
+            const rows = tableBody.querySelectorAll('tr');
             
             rows.forEach(row => {
-                const rowText = row.textContent.toLowerCase();
-                if (rowText.includes(term)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
             });
         }
 
@@ -629,8 +630,8 @@
                 const result = await res.json();
                 const transactions = result.data;
 
-                const purchaseBody = document.getElementById('purchaseTableBody');
-                const usageBody = document.getElementById('usageLogsTableBody');
+                const purchaseBody = document.getElementById('transactionsTable');
+                const usageBody = document.getElementById('usageTableBody');
                 
                 purchaseBody.innerHTML = '';
                 usageBody.innerHTML = '';
