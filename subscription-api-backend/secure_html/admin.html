@@ -50,6 +50,23 @@
         .badge-success { background: #2ecc71; color: black; }
         .badge-pending { background: #f1c40f; color: black; }
         .badge-admin { background: #e74c3c; color: white; }
+
+        .admin-section {
+            margin-bottom: 20px;
+        }
+
+        .admin-section h2 {
+            margin-bottom: 20px;
+            border-left: 4px solid #1dd1a1;
+            padding-left: 15px;
+        }
+
+        code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
         
         .action-btn {
             padding: 6px 12px;
@@ -422,7 +439,7 @@
 
         <div class="glass" style="padding: 25px;">
             <div class="section-header">
-                <h2><i class="fas fa-robot"></i> <span data-i18n="admin.logs_title">Logs</span></h2>
+                <h2><i class="fas fa-history"></i> <span data-i18n="admin.logs_title">Usage Logs</span></h2>
                 <button onclick="loadTransactions()" class="action-btn">
                     <i id="refreshIconTx" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
                 </button>
@@ -432,10 +449,10 @@
                     <tr>
                         <th class="col-id">ID</th>
                         <th class="col-user">User</th>
-                        <th style="width: 100px;">Credits Change</th>
-                        <th style="width: 100px;">Type</th>
+                        <th>Credits Change</th>
+                        <th>Type</th>
                         <th class="col-date">Date</th>
-                        <th class="col-action">Action / Model</th>
+                        <th>Action / Model</th>
                     </tr>
                 </thead>
                 <tbody id="usageTableBody"></tbody>
@@ -641,6 +658,10 @@
                     const userEmail = tx.user?.email || 'N/A';
                     
                     if (tx.type === 'PURCHASE' || !tx.type) { 
+                        let statusClass = 'status-pending';
+                        if (tx.status === 'APPROVED') statusClass = 'status-approved';
+                        if (tx.status === 'DECLINED') statusClass = 'status-declined';
+
                         purchaseBody.innerHTML += `
                             <tr>
                                 <td>${tx.id}</td>
@@ -648,7 +669,7 @@
                                 <td>$${tx.amount}</td>
                                 <td style="color: #1dd1a1">+${tx.creditsAmount}</td>
                                 <td>${tx.provider}</td>
-                                <td><span class="status-approved">${tx.status}</span></td>
+                                <td><span class="${statusClass}">${tx.status}</span></td>
                                 <td>${date}</td>
                             </tr>
                         `;
@@ -656,14 +677,14 @@
                     else {
                         const isRefund = tx.type === 'REFUND';
                         const statusClass = isRefund ? 'status-refund' : 'status-spent';
-                        const prefix = tx.creditsAmount > 0 ? '+' : '';
+                        const modelInfo = tx.model ? `<code style="color: ##1dd1a1;">${tx.model}</code>` : (tx.description || 'AI Request');
 
                         usageBody.innerHTML += `
                             <tr>
                                 <td>${tx.id}</td>
                                 <td style="word-break: break-all;">${userEmail}</td>
-                                <td>${tx.description || 'AI Request'}</td>
-                                <td style="font-weight: bold;">${tx.creditsAmount > 0 ? '+' : ''}${tx.creditsAmount}</td>
+                                <td>${modelInfo}</td>
+                                <td style="font-weight: bold; color: ${tx.creditsAmount > 0 ? '#1dd1a1' : '#ee5253'}">${tx.creditsAmount > 0 ? '+' : ''}${tx.creditsAmount}</td>
                                 <td><span class="${statusClass}">${tx.type}</span></td>
                                 <td>${date}</td>
                             </tr>

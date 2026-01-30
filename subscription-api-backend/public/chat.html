@@ -1011,38 +1011,34 @@
             });
         }
 
-        function appendMessage(sender, text, type = 'text') {
-            const container = document.getElementById('chatBox'); 
+        function appendMessage(sender, text) {
+            const container = document.getElementById('chatContainer');
+            if (!container) return;
 
-            div.className = `message ${sender}-message`;
-    
-            if (!container) {
-                console.error("Message container not found! Check the ID in the HTML.");
-                return;
-            }
+            const messageDiv = document.createElement('div');
+            
+            let senderClass = 'bot-message';
+            if (sender === 'user') senderClass = 'user-message';
+            if (sender === 'error') senderClass = 'error-message';
 
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}-message animate__animated animate__fadeInUp`;
-
+            messageDiv.className = `message ${senderClass}`;
+            
             if (sender === 'user') {
-                div.textContent = text;
+                messageDiv.textContent = text;
             } else if (sender === 'error') {
-                div.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
+                messageDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
             } else {
-                div.innerHTML = marked.parse(text);
+                messageDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
             }
-            
+
             if (type === 'video') {
-                msgDiv.innerHTML = `<video src="${text}" controls style="max-width: 100%; border-radius: 12px;"></video>`;
+                messageDiv.innerHTML = `<video src="${text}" controls style="max-width: 100%; border-radius: 12px;"></video>`;
             } else {
-                msgDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+                messageDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
             }
             
-            container.appendChild(msgDiv);
-            container.scrollTo({
-                top: container.scrollHeight,
-                behavior: 'smooth'
-            });
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
         }
 
         async function selectChat(id) {
