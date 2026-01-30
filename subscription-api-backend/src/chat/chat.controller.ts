@@ -66,6 +66,13 @@ export class ChatController {
       const { message, conversationId, model } = body;
       const selectedModel = model || 'gpt-4o-mini';
 
+      if (!message || message.trim().length === 0) {
+        throw new BadRequestException("Message cannot be empty");
+      }
+      if (message.length > 1000) {
+        throw new BadRequestException("Message is too long (max 1000 characters)");
+      }
+
       const cost = this.MODEL_PRICES[selectedModel];
       if (!cost) throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
 

@@ -3,6 +3,9 @@ import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
@@ -18,6 +21,10 @@ import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 1 минута
+      limit: 20,  // максимум 15 запросов в минуту с одного IP
+    }]),
     ConfigModule.forRoot({ isGlobal: true }),
 
     MailerModule.forRoot({
@@ -59,6 +66,11 @@ import { EmailModule } from './email/email.module';
     EmailModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

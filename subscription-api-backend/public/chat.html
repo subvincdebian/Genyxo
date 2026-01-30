@@ -1060,6 +1060,8 @@
 
             appendMessage('user', text);
 
+            const botMsgDiv = showBotLoading();
+
             try {
                 const response = await fetch(`${API_BASE_URL}/chat/message`, {
                     method: 'POST',
@@ -1076,25 +1078,31 @@
 
                 const data = await response.json();
 
+                if (botMsgDiv) botMsgDiv.remove();
+
                 if (response.ok) {
-                    if (!currentConversationId && data.conversationId) {
-                        currentConversationId = data.conversationId;
-                        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + currentConversationId;
+                    if (!window.currentChatId && data.conversationId) {
+                        window.currentChatId = data.conversationId;
+                        const newUrl = `${window.location.origin}${window.location.pathname}?id=${window.currentChatId}`;
                         window.history.pushState({path:newUrl}, '', newUrl);
                     }
                     
                     appendMessage('bot', data.botReply);
                     
                     if (data.creditsLeft !== undefined) {
-                        document.getElementById('creditBalance').innerText = `${data.creditsLeft} Credits`;
+                        const balanceEl = document.getElementById('creditBalance');
+                        if(balanceEl) balanceEl.innerText = `${data.creditsLeft} Credits`;
+                        localStorage.setItem('userCredits', data.creditsLeft);
                     }
                 } else {
                     showToast(data.message || 'Error sending message', 'error');
-                    appendMessage('bot', '❌ ' + (data.message || 'Connection error'));
+                    appendMessage('bot', '❌ ' + (data.message || 'Error sending message'));
                 }
 
             } catch (err) {
-                showToast(err.message, 'error');
+                if (botMsgDiv) botMsgDiv.remove();
+                showToast("Server connection error", 'error');
+                appendMessage('bot', `❌ Fatal Error: ${err.message}`);
             }
         }
 
