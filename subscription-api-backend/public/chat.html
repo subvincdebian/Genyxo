@@ -955,26 +955,14 @@
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadConversations();
-        });
-
-        async function loadConversations() {
-            try {
-                const res = await fetch(`${API_BASE_URL}/chat/conversations`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    conversations = await res.json();
-                    renderHistoryList();
-                    
-                    if (conversations.length > 0 && !currentChatId) {
-                        selectChat(conversations[0].id);
-                    } else if (conversations.length === 0) {
-                        startNewChat();
-                    }
-                }
-            } catch(e) { console.error(e); }
+        function toggleChatView(hasMessages) {
+            if (hasMessages) {
+                welcomeScreen.style.display = 'none';
+                chatBox.style.display = 'flex';
+            } else {
+                welcomeScreen.style.display = 'flex';
+                chatBox.style.display = 'none';
+            }
         }
 
         function renderHistoryList() {
@@ -1011,9 +999,59 @@
             });
         }
 
+        function startNewChat() {
+            currentChatId = null;
+            chatBox.innerHTML = '';
+            renderHistoryList();
+            toggleChatView(false);
+            
+            history.pushState({}, '', window.location.pathname);
+        }
+
+        async function selectChat(id) {
+            if (currentChatId === id) return;
+            
+            currentChatId = id;
+            renderHistoryList();
+            
+            chatBox.innerHTML = ''; 
+            toggleChatView(true);
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const messages = await res.json();
+                    messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadConversations() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/chat/conversations`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    conversations = await res.json();
+                    renderHistoryList();
+                    
+                    if (conversations.length > 0 && !currentChatId) {
+                        selectChat(conversations[0].id);
+                    } else if (conversations.length === 0) {
+                        startNewChat();
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConversations();
+        });
+
         function appendMessage(sender, text) {
-            const container = document.getElementById('chatContainer');
-            if (!container) return;
+            if (!chatBox) return;
 
             const messageDiv = document.createElement('div');
             
@@ -1037,28 +1075,8 @@
                 messageDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
             }
             
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        async function selectChat(id) {
-            if (currentChatId === id) return;
-            
-            currentChatId = id;
-            renderHistoryList();
-            
-            chatBox.innerHTML = ''; 
-            toggleChatView(true);
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const messages = await res.json();
-                    messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
-                }
-            } catch(e) { console.error(e); }
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         document.querySelector('.new-chat-btn').onclick = (e) => {
@@ -1066,30 +1084,10 @@
             startNewChat();
         };
 
-        function startNewChat() {
-            currentChatId = null;
-            chatBox.innerHTML = '';
-            renderHistoryList();
-            toggleChatView(false);
-            
-            history.pushState({}, '', window.location.pathname);
-        }
-
-        function toggleChatView(hasMessages) {
-            if (hasMessages) {
-                welcomeScreen.style.display = 'none';
-                chatBox.style.display = 'flex';
-            } else {
-                welcomeScreen.style.display = 'flex';
-                chatBox.style.display = 'none';
-            }
-        }
-
         function useSuggestion(text) {
-            const textarea = document.getElementById('userInput');
-            if (textarea) {
-                textarea.value = text;
-                textarea.focus();
+            if (userInput) {
+                userInput.value = text;
+                userInput.focus();
                 adjustHeight();
             }
         }
@@ -1105,14 +1103,13 @@
         }
 
         async function sendMessage() {
-            const textarea = document.getElementById('userInput');
-            const text = textarea.value.trim();
+            const text = userInput.value.trim();
 
             if (!text) return;
 
             appendMessage('user', text);
-            textarea.value = '';
-            textarea.style.height = 'auto';
+            userInput.value = '';
+            userInput.style.height = 'auto';
 
             const botMsgDiv = showBotLoading();
 
@@ -1121,7 +1118,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ 
                         message: text, 
@@ -1144,8 +1141,7 @@
                     
                     appendMessage('bot', data.botReply);
                     if (data.creditsLeft !== undefined) {
-                        const balanceEl = document.getElementById('creditBalance');
-                        if(balanceEl) balanceEl.innerText = `${data.creditsLeft} Credits`;
+                        if(creditBalanceEl) creditBalanceEl.innerText = `${data.creditsLeft} Credits`;
                         localStorage.setItem('userCredits', data.creditsLeft);
                     }
                 } else {
@@ -1174,7 +1170,7 @@
                 attempts++;
                 try {
                     const res = await fetch(`${API_BASE_URL}/chat/message-status/${messageId}`, {
-                        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await res.json();
 
@@ -1404,16 +1400,14 @@
             });
         })();
 
-        const textarea = document.getElementById('userInput');
-
         function adjustHeight() {
-            textarea.style.height = 'auto'; 
-            textarea.style.height = (textarea.scrollHeight) + 'px';
+            userInput.style.height = 'auto'; 
+            userInput.style.height = (userInput.scrollHeight) + 'px';
         }
 
-        textarea.addEventListener('input', adjustHeight);
+        userInput.addEventListener('input', adjustHeight);
 
-        textarea.addEventListener('keydown', (e) => {
+        userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {    
                 e.preventDefault();
                 sendMessage();
@@ -1422,10 +1416,9 @@
 
         window.addEventListener('load', () => {
             setTimeout(() => {
-                const input = document.getElementById('userInput');
-                if (input && input.value.length > 0) {
-                    input.placeholder = input.value;
-                    input.value = "";
+                if (userInput && userInput.value.length > 0) {
+                    userInput.placeholder = userInput.value;
+                    userInput.value = "";
                 }
             }, 500);
         });

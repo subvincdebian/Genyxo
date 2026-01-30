@@ -237,12 +237,11 @@
         }
 
         async function loadNotifications() {
-            const localToken = localStorage.getItem('authToken');
-            if (!localToken) return;
+            if (!token) return;
 
             try {
                 const res = await fetch(`${API_BASE_URL}/notifications`, {
-                    headers: { 'Authorization': `Bearer ${localToken}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const list = await res.json();
                 const container = document.getElementById('notifList');
@@ -277,11 +276,10 @@
         }
 
         async function markRead(id, element) {
-            const localToken = localStorage.getItem('authToken');
             element.classList.remove('unread');
             await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
                 method: 'PATCH',
-                headers: { 'Authorization': `Bearer ${localToken}` }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             if(typeof updateNotificationsBadge === 'function') {
                 updateNotificationsBadge();
@@ -289,14 +287,13 @@
         }
         
         async function markAllRead() {
-            const localToken = localStorage.getItem('authToken');
             const confirmText = safeTranslate('notifications.confirm_read_all', 'Mark all as read?');
             if(!confirm(confirmText)) return;
             
             try {
                 await fetch(`${API_BASE_URL}/notifications/read-all`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${localToken}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 loadNotifications();

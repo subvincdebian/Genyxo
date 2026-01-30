@@ -246,7 +246,6 @@
         }
 
         async function loadTickets() {
-            
             if (!token) return;
 
             try {
@@ -319,7 +318,6 @@
 
         document.getElementById('createTicketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const token = localStorage.getItem('authToken');
             const subject = document.getElementById('ticketSubject').value;
             const message = document.getElementById('ticketMessage').value;
             const priority = document.getElementById('ticketPriority').value;
@@ -351,8 +349,7 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            const t = localStorage.getItem('authToken');
-            if (!t) {
+            if (!token) {
                 window.location.href = 'index.html';
             } else {
                 loadTickets();
