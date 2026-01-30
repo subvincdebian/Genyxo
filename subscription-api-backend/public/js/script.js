@@ -20,8 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Successfully logged in with Google!', 'success');
 
     } else {
-        const savedToken = localStorage.getItem('authToken');
-        if (savedToken) {
+        if (authToken) {
             fetchUserProfile(savedToken);
         } else {
             updateUIState(false);
@@ -154,16 +153,6 @@ function updateBalanceUI(amount) {
 }
 
 function updateUIState(isLoggedIn, userData = null) {
-    const navUsername = document.getElementById('navUsername');
-    const navIcon = document.getElementById('navIcon');
-    const navAvatar = document.getElementById('navAvatar');
-    const menuName = document.getElementById('menuName');
-    const menuEmail = document.getElementById('menuEmail');
-    const menuCredits = document.getElementById('menuCredits');
-    const loginBtn = document.getElementById('loginBtn');
-    const profilePanel = document.getElementById('profilePanel');
-    const dropdownAvatars = document.querySelectorAll('.dropdown-avatar');
-
     if (isLoggedIn && userData) {
         // Якщо користувач увійшов:
         if (navUsername) navUsername.textContent = userData.name || userData.email || 'User';
@@ -208,8 +197,7 @@ function updateUIState(isLoggedIn, userData = null) {
 }
 
 async function loadProfileData() {
-    const token = localStorage.getItem('authToken');
-    /* if (!token) {
+    /* if (!authToken) {
         const protectedPages = ['profile.html', 'notifications.html', 'support.html'];
         if (protectedPages.some(page => window.location.pathname.includes(page))) {
             window.location.href = 'index.html';
@@ -219,22 +207,11 @@ async function loadProfileData() {
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
         if (!response.ok) throw new Error('Failed to fetch profile');
         const user = await response.json();
-
-        const elements = {
-            navUsername: document.getElementById('navUsername'),
-            navIcon: document.getElementById('navIcon'),
-            navAvatar: document.getElementById('navAvatar'),
-            loginBtn: document.getElementById('loginBtn'),
-            menuName: document.getElementById('menuName'),
-            menuEmail: document.getElementById('menuEmail'),
-            menuCredits: document.getElementById('menuCredits'),
-            dropdownAvatar: document.querySelector('.dropdown-avatar')
-        };
 
         if (user.id) {
             const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
@@ -275,9 +252,8 @@ async function loadProfileData() {
         const emailInput = document.querySelector('input[placeholder="your@email.com"]');
         if (emailInput) emailInput.value = user.email || '';
 
-        const logoutBtn = document.getElementById('dropdownLogoutBtn');
-        if (logoutBtn) {
-            logoutBtn.onclick = () => {
+        if (dropdownLogoutBtn) {
+            dropdownLogoutBtn.onclick = () => {
                 localStorage.removeItem('authToken');
                 window.location.href = 'index.html';
             };

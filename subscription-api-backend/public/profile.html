@@ -11,7 +11,6 @@
 
     <script>
         (function() {
-            const token = localStorage.getItem('authToken');
             if (token) {
                 document.documentElement.classList.add('auth-active');
             }
@@ -19,6 +18,8 @@
     </script>
 </head>
 <body>
+    
+    <div id="toast-container"></div>
     
     <nav class="navbar">
         <div class="nav-container">
@@ -35,18 +36,6 @@
                         <img src="./images/logo.svg" class="logo-icon" alt="Logo">
                     <span>Genyxo</span>
                     </a>
-                </div>
-                    
-                <div class="search-container">
-                    <div class="search-box">
-                        <input type="text" style="display:none" autocomplete="username">
-                        <input type="password" style="display:none" autocomplete="current-password">
-                        <input type="text" class="search-input" data-i18n="nav.search_placeholder" placeholder="Search products..." autocomplete="off" autocapitalize="none" spellcheck="false" name="search-field-xyz">
-                        
-                        <button class="search-btn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -508,13 +497,7 @@
             });
         });
 
-        document.addEventListener("click", (e) => {
-            if (e.target.id === "openChangePassword") {
-                openModal();
-            }
-        });
         (() => {
-
         const $ = s => document.querySelector(s);
         const $$ = s => Array.from(document.querySelectorAll(s));
 
@@ -650,58 +633,50 @@
         });
         })();
 
-        document.addEventListener("click", (e) => {
-            if (e.target.closest(".eye-btn")) {
-                const btn = e.target.closest(".eye-btn");
-                const targetId = btn.dataset.target;
-                togglePassword(targetId, btn);
-            }
-        });
-
         document.addEventListener('click', (e) => {
-        const btn = e.target.closest('.eye-btn');
-        if (!btn) return;
+            const btn = e.target.closest('.eye-btn');
+            if (!btn) return;
 
-        const targetId = btn.dataset.target;
-        if (!targetId) return;
-        const input = document.getElementById(targetId);
-        if (!input) return;
+            const targetId = btn.dataset.target;
+            if (!targetId) return;
+            const input = document.getElementById(targetId);
+            if (!input) return;
 
-        const isPassword = input.type === 'password';
-        input.type = isPassword ? 'text' : 'password';
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
 
-        btn.classList.toggle('active', isPassword);
+            btn.classList.toggle('active', isPassword);
 
-        const svg = btn.querySelector('svg');
-        if (!svg) return;
+            const svg = btn.querySelector('svg');
+            if (!svg) return;
 
-        if (isPassword) {
-            svg.innerHTML = `
-            <path d="M3 3l18 18" stroke="currentColor"></path>
-            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-            `;
-            svg.classList.add('eye-off');
-        } else {
-            svg.innerHTML = `
-            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-            `;
-            svg.classList.remove('eye-off');
-        }
-        });
+            if (isPassword) {
+                svg.innerHTML = `
+                <path d="M3 3l18 18" stroke="currentColor"></path>
+                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+                `;
+                svg.classList.add('eye-off');
+            } else {
+                svg.innerHTML = `
+                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+                `;
+                svg.classList.remove('eye-off');
+            }
+            });
 
-        function shakeElements(elements) {
-        elements.forEach(el => {
-            el.classList.remove('shake');
+            function shakeElements(elements) {
+            elements.forEach(el => {
+                el.classList.remove('shake');
 
-            void el.offsetWidth;
-            el.classList.add('shake');
+                void el.offsetWidth;
+                el.classList.add('shake');
 
-            setTimeout(() => {
-            el.classList.remove('shake');
-            }, 420);
-        });
+                setTimeout(() => {
+                el.classList.remove('shake');
+                }, 420);
+            });
         }
 
     </script>

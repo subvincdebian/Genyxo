@@ -15,6 +15,8 @@ const FLAGS = {
 };
 
 const langMenuBtn = document.querySelector('[data-i18n="menu.language"]')?.parentElement;
+const modal = document.getElementById('langModal');
+const closeLangBtn = document.getElementById('closeLangModal');
 
 class LanguageManager {
     constructor() {
@@ -113,7 +115,6 @@ if (langMenuBtn) {
 }
 
 function openLangModal() {
-    const modal = document.getElementById('langModal');
     const grid = document.getElementById('langGrid');
             
     const currentLang = (window.i18n && window.i18n.currentLang) 
@@ -133,12 +134,11 @@ function openLangModal() {
 
 window.selectLanguage = async (lang) => {
     await window.i18n.changeLanguage(lang);
-    document.getElementById('langModal').style.display = 'none';
+    modal.style.display = 'none';
 }
 
-const closeLangBtn = document.getElementById('closeLangModal');
 if(closeLangBtn) {
     closeLangBtn.addEventListener('click', () => {
-        document.getElementById('langModal').style.display = 'none';
+        modal.style.display = 'none';
     });
 }
