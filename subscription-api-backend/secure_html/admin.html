@@ -657,6 +657,7 @@
                         const isRefund = tx.type === 'REFUND';
                         const statusClass = isRefund ? 'status-refund' : 'status-spent';
                         const prefix = tx.creditsAmount > 0 ? '+' : '';
+                        const color = isRefund ? '#48dbfb' : '#ff9f43';
                         
 
                         usageBody.innerHTML += `
