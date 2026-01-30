@@ -657,15 +657,13 @@
                         const isRefund = tx.type === 'REFUND';
                         const statusClass = isRefund ? 'status-refund' : 'status-spent';
                         const prefix = tx.creditsAmount > 0 ? '+' : '';
-                        const color = isRefund ? '#48dbfb' : '#ff9f43';
-                        
 
                         usageBody.innerHTML += `
                             <tr>
                                 <td>${tx.id}</td>
                                 <td style="word-break: break-all;">${userEmail}</td>
                                 <td>${tx.description || 'AI Request'}</td>
-                                <td style="color: ${color}; font-weight: bold;">${tx.creditsAmount > 0 ? '+' : ''}${tx.creditsAmount}</td>
+                                <td style="font-weight: bold;">${tx.creditsAmount > 0 ? '+' : ''}${tx.creditsAmount}</td>
                                 <td><span class="${statusClass}">${tx.type}</span></td>
                                 <td>${date}</td>
                             </tr>

@@ -42,7 +42,7 @@ export class AdminService {
   }
 
   async getAllTransactions(paginationQuery: PaginationQueryDto) {
-    const { page = 1, limit = 30 } = paginationQuery;
+    const { page = 1, limit = 20 } = paginationQuery;
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.transactionRepo.findAndCount({
