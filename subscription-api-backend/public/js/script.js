@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } else {
         if (authToken) {
-            fetchUserProfile(savedToken);
+            fetchUserProfile(authToken);
         } else {
             updateUIState(false);
         }
@@ -75,6 +75,8 @@ const showLogin = document.getElementById('showLogin');
 const logoutContainer = document.getElementById('logoutContainer');
 const logoutBtn = document.getElementById('logoutBtn');
 const welcomeMessage = document.getElementById('welcomeMessage');
+const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
+const affLink = document.getElementById('referralLinkInput');
 
 // Profile Panel Elements
 const profilePanel = document.getElementById('profilePanel');
@@ -216,24 +218,24 @@ async function loadProfileData() {
         if (user.id) {
             const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
 
-            if (elements.navUsername) elements.navUsername.textContent = user.name || 'Profile';
+            if (navUsername) navUsername.textContent = user.name || 'Profile';
             
-            if (elements.navIcon) elements.navIcon.style.display = 'none';
+            if (navIcon) navIcon.style.display = 'none';
             
-            if (elements.navAvatar) {
-                elements.navAvatar.src = avatarUrl;
-                elements.navAvatar.style.display = 'inline-block';
+            if (navAvatar) {
+                navAvatar.src = avatarUrl;
+                navAvatar.style.display = 'inline-block';
             }
 
-            if (elements.loginBtn) {
-                elements.loginBtn.classList.remove('login-btn');
-                elements.loginBtn.classList.add('profile-toggle-btn');
+            if (loginBtn) {
+                loginBtn.classList.remove('login-btn');
+                loginBtn.classList.add('profile-toggle-btn');
             }
 
-            if (elements.menuName) elements.menuName.textContent = user.name || 'User';
-            if (elements.menuEmail) elements.menuEmail.textContent = user.email || '';
-            if (elements.menuCredits) elements.menuCredits.textContent = (user.credits || 0).toLocaleString();
-            if (elements.dropdownAvatar) elements.dropdownAvatar.src = avatarUrl;
+            if (menuName) menuName.textContent = user.name || 'User';
+            if (menuEmail) menuEmail.textContent = user.email || '';
+            if (menuCredits) menuCredits.textContent = (user.credits || 0).toLocaleString();
+            if (dropdownAvatars) dropdownAvatars.src = avatarUrl;
         }
 
         const profileName = document.getElementById('profileName');
@@ -659,7 +661,7 @@ async function fetchUserData() {
             updateUIState(true, user);
             updateNotificationsBadge();
 
-            if (document.getElementById('affiliateBalance')) {
+            if (affBalance) {
                 loadAffiliateData(); 
             }
         } else {
@@ -1189,8 +1191,7 @@ async function loadAffiliateData() {
     const authToken = localStorage.getItem('authToken');
     if (!authToken) return;
 
-    const balanceElement = document.getElementById('affiliateBalance');
-    if (!balanceElement) return;
+    if (!affBalance) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
@@ -1205,14 +1206,13 @@ async function loadAffiliateData() {
             const data = await response.json();
             
             const rawBalance = parseFloat(data.balance || 0);
-            balanceElement.textContent = rawBalance.toFixed(2);
+            affBalance.textContent = rawBalance.toFixed(2);
 
             const invitedElement = document.getElementById('invitedCount');
             if (invitedElement) {
                 invitedElement.textContent = data.invitedCount || 0;
             }
             
-            const linkInput = document.getElementById('referralLinkInput');
             if (linkInput) {
                 linkInput.value = data.referralLink || 'Error generating link';
             }
@@ -1228,11 +1228,10 @@ async function loadAffiliateData() {
 const copyAffBtn = document.getElementById('copyAffBtn');
 if (copyAffBtn) {
     copyAffBtn.addEventListener('click', () => {
-        const input = document.getElementById('referralLinkInput');
-        if (input && input.value) {
-            input.select();
-            input.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(input.value).then(() => {
+        if (affLink && affLink.value) {
+            affLink.select();
+            affLink.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(affLink.value).then(() => {
                 showToast('Referral link copied!', 'success');
             }).catch(err => {
                 console.error('Copy failed', err);
@@ -1244,12 +1243,12 @@ if (copyAffBtn) {
 }
 
 function requestPayout() {
-    const balance = parseFloat(document.getElementById('affBalance').innerText);
-    if (balance < 10) {
+    if (!affBalance) return;
+    if (affBalance < 10) {
         showToast('Minimum withdrawal amount is $10.00', 'error');
         return;
     }
-    if(confirm(`Request payout of $${balance}? Support will contact you via email.`)) {
+    if(confirm(`Request payout of $${affBalance}? Support will contact you via email.`)) {
          showToast('Request sent! Support will contact you shortly.', 'success');
     }
 }

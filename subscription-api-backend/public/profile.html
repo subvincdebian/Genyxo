@@ -11,6 +11,7 @@
 
     <script>
         (function() {
+            const token = localStorage.getItem('authToken');
             if (token) {
                 document.documentElement.classList.add('auth-active');
             }

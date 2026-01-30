@@ -122,7 +122,7 @@ function openLangModal() {
                         : (localStorage.getItem('appLang') || 'en');
 
     grid.innerHTML = Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => `
-        <button class="lang-btn ${code === currentLang ? 'active' : ''}" onclick="handleLangSelect('${code}')">
+        <button class="lang-btn ${code === currentLang ? 'active' : ''}" onclick="selectLanguage('${code}')">
             <span class="lang-flag">${FLAGS[code]}</span>
             <span>${name}</span>
             ${code === currentLang ? '<i class="fas fa-check" style="margin-left:auto;"></i>' : ''}
