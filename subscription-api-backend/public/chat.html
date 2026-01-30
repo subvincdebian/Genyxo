@@ -1047,6 +1047,17 @@
             }
         }
 
+        function showBotLoading() {
+            const chatContainer = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = 'message bot-message';
+            div.id = 'temp-loader';
+            div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return div;
+        }
+
         async function sendMessage() {
             const textarea = document.getElementById('userInput');
             const text = textarea.value.trim();
