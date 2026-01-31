@@ -146,6 +146,8 @@ function handleLogout() {
 async function loadAffiliateData() {
     const authToken = localStorage.getItem('authToken');
     const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
+    const linkInput = document.getElementById('referralLinkInput');
+
     if (!authToken || !affBalance) return;
 
     try {
@@ -163,13 +165,13 @@ async function loadAffiliateData() {
             const rawBalance = parseFloat(data.balance || 0);
             affBalance.textContent = rawBalance.toFixed(2);
 
+            if (linkInput) {
+                linkInput.value = data.referralLink || 'Error generating link';
+            }
+
             const invitedElement = document.getElementById('invitedCount');
             if (invitedElement) {
                 invitedElement.textContent = data.invitedCount || 0;
-            }
-            
-            if (linkInput) {
-                linkInput.value = data.referralLink || 'Error generating link';
             }
 
         } else {
@@ -181,7 +183,8 @@ async function loadAffiliateData() {
 }
 
 async function fetchUserData() {
-    const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
+    const affBalance = document.getElementById('affiliateBalance');
+    
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
@@ -341,9 +344,9 @@ async function loadProfileData() {
 
         const avatarPreview = document.getElementById('avatarPreview');
         if (avatarPreview && user.avatar) {
-            avatarPreview.style.backgroundImage = url('${user.avatar}');
+            avatarPreview.style.backgroundImage = `url("${user.avatar}")`;
         } else if (avatarPreview && user.name) {
-             avatarPreview.style.backgroundImage = url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}');
+             avatarPreview.style.backgroundImage = `url("https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}")`;
         }
 
         const nameInput = document.querySelector('input[placeholder="John Doe"]');
