@@ -573,6 +573,42 @@
             }
         }
 
+        function updatePaginationUI(type, meta) {
+            const prevBtn = document.getElementById(`prev${type}Btn`);
+            const nextBtn = document.getElementById(`next${type}Btn`);
+            const infoSpan = document.getElementById(`${type.toLowerCase()}PageInfo`);
+
+            if (infoSpan) {
+                infoSpan.textContent = `Page ${meta.page} of ${meta.lastPage} (Total: ${meta.total})`;
+            }
+
+            if (prevBtn) {
+                prevBtn.disabled = meta.page <= 1;
+                
+                const newPrev = prevBtn.cloneNode(true);
+                prevBtn.parentNode.replaceChild(newPrev, prevBtn);
+                
+                newPrev.addEventListener('click', () => {
+                    if (type === 'User') { usersPage--; loadUsers(); }
+                    if (type === 'Tx') { txPage--; loadTransactions(); }
+                    if (type === 'Ticket') { ticketsPage--; loadAdminTickets(); }
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.disabled = meta.page >= meta.lastPage;
+                
+                const newNext = nextBtn.cloneNode(true);
+                nextBtn.parentNode.replaceChild(newNext, nextBtn);
+                
+                newNext.addEventListener('click', () => {
+                    if (type === 'User') { usersPage++; loadUsers(); }
+                    if (type === 'Tx') { txPage++; loadTransactions(); }
+                    if (type === 'Ticket') { ticketsPage++; loadAdminTickets(); }
+                });
+            }
+        }
+
         async function loadUsers() {
             setPaginationLoading('User', true);
             const refreshIcon = document.getElementById('refreshIconUsers');
@@ -620,20 +656,6 @@
                 }
                 updatePaginationUI('User', meta);
             } catch (e) { console.error(e); } finally { if (refreshIcon) refreshIcon.classList.remove('spin'); }
-        }
-
-        function filterUsers() {
-            const input = document.getElementById('userSearchInput');
-            
-            if (!input || !tbody) return;
-
-            const term = input.value.toLowerCase();
-            const rows = tbody.querySelectorAll('tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(term) ? '' : 'none';
-            });
         }
 
         async function loadTransactions() {
@@ -692,9 +714,24 @@
                         `;
                     }
                 });
+                updatePaginationUI('Tx', meta);
             } catch (e) {
                 console.error("Error loading transactions:", e);
             }
+        }
+
+        function filterUsers() {
+            const input = document.getElementById('userSearchInput');
+            
+            if (!input || !tbody) return;
+
+            const term = input.value.toLowerCase();
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
         }
 
         async function loadAdminTickets() {
@@ -745,42 +782,6 @@
                     updatePaginationUI('Ticket', meta);
                 }
             } catch (e) { console.error(e); } finally { if(refreshIcon) refreshIcon.classList.remove('spin'); }
-        }
-
-        function updatePaginationUI(type, meta) {
-            const prevBtn = document.getElementById(`prev${type}Btn`);
-            const nextBtn = document.getElementById(`next${type}Btn`);
-            const infoSpan = document.getElementById(`${type.toLowerCase()}PageInfo`);
-
-            if (infoSpan) {
-                infoSpan.textContent = `Page ${meta.page} of ${meta.lastPage} (Total: ${meta.total})`;
-            }
-
-            if (prevBtn) {
-                prevBtn.disabled = meta.page <= 1;
-                
-                const newPrev = prevBtn.cloneNode(true);
-                prevBtn.parentNode.replaceChild(newPrev, prevBtn);
-                
-                newPrev.addEventListener('click', () => {
-                    if (type === 'User') { usersPage--; loadUsers(); }
-                    if (type === 'Tx') { txPage--; loadTransactions(); }
-                    if (type === 'Ticket') { ticketsPage--; loadAdminTickets(); }
-                });
-            }
-
-            if (nextBtn) {
-                nextBtn.disabled = meta.page >= meta.lastPage;
-                
-                const newNext = nextBtn.cloneNode(true);
-                nextBtn.parentNode.replaceChild(newNext, nextBtn);
-                
-                newNext.addEventListener('click', () => {
-                    if (type === 'User') { usersPage++; loadUsers(); }
-                    if (type === 'Tx') { txPage++; loadTransactions(); }
-                    if (type === 'Ticket') { ticketsPage++; loadAdminTickets(); }
-                });
-            }
         }
 
         async function processTx(id, action) {

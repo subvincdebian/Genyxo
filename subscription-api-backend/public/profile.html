@@ -522,13 +522,6 @@
 
         const uniqueTriggers = Array.from(new Set(triggers));
 
-        uniqueTriggers.forEach(t => {
-            t.addEventListener('click', (e) => {
-            e.preventDefault();
-            openModal();
-            });
-        });
-
         function openModal() {
             inputCurrent.value = '';
             inputNew.value = '';
@@ -548,6 +541,13 @@
 
             modal.style.display = "none";
         }
+
+        uniqueTriggers.forEach(t => {
+            t.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal();
+            });
+        });
 
         btnClose?.addEventListener('click', closeModal);
         btnCancel?.addEventListener('click', closeModal);

@@ -146,9 +146,7 @@ function handleLogout() {
 async function loadAffiliateData() {
     const authToken = localStorage.getItem('authToken');
     const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
-    if (!authToken) return;
-
-    if (!affBalance) return;
+    if (!authToken || !affBalance) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
@@ -198,7 +196,7 @@ async function fetchUserData() {
             updateUIState(true, user);
             updateNotificationsBadge();
 
-            if (affBalance) {
+            if (affBalance !== null && affBalance !== undefined) {
                 loadAffiliateData(); 
             }
         } else {
@@ -316,7 +314,7 @@ async function loadProfileData() {
         };
 
         if (user.id) {
-            const avatarUrl = user.avatar  `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+            const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
 
             if (elements.navUsername) elements.navUsername.textContent = user.name || 'Profile';
             

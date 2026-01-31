@@ -999,15 +999,6 @@
             });
         }
 
-        function startNewChat() {
-            currentChatId = null;
-            chatBox.innerHTML = '';
-            renderHistoryList();
-            toggleChatView(false);
-            
-            history.pushState({}, '', window.location.pathname);
-        }
-
         async function selectChat(id) {
             if (currentChatId === id) return;
             
@@ -1028,6 +1019,15 @@
             } catch(e) { console.error(e); }
         }
 
+        function startNewChat() {
+            currentChatId = null;
+            chatBox.innerHTML = '';
+            renderHistoryList();
+            toggleChatView(false);
+            
+            history.pushState({}, '', window.location.pathname);
+        }
+
         async function loadConversations() {
             try {
                 const res = await fetch(`${API_BASE_URL}/chat/conversations`, {
@@ -1046,11 +1046,7 @@
             } catch(e) { console.error(e); }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadConversations();
-        });
-
-        function appendMessage(sender, text) {
+        function appendMessage(sender, text, type = 'text') {
             if (!chatBox) return;
 
             const messageDiv = document.createElement('div');
@@ -1060,19 +1056,17 @@
             if (sender === 'error') senderClass = 'error-message';
 
             messageDiv.className = `message ${senderClass}`;
-            
-            if (sender === 'user') {
-                messageDiv.textContent = text;
-            } else if (sender === 'error') {
-                messageDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
-            } else {
-                messageDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
-            }
 
             if (type === 'video') {
                 messageDiv.innerHTML = `<video src="${text}" controls style="max-width: 100%; border-radius: 12px;"></video>`;
             } else {
-                messageDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+                if (sender === 'user') {
+                    messageDiv.textContent = text;
+                } else if (sender === 'error') {
+                    messageDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
+                } else {
+                    messageDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+                }
             }
             
             chatBox.appendChild(messageDiv);
@@ -1083,6 +1077,11 @@
             e.preventDefault();
             startNewChat();
         };
+
+        function adjustHeight() {
+            userInput.style.height = 'auto'; 
+            userInput.style.height = (userInput.scrollHeight) + 'px';
+        }
 
         function useSuggestion(text) {
             if (userInput) {
@@ -1196,6 +1195,10 @@
             }, 5000);
         }
 
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
         function appendError(msg) {
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message bot';
@@ -1207,10 +1210,6 @@
             `;
             chatBox.appendChild(msgDiv);
             scrollToBottom();
-        }
-
-        function scrollToBottom() {
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function initChat() {
@@ -1233,12 +1232,22 @@
                     if (menuCredits) menuCredits.textContent = user.credits || 0;
                 }
 
+                if (!token) {
+                    console.warn("No token found, skipping history load.");
+                    toggleChatView(false);
+                    return;
+                }
+
                 const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+
+                if (historyRes.status === 401) {
+                    console.error("User not authorized");
+                    return;
+                }
                 
                 const contentType = historyRes.headers.get("content-type");
-                
                 if (historyRes.ok && contentType && contentType.includes("application/json")) {
                     const history = await historyRes.json();
                     
@@ -1314,6 +1323,7 @@
             } else {
                 initChat();
             }
+            loadConversations();
         });
 
         if (toggleBtn && sidebar) {
@@ -1399,11 +1409,6 @@
                 }
             });
         })();
-
-        function adjustHeight() {
-            userInput.style.height = 'auto'; 
-            userInput.style.height = (userInput.scrollHeight) + 'px';
-        }
 
         userInput.addEventListener('input', adjustHeight);
 
