@@ -5,64 +5,6 @@ let currentUserName = localStorage.getItem('userName') || 'My Profile';
 let currentUserEmail = localStorage.getItem('userEmail');
 let currentUserAvatar = localStorage.getItem('userAvatar');
 
-document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-
-    if (token) {
-        console.log("Google token found, starting login process...");
-        localStorage.setItem('authToken', token);
-
-        window.history.replaceState({}, document.title, "/");
-        
-        fetchUserProfile(token);
-
-        showToast('Successfully logged in with Google!', 'success');
-
-    } else {
-        if (authToken) {
-            fetchUserProfile(authToken);
-        } else {
-            updateUIState(false);
-        }
-    }
-});
-
-async function fetchUserProfile(token) {
-    try {
-        const res = await fetch(`${API_BASE_URL}/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            const user = await res.json();
-            localStorage.setItem('userEmail', user.email);
-            localStorage.setItem('userId', user.id);
-            if (user.name) localStorage.setItem('userName', user.name);
-            if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
-
-            updateUIState(true, user);
-        } else {
-             localStorage.removeItem('authToken');
-             updateUIState(false);
-        }
-    } catch (e) {
-        console.error("Profile fetch error", e);
-        localStorage.removeItem('authToken');
-        updateUIState(false);
-    }
-}
-
-let currentProduct = null;
-
-const products = [
-    { id: 1, price: "$3.99", image: "./images/startai.jpg" },
-    { id: 2, price: "$9.99", image: "./images/aiexplorer.jpg" },
-    { id: 3, price: "$24.99", image: "./images/procreatorai.jpg" },
-    { id: 4, price: "$49.99", image: "./images/aimaster.jpg" },
-    { id: 5, price: "$99.99", image: "./images/unlimitedpower.jpg" },
-    { id: 6, price: "$219.99", image: "./images/aititan.jpg" },
-];
-
 // --- DOM Elements ---
 const productsGrid = document.getElementById('productsGrid');
 
@@ -75,7 +17,6 @@ const showLogin = document.getElementById('showLogin');
 const logoutContainer = document.getElementById('logoutContainer');
 const logoutBtn = document.getElementById('logoutBtn');
 const welcomeMessage = document.getElementById('welcomeMessage');
-const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
 const affLink = document.getElementById('referralLinkInput');
 
 // Profile Panel Elements
@@ -104,54 +45,19 @@ const urlParams = new URLSearchParams(window.location.search);
 const refId = urlParams.get('ref');
 
 let pollingInterval = null;
+let currentProduct = null;
 
-if (refId) {
-    localStorage.setItem('referrerId', refId);
-    console.log('Referrer ID saved:', refId);
-}
-
-
-// --- INITIALIZATION ---
-function init() {
-    setupEventListeners();
-    setupNavigation();
-    setupBurgerMenu();
-    updateLoginButton(currentUserName, authToken);
-    checkPaymentStatus();
-
-    if (authToken) {
-        updateUIState(true, {
-            name: currentUserName,
-            email: currentUserEmail,
-            avatar: currentUserAvatar
-        });
-        
-        fetchUserData(); 
-    } else {
-        updateUIState(false);
-    }
-
-    const observerOptions = {
-        threshold: 0.1, 
-        rootMargin: "0px 0px -50px 0px"
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-active');
-                observer.unobserve(entry.target); 
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.animate-on-scroll').forEach(el => {
-        observer.observe(el);
-    });
-}
+const products = [
+    { id: 1, price: "$3.99", image: "./images/startai.jpg" },
+    { id: 2, price: "$9.99", image: "./images/aiexplorer.jpg" },
+    { id: 3, price: "$24.99", image: "./images/procreatorai.jpg" },
+    { id: 4, price: "$49.99", image: "./images/aimaster.jpg" },
+    { id: 5, price: "$99.99", image: "./images/unlimitedpower.jpg" },
+    { id: 6, price: "$219.99", image: "./images/aititan.jpg" },
+];
 
 function updateBalanceUI(amount) {
-    creditBalanceEl.textContent = `${amount} Credits`;
+    menuCredits.textContent = `${amount} Credits`;
 }
 
 function updateUIState(isLoggedIn, userData = null) {
@@ -198,77 +104,135 @@ function updateUIState(isLoggedIn, userData = null) {
     }
 }
 
-async function loadProfileData() {
-    /* if (!authToken) {
-        const protectedPages = ['profile.html', 'notifications.html', 'support.html'];
-        if (protectedPages.some(page => window.location.pathname.includes(page))) {
-            window.location.href = 'index.html';
-        }
-        return;
-    } */
+async function updateNotificationsBadge() {
+    const token = localStorage.getItem('authToken'); 
+    if (!token) return;
 
+    const badge = document.getElementById('notificationBadge');
+    if (!badge) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const count = data.count;
+
+            if (count > 0) {
+                badge.style.display = 'flex';
+                badge.innerText = count > 99 ? '99+' : count;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.warn("Could not update badge:", e);
+    }
+}
+
+function handleLogout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userAvatar');
+    authToken = null;
+    
+    updateUIState(false);
+    window.location.reload();
+}
+
+async function loadAffiliateData() {
+    const authToken = localStorage.getItem('authToken');
+    const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
+    if (!authToken) return;
+
+    if (!affBalance) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            const rawBalance = parseFloat(data.balance || 0);
+            affBalance.textContent = rawBalance.toFixed(2);
+
+            const invitedElement = document.getElementById('invitedCount');
+            if (invitedElement) {
+                invitedElement.textContent = data.invitedCount || 0;
+            }
+            
+            if (linkInput) {
+                linkInput.value = data.referralLink || 'Error generating link';
+            }
+
+        } else {
+            console.warn('Failed to load affiliate stats');
+        }
+    } catch (e) {
+        console.error("Affiliate load error:", e);
+    }
+}
+
+async function fetchUserData() {
+    const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
+        
+        if (response.ok) {
+            const user = await response.json();
+            localStorage.setItem('userName', user.name || '');
+            localStorage.setItem('userEmail', user.email || '');
+            if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
 
-        if (!response.ok) throw new Error('Failed to fetch profile');
-        const user = await response.json();
+            updateUIState(true, user);
+            updateNotificationsBadge();
 
-        if (user.id) {
-            const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-
-            if (navUsername) navUsername.textContent = user.name || 'Profile';
-            
-            if (navIcon) navIcon.style.display = 'none';
-            
-            if (navAvatar) {
-                navAvatar.src = avatarUrl;
-                navAvatar.style.display = 'inline-block';
+            if (affBalance) {
+                loadAffiliateData(); 
             }
-
-            if (loginBtn) {
-                loginBtn.classList.remove('login-btn');
-                loginBtn.classList.add('profile-toggle-btn');
-            }
-
-            if (menuName) menuName.textContent = user.name || 'User';
-            if (menuEmail) menuEmail.textContent = user.email || '';
-            if (menuCredits) menuCredits.textContent = (user.credits || 0).toLocaleString();
-            if (dropdownAvatars) dropdownAvatars.src = avatarUrl;
+        } else {
+            console.warn('Token expired or invalid');
+            handleLogout();
         }
-
-        const profileName = document.getElementById('profileName');
-        if (profileName) profileName.textContent = user.name || 'User';
-
-        const avatarPreview = document.getElementById('avatarPreview');
-        if (avatarPreview && user.avatar) {
-            avatarPreview.style.backgroundImage = `url('${user.avatar}')`;
-        } else if (avatarPreview && user.name) {
-             avatarPreview.style.backgroundImage = `url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}')`;
-        }
-
-        const nameInput = document.querySelector('input[placeholder="John Doe"]');
-        if (nameInput) nameInput.value = user.name || '';
-
-        const emailInput = document.querySelector('input[placeholder="your@email.com"]');
-        if (emailInput) emailInput.value = user.email || '';
-
-        if (dropdownLogoutBtn) {
-            dropdownLogoutBtn.onclick = () => {
-                localStorage.removeItem('authToken');
-                window.location.href = 'index.html';
-            };
-        }
-
     } catch (e) {
-        console.error("Error loading profile:", e);
+        console.error("Loading Profile Error:", e);
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadProfileData();
-});
+async function fetchUserProfile(token) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const user = await res.json();
+            localStorage.setItem('userEmail', user.email);
+            localStorage.setItem('userId', user.id);
+            if (user.name) localStorage.setItem('userName', user.name);
+            if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
+
+            updateUIState(true, user);
+        } else {
+             localStorage.removeItem('authToken');
+             updateUIState(false);
+        }
+    } catch (e) {
+        console.error("Profile fetch error", e);
+        localStorage.removeItem('authToken');
+        updateUIState(false);
+    }
+}
 
 function showToast(message, type = 'success', duration = 3000) {
     const container = document.getElementById('toast-container');
@@ -323,6 +287,86 @@ function showToast(message, type = 'success', duration = 3000) {
     };
 }
 
+async function loadProfileData() {
+    if (!authToken) {
+        const protectedPages = ['profile.html', 'notifications.html', 'support.html'];
+        if (protectedPages.some(page => window.location.pathname.includes(page))) {
+            window.location.href = 'index.html';
+        }
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/profile`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        const user = await response.json();
+
+        const elements = {
+            navUsername: document.getElementById('navUsername'),
+            navIcon: document.getElementById('navIcon'),
+            navAvatar: document.getElementById('navAvatar'),
+            loginBtn: document.getElementById('loginBtn'),
+            menuName: document.getElementById('menuName'),
+            menuEmail: document.getElementById('menuEmail'),
+            menuCredits: document.getElementById('menuCredits'),
+            dropdownAvatar: document.querySelector('.dropdown-avatar')
+        };
+
+        if (user.id) {
+            const avatarUrl = user.avatar  `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+
+            if (elements.navUsername) elements.navUsername.textContent = user.name || 'Profile';
+            
+            if (elements.navIcon) elements.navIcon.style.display = 'none';
+            
+            if (elements.navAvatar) {
+                elements.navAvatar.src = avatarUrl;
+                elements.navAvatar.style.display = 'inline-block';
+            }
+
+            if (elements.loginBtn) {
+                elements.loginBtn.classList.remove('login-btn');
+                elements.loginBtn.classList.add('profile-toggle-btn');
+            }
+
+            if (elements.menuName) elements.menuName.textContent = user.name ||  'User';
+            if (elements.menuEmail) elements.menuEmail.textContent = user.email || '';
+            if (elements.menuCredits) elements.menuCredits.textContent = (user.credits || 0).toLocaleString();
+            if (elements.dropdownAvatar) elements.dropdownAvatar.src = avatarUrl;
+        }
+
+        const profileName = document.getElementById('profileName');
+        if (profileName) profileName.textContent = user.name || 'User';
+
+        const avatarPreview = document.getElementById('avatarPreview');
+        if (avatarPreview && user.avatar) {
+            avatarPreview.style.backgroundImage = url('${user.avatar}');
+        } else if (avatarPreview && user.name) {
+             avatarPreview.style.backgroundImage = url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}');
+        }
+
+        const nameInput = document.querySelector('input[placeholder="John Doe"]');
+        if (nameInput) nameInput.value = user.name || '';
+
+        const emailInput = document.querySelector('input[placeholder="your@email.com"]');
+        if (emailInput) emailInput.value = user.email || '';
+
+        const logoutBtn = document.getElementById('dropdownLogoutBtn');
+        if (logoutBtn) {
+            logoutBtn.onclick = () => {
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
+            };
+        }
+
+    } catch (e) {
+        console.error("Error loading profile:", e);
+    }
+}
+
 function checkPaymentStatus() {
     if (window.location.hash === '#success') {
         history.pushState("", document.title, window.location.pathname + window.location.search);
@@ -373,6 +417,36 @@ function openCheckout(product) {
     document.body.style.overflow = 'hidden';
 }
 
+function showLoginForm() {
+    signupForm.style.display = 'none';
+    loginForm.style.display = 'block';
+}
+
+function openLoginModal() {
+    if (loginModal) {
+        loginModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    if (logoutContainer) {
+        logoutContainer.style.display = 'none';
+    }
+
+    showLoginForm();
+}
+
+function closeLoginModal() {
+    loginModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    loginForm.reset();
+    signupForm.reset();
+}
+
+function showSignupForm() {
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'block';
+}
+
 async function processPayment() {
     if (!authToken) {
         checkoutModal.style.display = 'none';
@@ -415,7 +489,6 @@ async function processPayment() {
 }
 
 function getSvgIllustration(id) {
-    // Тут зберігаються коди для всіх 6 карток
     const illustrations = {
         1: `
         <svg class="svg-illustration" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -612,7 +685,6 @@ function loadProducts() {
             <li><span class="feature-icon"><i class="fas fa-check"></i></span>${feature}</li>
         `).join('');
 
-        // Отримуємо SVG замість картинки
         const illustrationHtml = getSvgIllustration(product.id);
 
         const productCard = document.createElement('div');
@@ -646,33 +718,6 @@ function loadProducts() {
     });
 }
 
-async function fetchUserData() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/profile`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        
-        if (response.ok) {
-            const user = await response.json();
-            localStorage.setItem('userName', user.name || '');
-            localStorage.setItem('userEmail', user.email || '');
-            if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
-
-            updateUIState(true, user);
-            updateNotificationsBadge();
-
-            if (affBalance) {
-                loadAffiliateData(); 
-            }
-        } else {
-            console.warn('Token expired or invalid');
-            handleLogout();
-        }
-    } catch (e) {
-        console.error("Loading Profile Error:", e);
-    }
-}
-
 function updateUserUI(user) {
     if (navUsername) navUsername.textContent = user.name || user.email;
     
@@ -690,34 +735,6 @@ function updateUserUI(user) {
     if (menuName) menuName.textContent = user.name || 'User';
     if (menuEmail) menuEmail.textContent = user.email;
     if (menuCredits) menuCredits.textContent = (user.credits || 0).toLocaleString();
-}
-
-async function updateNotificationsBadge() {
-    const token = localStorage.getItem('authToken'); 
-    if (!token) return;
-
-    const badge = document.getElementById('notificationBadge');
-    if (!badge) return;
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const count = data.count;
-
-            if (count > 0) {
-                badge.style.display = 'flex';
-                badge.innerText = count > 99 ? '99+' : count;
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-    } catch (e) {
-        console.warn("Could not update badge:", e);
-    }
 }
 
 async function handleLoginSubmit(e) {
@@ -833,17 +850,6 @@ function handleLoginButtonClick(e) {
     }
 }
 
-function handleLogout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userAvatar');
-    authToken = null;
-    
-    updateUIState(false);
-    window.location.reload();
-}
-
 function updateLoginButton(name, token) {
     const navUsername = document.getElementById('navUsername');
     const navIcon = document.getElementById('navIcon');
@@ -861,36 +867,6 @@ function updateLoginButton(name, token) {
         
         if (profilePanel) profilePanel.classList.remove('show');
     }
-}
-
-function openLoginModal() {
-    if (loginModal) {
-        loginModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-    
-    if (logoutContainer) {
-        logoutContainer.style.display = 'none';
-    }
-
-    showLoginForm();
-}
-
-function closeLoginModal() {
-    loginModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    loginForm.reset();
-    signupForm.reset();
-}
-
-function showSignupForm() {
-    loginForm.style.display = 'none';
-    signupForm.style.display = 'block';
-}
-
-function showLoginForm() {
-    signupForm.style.display = 'none';
-    loginForm.style.display = 'block';
 }
 
 function handleSearch(e) {
@@ -938,8 +914,51 @@ function handleSearch(e) {
     });
 }
 
-function setupEventListeners() {
+function toggleProfilePanel() {
+    const profilePanel = document.getElementById('profilePanel');
+    if (profilePanel) {
+        profilePanel.classList.toggle('show');
+    }
+}
 
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+function startPolling(email, password) {
+    if (pollingInterval) clearInterval(pollingInterval);
+    
+    pollingInterval = setInterval(async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                stopPolling();
+                
+                localStorage.setItem('authToken', data.access_token);
+                localStorage.setItem('userEmail', data.user.email);
+                localStorage.setItem('userId', data.user.id);
+                
+                document.getElementById('verifyEmailModal').style.display = 'none';
+                
+                showToast('Email verified! Welcome!', 'success');
+                updateUIState(true, user);
+            }
+        } catch (e) {
+            
+        }
+    }, 3000); 
+}
+
+function setupEventListeners() {
     if (loginBtn) {
         loginBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1097,50 +1116,6 @@ function setupEventListeners() {
     });
 }
 
-function startPolling(email, password) {
-    if (pollingInterval) clearInterval(pollingInterval);
-    
-    pollingInterval = setInterval(async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            
-            if (res.ok) {
-                const data = await res.json();
-                stopPolling();
-                
-                localStorage.setItem('authToken', data.access_token);
-                localStorage.setItem('userEmail', data.user.email);
-                localStorage.setItem('userId', data.user.id);
-                
-                document.getElementById('verifyEmailModal').style.display = 'none';
-                
-                showToast('Email verified! Welcome!', 'success');
-                updateUIState(true, user);
-            }
-        } catch (e) {
-            
-        }
-    }, 3000); 
-}
-
-function stopPolling() {
-    if (pollingInterval) {
-        clearInterval(pollingInterval);
-        pollingInterval = null;
-    }
-}
-
-function toggleProfilePanel() {
-    const profilePanel = document.getElementById('profilePanel');
-    if (profilePanel) {
-        profilePanel.classList.toggle('show');
-    }
-}
-
 const avatarBtn = document.getElementById('profileToggleBtn');
 if (avatarBtn) {
     avatarBtn.addEventListener('click', (e) => {
@@ -1187,44 +1162,6 @@ function setupBurgerMenu() {
     overlay.addEventListener('click', closeMenu);
 }
 
-async function loadAffiliateData() {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) return;
-
-    if (!affBalance) return;
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
-            method: 'GET',
-            headers: { 
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            
-            const rawBalance = parseFloat(data.balance || 0);
-            affBalance.textContent = rawBalance.toFixed(2);
-
-            const invitedElement = document.getElementById('invitedCount');
-            if (invitedElement) {
-                invitedElement.textContent = data.invitedCount || 0;
-            }
-            
-            if (linkInput) {
-                linkInput.value = data.referralLink || 'Error generating link';
-            }
-
-        } else {
-            console.warn('Failed to load affiliate stats');
-        }
-    } catch (e) {
-        console.error("Affiliate load error:", e);
-    }
-}
-
 const copyAffBtn = document.getElementById('copyAffBtn');
 if (copyAffBtn) {
     copyAffBtn.addEventListener('click', () => {
@@ -1243,13 +1180,14 @@ if (copyAffBtn) {
 }
 
 function requestPayout() {
+    const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
     if (!affBalance) return;
     if (affBalance < 10) {
         showToast('Minimum withdrawal amount is $10.00', 'error');
         return;
     }
     if(confirm(`Request payout of $${affBalance}? Support will contact you via email.`)) {
-         showToast('Request sent! Support will contact you shortly.', 'success');
+        showToast('Request sent! Support will contact you shortly.', 'success');
     }
 }
 
@@ -1297,6 +1235,15 @@ function requestPayout() {
     }
 } */
 
+function renderPagination(meta) {
+    const container = document.getElementById('pagination-controls');
+    let html = '';
+    for (let i = 1; i <= meta.totalPages; i++) {
+        html += `<button class="${i === meta.currentPage ? 'active' : ''}" onclick="loadTransactionHistory(${i})">${i}</button>`;
+    }
+    container.innerHTML = html;
+}
+
 async function loadTransactionHistory(page = 1) {
     const tbody = document.getElementById('transactions-body');
     if (!tbody) return;
@@ -1308,7 +1255,6 @@ async function loadTransactionHistory(page = 1) {
         
         const data = await response.json();
 
-        // Рендеримо рядки
         tbody.innerHTML = data.items.map(tx => `
             <tr>
                 <td>${new Date(tx.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
@@ -1334,9 +1280,8 @@ async function loadTransactionHistory(page = 1) {
     }
 }
 
-// Функція покупки
 async function purchasePack(packId) {
-    const btn = event.target; // Отримуємо кнопку, на яку натиснули
+    const btn = event.target;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     try {
@@ -1351,7 +1296,7 @@ async function purchasePack(packId) {
         const result = await res.json();
         
         if (result.url) {
-            window.location.href = result.url; // Перенаправлення на оплату
+            window.location.href = result.url;
         } else {
             showToast('Something went wrong', 'error');
         }
@@ -1362,59 +1307,6 @@ async function purchasePack(packId) {
     }
 }
 
-// Рендер кнопок пагінації
-function renderPagination(meta) {
-    const container = document.getElementById('pagination-controls');
-    let html = '';
-    for (let i = 1; i <= meta.totalPages; i++) {
-        html += `<button class="${i === meta.currentPage ? 'active' : ''}" onclick="loadTransactionHistory(${i})">${i}</button>`;
-    }
-    container.innerHTML = html;
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const navButtons = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    navButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetTabId = btn.getAttribute('data-tab');
-            if (!targetTabId) return;
-
-            console.log('Switching to tab:', targetTabId); // Для дебагу
-
-            // 1. Керування кнопками: знімаємо active з усіх, додаємо поточній
-            navButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // 2. Керування контентом
-            tabContents.forEach(content => {
-                // Ховаємо миттєво для зміни логіки
-                content.style.display = 'none';
-                content.style.opacity = '0';
-            });
-
-            // 3. Показуємо цільову вкладку
-            const targetTab = document.getElementById(targetTabId);
-            if (targetTab) {
-                targetTab.style.display = 'block';
-                // Плавна поява (Senior UX)
-                setTimeout(() => {
-                    targetTab.style.opacity = '1';
-                }, 50);
-                
-                // Спеціальна логіка для Billing
-                if (targetTabId === 'billing-section') {
-                    loadTransactionHistory(1);
-                    // Оновлюємо відображення кредитів з локального сховища або сервера
-                    const credits = localStorage.getItem('userCredits') || '0';
-                    document.getElementById('display-credits').innerText = credits;
-                }
-            }
-        });
-    });
-});
-
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = "none";
@@ -1423,5 +1315,109 @@ window.onclick = function(event) {
         }
     }
 }
+
 setInterval(updateNotificationsBadge, 60000);
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const navButtons = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    if (token) {
+        console.log("Google token found, starting login process...");
+        localStorage.setItem('authToken', token);
+
+        window.history.replaceState({}, document.title, "/");
+        
+        fetchUserProfile(token);
+
+        showToast('Successfully logged in with Google!', 'success');
+
+    } else {
+        if (authToken) {
+            fetchUserProfile(authToken);
+        } else {
+            updateUIState(false);
+        }
+    }
+
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTabId = btn.getAttribute('data-tab');
+            if (!targetTabId) return;
+
+            console.log('Switching to tab:', targetTabId);
+
+            navButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+                content.style.opacity = '0';
+            });
+
+            const targetTab = document.getElementById(targetTabId);
+            if (targetTab) {
+                targetTab.style.display = 'block';
+                setTimeout(() => {
+                    targetTab.style.opacity = '1';
+                }, 50);
+                
+                if (targetTabId === 'billing-section') {
+                    loadTransactionHistory(1);
+                    const credits = localStorage.getItem('userCredits') || '0';
+                    document.getElementById('display-credits').innerText = credits;
+                }
+            }
+        });
+    });
+
+    loadProfileData();
+});
+
+if (refId) {
+    localStorage.setItem('referrerId', refId);
+    console.log('Referrer ID saved:', refId);
+}
+
+// --- INITIALIZATION ---
+function init() {
+    setupEventListeners();
+    setupNavigation();
+    setupBurgerMenu();
+    updateLoginButton(currentUserName, authToken);
+    checkPaymentStatus();
+
+    if (authToken) {
+        updateUIState(true, {
+            name: currentUserName,
+            email: currentUserEmail,
+            avatar: currentUserAvatar
+        });
+        
+        fetchUserData(); 
+    } else {
+        updateUIState(false);
+    }
+
+    const observerOptions = {
+        threshold: 0.1, 
+        rootMargin: "0px 0px -50px 0px"
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-active');
+                observer.unobserve(entry.target); 
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', init);
