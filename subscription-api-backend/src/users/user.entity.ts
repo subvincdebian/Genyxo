@@ -8,12 +8,12 @@ import {
   ManyToOne
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Transaction } from '../transactions/transaction.entity';
+import { Role } from './role.enum';
 import { Message } from '../chat/message.entity';
 import { Conversation } from '../chat/conversation.entity';
-import { Role } from './role.enum';
-import { SupportTicket } from '../support/support.entity';
+import { Transaction } from '../transactions/transaction.entity';
 import { Notification } from '../notifications/notification.entity';
+import { SupportTicket } from '../support/support.entity';
 
 @Entity('users')
 export class User {

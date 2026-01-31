@@ -1,13 +1,13 @@
 import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Transaction, TransactionStatus } from '../transactions/transaction.entity';
-import { UsersService } from '../users/users.service';
-import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationType } from '../notifications/notification.entity';
-import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import * as crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
+import { Transaction, TransactionStatus } from '../transactions/transaction.entity';
+import { NotificationType } from '../notifications/notification.entity';
+import { UsersService } from '../users/users.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 export const PACKS: Record<number, { name: string, price: number, credits: number }> = {
   1: { name: 'Start AI', price: 3.99, credits: 750 },

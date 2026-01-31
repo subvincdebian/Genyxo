@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from './dto/create-user.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { UsersService } from '../users/users.service';
 import { EmailService } from '../email/email.service';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -36,11 +36,11 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
       user: { 
-          id: user.id, 
-          email: user.email, 
-          name: user.name, 
-          avatar: user.avatar,
-          credits: user.credits
+        id: user.id, 
+        email: user.email, 
+        name: user.name, 
+        avatar: user.avatar,
+        credits: user.credits
       }
     };
   }

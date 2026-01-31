@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Get, Query, UseGuards, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -41,14 +41,13 @@ export class AuthController {
 
   @Get('facebook')
   @UseGuards(AuthGuard('facebook'))
-  async facebookLogin() {
+  async facebookLogin(@Req() req) {
   }
 
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
   async facebookLoginCallback(@Req() req, @Res() res) {
     const result = await this.authService.login(req.user);
-    
     res.redirect(`https://genyxo.com?token=${result.access_token}`);
   }
 }

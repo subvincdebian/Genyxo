@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, UseGuards, Request, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Transaction } from '../transactions/transaction.entity';
 import { UsersService } from '../users/users.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { Transaction } from '../transactions/transaction.entity';
 
 @Controller('profile')
 export class ProfileController {
@@ -11,9 +11,7 @@ export class ProfileController {
   @UseGuards(AuthGuard('jwt'))
   @Get()
   async getProfile(@Request() req) {
-
     const userId = req.user.id;
-
     const user = await this.usersService.findOneById(userId);
     
     if (!user) {

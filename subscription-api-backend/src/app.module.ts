@@ -1,32 +1,30 @@
 import { Module } from '@nestjs/common';
-
+import { APP_GUARD } from '@nestjs/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+
 import { join } from 'path';
 
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
-
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { ProfileModule } from './profile/profile.module';
-import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './chat/chat.module';
 import { PaymentModule } from './payment/payment.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
 import { SupportModule } from './support/support.module';
-import { NotificationsModule } from './notifications/notifications.module';
-import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
     ThrottlerModule.forRoot([{
       ttl: 60000, // 1 минута
-      limit: 20,  // максимум 15 запросов в минуту с одного IP
+      limit: 20,  // максимум 20 запросов в минуту с одного IP
     }]),
     ConfigModule.forRoot({ isGlobal: true }),
-
     MailerModule.forRoot({
       transport: {
         host: 'smtp.zoho.eu',
@@ -41,7 +39,6 @@ import { EmailModule } from './email/email.module';
         from: '"Genyxo Support" <info@genyxo.com>',
       },
     }),
-
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.MYSQLHOST || 'localhost',
@@ -60,9 +57,9 @@ import { EmailModule } from './email/email.module';
     ProfileModule,
     ChatModule,
     PaymentModule,
+    NotificationsModule,
     AdminModule,
     SupportModule,
-    NotificationsModule,
     EmailModule,
   ],
   controllers: [],

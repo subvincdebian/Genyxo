@@ -667,8 +667,17 @@
                 const res = await fetch(`${API_BASE_URL}/are-you-sure-you-want-to-admin/transactions`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+
+                if (res.status === 403 || res.status === 401) {
+                    alert("Session expired or access denied.");
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
                 const result = await res.json();
                 const transactions = result.data;
+                const meta = result.meta || { page: 1, lastPage: 1, total: transactions.length };
 
                 const purchaseBody = document.getElementById('transactionsTable');
                 const usageBody = document.getElementById('usageTableBody');
@@ -748,7 +757,7 @@
                 if (res.ok) {
                     const result = await res.json();
                     const tickets = result.data || [];
-                    const meta = result.meta || { page: 1, lastPage: 1, total: 0 };
+                    const meta = result.meta || { page: 1, lastPage: 1, total: tickets.length };
 
                     const tableBody = document.getElementById('ticketsTableBody');
                     tableBody.innerHTML = '';

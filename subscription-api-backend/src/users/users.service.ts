@@ -117,6 +117,7 @@ export class UsersService {
   }
 
   async getAffiliateStats(userId: number) {
+    const baseUrl = 'https://genyxo.com'; 
     const user = await this.usersRepository.findOne({
         where: { id: userId },
         select: ['id', 'referralBalance']
@@ -129,8 +130,6 @@ export class UsersService {
     const invitedCount = await this.usersRepository.count({
         where: { referrerId: userId }
     });
-
-    const baseUrl = 'https://genyxo.com'; 
 
     return {
         balance: Number(user.referralBalance || 0),

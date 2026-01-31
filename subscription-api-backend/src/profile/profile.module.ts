@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
 import { ProfileController } from './profile.controller';
 import { UsersModule } from '../users/users.module';
-import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [

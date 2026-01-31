@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import OpenAI from 'openai';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import OpenAI from 'openai';
+import * as fal from "@fal-ai/serverless-client";
 import { Message } from './message.entity';
 import { Conversation } from './conversation.entity';
 import { FalService } from './fal.service';
-import * as fal from "@fal-ai/serverless-client";
 
 @Injectable()
 export class ChatService {

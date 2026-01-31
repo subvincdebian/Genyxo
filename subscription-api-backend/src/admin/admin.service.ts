@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Transaction, TransactionStatus } from '../transactions/transaction.entity';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { SupportTicket } from '../support/support.entity';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Injectable()
 export class AdminService {

@@ -93,57 +93,6 @@ button:active {
     margin-top: 2px;
 }
 
-.search-container {
-    flex: 0 1 400px;
-}
-
-.search-box {
-    display: flex;
-    background: var(--glass-light);
-    backdrop-filter: blur(10px);
-    border-radius: 25px;
-    padding: 0.5rem;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-}
-
-.search-box:focus-within {
-    border-color: var(--text-light);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-}
-
-.search-input {
-    width: 300px;
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text-light);
-    padding: 0 1rem;
-    font-size: 1rem;
-}
-
-.search-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.search-btn {
-    background: var(--text-light);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    color: var(--text-dark);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.search-btn:hover {
-    background: var(--text-gray);
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-}
-
 .nav-links {
     display: flex;
     align-items: center;
@@ -1827,7 +1776,6 @@ button:active {
     cursor: pointer;
 }
 
-/* Table styles */
 .table-container {
     overflow-x: auto;
     background: var(--glass-light);
@@ -1883,7 +1831,7 @@ button:active {
 
 .nav-btn.active {
     background: var(--glass-light);
-    border-left: 3px solid var(--accent); /* Красива смужка збоку */
+    border-left: 3px solid var(--accent);
     color: var(--accent);
 }
 
@@ -1898,7 +1846,7 @@ button:active {
 .status-approved { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
 .status-pending { background: rgba(241, 196, 15, 0.15); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.3); }
 .status-declined { background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); }
-/* Container & Headers */
+
 .billing-page-header {
     margin-bottom: 32px;
 }
@@ -1922,7 +1870,6 @@ button:active {
     margin: 24px 0 16px;
 }
 
-/* Payment Method Cards */
 .payment-methods-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1990,7 +1937,6 @@ button:active {
     color: var(--text-light);
 }
 
-/* Billing Table */
 .billing-table {
     width: 100%;
     border-collapse: collapse;
@@ -2024,7 +1970,6 @@ button:active {
     color: var(--accent);
 }
 
-/* Footer Section */
 .billing-footer {
     margin-top: 40px;
     padding-top: 24px;
@@ -2034,12 +1979,9 @@ button:active {
 .security-info {
     display: flex;
     gap: 16px;
-    /* Тёмный фон с отчетливым зеленым оттенком */
     background-color: #131c19; 
     padding: 24px;
-    /* Скругление углов как на фото */
     border-radius: 12px; 
-    /* Тонкая темно-зеленая рамка */
     border: 1px solid #1d332d; 
     align-items: flex-start;
 }

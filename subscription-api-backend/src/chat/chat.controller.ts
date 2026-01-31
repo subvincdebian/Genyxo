@@ -14,10 +14,10 @@ import {
   InternalServerErrorException
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ChatService } from './chat.service';
-import { UsersService } from '../users/users.service';
-import { FalService } from './fal.service';
 import { TransactionType } from 'src/transactions/transaction.entity';
+import { UsersService } from '../users/users.service';
+import { ChatService } from './chat.service';
+import { FalService } from './fal.service';
 
 @Controller('chat')
 export class ChatController {

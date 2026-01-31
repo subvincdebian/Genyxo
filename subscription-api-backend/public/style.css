@@ -1466,7 +1466,6 @@ html.auth-active .login-btn i {
     position: relative;
 }
 
-/* Світловий блік зверху карти (ефект скла) */
 .product-card::before {
     content: "";
     position: absolute;
@@ -1713,7 +1712,7 @@ html.auth-active .login-btn i {
     font-family: "Arimo", sans-serif;
 }
 
-/* --- ORBIT SYSTEM (Анімація) --- */
+/* --- ORBIT SYSTEM --- */
 .visual-column {
     flex: 1;
     display: flex;
@@ -1867,7 +1866,6 @@ html.auth-active .login-btn i {
     color: white;
 }
 
-/* Зелена розмита пляма на фоні */
 .about-bg-blur {
     position: absolute;
     top: 0;
@@ -1875,9 +1873,9 @@ html.auth-active .login-btn i {
     transform: translateX(-50%);
     width: 600px;
     height: 600px;
-    background-color: rgba(16, 185, 129, 0.05); /* Зелений #10b981 з прозорістю */
+    background-color: rgba(16, 185, 129, 0.05);
     border-radius: 50%;
-    filter: blur(100px); /* Сильне розмиття */
+    filter: blur(100px);
     z-index: 1;
     pointer-events: none;
 }
@@ -1886,7 +1884,7 @@ html.auth-active .login-btn i {
     position: relative;
     max-width: 1150px;
     margin: 0 auto;
-    z-index: 2; /* Щоб контент був над фоном */
+    z-index: 2;
 }
 
 .about-header {
@@ -1932,7 +1930,6 @@ html.auth-active .login-btn i {
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* === СІТКА КАРТОК (GRID) === */
 .features-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1940,7 +1937,6 @@ html.auth-active .login-btn i {
     width: 100%;
 }
 
-/* === СТИЛІ КАРТКИ === */
 .feature-card {
     background-color: rgba(26, 26, 26, 0.8);
     backdrop-filter: blur(8px);
@@ -1995,7 +1991,6 @@ html.auth-active .login-btn i {
     font-size: 0.95rem;
 }
 
-/* === АДАПТИВНІСТЬ (MOBILE RESPONSIVE) === */
 @media (max-width: 1024px) {
     .search-container {
         flex: 0 1 250px;
