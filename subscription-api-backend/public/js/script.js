@@ -1131,7 +1131,7 @@ function setupEventListeners() {
     });
 }
 
-const avatarBtn = document.getElementById('profileToggleBtn');
+const avatarBtn = document.getElementById('loginBtn');
 if (avatarBtn) {
     avatarBtn.addEventListener('click', (e) => {
         e.stopPropagation();

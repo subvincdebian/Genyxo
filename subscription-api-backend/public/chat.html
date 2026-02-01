@@ -333,7 +333,7 @@
         }
 
         .welcome-subtitle {
-            color: var(--text-gray);
+            color: #e0e0e0;
             font-size: 1rem;
             max-width: 500px;
             margin-bottom: 3rem;
@@ -838,7 +838,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="left-side">
-                <button class="burger" id="sidebarToggle" style="display: none; background:none; border:none; color:white; font-size:1.5rem; margin-right: 15px;">
+                <button class="burger" id="sidebarToggle" aria-label="Menu" style="display: none; background:none; border:none; color:white; font-size:1.5rem; margin-right: 15px;">
                     <i class="fas fa-bars"></i>
                 </button>
 
@@ -852,23 +852,23 @@
 
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="index.html" class="nav-link">Home</a>
-                    <a href="chat.html" class="nav-link active">Chat</a>
+                    <a href="index.html" class="nav-link" aria-label="Back To Home">Home</a>
+                    <a href="chat.html" class="nav-link active" aria-label="Chat Page">Chat</a>
                 </div>
 
-                <button id="creditsBtn" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); min-width: auto; padding: 0.5rem 1rem;">
-                    <i class="fas fa-coins" style="color: #ffd700;"></i>
-                    <span id="creditBalance" style="margin-left: 8px;">0 Credits</span>
+                <button id="creditsBtn" class="creditsBtn primary" aria-label="Get More Credits" onclick="location.href='index.html#products'" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); min-width: auto; padding: 0.5rem 1rem;">
+                    <i class="fas fa-coins" style="color: #ffd700;"></i> 
+                    <span id="creditBalance">0</span> Credits - <span>Get more</span>
                 </button>
 
                 <div class="profile-container" style="display: flex; gap: 10px; align-items: center;">
 
-                    <button class="login-btn" id="profileToggleBtn" id="loginBtn" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                    <button class="login-btn" id="loginBtn" aria-label="Login / Signup" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 35px; height: 35px;" alt="Avatar">
                     </button>
                     
                     <div class="profile-dropdown glass" id="profilePanel">
-                        <button class="close-profile-panel" id="closeProfilePanel">✕</button>
+                        <button class="close-profile-panel" aria-label="Close Profile Dropdown" id="closeProfilePanel">✕</button>
                         
                         <div class="dropdown-header">
                             <div class="user-details">
@@ -890,17 +890,17 @@
                             <div class="credits-meta">
                                 Available Balance
                             </div>
-                            <a href="index.html#products" style="text-decoration:none;">
-                                <button class="upgrade-full-btn">Buy Credits</button>
+                            <a href="index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
+                                <button class="upgrade-full-btn" aria-label="Buy Credits">Buy Credits</button>
                             </a>
                         </div>
 
                         <div class="dropdown-menu">
-                            <a href="profile.html" class="menu-item">
+                            <a href="profile.html" class="menu-item" aria-label="Profile">
                                 <i class="fas fa-user-cog"></i> <span>Profile</span>
                             </a>
 
-                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
+                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;" aria-label="Notifications">
                                 <div style="display:flex; align-items:center;">
                                     <i class="fas fa-bell"></i> 
                                     <span data-i18n="menu.notifications">Notifications</span>
@@ -908,11 +908,11 @@
                                 <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
 
-                            <a href="support.html" class="menu-item">
+                            <a href="support.html" class="menu-item" aria-label="Help Center">
                                 <i class="fas fa-question-circle"></i> <span>Help Center</span>
                             </a>
 
-                            <a href="mailto:info@genyxo.com" class="menu-item">
+                            <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
                                 <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
                                 <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
                             </a>
@@ -920,7 +920,7 @@
                         </div>
 
                         <div class="dropdown-footer">
-                            <button class="menu-item logout-item" id="dropdownLogoutBtn">
+                            <button class="menu-item logout-item" aria-label="Log out" id="dropdownLogoutBtn">
                                 <i class="fas fa-sign-out-alt"></i> <span>Log out</span>
                             </button>
                         </div>
@@ -933,7 +933,7 @@
     
     <div class="chat-layout">
         <aside class="chat-sidebar" id="sidebar">
-            <button class="new-chat-btn" onclick="location.reload()">
+            <button class="new-chat-btn" aria-label="New Chat" onclick="location.reload()">
                 <i class="fas fa-plus"></i> <span data-i18n="chat.new_chat">New Chat</span>
             </button>
             
@@ -1008,7 +1008,7 @@
             <div class="input-wrapper">
                 <div class="chat-input-wrapper">
                     <textarea class="chat-textarea" id="userInput" rows="1" placeholder="Ask AI anything..." autocomplete="off" data-i18n="chat.input_placeholder"></textarea>
-                    <button class="send-btn" id="sendBtn">
+                    <button class="send-btn" aria-label="Send message" id="sendBtn">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
@@ -1029,6 +1029,39 @@
 
     <section class="seo-content" style="display:none;"> <h2>Why choose Genyxo AI Chat?</h2>
         <p>Genyxo provides a seamless interface for interacting with multiple artificial intelligence models. Whether you need help with coding using GPT-4o, creative writing with Gemini, or cinematic video generation with Sora, our token-based platform (cr) makes it accessible. Our neural network chat services are designed for developers and creative professionals seeking high-performance AI tools in one integrated chat room.</p>
+    </section>
+
+    <section class="faq-container" style="display: none; padding: 20px; max-width: 800px; margin: 0 auto; color: var(--text-gray);">
+        <h2 style="color: var(--text-light);">Frequently Asked Questions</h2>
+        
+        <div itemscope itemtype="https://schema.org/FAQPage">
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
+                <h3 itemprop="name">Which AI models can I use in Genyxo?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        In Genyxo, you can access top-tier neural networks including GPT-4o, Gemini, and the Sora video generation model. We provide a unified interface to chat with various AI assistants using a flexible token (cr) system.
+                    </div>
+                </div>
+            </div>
+
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
+                <h3 itemprop="name">How do tokens (cr) work?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        Tokens or "cr" are our internal currency. Each AI model has a different cost per message. You can buy credit packs in your profile and use them to chat with GPT-4 or generate AI videos without multiple subscriptions.
+                    </div>
+                </div>
+            </div>
+
+            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
+                <h3 itemprop="name">Is Genyxo AI Chat secure?</h3>
+                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <div itemprop="text">
+                        Yes, security is our priority. Your conversations are private and encrypted. We do not use your personal data or chat history to train models, ensuring enterprise-grade privacy for all users.
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <div id="toast-container" class="toast-container"></div>
@@ -1086,7 +1119,7 @@
                         <i class="far fa-message" style="margin-right:8px; font-size:0.8rem;"></i>
                         ${chat.title}
                     </span>
-                    <button class="chat-options-btn" onclick="toggleDropdown(event, ${chat.id})">
+                    <button class="chat-options-btn" aria-label="Chat Details" onclick="toggleDropdown(event, ${chat.id})">
                         <i class="fas fa-ellipsis-h"></i>
                     </button>
                     <div class="options-dropdown" id="dropdown-${chat.id}">
@@ -1301,8 +1334,8 @@
                                     break;
                                 }
 
-                                if (data.status === 'done' && data.creditsLeft !== undefined) {
-                                    updateBalanceUI(data.creditsLeft);
+                                if (data.status === 'done' && data.creditBalance !== undefined) {
+                                    updateBalanceUI(data.creditBalance);
                                 }
                             } catch (e) { 
                                 console.error("JSON parse error in stream:", e); 

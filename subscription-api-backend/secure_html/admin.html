@@ -305,7 +305,7 @@
         <div class="nav-container">
 
             <div class="nav-logo">
-                <a href="index.html" style="text-decoration: none; color: white; display:flex; align-items:center; gap:10px;">
+                <a href="index.html" aria-label="Home Page" style="text-decoration: none; color: white; display:flex; align-items:center; gap:10px;">
                     <img src="./images/logo.svg" fetchpriority="high" class="logo-icon" alt="Logo">
                     <span>Genyxo</span>
                 </a>
@@ -313,12 +313,12 @@
             
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
-                    <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
+                    <a href="index.html" class="nav-link" data-i18n="nav.home" aria-label="Back To Home">Home</a>
+                    <a href="chat.html" class="nav-link" data-i18n="nav.chat" aria-label="Chat Page">Chat</a>
                 </div>
 
                 <div class="profile-container">
-                    <button class="login-btn profile-toggle-btn" id="loginBtn">
+                    <button class="login-btn profile-toggle-btn" id="loginBtn" aria-label="Profile">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" class="nav-avatar-small" id="navAvatar" alt="Avatar">
                         <i class="fas fa-user" id="navIcon" style="display: none;"></i>
                         <span id="navUsername">Admin</span>
@@ -338,25 +338,25 @@
                         </div>
 
                         <div class="dropdown-menu">
-                            <a href="profile.html" class="menu-item">
+                            <a href="profile.html" class="menu-item" aria-label="Profile">
                                 <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
                             </a>
-                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
+                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" aria-label="Notifications" style="justify-content: space-between;">
                                 <div style="display:flex; align-items:center;">
                                     <i class="fas fa-bell"></i> 
                                     <span data-i18n="menu.notifications">Notifications</span>
                                 </div>
                                 <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
-                            <a href="support.html" class="menu-item">
+                            <a href="support.html" class="menu-item" aria-label="Help Center">
                                 <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
                             </a>
-                            <a href="#" class="menu-item" onclick="openLangModal(); return false;">
+                            <a href="#" class="menu-item" aria-label="Change Language" onclick="openLangModal(); return false;">
                                 <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
                                 <span class="lang-val">></span>
                             </a>
 
-                            <a href="mailto:info@genyxo.com" class="menu-item">
+                            <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
                                 <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
                                 <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
                             </a>
@@ -364,7 +364,7 @@
                         </div>
 
                         <div class="dropdown-footer">
-                            <button class="menu-item logout-item" id="dropdownLogoutBtn">
+                            <button class="menu-item logout-item" id="dropdownLogoutBtn" aria-label="Log out">
                                 <i class="fas fa-sign-out-alt"></i> <span data-i18n="menu.logout">Log out</span>
                             </button>
                         </div>
@@ -380,7 +380,7 @@
         <div class="glass" style="padding: 25px; margin-bottom: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-users"></i> <span data-i18n="admin.users_title">Users</span></h2>
-                <button onclick="loadUsers()" class="action-btn">
+                <button onclick="loadUsers()" class="action-btn" aria-label="Refresh">
                     <i id="refreshIconUsers" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
                 </button>
             </div>
@@ -402,16 +402,16 @@
                 <tbody id="usersTable"></tbody>
             </table>
             <div class="pagination-controls">
-                <button id="prevUserBtn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <button id="prevUserBtn" aria-label="Previous" disabled><i class="fas fa-chevron-left"></i> Prev</button>
                 <span id="userPageInfo">Page 1</span>
-                <button id="nextUserBtn" disabled>Next <i class="fas fa-chevron-right"></i></button>
+                <button id="nextUserBtn" aria-label="Next" disabled>Next <i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
 
         <div class="glass" style="padding: 25px;">
             <div class="section-header">
                 <h2><i class="fas fa-receipt"></i> <span data-i18n="admin.transactions_title">Transactions</span></h2>
-                <button onclick="loadTransactions()" class="action-btn">
+                <button onclick="loadTransactions()" class="action-btn" aria-label="Refresh">
                     <i id="refreshIconUsers" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
                 </button>
             </div>
@@ -431,16 +431,16 @@
                 <tbody id="transactionsTable"></tbody>
             </table>
              <div class="pagination-controls">
-                <button id="prevTxBtn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <button id="prevTxBtn" aria-label="Previous" disabled><i class="fas fa-chevron-left"></i> Prev</button>
                 <span id="txPageInfo">Page 1</span>
-                <button id="nextTxBtn" disabled>Next <i class="fas fa-chevron-right"></i></button>
+                <button id="nextTxBtn" aria-label="Next" disabled>Next <i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
 
         <div class="glass" style="padding: 25px;">
             <div class="section-header">
                 <h2><i class="fas fa-history"></i> <span data-i18n="admin.logs_title">Usage Logs</span></h2>
-                <button onclick="loadTransactions()" class="action-btn">
+                <button onclick="loadTransactions()" aria-label="Refresh" class="action-btn">
                     <i id="refreshIconUsers" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
                 </button>
             </div>
@@ -458,16 +458,16 @@
                 <tbody id="usageTableBody"></tbody>
             </table>
              <div class="pagination-controls">
-                <button id="prevTxBtn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <button id="prevTxBtn" aria-label="Previous" disabled><i class="fas fa-chevron-left"></i> Prev</button>
                 <span id="txPageInfo">Page 1</span>
-                <button id="nextTxBtn" disabled>Next <i class="fas fa-chevron-right"></i></button>
+                <button id="nextTxBtn" aria-label="Next" disabled>Next <i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
 
         <div class="glass" style="padding: 25px; margin-top: 30px;">
             <div class="section-header">
                 <h2><i class="fas fa-headset"></i> <span data-i18n="admin.tickets_title">Support Tickets</span></h2>
-                <button onclick="loadAdminTickets()" class="action-btn">
+                <button onclick="loadAdminTickets()" class="action-btn" aria-label="Refresh">
                     <i id="refreshIconTickets" class="fas fa-sync"></i> <span data-i18n="admin.refresh">Refresh</span>
                 </button>
             </div>
@@ -487,9 +487,9 @@
             </table>
 
             <div class="pagination-controls">
-                <button id="prevTicketBtn" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+                <button id="prevTicketBtn" aria-label="Previous" disabled><i class="fas fa-chevron-left"></i> Prev</button>
                 <span id="ticketPageInfo">Page 1</span>
-                <button id="nextTicketBtn" disabled>Next <i class="fas fa-chevron-right"></i></button>
+                <button id="nextTicketBtn" aria-label="Next" disabled>Next <i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
@@ -510,8 +510,8 @@
             <label for="replyInput">Your Reply:</label>
             <textarea id="replyInput" rows="5" placeholder="Enter your response here..."></textarea>
             <div class="modal-actions">
-                <button class="action-btn" onclick="closeReplyModal()">Cancel</button>
-                <button class="action-btn primary-btn" onclick="submitReply()">Send Reply</button>
+                <button class="action-btn" aria-label="Cancel" onclick="closeReplyModal()">Cancel</button>
+                <button class="action-btn primary-btn" aria-label="Send Reply" onclick="submitReply()">Send Reply</button>
             </div>
         </div>
     </div>
@@ -648,7 +648,7 @@
                                 <td data-label="Role">${roleBadge}</td>
                                 <td data-label="Credits"><strong>${userCredits}</strong></td>
                                 <td data-label="Action" style="text-align:right;">
-                                    <button class="action-btn" onclick="addCreditsPrompt(${u.id})">+ Credits</button>
+                                    <button class="action-btn" aria-label="Add Credits" onclick="addCreditsPrompt(${u.id})">+ Credits</button>
                                 </td>
                             </tr>
                         `;
@@ -780,7 +780,7 @@
                                     <td data-label="Created">${creationDate}</td>
                                     <td data-label="Action" style="text-align:right;">
                                         ${t.status !== 'CLOSED' ? `
-                                            <button class="action-btn primary-btn" style="width:100%" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">Reply</button>
+                                            <button class="action-btn primary-btn" aria-label="Reply On Ticket" style="width:100%" onclick="openReplyModal(${t.id}, '${t.subject.replace(/'/g, "\\'")}')">Reply</button>
                                         ` : `<span style="color: #2ecc71;">Resolved</span>`}
                                     </td>
                                 </tr>

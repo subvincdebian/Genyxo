@@ -50,7 +50,7 @@
                         <input type="password" style="display:none" autocomplete="current-password">
                         <input type="text" class="search-input" data-i18n="nav.search_placeholder" placeholder="Search products..." autocomplete="off" autocapitalize="none" spellcheck="false" name="search-field-xyz">
                         
-                        <button class="search-btn">
+                        <button class="search-btn" aria-label="Search Button">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
@@ -59,13 +59,13 @@
 
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="#home" class="nav-link active" data-i18n="nav.home">Home</a>
-                    <a href="#products" class="nav-link" data-i18n="nav.products">Products</a>
-                    <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
-                    <a href="#about" class="nav-link" data-i18n="nav.about">About Us</a>
+                    <a href="#home" class="nav-link active" data-i18n="nav.home" aria-label="Home Page">Home</a>
+                    <a href="#products" class="nav-link" data-i18n="nav.products" aria-label="Product Section">Products</a>
+                    <a href="chat.html" class="nav-link" data-i18n="nav.chat" aria-label="Chat Page">Chat</a>
+                    <a href="#about" class="nav-link" data-i18n="nav.about" aria-label="About Us">About Us</a>
                 </div>
                 <div class="profile-container">
-                    <button class="login-btn" id="loginBtn">
+                    <button class="login-btn" id="loginBtn" aria-label="Register / Login">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
                         <i class="fas fa-user" id="navIcon"></i>
                         <span id="navUsername" data-i18n="nav.login">Register / Login</span>
@@ -73,7 +73,7 @@
                     
                     <div class="profile-dropdown glass" id="profilePanel">
 
-                        <button class="close-profile-panel" id="closeProfilePanel">✕</button>
+                        <button class="close-profile-panel" id="closeProfilePanel" aria-label="Close Profile Dropdown">✕</button>
                         
                         <div class="dropdown-header">
                             <div class="user-details">
@@ -93,18 +93,18 @@
                                     <i class="fas fa-info-circle info-icon" title="Details"></i>
                                 </div>
                             </div>
-                            <a href="index.html#products" style="text-decoration:none;">
-                                <button class="upgrade-full-btn">Buy Credits</button>
+                            <a href="index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
+                                <button class="upgrade-full-btn" aria-label="Buy Credits">Buy Credits</button>
                             </a>
                         </div>
 
                         <div class="dropdown-menu">
 
-                            <a href="profile.html" class="menu-item">
+                            <a href="profile.html" class="menu-item" aria-label="Profile">
                                 <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
                             </a>
 
-                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
+                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;" aria-label="Notifications">
                                 <div style="display:flex; align-items:center;">
                                     <i class="fas fa-bell"></i> 
                                     <span data-i18n="menu.notifications">Notifications</span>
@@ -112,16 +112,16 @@
                                 <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
 
-                            <a href="support.html" class="menu-item">
+                            <a href="support.html" class="menu-item" aria-label="Help Center">
                                 <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
                             </a>
 
-                            <a href="#" class="menu-item">
+                            <a href="#" class="menu-item" aria-label="Change Language">
                                 <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
                                 <span class="lang-val" id="currentLangDisplay">English ></span>
                             </a>
 
-                            <a href="mailto:info@genyxo.com" class="menu-item">
+                            <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
                                 <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
                                 <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
                             </a>
@@ -129,7 +129,7 @@
                         </div>
 
                         <div class="dropdown-footer">
-                            <button class="menu-item logout-item" id="dropdownLogoutBtn">
+                            <button class="menu-item logout-item" aria-label="Log out" id="dropdownLogoutBtn">
                                 <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Log out</span>
                             </button>
                         </div>
@@ -142,10 +142,10 @@
 
     <div class="mobile-menu" id="mobileMenu">
         <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#products">Products</a></li>
-            <li><a href="chat.html">Chat</a></li>
-            <li><a href="#about">About us</a></li>
+            <li><a href="#home" aria-label="Home Page">Home</a></li>
+            <li><a href="#products" aria-label="Product Section">Products</a></li>
+            <li><a href="chat.html" aria-label="Chat Page">Chat</a></li>
+            <li><a href="#about" aria-label="About Us">About us</a></li>
         </ul>
     </div>
     <div class="menu-overlay" id="menuOverlay"></div>
@@ -172,8 +172,8 @@
                 </p>
 
                 <div class="button-group">
-                    <button class="btn btn-primary" onclick="window.location.hash = '#products'">View Packages</button>
-                    <button class="btn btn-outline">View Demo</button>
+                    <button class="btn btn-primary" aria-label="View Packges" onclick="window.location.hash = '#products'">View Packages</button>
+                    <button class="btn btn-outline" aria-label="View Demo">View Demo</button>
                 </div>
 
                 <div class="trust-badge">
@@ -338,17 +338,17 @@
                 <p data-i18n="footer.desc_2">Fast, transparent, no overpayments.</p>
                 
                 <div class="social-links">
-                    <a href="https://instagram.com/username" class="social-icon" title="Instagram" target="_blank">
+                    <a href="https://instagram.com/username" class="social-icon" title="Instagram" target="_blank" aria-label="Instagram">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                     </svg>
                     </a>
-                    <a href="paste your tiktok profile link" class="social-icon" title="TikTok" target="_blank">
+                    <a href="paste your tiktok profile link" class="social-icon" title="TikTok" target="_blank" aria-label="TikTok">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/>
                     </svg>
                     </a>
-                    <a href="https://wa.me/phonenumber" class="social-icon" title="WhatsApp" target="_blank">
+                    <a href="https://wa.me/phonenumber" class="social-icon" title="WhatsApp" target="_blank" aria-label="WhatsApp">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893c0-3.189-1.248-6.189-3.515-8.444"/>
                     </svg>
@@ -359,10 +359,10 @@
             <div class="footer-section">
                 <h3 data-i18n="footer.links_title">Links</h3>
                 <ul class="footer-links">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#products">All Products</a></li>
-                    <li><a href="chat.html">Chat With AI</a></li>
-                    <li><a href="mailto:aivaultcomsup@gmail.com">Contacts</a></li>
+                    <li><a href="#home" aria-label="Home Page">Home</a></li>
+                    <li><a href="#products" aria-label="Product Section">All Products</a></li>
+                    <li><a href="chat.html" aria-label="Chat Page">Chat With AI</a></li>
+                    <li><a href="mailto:aivaultcomsup@gmail.com" aria-label="Contact Us">Contacts</a></li>
                 </ul>
             </div>
                     
@@ -437,7 +437,7 @@
                     </div>
                 </div>
 
-                <button class="pay-now-btn" id="payBtn" onclick="processPayment()">
+                <button class="pay-now-btn" id="payBtn" aria-label="Pay Now" onclick="processPayment()">
                     <span class="btn-text" data-i18n="order.button">Proceed to Payment</span>
                     <div class="spinner"></div>
                 </button>
@@ -459,10 +459,10 @@
                 <p class="auth-subtitle">Login to access your workspace</p>
                 
                 <div class="social-login">
-                    <a href="https://genyxo.com/auth/google" class="social-btn google">
+                    <a href="https://genyxo.com/auth/google" class="social-btn google" aria-label="Login via Google">
                         <i class="fab fa-google"></i> Google
                     </a>
-                    <a href="https://genyxo.com/auth/facebook" class="social-btn facebook">
+                    <a href="https://genyxo.com/auth/facebook" class="social-btn facebook" aria-label="Login via Facebook">
                         <i class="fab fa-facebook-f"></i> Facebook
                     </a>
                 </div>
@@ -484,13 +484,13 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="submit-btn glow-on-hover">
+                <button type="submit" aria-label="Sign In" class="submit-btn glow-on-hover">
                     Sign In <i class="fas fa-arrow-right"></i>
                 </button>
                 
                 <div class="signup-link">
                     <span>New here? </span>
-                    <a href="#" id="showSignup">Create an account</a>
+                    <a href="#" id="showSignup" aria-label="Create Account">Create an account</a>
                 </div>
             </form>
 
@@ -499,10 +499,10 @@
                 <p class="auth-subtitle">Join the future of AI tools</p>
 
                 <div class="social-login">
-                    <a href="https://genyxo.com/auth/google" class="social-btn google">
+                    <a href="https://genyxo.com/auth/google" class="social-btn google" aria-label="Signup via Google">
                         <i class="fab fa-google"></i> Google
                     </a>
-                    <a href="https://genyxo.com/auth/facebook" class="social-btn facebook">
+                    <a href="https://genyxo.com/auth/facebook" class="social-btn facebook" aria-label="Signup via Facebook">
                         <i class="fab fa-facebook-f"></i> Facebook
                     </a>
                 </div>
@@ -538,13 +538,13 @@
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn glow-on-hover">
+                <button type="submit" aria-label="Register" class="submit-btn glow-on-hover">
                     Register <i class="fas fa-user-plus"></i>
                 </button>
                 
                 <div class="signup-link">
                     <span>Already have an account? </span>
-                    <a href="#" id="showLogin">Log In</a>
+                    <a href="#" id="showLogin" aria-label="Log In">Log In</a>
                 </div>
             </form>
         </div>
