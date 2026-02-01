@@ -800,16 +800,24 @@
         "@context": "https://schema.org",
         "@graph": [
             {
+                "@type": "WebPage",
+                "@id": "https://genyxo.com/chat.html#webpage",
+                "url": "https://genyxo.com/chat.html",
+                "name": "Genyxo AI Chat - Intelligent assistant",
+                "description": "Access all top neural networks in one place. Try Genyxo AI!"
+            },
+            {
                 "@type": "Organization",
                 "@id": "https://genyxo.com/#organization",
-                "url": "https://genyxo.com/",
                 "name": "Genyxo",
+                "url": "https://genyxo.com/",
                 "logo": {
                     "@type": "ImageObject",
                     "url": "https://genyxo.com/images/logo.svg",
                     "width": "192",
                     "height": "192"
                 },
+                "image": { "@id": "https://genyxo.com/images/logo.svg" },
                 "contactPoint": {
                     "@type": "ContactPoint",
                     "email": "info@genyxo.com",
@@ -819,11 +827,9 @@
             {
                 "@type": "WebSite",
                 "@id": "https://genyxo.com/#website",
-                "name": "Genyxo AI",
                 "url": "https://genyxo.com/",
-                "publisher": {
-                    "@id": "https://genyxo.com/#organization"
-                },
+                "name": "Genyxo AI",
+                "publisher": { "@id": "https://genyxo.com/#organization" },
                 "potentialAction": {
                     "@type": "SearchAction",
                     "target": {
@@ -839,6 +845,7 @@
             },
             {
                 "@type": "BreadcrumbList",
+                "@id": "https://genyxo.com/chat.html#breadcrumb",
                 "itemListElement": [
                     {
                         "@type": "ListItem",
