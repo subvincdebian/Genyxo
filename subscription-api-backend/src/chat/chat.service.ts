@@ -10,7 +10,7 @@ import { FalService } from './fal.service';
 
 @Injectable()
 export class ChatService {
-  private openai: OpenAI;
+  private openRouter: OpenAI;
 
   constructor(
     private configService: ConfigService,
@@ -18,7 +18,14 @@ export class ChatService {
     @InjectRepository(Message) private messageRepository: Repository<Message>,
     @InjectRepository(Conversation) private conversationRepository: Repository<Conversation>,
   ) {
-    this.openai = new OpenAI({ apiKey: this.configService.get('OPENAI_API_KEY') });
+    this.openRouter = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: this.configService.get('OPENROUTER_API_KEY'),
+      defaultHeaders: {
+        'HTTP-Referer': this.configService.get('SITE_URL') || 'http://localhost:3000', 
+        'X-Title': 'Genyxo AI',
+      },
+    });
   }
 
   async saveMessage(conversation: Conversation, content: string, sender: 'user' | 'bot', model: string, userId: number, requestId?: string) {
@@ -123,47 +130,37 @@ export class ChatService {
     }
   }
 
-  async getAiResponse(messagesHistory: any[], model: string = 'gpt-4o-mini') {
+  async getAiResponse(messagesHistory: any[], model: string) {
     try {
-      let replyText = '';
-      let tokensUsed = 0;
-
-      if (model === 'dall-e-3') {
-          const lastMessage = messagesHistory[messagesHistory.length - 1].content;
-          
-          const image = await this.openai.images.generate({
-            model: "dall-e-3",
-            prompt: lastMessage,
-            n: 1,
-            size: "1024x1024",
-          });
-          
-          const imageUrl = image.data?.[0]?.url;
-          
-          if (imageUrl) {
-              replyText = `Here is your image: <br><img src="${imageUrl}" style="max-width: 100%; border-radius: 10px;">`;
-              tokensUsed = 50;
-          } else {
-              replyText = "Sorry, the image could not be generated.";
-          }
-      } 
-      else {
-          const completion = await this.openai.chat.completions.create({
-            messages: messagesHistory,
-            model: model,
-          });
-          
-          const content = completion.choices[0].message.content;
-          replyText = content || "Sorry, the AI ​​didn't provide an answer."; 
-          
-          tokensUsed = completion.usage?.total_tokens || 0;
+      if (model.includes('dall-e')) {
+        const completion = await this.openRouter.images.generate({
+          model: "openai/dall-e-3",
+          prompt: messagesHistory[messagesHistory.length - 1].content,
+          n: 1,
+        });
+        if (!completion.data || completion.data.length === 0) {
+          throw new Error('No image generated');
+        }
+        return { 
+          reply: `Here is your image: <br><img src="${completion.data[0].url}" class="chat-img">`, 
+          tokensUsed: 120
+        };
       }
 
-      return { reply: replyText, tokensUsed };
+      const completion = await this.openRouter.chat.completions.create({
+        model: model,
+        messages: messagesHistory,
+        max_tokens: 2000,
+        temperature: 0.7,
+      });
 
+      return {
+        reply: completion.choices[0].message.content || "AI did not respond",
+        tokensUsed: completion.usage?.total_tokens || 0
+      };
     } catch (error) {
-      console.error('OpenAI Error:', error.response?.data || error.message);
-      return { reply: "There was an error connecting to AI. Check your API key and balance.", tokensUsed: 0 };
+      console.error('OpenRouter API Error:', error.message);
+      throw error;
     }
   }
 

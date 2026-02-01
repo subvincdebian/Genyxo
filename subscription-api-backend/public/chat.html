@@ -860,16 +860,16 @@
                     </div>
 
                     <select id="modelSelect" style="display:none;">
-                        <option value="gpt-5.1" selected>GPT-5.1 (150 cr)</option>
-                        <option value="gpt-5-mini">GPT-5 (70 cr)</option>
-                        <option value="gpt-5-nano">GPT-5 Mini (45 cr)</option>
-                        <option value="gpt-4.1">GPT-4.1 (55 cr)</option>
-                        <option value="gpt-4.1-mini">GPT-4 Mini (25 cr)</option>
-                        <option value="gpt-4o">GPT-4o (40 cr)</option>
-                        <option value="gpt-4o-mini">GPT-4o Mini (18 cr)</option>
-                        <option value="o1-preview">GPT-o1 (90 cr)</option>
-                        <option value="o3-reasoning">GPT-o3 Reasoning (140 cr)</option>
-                        <option value="dall-e-3">DALL-E Image (120 cr)</option>
+                        <option value="openai/gpt-5.1" selected>GPT-5.1 (150 cr)</option>
+                        <option value="openai/gpt-5-mini">GPT-5 (70 cr)</option>
+                        <option value="openai/gpt-5-nano">GPT-5 Mini (45 cr)</option>
+                        <option value="openai/gpt-4.1">GPT-4.1 (55 cr)</option>
+                        <option value="openai/gpt-4.1-mini">GPT-4 Mini (25 cr)</option>
+                        <option value="openai/gpt-4o">GPT-4o (40 cr)</option>
+                        <option value="openai/gpt-4o-mini">GPT-4o Mini (20 cr)</option>
+                        <option value="openai/o1-preview">GPT-o1 (100 cr)</option>
+                        <option value="openai/o3-reasoning">GPT-o3 Reasoning (150 cr)</option>
+                        <option value="openai/dall-e-3">DALL-E Image (120 cr)</option>
                         <option value="kling-video">Kling Video (500 cr)</option>
                     </select>
                 </div>
@@ -947,7 +947,7 @@
         const sendBtn = document.getElementById('sendBtn');
         const typingIndicator = document.getElementById('typingIndicator');
         const creditBalanceEl = document.getElementById('creditBalance');
-
+        const modelSelect = document.getElementById('modelSelect');
         const historyList = document.getElementById('historyList');
 
         const navAvatarImg = document.getElementById('navAvatarImg');
@@ -1047,30 +1047,46 @@
             } catch(e) { console.error(e); }
         }
 
-        function appendMessage(sender, text, type = 'text') {
-            if (!chatBox) return;
-
-            const messageDiv = document.createElement('div');
+        /* function appendMessage(sender, text, type = 'text') {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}-message`;
             
             let senderClass = 'bot-message';
+
             if (sender === 'user') senderClass = 'user-message';
             if (sender === 'error') senderClass = 'error-message';
 
-            messageDiv.className = `message ${senderClass}`;
+            msgDiv.className = `message ${senderClass}`;
 
             if (type === 'video') {
-                messageDiv.innerHTML = `<video src="${text}" controls style="max-width: 100%; border-radius: 12px;"></video>`;
+                msgDiv.innerHTML = `<video src="${text}" controls style="max-width: 100%; border-radius: 12px;"></video>`;
             } else {
                 if (sender === 'user') {
-                    messageDiv.textContent = text;
+                    msgDiv.textContent = text;
                 } else if (sender === 'error') {
-                    messageDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
+                    msgDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
                 } else {
-                    messageDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+                    msgDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
                 }
             }
             
-            chatBox.appendChild(messageDiv);
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } */
+
+        function appendMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}-message`;
+
+            if (sender === 'bot') {
+                msgDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+            } else if (sender === 'error') {
+                msgDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${text}`;
+            } else {
+                msgDiv.textContent = text;
+            }
+
+            chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -1094,7 +1110,7 @@
 
         function showBotLoading() {
             const div = document.createElement('div');
-            div.className = 'message bot-message';
+            div.className = 'message bot-message loading';
             div.id = 'temp-loader';
             div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
             chatBox.appendChild(div);
@@ -1102,10 +1118,17 @@
             return div;
         }
 
+        function updateUrl(id) {
+            const newUrl = `${window.location.pathname}?id=${id}`;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+        }
+
         async function sendMessage() {
             const text = userInput.value.trim();
+            const token = localStorage.getItem('authToken');
+            const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
 
-            if (!text) return;
+            if (!text || !token) return;
 
             appendMessage('user', text);
             userInput.value = '';
@@ -1122,7 +1145,7 @@
                     },
                     body: JSON.stringify({ 
                         message: text, 
-                        model: document.getElementById('modelSelect')?.value || 'gpt-4o-mini',
+                        model: selectedModel,
                         conversationId: window.currentChatId
                     })
                 });
@@ -1133,13 +1156,13 @@
                 if (response.ok) {
                     if (!window.currentChatId && data.conversationId) {
                         window.currentChatId = data.conversationId;
-                        const newUrl = window.location.pathname + '?id=' + data.conversationId;
-                        window.history.pushState({ path: newUrl }, '', newUrl);
+                        updateUrl(data.conversationId);
                         
                         if (typeof loadConversations === 'function') loadConversations();
                     }
                     
                     appendMessage('bot', data.botReply);
+
                     if (data.creditsLeft !== undefined) {
                         if(creditBalanceEl) creditBalanceEl.innerText = `${data.creditsLeft} Credits`;
                         localStorage.setItem('userCredits', data.creditsLeft);

@@ -18,34 +18,16 @@ import { TransactionType } from 'src/transactions/transaction.entity';
 import { UsersService } from '../users/users.service';
 import { ChatService } from './chat.service';
 import { FalService } from './fal.service';
+import { PricingService } from './pricing.service';
 
 @Controller('chat')
 export class ChatController {
   constructor(
     private chatService: ChatService,
     private usersService: UsersService,
-    private falService: FalService
+    private falService: FalService,
+    private pricingService: PricingService
   ) {}
-
-  private readonly MODEL_PRICES = {
-    'gpt-5.1': 150,
-    'gpt-5-mini': 70,
-    'gpt-5-nano': 45,
-
-    'gpt-4.1': 55,
-    'gpt-4.1-mini': 25,
-
-    'gpt-4o': 40,
-    'gpt-4o-mini': 18,
-
-    'o1-preview': 90,
-    'o3-reasoning': 140,
-
-    'dall-e-3': 120,
-
-    'kling-video': 500,
-    'luma-video': 450,
-  };
 
   @UseGuards(AuthGuard('jwt'))
   @Get('conversations')
@@ -64,42 +46,41 @@ export class ChatController {
   async sendMessage(@Body() body: { message: string, model: string, conversationId?: number }, @Request() req) {
       const userId = req.user.id;
       const { message, conversationId, model } = body;
-      const selectedModel = model || 'gpt-4o-mini';
+      const selectedModel = model || 'openai/gpt-4o-mini';
 
-      if (!message || message.trim().length === 0) {
-        throw new BadRequestException("Message cannot be empty");
-      }
-      if (message.length > 1000) {
-        throw new BadRequestException("Message is too long (max 1000 characters)");
-      }
-
-      const cost = this.MODEL_PRICES[selectedModel];
-      if (!cost) throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
+      const modelConfig = this.pricingService.getModelConfig(selectedModel);
+      const cost = modelConfig.cost;
 
       const isDeducted = await this.usersService.deductCredits(userId, cost);
       if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
 
-      try {
-          const isDeducted = await this.usersService.deductCredits(userId, cost);
-          if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
+      if (!message || message.trim().length === 0) {
+        throw new BadRequestException("Message cannot be empty");
+      }
+      if (message.length > 750) {
+        throw new BadRequestException("Message is too long (max 750 characters)");
+      }
 
+      if (!cost) throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
+
+      try {
+          const result = await this.chatService.processMessage(userId, message, selectedModel, conversationId);
           await this.usersService.logTransaction(
               userId, 
               -cost,
               TransactionType.SPEND, 
               `Used AI Model: ${selectedModel}`
           );
-
-          const result = await this.chatService.processMessage(userId, message, selectedModel, conversationId);
           const newBalance = await this.usersService.getBalance(userId);
 
           return {
-              botReply: result.botReply,
-              conversationId: result.conversationId,
-              messageId: result.messageId,
-              status: result.status,
-              creditsLeft: newBalance
+            botReply: result.botReply,
+            conversationId: result.conversationId,
+            messageId: result.messageId,
+            status: result.status,
+            creditsLeft: newBalance
           };
+
       } catch (error) {
           await this.usersService.addCredits(userId, cost);
 
@@ -110,12 +91,13 @@ export class ChatController {
             `Refund for failed ${selectedModel} request`
           );
           
-          console.error('API Error, credits returned:', error.response?.data || error.message);
-          
           throw new InternalServerErrorException(
               "The AI service is temporarily unavailable. Your credits have been refunded."
           );
       }
+
+      const newBalance = await this.usersService.getBalance(userId);
+      
   }
 
   @UseGuards(AuthGuard('jwt'))
