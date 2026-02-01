@@ -7,6 +7,7 @@ import { UsersModule } from '../users/users.module';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { FalService } from './fal.service';
+import { PricingService } from './pricing.service';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { FalService } from './fal.service';
     UsersModule, 
     TypeOrmModule.forFeature([Message, Conversation]) 
   ],
-  providers: [ChatService, FalService],
+  providers: [ChatService, FalService, PricingService],
   controllers: [ChatController],
   exports: [ChatService],
 })
