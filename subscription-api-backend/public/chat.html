@@ -13,7 +13,9 @@
     <link rel="alternate" hreflang="x-default" href="https://genyxo.com/chat.html">
     <link rel="alternate" hreflang="en" href="https://genyxo.com/chat.html">
     <link rel="alternate" hreflang="uk" href="https://genyxo.com/chat.html">
-    <link rel="alternate" hreflang="ru" href="https://genyxo.com/chat.html">
+    <link rel="alternate" hreflang="de" href="https://genyxo.com/chat.html">
+    <link rel="alternate" hreflang="fr" href="https://genyxo.com/chat.html">
+    <link rel="alternate" hreflang="es" href="https://genyxo.com/chat.html">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Genyxo">
@@ -863,7 +865,7 @@
 
                 <div class="profile-container" style="display: flex; gap: 10px; align-items: center;">
 
-                    <button class="login-btn" id="loginBtn" aria-label="Login / Signup" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                    <button class="login-btn" id="profileToggleBtn" id="loginBtn" aria-label="Login / Signup" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 35px; height: 35px;" alt="Avatar">
                     </button>
                     
@@ -1646,6 +1648,17 @@
         });
 
         window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('q');
+
+            if (searchQuery && userInput) {
+                userInput.value = searchQuery;
+                
+                setTimeout(() => {
+                    sendMessage();
+                }, 500); 
+            }
+
             setTimeout(() => {
                 if (userInput && userInput.value.length > 0) {
                     userInput.placeholder = userInput.value;
