@@ -797,41 +797,60 @@
     </script>
     <script type="application/ld+json">
     {
-    "@context": "https://schema.org",
-    "@graph": [
-        {
-        "@type": "WebSite",
-        "@id": "https://genyxo.com/#website",
-        "url": "https://genyxo.com/",
-        "name": "Genyxo",
-        "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://genyxo.com/chat.html?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-        }
-        },
-        {
-        "@type": "Organization",
-        "@id": "https://genyxo.com/#organization",
-        "name": "Genyxo AI",
-        "url": "https://genyxo.com/",
-        "logo": "https://genyxo.com/images/logo.png"
-        },
-        {
-        "@type": "BreadcrumbList",
-        "itemListElement": [{
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Home",
-            "item": "https://genyxo.com/index.html"
-        },{
-            "@type": "ListItem",
-            "position": 2,
-            "name": "AI Chat",
-            "item": "https://genyxo.com/chat.html"
-        }]
-        }
-    ]
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "@id": "https://genyxo.com/#organization",
+                "url": "https://genyxo.com/",
+                "name": "Genyxo",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://genyxo.com/images/logo.svg",
+                    "width": "192",
+                    "height": "192"
+                },
+                "contactPoint": {
+                    "@type": "ContactPoint",
+                    "email": "info@genyxo.com",
+                    "contactType": "customer service"
+                }
+            },
+            {
+                "@type": "WebSite",
+                "@id": "https://genyxo.com/#website",
+                "name": "Genyxo AI",
+                "url": "https://genyxo.com/",
+                "logo": "https://genyxo.com/images/logo.svg",
+                "publisher": {"@id": "https://genyxo.com/#organization"},
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https://genyxo.com/chat.html?q={search_term_string}"
+                        },
+                    "query-input": {
+                        "@type": "PropertyValueSpecification", /* Тот самый PropertyValueSpecification */
+                        "valueRequired": true,
+                        "valueName": "search_term_string"
+                    }
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [{
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://genyxo.com/index.html"
+                },{
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "AI Chat",
+                    "item": "https://genyxo.com/chat.html"
+                }]
+            }
+        ]
     }
     </script>
 </head>
