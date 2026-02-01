@@ -796,12 +796,40 @@
     <script type="application/ld+json">
     {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Genyxo AI Chat",
-    "url": "https://genyxo.com/chat.html",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "All",
-    "description": "Chat with artificial intelligence with Genyxo."
+    "@graph": [
+        {
+        "@type": "WebSite",
+        "@id": "https://genyxo.com/#website",
+        "url": "https://genyxo.com/",
+        "name": "Genyxo",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://genyxo.com/chat.html?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+        },
+        {
+        "@type": "Organization",
+        "@id": "https://genyxo.com/#organization",
+        "name": "Genyxo AI",
+        "url": "https://genyxo.com/",
+        "logo": "https://genyxo.com/images/logo.png"
+        },
+        {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://genyxo.com/index.html"
+        },{
+            "@type": "ListItem",
+            "position": 2,
+            "name": "AI Chat",
+            "item": "https://genyxo.com/chat.html"
+        }]
+        }
+    ]
     }
     </script>
 </head>
@@ -816,7 +844,7 @@
 
                 <div class="nav-logo">
                     <a href="index.html" aria-label="Genyxo Home" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
-                        <img src="./images/logo.svg" class="logo-icon" alt="Logo">
+                        <img src="./images/logo.svg" fetchpriority="high" class="logo-icon" alt="Logo">
                         <span>Genyxo</span>
                     </a>
                 </div>
@@ -949,9 +977,9 @@
                 <div class="welcome-logo">
                     <i class="fas fa-atom"></i>
                 </div>
-                <h1 class="welcome-title" data-i18n="chat.welcome_title">Hi there! I'm Genyxo AI</h1>
+                <h1 class="welcome-title" data-i18n="chat.welcome_title">Genyxo AI: Advanced Chatbot Hub</h1>
                 <p class="welcome-subtitle" data-i18n="chat.welcome_subtitle">
-                    Your AI assistant designed to help you find the perfect domain for your needs.
+                    Your AI assistant designed to help you with all your needs. Get started by selecting a suggestion below or typing your own question!
                 </p>
 
                 <div class="suggestions-grid">
@@ -998,6 +1026,10 @@
             <div class="lang-grid" id="langGrid"></div>
         </div>
     </div>
+
+    <section class="seo-content" style="display:none;"> <h2>Why choose Genyxo AI Chat?</h2>
+        <p>Genyxo provides a seamless interface for interacting with multiple artificial intelligence models. Whether you need help with coding using GPT-4o, creative writing with Gemini, or cinematic video generation with Sora, our token-based platform (cr) makes it accessible. Our neural network chat services are designed for developers and creative professionals seeking high-performance AI tools in one integrated chat room.</p>
+    </section>
 
     <div id="toast-container" class="toast-container"></div>
 
