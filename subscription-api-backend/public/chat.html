@@ -821,16 +821,17 @@
                 "@id": "https://genyxo.com/#website",
                 "name": "Genyxo AI",
                 "url": "https://genyxo.com/",
-                "logo": "https://genyxo.com/images/logo.svg",
-                "publisher": {"@id": "https://genyxo.com/#organization"},
+                "publisher": {
+                    "@id": "https://genyxo.com/#organization"
+                },
                 "potentialAction": {
                     "@type": "SearchAction",
                     "target": {
                         "@type": "EntryPoint",
                         "urlTemplate": "https://genyxo.com/chat.html?q={search_term_string}"
-                        },
+                    },
                     "query-input": {
-                        "@type": "PropertyValueSpecification", /* Тот самый PropertyValueSpecification */
+                        "@type": "PropertyValueSpecification",
                         "valueRequired": true,
                         "valueName": "search_term_string"
                     }
@@ -838,17 +839,20 @@
             },
             {
                 "@type": "BreadcrumbList",
-                "itemListElement": [{
-                    "@type": "ListItem",
-                    "position": 1,
-                    "name": "Home",
-                    "item": "https://genyxo.com/index.html"
-                },{
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "AI Chat",
-                    "item": "https://genyxo.com/chat.html"
-                }]
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Home",
+                        "item": "https://genyxo.com/index.html"
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "AI Chat",
+                        "item": "https://genyxo.com/chat.html"
+                    }
+                ]
             }
         ]
     }
