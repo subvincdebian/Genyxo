@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Index } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Conversation } from './conversation.entity';
 
@@ -19,12 +20,14 @@ export class Message {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Index()
   @ManyToOne(() => Conversation, (conversation) => conversation.messages, { onDelete: 'CASCADE' })
   conversation: Conversation;
 
   @ManyToOne(() => User)
   user: User;
 
+  @Index()
   @Column({ nullable: true })
   requestId: string;
 

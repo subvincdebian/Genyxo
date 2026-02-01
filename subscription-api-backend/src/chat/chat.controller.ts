@@ -11,9 +11,14 @@ import {
   Patch,
   Delete,
   NotFoundException,
-  InternalServerErrorException
+  InternalServerErrorException,
+  Query,
+  Sse,
+  MessageEvent
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
+import { Observable } from 'rxjs';
 import { TransactionType } from 'src/transactions/transaction.entity';
 import { UsersService } from '../users/users.service';
 import { ChatService } from './chat.service';
@@ -26,7 +31,8 @@ export class ChatController {
     private chatService: ChatService,
     private usersService: UsersService,
     private falService: FalService,
-    private pricingService: PricingService
+    private pricingService: PricingService,
+    private configService: ConfigService
   ) {}
 
   @UseGuards(AuthGuard('jwt'))
@@ -42,6 +48,27 @@ export class ChatController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Sse('stream')
+  async streamMessage(
+    @Query('message') message: string,
+    @Query('model') model: string,
+    @Query('conversationId') conversationId: string,
+    @Request() req
+  ): Promise<Observable<MessageEvent>> {
+    const userId = req.user.id;
+    const selectedModel = model || 'openai/gpt-4o-mini';
+    const convId = conversationId ? parseInt(conversationId) : 0;
+
+    const modelConfig = this.pricingService.getModelConfig(selectedModel);
+    const cost = modelConfig.cost;
+
+    const isDeducted = await this.usersService.deductCredits(userId, cost);
+    if (!isDeducted) throw new ForbiddenException('Not enough credits');
+
+    return this.chatService.processStreamingMessage(userId, message, selectedModel, convId, cost);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('message')
   async sendMessage(@Body() body: { message: string, model: string, conversationId?: number }, @Request() req) {
       const userId = req.user.id;
@@ -49,19 +76,15 @@ export class ChatController {
       const selectedModel = model || 'openai/gpt-4o-mini';
 
       const modelConfig = this.pricingService.getModelConfig(selectedModel);
+      if (!modelConfig) throw new BadRequestException(`Model ${selectedModel} not supported`);
+
       const cost = modelConfig.cost;
+
+      if (!message?.trim()) throw new BadRequestException("Message cannot be empty");
+      if (message.length > 750) throw new BadRequestException("Message too long");
 
       const isDeducted = await this.usersService.deductCredits(userId, cost);
       if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
-
-      if (!message || message.trim().length === 0) {
-        throw new BadRequestException("Message cannot be empty");
-      }
-      if (message.length > 750) {
-        throw new BadRequestException("Message is too long (max 750 characters)");
-      }
-
-      if (!cost) throw new BadRequestException(`Unknown AI model: ${selectedModel}`);
 
       try {
           const result = await this.chatService.processMessage(userId, message, selectedModel, conversationId);
@@ -71,14 +94,10 @@ export class ChatController {
               TransactionType.SPEND, 
               `Used AI Model: ${selectedModel}`
           );
-          const newBalance = await this.usersService.getBalance(userId);
 
           return {
-            botReply: result.botReply,
-            conversationId: result.conversationId,
-            messageId: result.messageId,
-            status: result.status,
-            creditsLeft: newBalance
+            ...result,
+            creditsLeft: await this.usersService.getBalance(userId)
           };
 
       } catch (error) {
@@ -95,9 +114,6 @@ export class ChatController {
               "The AI service is temporarily unavailable. Your credits have been refunded."
           );
       }
-
-      const newBalance = await this.usersService.getBalance(userId);
-      
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -113,7 +129,10 @@ export class ChatController {
   }
 
   @Post('webhook/video')
-  async handleFalWebhook(@Body() data: any) {
+  async handleFalWebhook(@Body() data: any, @Query('secret') secret: string) {
+      const configSecret = this.configService.get('WEBHOOK_SECRET');
+      if (secret !== configSecret) throw new ForbiddenException('Invalid secret');
+
       const { request_id, status, payload } = data;
 
       if (status === 'COMPLETED' && payload?.video?.url) {

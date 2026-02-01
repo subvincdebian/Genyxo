@@ -1,12 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import OpenAI from 'openai';
+import { Subject } from 'rxjs';
 import * as fal from "@fal-ai/serverless-client";
 import { Message } from './message.entity';
 import { Conversation } from './conversation.entity';
 import { FalService } from './fal.service';
+import { PricingService } from './pricing.service';
+import { ModelType } from './pricing.service';
+import { TransactionType } from 'src/transactions/transaction.entity';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ChatService {
@@ -15,6 +20,8 @@ export class ChatService {
   constructor(
     private configService: ConfigService,
     private falService: FalService,
+    private pricingService: PricingService,
+    private usersService: UsersService,
     @InjectRepository(Message) private messageRepository: Repository<Message>,
     @InjectRepository(Conversation) private conversationRepository: Repository<Conversation>,
   ) {
@@ -43,7 +50,8 @@ export class ChatService {
   async getHistory(conversationId: number) {
     const messages = await this.messageRepository.find({
         where: { conversation: { id: conversationId } },
-        order: { createdAt: 'ASC' }
+        order: { createdAt: 'ASC' },
+        take: 50
     });
     return messages.map(m => ({
         role: m.sender === 'bot' ? 'assistant' : 'user',
@@ -70,10 +78,13 @@ export class ChatService {
   }
 
   async processMessage(userId: number, text: string, model: string, conversationId?: number) {
+    const modelConfig = this.pricingService.getModelConfig(model);
+    if (!modelConfig) throw new BadRequestException('Unsupported model');
+    
     let conversation = await this.getOrCreateConversation(userId, conversationId);
     await this.saveMessage(conversation, text, 'user', model, userId);
 
-    if (model.includes('video')) {
+    if (modelConfig.type === ModelType.VIDEO) {
         const requestId = await this.falService.triggerVideoGeneration(text, model);
 
         const botMsg = this.messageRepository.create({
@@ -109,13 +120,60 @@ export class ChatService {
 
   private async getOrCreateConversation(userId: number, conversationId?: number) {
     if (conversationId) {
-        const chat = await this.conversationRepository.findOne({ where: { id: conversationId } });
+        const chat = await this.conversationRepository.findOne({ 
+          where: { id: conversationId, user: { id: userId } } 
+        });
         if (!chat) throw new NotFoundException('Chat not found');
         return chat;
     }
     return this.conversationRepository.save(
         this.conversationRepository.create({ user: { id: userId }, title: "New Chat" })
     );
+  }
+
+  async processStreamingMessage(userId: number, text: string, model: string, conversationId: number | undefined, cost: number) {
+      const eventStream = new Subject<MessageEvent>();
+      let conversation = await this.getOrCreateConversation(userId, conversationId);
+      
+      await this.saveMessage(conversation, text, 'user', model, userId);
+
+      try {
+          const response = await this.openRouter.chat.completions.create({
+              model: model,
+              messages: (await this.getHistory(conversation.id)) as any,
+              stream: true,
+          });
+
+          let fullReply = '';
+
+          (async () => {
+              for await (const chunk of response) {
+                  const content = chunk.choices[0]?.delta?.content || '';
+                  if (content) {
+                      fullReply += content;
+                      eventStream.next({ 
+                        data: { token: content, conversationId: conversation.id } 
+                      } as MessageEvent);
+                  }
+              }
+
+              const savedMsg = await this.saveMessage(conversation, fullReply, 'bot', model, userId);
+              
+              await this.usersService.logTransaction(userId, -cost, TransactionType.SPEND, `AI: ${model}`);
+
+              eventStream.next({ 
+                data: { status: 'done', messageId: savedMsg.id, creditsLeft: await this.usersService.getBalance(userId) } 
+              } as MessageEvent);
+              
+              eventStream.complete();
+          })();
+
+      } catch (error) {
+          await this.usersService.addCredits(userId, cost);
+          eventStream.error(error);
+      }
+
+      return eventStream.asObservable();
   }
 
   async getMessageById(id: number) {
@@ -149,7 +207,7 @@ export class ChatService {
 
       const completion = await this.openRouter.chat.completions.create({
         model: model,
-        messages: messagesHistory,
+        messages: messagesHistory as any,
         max_tokens: 2000,
         temperature: 0.7,
       });
@@ -166,18 +224,14 @@ export class ChatService {
 
   async generateVideo(prompt: string, model: string) {
     try {
-        // Використовуємо метод subscribe, але Senior-підхід — це Webhooks
-        // Для простоти поки залишимо очікування, але з логікою статусів
-        const result: any = await fal.subscribe(`fal-ai/${model}`, {
+        const webhookUrl = `${this.configService.get('SITE_URL')}/chat/webhook/video?secret=${this.configService.get('WEBHOOK_SECRET')}`;
+
+        const result: any = await fal.queue.submit(`fal-ai/${model}`, {
             input: {
                 prompt: prompt,
-                video_size: "landscape",
-                duration: "5"
+                video_size: "landscape"
             },
-            logs: true,
-            onQueueUpdate: (update) => {
-                console.log(`Queue update for ${model}:`, update.status);
-            },
+            webhookUrl: webhookUrl
         });
 
         return {

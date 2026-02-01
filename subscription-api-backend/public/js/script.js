@@ -69,6 +69,7 @@ function updateUIState(isLoggedIn, userData = null) {
         if (navAvatar) {
             navAvatar.style.display = 'block';
             navAvatar.src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name || 'User'}`;
+            navAvatar.alt = "User Avatar";
         }
 
         if (menuName) menuName.textContent = userData.name || 'User';
@@ -77,6 +78,7 @@ function updateUIState(isLoggedIn, userData = null) {
         if (dropdownAvatars) {
             dropdownAvatars.forEach(img => {
                 img.src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name || 'User'}`;
+                img.alt = "User Avatar";
             });
         }
         
@@ -326,6 +328,7 @@ async function loadProfileData() {
             if (elements.navAvatar) {
                 elements.navAvatar.src = avatarUrl;
                 elements.navAvatar.style.display = 'inline-block';
+                elements.navAvatar.alt = "User Avatar";
             }
 
             if (elements.loginBtn) {
@@ -336,7 +339,10 @@ async function loadProfileData() {
             if (elements.menuName) elements.menuName.textContent = user.name ||  'User';
             if (elements.menuEmail) elements.menuEmail.textContent = user.email || '';
             if (elements.menuCredits) elements.menuCredits.textContent = (user.credits || 0).toLocaleString();
-            if (elements.dropdownAvatar) elements.dropdownAvatar.src = avatarUrl;
+            if (elements.dropdownAvatar) {
+                elements.dropdownAvatar.src = avatarUrl;
+                elements.dropdownAvatar.alt = "User Avatar";
+            }
         }
 
         const profileName = document.getElementById('profileName');
@@ -409,6 +415,7 @@ function openCheckout(product) {
                          : { name: 'AI Pack', credits_label: 'Credits' };
 
     document.getElementById('checkoutImg').src = product.image;
+    document.getElementById('checkoutImg').alt = productTrans.name;
     document.getElementById('checkoutName').textContent = productTrans.name;
     document.getElementById('checkoutCredits').textContent = productTrans.credits_label.replace(/\D/g, ''); 
     document.getElementById('checkoutPrice').textContent = product.price;
@@ -727,10 +734,17 @@ function updateUserUI(user) {
         if(navAvatar) {
             navAvatar.style.display = 'block';
             navAvatar.src = user.avatar;
+            navAvatar.alt = "User Avatar";
         }
-        dropdownAvatars.forEach(img => img.src = user.avatar);
+        dropdownAvatars.forEach(img => {
+            img.src = user.avatar;
+            img.alt = "User Avatar";
+        });
     } else {
-        dropdownAvatars.forEach(img => img.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.name || 'User'));
+        dropdownAvatars.forEach(img => {
+            img.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.name || 'User');
+            img.alt = "Default User Avatar";
+        });
     }
 
     if (menuName) menuName.textContent = user.name || 'User';
@@ -895,7 +909,7 @@ function handleSearch(e) {
         const card = document.createElement('div');
         card.className = 'product-card glass';
         card.innerHTML = `
-            <div class="product-image"><img src="${product.image}"></div>
+            <div class="product-image"><img src="${product.image}" alt="${productTrans.name}"></div>
             <div class="product-info">
                 <h3>${productTrans.name}</h3>
                 <div class="product-price">${product.price}</div>

@@ -209,6 +209,7 @@
     },
     "chat": {
         "meta_title": "Sala de chat - Genyxo",
+        "meta_description": "Interactúa con múltiples IAs usando Genyxo AI. Obtén ayuda con codificación, escritura y análisis de datos en tiempo real.",
         "chat_title": "Chat IA",
         "balance": "Saldo:",
         "credits": "Créditos",

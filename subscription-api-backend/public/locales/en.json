@@ -209,6 +209,7 @@
     },
     "chat": {
         "meta_title": "Chat Room - Genyxo",
+        "meta_description": "Interact with multiple AIs using Genyxo AI. Get help with coding, writing, and data analysis in real time.",
         "chat_title": "AI Chat",
         "balance": "Balance:",
         "credits": "Credits",

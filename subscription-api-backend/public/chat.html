@@ -3,7 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="chat.meta_title">Chat Room - Genyxo</title>
+
+    <title data-i18n="chat.meta_title">Genyxo AI Chat - Intelligent assistant</title>
+    <meta name="description" data-i18n="chat.meta_description" content="Access all top neural networks in one place. Use tokens to interact with GPT-5, Gemini, and generate videos in Sora. Try Genyxo AI!">
+    
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://genyxo.com/chat.html">
+
+    <meta property="og:title" content="Genyxo AI Chat — Your intelligent assistant">
+    <meta property="og:description" content="Try the capabilities of neural networks for free in the Genyxo chat.">
+    <meta property="og:image" content="./images/appbanner.svg"> 
+    <meta property="og:url" content="https://genyxo.com/chat.html">
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Genyxo AI Chat">
+    <meta name="twitter:description" content="Chat with artificial intelligence with Genyxo.">
+
     <link rel="icon" type="image/svg+xml" href="./images/logo.svg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -625,6 +641,38 @@
             animation: coin-glow 2s infinite alternate;
         }
 
+        .streaming::after {
+            content: '●';
+            margin-left: 4px;
+            color: #4a90e2; /* Цвет под твой бренд */
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Плавное появление новых абзацев */
+        .message-content p {
+            animation: fadeIn 0.3s ease-out forwards;
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(2px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Стиль для лоадера видео (более Senior вид) */
+        .video-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-style: italic;
+            color: #888;
+        }
+
         @keyframes coin-glow {
             from { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4)); }
             to { filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)); }
@@ -733,6 +781,17 @@
                 document.documentElement.classList.add('auth-active');
             }
         })();
+    </script>
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Genyxo AI Chat",
+    "url": "https://genyxo.com/chat.html",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "All",
+    "description": "Chat with artificial intelligence with Genyxo."
+    }
     </script>
 </head>
 <body>
@@ -1074,20 +1133,26 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         } */
 
-        function appendMessage(sender, text) {
+        function appendMessage(sender, text, model = '') {
             const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}-message`;
+            msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
 
-            if (sender === 'bot') {
-                msgDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
-            } else if (sender === 'error') {
-                msgDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${text}`;
-            } else {
-                msgDiv.textContent = text;
-            }
+            msgDiv.innerHTML = `
+                <div class="message-content">
+                    ${sender === 'bot' ? (text ? marked.parse(text) : '') : escapeHTML(text)}
+                </div>
+                ${model ? `<div class="message-meta">${model}</div>` : ''}
+            `;
 
             chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            scrollToBottom();
+            return msgDiv;
+        }
+
+        function escapeHTML(str) {
+            const p = document.createElement('p');
+            p.textContent = str;
+            return p.innerHTML;
         }
 
         document.querySelector('.new-chat-btn').onclick = (e) => {
@@ -1128,54 +1193,89 @@
             const token = localStorage.getItem('authToken');
             const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
 
-            if (!text || !token) return;
+            if (!text || !token || sendBtn.disabled) return;
+
+            sendBtn.disabled = true;
+            userInput.disabled = true;
+
+            if (!window.currentChatId) toggleChatView(true);
 
             appendMessage('user', text);
             userInput.value = '';
             userInput.style.height = 'auto';
 
-            const botMsgDiv = showBotLoading();
+            const botBubble = appendMessage('bot', '');
+            botBubble.classList.add('streaming');
+
+            const contentDiv = botBubble.querySelector('.message-content') || botBubble;
+            let fullContent = "";
 
             try {
-                const response = await fetch(`${API_BASE_URL}/chat/message`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ 
-                        message: text, 
-                        model: selectedModel,
-                        conversationId: window.currentChatId
-                    })
+                const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${window.currentChatId ? `&conversationId=${window.currentChatId}` : ''}`;
+                
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                const data = await response.json();
-                if (botMsgDiv) botMsgDiv.remove();
-
-                if (response.ok) {
-                    if (!window.currentChatId && data.conversationId) {
-                        window.currentChatId = data.conversationId;
-                        updateUrl(data.conversationId);
-                        
-                        if (typeof loadConversations === 'function') loadConversations();
-                    }
-                    
-                    appendMessage('bot', data.botReply);
-
-                    if (data.creditsLeft !== undefined) {
-                        if(creditBalanceEl) creditBalanceEl.innerText = `${data.creditsLeft} Credits`;
-                        localStorage.setItem('userCredits', data.creditsLeft);
-                    }
-                } else {
-                    showToast(data.message || 'Error sending message', 'error');
-                    appendMessage('bot', '❌ ' + (data.message || 'Error sending message'));
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.message || 'Server error');
                 }
 
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const jsonStr = line.replace('data: ', '').trim();
+                            if (!jsonStr || jsonStr === '[DONE]') continue;
+                            
+                            try {
+                                const data = JSON.parse(jsonStr);
+
+                                if (data.token) {
+                                    fullContent += data.token;
+                                    contentDiv.innerHTML = marked.parse(fullContent);
+                                }
+
+                                if (data.conversationId && !window.currentChatId) {
+                                    window.currentChatId = data.conversationId;
+                                    updateUrl(data.conversationId);
+                                    if (typeof loadConversations === 'function') await loadConversations();
+                                }
+
+                                if (data.messageId && (selectedModel.includes('kling') || selectedModel.includes('luma'))) {
+                                    botBubble.classList.remove('streaming');
+                                    startVideoPolling(data.messageId, contentDiv);
+                                    reader.cancel(); 
+                                    break;
+                                }
+
+                                if (data.status === 'done' && data.creditsLeft !== undefined) {
+                                    updateBalanceUI(data.creditsLeft);
+                                }
+                            } catch (e) { 
+                                console.error("JSON parse error in stream:", e); 
+                            }
+                        }
+                    }
+                    scrollToBottom();
+                }
             } catch (err) {
-                if (botMsgDiv) botMsgDiv.remove();
-                showToast("Server connection error", 'error');
-                appendMessage('bot', `❌ Fatal Error: ${err.message}`);
+                showToast(err.message, 'error');
+                botBubble.innerHTML = `❌ Error: ${err.message}`;
+            } finally {
+                botBubble.classList.remove('streaming');
+                sendBtn.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
             }
         }
 
@@ -1187,34 +1287,60 @@
 
         async function startVideoPolling(messageId, element) {
             let attempts = 0;
-            const maxAttempts = 50;
+            const maxAttempts = 60;
+            const token = localStorage.getItem('authToken');
+
+            element.innerHTML = `
+                <div class="video-loading-status">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span class="status-text">Magic is happening... Generating your video</span>
+                </div>
+            `;
 
             const interval = setInterval(async () => {
                 attempts++;
+                
                 try {
                     const res = await fetch(`${API_BASE_URL}/chat/message-status/${messageId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
+
+                    if (!res.ok) throw new Error('Failed to fetch status');
+
                     const data = await res.json();
 
-                    if (data.isReady) {
+                    if (data.isReady && data.videoUrl) {
+                        clearInterval(interval);
                         element.innerHTML = `
-                            <div class="video-container">
-                                <video controls width="100%" style="border-radius:12px; border: 1px solid #444;">
+                            <div class="video-wrapper">
+                                <video controls poster="">
                                     <source src="${data.videoUrl}" type="video/mp4">
+                                    Your browser does not support the video tag.
                                 </video>
-                                <a href="${data.videoUrl}" target="_blank" class="download-link">Download video</a>
+                                <div class="video-actions">
+                                    <a href="${data.videoUrl}" target="_blank" class="download-btn">
+                                        <i class="fas fa-download"></i> Download Video
+                                    </a>
+                                </div>
                             </div>
                         `;
-                        clearInterval(interval);
+                        scrollToBottom();
+                        return;
                     }
-                    
-                    if (attempts > maxAttempts) {
-                        element.innerHTML = "❌ Timed out. Check back later in history.";
+
+                    if (data.status === 'error' || (data.content && data.content.includes('❌'))) {
                         clearInterval(interval);
+                        element.innerHTML = `<div class="error-box">❌ Generation failed: ${data.content || 'Unknown error'}</div>`;
+                        return;
                     }
+
+                    if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        element.innerHTML = `<div class="error-box">⚠️ Generation is taking longer than expected. Please check your history in a few minutes.</div>`;
+                    }
+
                 } catch (e) {
-                    console.error("Status error:", e);
+                    console.error("Polling error:", e);
                 }
             }, 5000);
         }

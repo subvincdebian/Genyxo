@@ -9,9 +9,10 @@ export class FalService {
   }
 
   async triggerVideoGeneration(prompt: string, model: string) {
-    const result = await fal.queue.submit(`fal-ai/${model}`, {
-      input: { prompt: prompt },
-      webhookUrl: `${this.configService.get('BASE_URL')}/chat/webhook/video`, 
+    const webhookUrl = `${this.configService.get('SITE_URL')}/chat/webhook/video?secret=${this.configService.get('WEBHOOK_SECRET')}`;
+    const result: any = await fal.queue.submit(`fal-ai/${model}`, {
+        input: { prompt },
+        webhookUrl: webhookUrl,
     });
     return result.request_id;
   }
