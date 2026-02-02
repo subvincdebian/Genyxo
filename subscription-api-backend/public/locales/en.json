@@ -226,6 +226,7 @@
     },
     "notifications": {
         "meta_title": "Notifications - Genyxo",
+        "meta_description": "Stay updated with Genyxo. Track your support tickets, subscription changes, and AI service notifications in one place.",
         "center_title": "Notifications Center",
         "header_title": "Your Notifications",
         "mark_all_btn": "Mark all read",
@@ -239,6 +240,7 @@
     },
     "profile": {
         "title": "Profile - Genyxo",
+        "description": "Manage your Genyxo account settings, security, and payment information all in one place.",
         "change_avatar": "Change avatar",
         "view_profile": "View profile",
         "sidebar": {

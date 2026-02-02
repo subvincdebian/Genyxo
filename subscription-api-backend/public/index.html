@@ -29,6 +29,7 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@genyxo">
+    <meta name="twitter:creator" content="@genyxo_ai">
     <meta name="twitter:title" content="Genyxo AI — Unlock the Power of Neural Networks">
     <meta name="twitter:description" content="Access premium AI tools and generate visuals with our next-gen platform.">
     <meta name="twitter:image" content="https://genyxo.com/images/mainbanner2.png">
@@ -56,6 +57,13 @@
     {
       "@context": "https://schema.org",
       "@graph": [
+        {
+            "@type": "WebPage",
+            "@id": "https://genyxo.com/chat.html#webpage",
+            "url": "https://genyxo.com/chat.html",
+            "name": "Genyxo AI Chat - Intelligent assistant",
+            "description": "Access all top neural networks in one place. Try Genyxo AI!"
+        },
         {
           "@type": "WebSite",
           "@id": "https://genyxo.com/#website",
@@ -87,6 +95,7 @@
             "width": "192",
             "height": "192"
           },
+          "image": { "@id": "https://genyxo.com/images/logo.svg" },
           "contactPoint": {
             "@type": "ContactPoint",
             "email": "info@genyxo.com",
@@ -111,7 +120,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
 
@@ -233,7 +241,6 @@
     </div>
     <div class="menu-overlay" id="menuOverlay"></div>
     
-    <!-- Hero -->
     <section class="genyxo-hero" id="home">
         <div class="hero-glow-bg"></div>
 
@@ -333,7 +340,6 @@
         </div>
     </section>
 
-    <!-- Products -->
     <section class="products" id="products">
         <div class="container">
             <h2 class="section-title" data-i18n="products_title">Credits packages</h2>
@@ -341,7 +347,6 @@
         </div>
     </section>
 
-    <!-- About -->
     <section class="about-section" id="about">
         <div class="about-bg-blur"></div>
         
@@ -409,7 +414,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer animate-on-scroll" style="animation: fadeInUp 1s ease;">
         <div class="footer-content">
             <div class="footer-section">
@@ -471,7 +475,6 @@
         </div>
     </footer>
 
-    <!-- Order -->
     <div class="modal" id="checkoutModal">
         <div class="modal-content glass checkout-content">
             <span class="close-btn" id="closeCheckout">&times;</span>
@@ -532,7 +535,6 @@
         </div>
     </div>
 
-    <!-- Login -->
     <div class="modal" id="loginModal">
         <div class="modal-content glass">
             <span class="close-btn" id="closeLogin">&times;</span>

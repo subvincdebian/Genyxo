@@ -3,8 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover a new level with our service - subscriptions to AI, social networks, and more. Convenient access to modern tools that open up limitless opportunities for your development and business.">
-    <title data-i18n="profile.title">Profile - Genyxo</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <title data-i18n="profile.title">Account Settings & Profile - Genyxo</title>
+    <meta name="description" data-i18n="profile.description" content="Manage your Genyxo account settings, security options, billing history, and affiliate dashboard in one place. Customize your profile and preferences to enhance your experience.">
+    
+    <link rel="canonical" href="https://genyxo.com/profile.html">
+
+    <meta property="og:title" content="My Profile - Genyxo">
+    <meta property="og:description" content="Manage your account and subscriptions.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://genyxo.com/profile.html">
+    <meta property="og:image" content="https://genyxo.com/images/mainbanner2.png">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://genyxo.com/profile.html">
+    <meta property="twitter:title" content="My Profile - Genyxo">
+    <meta property="twitter:description" content="Manage your Genyxo account settings and preferences.">
+    <meta property="twitter:image" content="https://genyxo.com/images/mainbanner2.png">
+
     <link rel="icon" type="image/svg+xml" href="./images/logo.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="profile.css">
@@ -16,6 +33,66 @@
                 document.documentElement.classList.add('auth-active');
             }
         })();
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+            "@type": "WebPage",
+            "@id": "https://genyxo.com/profile.html#webpage",
+            "url": "https://genyxo.com/profile.html",
+            "name": "User Profile - Genyxo AI",
+            "description": "Manage your Genyxo AI account settings, subscriptions, and affiliate dashboard.",
+            "isPartOf": { "@id": "https://genyxo.com/#website" },
+            "breadcrumb": { "@id": "https://genyxo.com/profile.html#breadcrumb" }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://genyxo.com/#website",
+          "url": "https://genyxo.com/",
+          "name": "Genyxo AI",
+          "description": "Premium AI Subscriptions and Tools",
+          "publisher": { "@id": "https://genyxo.com/#organization" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://genyxo.com/#organization",
+          "name": "Genyxo",
+          "url": "https://genyxo.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://genyxo.com/images/logo.svg",
+            "width": "192",
+            "height": "192"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "info@genyxo.com",
+            "contactType": "customer service"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://genyxo.com/profile.html#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://genyxo.com/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "My Profile",
+              "item": "https://genyxo.com/profile.html"
+            }
+          ]
+        }
+      ]
+    }
     </script>
 </head>
 <body>
@@ -48,7 +125,7 @@
                 <div class="profile-container">
                     <button class="login-btn profile-toggle-btn" id="loginBtn" aria-label="Register / Login">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
-                        <i class="fas fa-user" id="navIcon"></i>
+                        <i class="fas fa-user fa-fw" id="navIcon"></i>
                         <span id="navUsername" data-i18n="nav.login">Register / Login</span>
                     </button>
                     
@@ -152,34 +229,28 @@
             <nav class="menu">
 
                 <a href="#" class="menu-item active" data-page="page-general" aria-label="Main Section">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5Z"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <i class="fas fa-user-circle fa-fw"></i>
                     <span data-i18n="profile.sidebar.home">Home</span>
                 </a>
 
                 <a href="#" class="menu-item" data-page="page-password" aria-label="Password and Security">
-                    <img decoding="async" width="20" height="20" src="https://airlinecouncil.ca/wp-content/uploads/2016/01/icon-security-grey.svg" class="attachment-medium size-medium" alt="Message icon">
-                 <span data-i18n="profile.sidebar.security">Password and security</span>
+                    <i class="fas fa-shield-halved fa-fw"></i> 
+                    <span data-i18n="profile.sidebar.security">Password and security</span>
                 </a>
 
                 <a href="#" class="menu-item" data-page="page-payment" aria-label="Payment Settings">
-                    <img src="./images/wallet_icon.png" decoding="async" width="20" height="20" alt="Wallet Icon">
+                    <i class="fas fa-credit-card fa-fw"></i>
                    <span data-i18n="profile.sidebar.payment">Payment settings</span>
                 </a>
 
                 <a href="#" class="menu-item" data-page="page-transactions" aria-label="Transactions">
-                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 50 50"
-                        style="fill:#FFFFFF;">
-                        <path d="M 25 2 C 12.309295 2 2 12.309295 2 25 C 2 37.690705 12.309295 48 25 48 C 37.690705 48 48 37.690705 48 25 C 48 12.309295 37.690705 2 25 2 z M 25 4 C 36.609824 4 46 13.390176 46 25 C 46 36.609824 36.609824 46 25 46 C 13.390176 46 4 36.609824 4 25 C 4 13.390176 13.390176 4 25 4 z M 24.984375 6.9863281 A 1.0001 1.0001 0 0 0 24 8 L 24 22.173828 A 3 3 0 0 0 22 25 A 3 3 0 0 0 22.294922 26.291016 L 16.292969 32.292969 A 1.0001 1.0001 0 1 0 17.707031 33.707031 L 23.708984 27.705078 A 3 3 0 0 0 25 28 A 3 3 0 0 0 28 25 A 3 3 0 0 0 26 22.175781 L 26 8 A 1.0001 1.0001 0 0 0 24.984375 6.9863281 z"></path>
-                    </svg>
+                    <i class="fas fa-history fa-fw"></i>
                     <span data-i18n="profile.sidebar.transactions">Transactions</span>
                 </a>
 
                 <a href="#" class="menu-item" data-page="page-affiliate" aria-label="Affiliate Program">
-                    <i class="fas fa-hand-holding-usd"></i>
-                    <span class="affiliate-sidebar-title" data-i18n="profile.sidebar.affiliate">Affiliate Program</span>
+                    <i class="fas fa-users-gear fa-fw"></i>
+                    <span data-i18n="profile.sidebar.affiliate">Affiliate Program</span>
                 </a>
 
             </nav>
@@ -225,7 +296,7 @@
             <div class="glass-card" role="document">
                 <button class="modal-close" id="closeModal" aria-label="Close modal">&times;</button>
 
-                <h2 id="modalTitle" data-i18n="profile.security.modal.title">Change Password</h2>
+                <h3 id="modalTitle" data-i18n="profile.security.modal.title">Change Password</h2>
                 <p class="modal-sub" data-i18n="profile.security.modal.subtitle">Enter your current password and choose a new secure password.</p>
 
                 <input type="text" style="display:none" autocomplete="username">
@@ -356,7 +427,7 @@
                     <div class="copy-row">
                         <input type="text" id="referralLinkInput" readonly value="Loading...">
                         <button class="action-btn" id="copyAffBtn" aria-label="Copy Your Referral Link">
-                            <i class="fas fa-copy"></i> Copy
+                            <i class="fas fa-copy fa-fw"></i> Copy
                         </button>
                     </div>
                     <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">

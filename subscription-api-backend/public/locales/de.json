@@ -226,6 +226,7 @@
     },
     "notifications": {
         "meta_title": "Benachrichtigungen - Genyxo",
+        "meta_description": "Bleiben Sie mit Genyxo auf dem Laufenden. Verfolgen Sie Ihre Support-Tickets, Abonnementänderungen und KI-Service-Benachrichtigungen an einem Ort.",
         "center_title": "Benachrichtigungszentrum",
         "header_title": "Ihre Benachrichtigungen",
         "mark_all_btn": "Alle als gelesen markieren",
@@ -239,6 +240,7 @@
     },
     "profile": {
         "title": "Profil - Genyxo",
+        "description": "Verwalten Sie Ihre Genyxo-Kontoeinstellungen, Sicherheit und Zahlungsinformationen an einem Ort.",
         "change_avatar": "Avatar ändern",
         "view_profile": "Profil ansehen",
         "sidebar": {
