@@ -241,7 +241,7 @@
         "time_format": "fr-FR"
     },
     "profile": {
-        "title": "Profil - Genyxo",
+        "title": "Paramètres du compte et profil - Genyxo",
         "description": "Gérez les paramètres de votre compte Genyxo, la sécurité et les informations de paiement en un seul endroit.",
         "change_avatar": "Changer l'avatar",
         "view_profile": "Voir le profil",
