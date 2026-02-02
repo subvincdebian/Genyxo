@@ -19,6 +19,8 @@
     },
     "hero": {
         "title": "Genyxo",
+        "main_title": "Bereiten Sie sich mit - Genyxo auf die Zukunft vor",
+        "meta_description": "Erhalten Sie Premium-Zugang zu KI-Tools, neuronalen Netzwerken und Social-Media-Services. Automatisieren Sie Ihren Arbeitsablauf und entfesseln Sie grenzenlose Möglichkeiten mit Genyxo AI.",
         "subtitle": "Entdecken Sie ein neues Level mit unserem Service - Abonnements für KI, soziale Netzwerke und mehr.",
         "view_packages": "Pakete ansehen",
         "happy_customers": "Zufriedene Kunden",
@@ -251,7 +253,7 @@
             "subscriptions": "Abonnements",
             "groups": "Gruppensitzungen"
         },
-        "main_title": "Einstellungen",
+        "main_title": "Konto verwalten",
         "tabs": {
             "general": "Allgemein",
             "notification": "Benachrichtigung",

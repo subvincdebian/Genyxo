@@ -19,6 +19,8 @@
     },
     "hero": {
         "title": "Genyxo",
+        "main_title": "Préparez-vous pour l'avenir avec - Genyxo",
+        "meta_description": "Obtenez un accès premium aux outils d'IA, aux réseaux neuronaux et aux services de médias sociaux. Automatisez votre flux de travail et débloquez des opportunités illimitées avec Genyxo IA.",
         "subtitle": "Découvrez un nouveau niveau avec notre service - abonnements à l'IA, réseaux sociaux, et plus.",
         "view_packages": "Voir les forfaits",
         "happy_customers": "Clients satisfaits",
@@ -251,7 +253,7 @@
             "subscriptions": "Abonnements",
             "groups": "Sessions de groupe"
         },
-        "main_title": "Paramètres",
+        "main_title": "Gérer le compte",
         "tabs": {
             "general": "Général",
             "notification": "Notification",

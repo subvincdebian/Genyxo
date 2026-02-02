@@ -19,6 +19,8 @@
     },
     "hero": {
         "title": "Genyxo",
+        "main_title": "Prepare for Future With - Genyxo",
+        "meta_description": "Get premium access to AI tools, neural networks, and social media services. Automate your workflow and unlock limitless opportunities with Genyxo AI.",
         "subtitle": "Discover a new level with our service - subscriptions to AI, social networks, and more.",
         "view_packages": "View packages",
         "happy_customers": "Happy Customers",
@@ -251,7 +253,7 @@
             "subscriptions": "Subscriptions",
             "groups": "Group sessions"
         },
-        "main_title": "Settings",
+        "main_title": "Manage Account",
         "tabs": {
             "general": "General",
             "notification": "Notification",
