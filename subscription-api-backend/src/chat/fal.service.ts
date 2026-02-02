@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as fal from "@fal-ai/serverless-client";
+import { fal } from "@fal-ai/client"; 
 
 @Injectable()
 export class FalService {

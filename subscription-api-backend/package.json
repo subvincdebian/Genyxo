@@ -19,9 +19,14 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
+  "overrides": {
+    "fast-xml-parser": "5.3.4",
+    "glob": "13.0.0",
+    "lodash": "4.17.23"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",
-    "@fal-ai/serverless-client": "^0.15.0",
+    "@fal-ai/client": "^1.8.4",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
