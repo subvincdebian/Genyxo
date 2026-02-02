@@ -511,9 +511,9 @@
             const reader = new FileReader();
             
             reader.onload = async function(e) {
-                const base64Image = e.target.result;
+                const objectUrl = URL.createObjectURL(file);
                 
-                document.getElementById("avatarPreview").style.backgroundImage = `url('${base64Image}')`;
+                document.getElementById("avatarPreview").style.backgroundImage = `url('${objectUrl}')`;
 
                 try {
                     const response = await fetch(`${API_BASE_URL}/profile/update`, {
@@ -522,7 +522,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ avatar: base64Image })
+                        body: JSON.stringify({ avatar: objectUrl })
                     });
 
                     if (response.ok) {
@@ -642,6 +642,14 @@
             if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
         });
 
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
         function validate() {
             const cur = inputCurrent.value.trim();
             const neu = inputNew.value.trim();
@@ -654,25 +662,20 @@
             if (cur && neu && cur === neu) errors.push('New password must be different from current password.');
             if (neu && conf && neu !== conf) errors.push('New password and confirmation do not match.');
 
-            errorsBox.innerHTML = '';
             if (errors.length) {
+                errorsBox.innerHTML = errors.map(msg => `<div class="error-item">${msg}</div>`).join('');
+                btnSave.disabled = true;
                 shakeElements([inputCurrent, inputNew, inputConfirm]);
-            errors.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = 'error-item';
-                div.textContent = msg;
-                errorsBox.appendChild(div);
-            });
-            btnSave.disabled = true;
             } else {
-            btnSave.disabled = false;
+                errorsBox.innerHTML = '';
+                btnSave.disabled = false;
             }
         }
 
+        const debouncedValidate = debounce(validate, 300);
+
         [inputCurrent, inputNew, inputConfirm].forEach(inp => {
-            inp.addEventListener('input', () => {
-            validate();
-            });
+            inp.addEventListener('input', debouncedValidate);
         });
 
         btnSave.addEventListener('click', async () => {
@@ -683,35 +686,35 @@
             btnSave.textContent = 'Saving...';
 
             try {
-            await new Promise(r => setTimeout(r, 900));
+                await new Promise(r => setTimeout(r, 900));
 
-            // TODO: here you would call your backend API to change password.
-            // Example:
-            // const res = await fetch('/api/change-password', { method: 'POST', body: JSON.stringify({ current: inputCurrent.value, new: inputNew.value }) });
-            // handle response/res.errors etc.
+                // TODO: here you would call your backend API to change password.
+                // Example:
+                // const res = await fetch('/api/change-password', { method: 'POST', body: JSON.stringify({ current: inputCurrent.value, new: inputNew.value }) });
+                // handle response/res.errors etc.
 
-            errorsBox.innerHTML = '';
-            const ok = document.createElement('div');
-            ok.className = 'error-item';
-            ok.style.background = 'rgba(55, 179, 122, 0.06)';
-            ok.style.borderLeftColor = 'rgba(55,179,122,0.9)';
-            ok.style.color = '#bff3d0';
-            ok.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.success) 
-                ? window.i18n.translations.profile.security.modal.success 
-                : 'Password changed successfully.';
-            errorsBox.appendChild(ok);
+                errorsBox.innerHTML = '';
+                const ok = document.createElement('div');
+                ok.className = 'error-item';
+                ok.style.background = 'rgba(55, 179, 122, 0.06)';
+                ok.style.borderLeftColor = 'rgba(55,179,122,0.9)';
+                ok.style.color = '#bff3d0';
+                ok.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.success) 
+                    ? window.i18n.translations.profile.security.modal.success 
+                    : 'Password changed successfully.';
+                errorsBox.appendChild(ok);
 
-            setTimeout(() => closeModal(), 900);
+                setTimeout(() => closeModal(), 900);
             } catch (err) {
-            const errMsg = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.network_error)
-                ? window.i18n.translations.profile.security.modal.network_error
-                : 'Network error. Try again.';
-            errorsBox.innerHTML = `<div class="error-item">${errMsg}</div>`;
+                const errMsg = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.network_error)
+                    ? window.i18n.translations.profile.security.modal.network_error
+                    : 'Network error. Try again.';
+                errorsBox.innerHTML = `<div class="error-item">${errMsg}</div>`;
             } finally {
-            btnSave.disabled = false;
-            btnSave.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.btn_save)
-                ? window.i18n.translations.profile.security.modal.btn_save
-                : 'Save';
+                btnSave.disabled = false;
+                btnSave.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.btn_save)
+                    ? window.i18n.translations.profile.security.modal.btn_save
+                    : 'Save';
             }
         });
         })();
