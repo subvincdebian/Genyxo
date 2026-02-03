@@ -48,12 +48,12 @@ let pollingInterval = null;
 let currentProduct = null;
 
 const products = [
-    { id: 1, price: "$3.99", image: "./images/startai.jpg" },
-    { id: 2, price: "$9.99", image: "./images/aiexplorer.jpg" },
-    { id: 3, price: "$24.99", image: "./images/procreatorai.jpg" },
-    { id: 4, price: "$49.99", image: "./images/aimaster.jpg" },
-    { id: 5, price: "$99.99", image: "./images/unlimitedpower.jpg" },
-    { id: 6, price: "$219.99", image: "./images/aititan.jpg" },
+    { id: 1, price: "$3.99", image: "./images/startai.jpg", alt: "StartAI Pack" },
+    { id: 2, price: "$9.99", image: "./images/aiexplorer.jpg", alt: "AI Explorer Pack" },
+    { id: 3, price: "$24.99", image: "./images/procreatorai.jpg", alt: "Pro Creator AI Pack" },
+    { id: 4, price: "$49.99", image: "./images/aimaster.jpg", alt: "AI Master Pack" },
+    { id: 5, price: "$99.99", image: "./images/unlimitedpower.jpg", alt: "Unlimited Power Pack" },
+    { id: 6, price: "$219.99", image: "./images/aititan.jpg", alt: "AI Titan Pack" },
 ];
 
 function updateBalanceUI(amount) {
@@ -291,13 +291,13 @@ function showToast(message, type = 'success', duration = 3000) {
 }
 
 async function loadProfileData() {
-    if (!authToken) {
+    /* if (!authToken) {
         const protectedPages = ['profile.html', 'notifications.html', 'support.html'];
         if (protectedPages.some(page => window.location.pathname.includes(page))) {
             window.location.href = 'index.html';
         }
         return;
-    }
+    } */
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
@@ -351,8 +351,10 @@ async function loadProfileData() {
         const avatarPreview = document.getElementById('avatarPreview');
         if (avatarPreview && user.avatar) {
             avatarPreview.style.backgroundImage = `url("${user.avatar}")`;
+            avatarPreview.alt = "User Avatar";
         } else if (avatarPreview && user.name) {
-             avatarPreview.style.backgroundImage = `url("https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}")`;
+            avatarPreview.style.backgroundImage = `url("https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}")`;
+            avatarPreview.alt = "User Avatar";
         }
 
         const nameInput = document.querySelector('input[placeholder="John Doe"]');

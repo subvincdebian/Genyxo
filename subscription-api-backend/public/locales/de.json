@@ -19,6 +19,8 @@
     },
     "hero": {
         "title": "Genyxo",
+        "main_title": "Bereiten Sie sich mit - Genyxo auf die Zukunft vor",
+        "meta_description": "Erhalten Sie Premium-Zugang zu KI-Tools, neuronalen Netzwerken und Social-Media-Services. Automatisieren Sie Ihren Arbeitsablauf und entfesseln Sie grenzenlose Möglichkeiten mit Genyxo AI.",
         "subtitle": "Entdecken Sie ein neues Level mit unserem Service - Abonnements für KI, soziale Netzwerke und mehr.",
         "view_packages": "Pakete ansehen",
         "happy_customers": "Zufriedene Kunden",
@@ -226,6 +228,7 @@
     },
     "notifications": {
         "meta_title": "Benachrichtigungen - Genyxo",
+        "meta_description": "Bleiben Sie mit Genyxo auf dem Laufenden. Verfolgen Sie Ihre Support-Tickets, Abonnementänderungen und KI-Service-Benachrichtigungen an einem Ort.",
         "center_title": "Benachrichtigungszentrum",
         "header_title": "Ihre Benachrichtigungen",
         "mark_all_btn": "Alle als gelesen markieren",
@@ -238,7 +241,8 @@
         "time_format": "de-DE"
     },
     "profile": {
-        "title": "Profil - Genyxo",
+        "title": "Kontoeinstellungen & Profil - Genyxo",
+        "description": "Verwalten Sie Ihre Genyxo-Kontoeinstellungen, Sicherheit und Zahlungsinformationen an einem Ort.",
         "change_avatar": "Avatar ändern",
         "view_profile": "Profil ansehen",
         "sidebar": {
@@ -249,7 +253,7 @@
             "subscriptions": "Abonnements",
             "groups": "Gruppensitzungen"
         },
-        "main_title": "Einstellungen",
+        "main_title": "Konto verwalten",
         "tabs": {
             "general": "Allgemein",
             "notification": "Benachrichtigung",

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import OpenAI from 'openai';
 import { Subject } from 'rxjs';
-import * as fal from "@fal-ai/serverless-client";
+import { fal } from "@fal-ai/client"; 
 import { Message } from './message.entity';
 import { Conversation } from './conversation.entity';
 import { FalService } from './fal.service';

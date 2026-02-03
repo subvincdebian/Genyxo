@@ -99,19 +99,19 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
-                    <img src="./images/logo.svg" fetchpriority="high" class="logo-icon" alt="Logo">
+                <a href="index.html" aria-label="Home Page" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
+                    <img src="./images/logo.svg" width="40" height="40" fetchpriority="high" class="logo-icon" alt="Logo">
                     <span>Genyxo</span>
                 </a>
             </div>
             
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="index.html" class="nav-link active" data-i18n="nav.back_home">Back To Home</a>
-                    <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
+                    <a href="index.html" class="nav-link active" data-i18n="nav.back_home" aria-label="Back To Home">Back To Home</a>
+                    <a href="chat.html" class="nav-link" data-i18n="nav.chat" aria-label="Chat Page">Chat</a>
                 </div>
                 <div class="profile-container">
-                    <button class="login-btn" id="loginBtn">
+                    <button class="login-btn" id="loginBtn" aria-label="Register / Login">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
                         <i class="fas fa-user" id="navIcon"></i>
                         <span id="navUsername" data-i18n="nav.login">Register / Login</span>
@@ -137,18 +137,18 @@
                                     <i class="fas fa-info-circle info-icon" title="Details"></i>
                                 </div>
                             </div>
-                            <a href="index.html#products" style="text-decoration:none;">
-                                <button class="upgrade-full-btn">Buy Credits</button>
+                            <a href="index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
+                                <button class="upgrade-full-btn" aria-label="Buy Credits">Buy Credits</button>
                             </a>
                         </div>
 
                         <div class="dropdown-menu">
 
-                            <a href="profile.html" class="menu-item">
+                            <a href="profile.html" class="menu-item" aria-label="Profile">
                                 <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
                             </a>
 
-                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
+                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" aria-label="Notifications" style="justify-content: space-between;">
                                 <div style="display:flex; align-items:center;">
                                     <i class="fas fa-bell"></i> 
                                     <span data-i18n="menu.notifications">Notifications</span>
@@ -156,16 +156,16 @@
                                 <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
 
-                            <a href="support.html" class="menu-item">
+                            <a href="support.html" class="menu-item" aria-label="Help Center">
                                 <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
                             </a>
 
-                            <a href="#" class="menu-item">
+                            <a href="#" class="menu-item" aria-label="Change Language">
                                 <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
                                 <span class="lang-val" id="currentLangDisplay">English ></span>
                             </a>
 
-                            <a href="mailto:info@genyxo.com" class="menu-item">
+                            <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
                                 <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
                                 <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
                             </a>
@@ -173,7 +173,7 @@
                         </div>
 
                         <div class="dropdown-footer">
-                            <button class="menu-item logout-item" id="dropdownLogoutBtn">
+                            <button class="menu-item logout-item" id="dropdownLogoutBtn" aria-label="Log out">
                                 <i class="fas fa-sign-out-alt"></i> <span data-i18n="menu.logout">Log out</span>
                             </button>
                         </div>
@@ -207,7 +207,7 @@
                         <option value="HIGH" data-i18n="support.priority_high">High</option>
                     </select>
                 </div>
-                <button type="submit" class="save-btn" style="margin-top: 20px;" data-i18n="support.submit_btn">Submit Ticket</button>
+                <button type="submit" class="save-btn" style="margin-top: 20px;" data-i18n="support.submit_btn" aria-label="Submit Ticket">Submit Ticket</button>
             </form>
         </div>
 
@@ -226,8 +226,8 @@
         </div>
     </div>
 
-    <script src="js/i18n.js"></script>
-    <script src="js/script.js"></script>
+    <script src="js/i18n.js" defer></script>
+    <script src="js/script.js" defer></script>
     
     <script>
 

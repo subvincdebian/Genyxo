@@ -19,6 +19,8 @@
     },
     "hero": {
         "title": "Genyxo",
+        "main_title": "Prepárate para el futuro con - Genyxo",
+        "meta_description": "Obtén acceso premium a herramientas de IA, redes neuronales y servicios de redes sociales. Automatiza tu flujo de trabajo y desbloquea oportunidades ilimitadas con Genyxo IA.",
         "subtitle": "Descubre un nuevo nivel con nuestro servicio: suscripciones a IA, redes sociales y más.",
         "view_packages": "Ver paquetes",
         "happy_customers": "Clientes felices",
@@ -226,6 +228,7 @@
     },
     "notifications": {
         "meta_title": "Notificaciones - Genyxo",
+        "meta_description": "Mantente actualizado con Genyxo. Rastrea tus tickets de soporte, cambios de suscripción y notificaciones de servicios de IA en un solo lugar.",
         "center_title": "Centro de Notificaciones",
         "header_title": "Tus Notificaciones",
         "mark_all_btn": "Marcar todo como leído",
@@ -238,7 +241,8 @@
         "time_format": "es-ES"
     },
     "profile": {
-        "title": "Perfil - Genyxo",
+        "title": "Configuración de la cuenta y perfil - Genyxo",
+        "description": "Gestiona la configuración de tu cuenta Genyxo, seguridad e información de pago en un solo lugar.",
         "change_avatar": "Cambiar avatar",
         "view_profile": "Ver perfil",
         "sidebar": {
@@ -249,7 +253,7 @@
             "subscriptions": "Suscripciones",
             "groups": "Sesiones grupales"
         },
-        "main_title": "Configuración",
+        "main_title": "Gestionar cuenta",
         "tabs": {
             "general": "General",
             "notification": "Notificación",

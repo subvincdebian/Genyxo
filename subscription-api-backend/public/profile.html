@@ -3,13 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover a new level with our service - subscriptions to AI, social networks, and more. Convenient access to modern tools that open up limitless opportunities for your development and business.">
-    <title data-i18n="profile.title">Profile - Genyxo</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <title data-i18n="profile.title">Account Settings & Profile - Genyxo</title>
+    <meta name="description" data-i18n="profile.description" content="Manage your Genyxo account settings, security options, billing history, and affiliate dashboard in one place.">
+    
+    <link rel="canonical" href="https://genyxo.com/profile.html">
+
+    <link rel="alternate" hreflang="x-default" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="en" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="uk" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="de" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="fr" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="es" href="https://genyxo.com/">
+
+    <meta property="og:title" content="My Profile - Genyxo">
+    <meta property="og:description" content="Manage your account and subscriptions.">
+    <meta property="og:site_name" content="Genyxo">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://genyxo.com/profile.html">
+    <meta property="og:image" content="https://genyxo.com/images/mainbanner2.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@genyxo">
+    <meta name="twitter:creator" content="@genyxo_ai">
+    <meta name="twitter:title" content="My Profile - Genyxo">
+    <meta name="twitter:description" content="Manage your Genyxo account settings and preferences.">
+    <meta name="twitter:image" content="https://genyxo.com/images/mainbanner2.png">
+
     <link rel="icon" type="image/svg+xml" href="./images/logo.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="profile.css">
 
-<!--
     <script>
         (function() {
             const token = localStorage.getItem('authToken');
@@ -18,7 +45,6 @@
             }
         })();
     </script>
--->
 </head>
 <body>
     
@@ -35,8 +61,8 @@
 
             <div class="left-side">
                 <div class="nav-logo">
-                    <a href="index.html" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
-                        <img src="./images/logo.svg" fetchpriority="high" class="logo-icon" alt="Logo">
+                    <a href="index.html" aria-label="Home Page" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
+                        <img src="./images/logo.svg" width="40" height="40" fetchpriority="high" class="logo-icon" alt="Logo">
                     <span>Genyxo</span>
                     </a>
                 </div>
@@ -44,19 +70,19 @@
 
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="index.html" class="nav-link active" data-i18n="nav.home">Home</a>
-                    <a href="chat.html" class="nav-link" data-i18n="nav.chat">Chat</a>
+                    <a href="index.html" class="nav-link active" data-i18n="nav.home" aria-label="Back To Home">Home</a>
+                    <a href="chat.html" class="nav-link" data-i18n="nav.chat" aria-label="Chat Page">Chat</a>
                 </div>
                 <div class="profile-container">
-                    <button class="login-btn profile-toggle-btn" id="loginBtn">
+                    <button class="login-btn profile-toggle-btn" id="loginBtn" aria-label="Register / Login">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
-                        <i class="fas fa-user" id="navIcon"></i>
+                        <i class="fas fa-user fa-fw" id="navIcon"></i>
                         <span id="navUsername" data-i18n="nav.login">Register / Login</span>
                     </button>
                     
                     <div class="profile-dropdown glass" id="profilePanel">
 
-                        <button class="close-profile-panel" id="closeProfilePanel">✕</button>
+                        <button class="close-profile-panel" id="closeProfilePanel" aria-label="Close Profile Dropdown">✕</button>
                         
                         <div class="dropdown-header">
                             <div class="user-details">
@@ -76,18 +102,18 @@
                                     <i class="fas fa-info-circle info-icon" title="Details"></i>
                                 </div>
                             </div>
-                            <a href="index.html#products" style="text-decoration:none;">
-                                <button class="upgrade-full-btn">Buy Credits</button>
+                            <a href="index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
+                                <button class="upgrade-full-btn" aria-label="Buy Credits">Buy Credits</button>
                             </a>
                         </div>
 
                         <div class="dropdown-menu">
 
-                            <a href="profile.html" class="menu-item">
+                            <a href="profile.html" class="menu-item" aria-label="Profile">
                                 <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
                             </a>
 
-                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;">
+                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" aria-label="Notifications" style="justify-content: space-between;">
                                 <div style="display:flex; align-items:center;">
                                     <i class="fas fa-bell"></i> 
                                     <span data-i18n="menu.notifications">Notifications</span>
@@ -95,16 +121,16 @@
                                 <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
                             </a>
 
-                            <a href="support.html" class="menu-item">
+                            <a href="support.html" class="menu-item" aria-label="Help Center">
                                 <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
                             </a>
 
-                            <a href="#" class="menu-item">
+                            <a href="#" class="menu-item" aria-label="Change Language">
                                 <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
                                 <span class="lang-val">English ></span>
                             </a>
 
-                            <a href="mailto:info@genyxo.com" class="menu-item">
+                            <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
                                 <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
                                 <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
                             </a>
@@ -112,7 +138,7 @@
                         </div>
 
                         <div class="dropdown-footer">
-                            <button class="menu-item logout-item" id="dropdownLogoutBtn">
+                            <button class="menu-item logout-item" id="dropdownLogoutBtn" aria-label="Log out">
                                 <i class="fas fa-sign-out-alt"></i> <span data-i18n="menu.logout">Log out</span>
                             </button>
                         </div>
@@ -125,9 +151,9 @@
 
     <div class="mobile-menu" id="mobileMenu">
         <ul>
-            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
-            <li><a href="chat.html" data-i18n="nav.chat">Chat</a></li>
-            <li><a href="support.html" data-i18n="nav.about">Support</a></li>
+            <li><a href="index.html" data-i18n="nav.home" aria-label="Home Page">Home</a></li>
+            <li><a href="chat.html" data-i18n="nav.chat" aria-label="Chat Page">Chat</a></li>
+            <li><a href="support.html" data-i18n="nav.about" aria-label="Support Page">Support</a></li>
         </ul>
     </div>
     <div class="menu-overlay" id="menuOverlay"></div>
@@ -153,35 +179,29 @@
 
             <nav class="menu">
 
-                <a href="#" class="menu-item active" data-page="page-general">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5Z"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                <a href="#" class="menu-item active" data-page="page-general" aria-label="Main Section">
+                    <i class="fas fa-user-circle fa-fw"></i>
                     <span data-i18n="profile.sidebar.home">Home</span>
                 </a>
 
-                <a href="#" class="menu-item" data-page="page-password">
-                    <img decoding="async" width="20" height="20" src="https://airlinecouncil.ca/wp-content/uploads/2016/01/icon-security-grey.svg" class="attachment-medium size-medium" alt="Message icon">
-                 <span data-i18n="profile.sidebar.security">Password and security</span>
+                <a href="#" class="menu-item" data-page="page-password" aria-label="Password and Security">
+                    <i class="fas fa-shield-halved fa-fw"></i> 
+                    <span data-i18n="profile.sidebar.security">Password and security</span>
                 </a>
 
-                <a href="#" class="menu-item" data-page="page-payment">
-                    <img src="./images/wallet_icon.png" decoding="async" width="20" height="20" alt="Wallet Icon">
+                <a href="#" class="menu-item" data-page="page-payment" aria-label="Payment Settings">
+                    <i class="fas fa-credit-card fa-fw"></i>
                    <span data-i18n="profile.sidebar.payment">Payment settings</span>
                 </a>
 
-                <a href="#" class="menu-item" data-page="page-transactions">
-                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 50 50"
-                        style="fill:#FFFFFF;">
-                        <path d="M 25 2 C 12.309295 2 2 12.309295 2 25 C 2 37.690705 12.309295 48 25 48 C 37.690705 48 48 37.690705 48 25 C 48 12.309295 37.690705 2 25 2 z M 25 4 C 36.609824 4 46 13.390176 46 25 C 46 36.609824 36.609824 46 25 46 C 13.390176 46 4 36.609824 4 25 C 4 13.390176 13.390176 4 25 4 z M 24.984375 6.9863281 A 1.0001 1.0001 0 0 0 24 8 L 24 22.173828 A 3 3 0 0 0 22 25 A 3 3 0 0 0 22.294922 26.291016 L 16.292969 32.292969 A 1.0001 1.0001 0 1 0 17.707031 33.707031 L 23.708984 27.705078 A 3 3 0 0 0 25 28 A 3 3 0 0 0 28 25 A 3 3 0 0 0 26 22.175781 L 26 8 A 1.0001 1.0001 0 0 0 24.984375 6.9863281 z"></path>
-                    </svg>
+                <a href="#" class="menu-item" data-page="page-transactions" aria-label="Transactions">
+                    <i class="fas fa-history fa-fw"></i>
                     <span data-i18n="profile.sidebar.transactions">Transactions</span>
                 </a>
 
-                <a href="#" class="menu-item" data-page="page-affiliate">
-                    <i class="fas fa-hand-holding-usd"></i>
-                    <span class="affiliate-sidebar-title" data-i18n="profile.sidebar.affiliate">Affiliate Program</span>
+                <a href="#" class="menu-item" data-page="page-affiliate" aria-label="Affiliate Program">
+                    <i class="fas fa-users-gear fa-fw"></i>
+                    <span data-i18n="profile.sidebar.affiliate">Affiliate Program</span>
                 </a>
 
             </nav>
@@ -189,7 +209,7 @@
 
         <main class="main-content">
 
-            <h1 class="title" data-i18n="profile.main_title">Settings</h1>
+            <h1 class="title" data-i18n="profile.main_title">Manage Account</h1>
 
             <section class="page active content-box" id="page-general">
                 <h2 data-i18n="profile.general.title">Basic info</h2>
@@ -205,39 +225,21 @@
                     <label data-i18n="profile.general.label_location">Location</label>
                     <input type="text" data-i18n="profile.general.placeholder_location" placeholder="City, Country" />
 
-                    <button class="save-btn" data-i18n="profile.general.save_btn">Save changes</button>
+                    <button class="save-btn" data-i18n="profile.general.save_btn" aria-label="Save Changes">Save changes</button>
                 </form>
             </section>
 
             <div id="page-password" class="page content-box">
                 <h2 data-i18n="profile.security.title">Password and Security</h2>
 
-                <div class="security-list">
-                    <div class="security-card">
-                        <div class="security-card__info">
-                            <div class="security-card__icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            </div>
-                            <div class="security-card__text">
-                                <h3 data-i18n="profile.security.change_pwd_title">Change Password</h3>
-                                <p data-i18n="profile.security.change_pwd_desc">Update your password regularly to keep your account protected.</p>
-                            </div>
-                        </div>
-                        <button id="openChangePassword" class="btn btn-outline" data-i18n="profile.security.change_pwd_btn">Change Password</button>
-                    </div>
+                <div class="security-block">
+                    <h3 class="security-block__title" data-i18n="profile.security.change_pwd_title">Change Password</h3>
+                    <p class="security-block__description" data-i18n="profile.security.change_pwd_desc">For your security, we recommend creating a unique password that you don't use with <br> any other account on the network.</p>
+                    <button id="openChangePassword" class="btn open-change-password" data-i18n="profile.security.change_pwd_btn">Change Password</button>
 
-                    <div class="security-card">
-                        <div class="security-card__info">
-                            <div class="security-card__icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                            </div>
-                            <div class="security-card__text">
-                                <h3 data-i18n="profile.security.logout_all_title">Active Sessions</h3>
-                                <p data-i18n="profile.security.logout_all_desc">Sign out from all devices except for this current browser.</p>
-                            </div>
-                        </div>
-                        <button class="btn btn-danger-soft" data-i18n="profile.security.logout_all_btn">Log out all devices</button>
-                    </div>
+                    <h3 data-i18n="profile.security.logout_all_title">Log out of all devices</h3>
+                    <p class="security-block__description" data-i18n="profile.security.logout_all_desc">Sign out of anywhere you use your account, including all browsers, phones, consoles, and other devices, except this page.</p>
+                    <button class="btn danger" data-i18n="profile.security.logout_all_btn">Log out from all devices</button>
                 </div>
             </div>
 
@@ -245,7 +247,7 @@
             <div class="glass-card" role="document">
                 <button class="modal-close" id="closeModal" aria-label="Close modal">&times;</button>
 
-                <h2 id="modalTitle" data-i18n="profile.security.modal.title">Change Password</h2>
+                <h3 id="modalTitle" data-i18n="profile.security.modal.title">Change Password</h2>
                 <p class="modal-sub" data-i18n="profile.security.modal.subtitle">Enter your current password and choose a new secure password.</p>
 
                 <input type="text" style="display:none" autocomplete="username">
@@ -258,7 +260,7 @@
             <div class="password-field">
                     <input type="password" id="newPassword" autocomplete="new-password" class="field" data-i18n="profile.security.modal.placeholder_new" placeholder="New password">
 
-                    <button type="button" class="eye-btn" data-target="newPassword">
+                    <button type="button" class="eye-btn" data-target="newPassword" aria-label="Show / Hide Password">
                         <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
@@ -270,7 +272,7 @@
                 <div class="password-field">
                     <input type="password" id="confirmPassword" autocomplete="new-password" class="field" data-i18n="profile.security.modal.placeholder_confirm" placeholder="Confirm password">
 
-                    <button type="button" class="eye-btn" data-target="confirmPassword">
+                    <button type="button" class="eye-btn" data-target="confirmPassword" aria-label="Show / Hide Password">
                     <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
                         <circle cx="12" cy="12" r="3"></circle>
@@ -281,8 +283,8 @@
                 <div id="errors" class="errors" aria-live="polite"></div>
 
                 <div class="modal-actions">
-                <button id="savePassword" class="save" disabled data-i18n="profile.security.modal.btn_save">Save</button>
-                <button id="cancelPassword" class="cancel" data-i18n="profile.security.modal.btn_cancel">Cancel</button>
+                <button id="savePassword" class="save" disabled data-i18n="profile.security.modal.btn_save" aria-label="Save Password">Save</button>
+                <button id="cancelPassword" class="cancel" data-i18n="profile.security.modal.btn_cancel" aria-label="Cancel Password">Cancel</button>
                 </div>
             </div>
             </div>
@@ -311,7 +313,7 @@
                             <span class="badge-default">Default</span>
                         </div>
                         
-                        <button class="add-method-btn">
+                        <button class="add-method-btn" aria-label="Add Payment Method">
                             <i class="fa-solid fa-plus"></i>
                             <span>Add payment method</span>
                         </button>
@@ -611,7 +613,7 @@
                     <div class="stat-card glass-card">
                         <div class="stat-title">Your Balance</div>
                         <div class="stat-value text-green">$<span id="affiliateBalance">0.00</span></div>
-                        <button class="action-btn primary-btn" onclick="requestPayout()" style="margin-top:10px; width:100%">Request Payout</button>
+                        <button class="action-btn primary-btn"  aria-label="Request Payout"onclick="requestPayout()" style="margin-top:10px; width:100%">Request Payout</button>
                     </div>
                     
                     <div class="stat-card glass-card">
@@ -624,8 +626,8 @@
                     <h3 style="margin-bottom:15px;">Your Referral Link</h3>
                     <div class="copy-row">
                         <input type="text" id="referralLinkInput" readonly value="Loading...">
-                        <button class="action-btn" id="copyAffBtn">
-                            <i class="fas fa-copy"></i> Copy
+                        <button class="action-btn" id="copyAffBtn" aria-label="Copy Your Referral Link">
+                            <i class="fas fa-copy fa-fw"></i> Copy
                         </button>
                     </div>
                     <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">
@@ -657,12 +659,9 @@
         </div>
     </div>
 
-    <!--
     <script src="js/i18n.js"></script>
     <script src="js/script.js"></script>
-    -->
-    <script src="js/profile-transactions.js"></script>
-    <script src="js/profile-security.js"></script>
+
     <script>
 
         const token = localStorage.getItem('authToken');
@@ -701,9 +700,9 @@
             const reader = new FileReader();
             
             reader.onload = async function(e) {
-                const base64Image = e.target.result;
+                const objectUrl = URL.createObjectURL(file);
                 
-                document.getElementById("avatarPreview").style.backgroundImage = `url('${base64Image}')`;
+                document.getElementById("avatarPreview").style.backgroundImage = `url('${objectUrl}')`;
 
                 try {
                     const response = await fetch(`${API_BASE_URL}/profile/update`, {
@@ -712,7 +711,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ avatar: base64Image })
+                        body: JSON.stringify({ avatar: objectUrl })
                     });
 
                     if (response.ok) {
@@ -769,6 +768,189 @@
                 btn.classList.add("active");
             });
         });
+
+        (() => {
+        const $ = s => document.querySelector(s);
+        const $$ = s => Array.from(document.querySelectorAll(s));
+
+        const modal = $('#changePasswordModal');
+        const card = modal?.querySelector('.glass-card');
+        const btnSave = $('#savePassword');
+        const btnClose = $('#closeModal');
+        const btnCancel = $('#cancelPassword');
+        const inputCurrent = $('#currentPassword');
+        const inputNew = $('#newPassword');
+        const inputConfirm = $('#confirmPassword');
+        const errorsBox = $('#errors');
+
+        if (!modal) return;
+
+        const triggers = [
+            ...$$('.open-change-password'),
+            ...($$('#openChangePassword') || []),
+            ...$$('button, a').filter(el => typeof el.textContent === 'string' && el.textContent.trim().toLowerCase().includes('change password'))
+        ];
+
+        const uniqueTriggers = Array.from(new Set(triggers));
+
+        function openModal() {
+            inputCurrent.value = '';
+            inputNew.value = '';
+            inputConfirm.value = '';
+            errorsBox.innerHTML = '';
+            btnSave.disabled = true;
+
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+
+            setTimeout(() => inputCurrent.focus(), 180);
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+
+            modal.style.display = "none";
+        }
+
+        uniqueTriggers.forEach(t => {
+            t.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal();
+            });
+        });
+
+        btnClose?.addEventListener('click', closeModal);
+        btnCancel?.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+        });
+
+        function validate() {
+            const cur = inputCurrent.value.trim();
+            const neu = inputNew.value.trim();
+            const conf = inputConfirm.value.trim();
+            const errors = [];
+
+            if (!cur) errors.push('Current password is required.');
+            if (!neu) errors.push('New password is required.');
+            if (neu && neu.length < 6) errors.push('New password must be at least 6 characters.');
+            if (cur && neu && cur === neu) errors.push('New password must be different from current password.');
+            if (neu && conf && neu !== conf) errors.push('New password and confirmation do not match.');
+
+            errorsBox.innerHTML = '';
+            if (errors.length) {
+                shakeElements([inputCurrent, inputNew, inputConfirm]);
+            errors.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'error-item';
+                div.textContent = msg;
+                errorsBox.appendChild(div);
+            });
+            btnSave.disabled = true;
+            } else {
+            btnSave.disabled = false;
+            }
+        }
+
+        [inputCurrent, inputNew, inputConfirm].forEach(inp => {
+            inp.addEventListener('input', () => {
+            validate();
+            });
+        });
+
+        btnSave.addEventListener('click', async () => {
+            validate();
+            if (btnSave.disabled) return;
+
+            btnSave.disabled = true;
+            btnSave.textContent = 'Saving...';
+
+            try {
+            await new Promise(r => setTimeout(r, 900));
+
+            // TODO: here you would call your backend API to change password.
+            // Example:
+            // const res = await fetch('/api/change-password', { method: 'POST', body: JSON.stringify({ current: inputCurrent.value, new: inputNew.value }) });
+            // handle response/res.errors etc.
+
+            errorsBox.innerHTML = '';
+            const ok = document.createElement('div');
+            ok.className = 'error-item';
+            ok.style.background = 'rgba(55, 179, 122, 0.06)';
+            ok.style.borderLeftColor = 'rgba(55,179,122,0.9)';
+            ok.style.color = '#bff3d0';
+            ok.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.success) 
+                ? window.i18n.translations.profile.security.modal.success 
+                : 'Password changed successfully.';
+            errorsBox.appendChild(ok);
+
+            setTimeout(() => closeModal(), 900);
+            } catch (err) {
+            const errMsg = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.network_error)
+                ? window.i18n.translations.profile.security.modal.network_error
+                : 'Network error. Try again.';
+            errorsBox.innerHTML = `<div class="error-item">${errMsg}</div>`;
+            } finally {
+            btnSave.disabled = false;
+            btnSave.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.btn_save)
+                ? window.i18n.translations.profile.security.modal.btn_save
+                : 'Save';
+            }
+        });
+        })();
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.eye-btn');
+            if (!btn) return;
+
+            const targetId = btn.dataset.target;
+            if (!targetId) return;
+            const input = document.getElementById(targetId);
+            if (!input) return;
+
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+
+            btn.classList.toggle('active', isPassword);
+
+            const svg = btn.querySelector('svg');
+            if (!svg) return;
+
+            if (isPassword) {
+                svg.innerHTML = `
+                <path d="M3 3l18 18" stroke="currentColor"></path>
+                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+                `;
+                svg.classList.add('eye-off');
+            } else {
+                svg.innerHTML = `
+                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+                `;
+                svg.classList.remove('eye-off');
+            }
+            });
+
+            function shakeElements(elements) {
+            elements.forEach(el => {
+                el.classList.remove('shake');
+
+                void el.offsetWidth;
+                el.classList.add('shake');
+
+                setTimeout(() => {
+                el.classList.remove('shake');
+                }, 420);
+            });
+        }
+
     </script>
 
 </body>
