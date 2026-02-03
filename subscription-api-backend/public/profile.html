@@ -145,7 +145,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </nav>
 
@@ -157,7 +156,6 @@
         </ul>
     </div>
     <div class="menu-overlay" id="menuOverlay"></div>
-
 
     <div class="profile-page">
 
@@ -232,14 +230,32 @@
             <div id="page-password" class="page content-box">
                 <h2 data-i18n="profile.security.title">Password and Security</h2>
 
-                <div class="security-block">
-                    <h3 class="security-block__title" data-i18n="profile.security.change_pwd_title">Change Password</h3>
-                    <p class="security-block__description" data-i18n="profile.security.change_pwd_desc">For your security, we recommend creating a unique password that you don't use with <br> any other account on the network.</p>
-                    <button id="openChangePassword" class="btn open-change-password" data-i18n="profile.security.change_pwd_btn">Change Password</button>
+                <div class="security-list">
+                    <div class="security-card">
+                        <div class="security-card__info">
+                            <div class="security-card__icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            </div>
+                            <div class="security-card__text">
+                                <h3 data-i18n="profile.security.change_pwd_title">Change Password</h3>
+                                <p data-i18n="profile.security.change_pwd_desc">Update your password regularly to keep your account protected.</p>
+                            </div>
+                        </div>
+                        <button id="openChangePassword" class="btn btn-outline" data-i18n="profile.security.change_pwd_btn">Change Password</button>
+                    </div>
 
-                    <h3 data-i18n="profile.security.logout_all_title">Log out of all devices</h3>
-                    <p class="security-block__description" data-i18n="profile.security.logout_all_desc">Sign out of anywhere you use your account, including all browsers, phones, consoles, and other devices, except this page.</p>
-                    <button class="btn danger" data-i18n="profile.security.logout_all_btn">Log out from all devices</button>
+                    <div class="security-card">
+                        <div class="security-card__info">
+                            <div class="security-card__icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                            </div>
+                            <div class="security-card__text">
+                                <h3 data-i18n="profile.security.logout_all_title">Active Sessions</h3>
+                                <p data-i18n="profile.security.logout_all_desc">Sign out from all devices except for this current browser.</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger-soft" data-i18n="profile.security.logout_all_btn">Log out all devices</button>
+                    </div>
                 </div>
             </div>
 
@@ -661,6 +677,8 @@
 
     <script src="js/i18n.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/profile-security.js"></script>
+    <script src="js/profile-transactions.js"></script>
 
     <script>
 
@@ -768,188 +786,6 @@
                 btn.classList.add("active");
             });
         });
-
-        (() => {
-        const $ = s => document.querySelector(s);
-        const $$ = s => Array.from(document.querySelectorAll(s));
-
-        const modal = $('#changePasswordModal');
-        const card = modal?.querySelector('.glass-card');
-        const btnSave = $('#savePassword');
-        const btnClose = $('#closeModal');
-        const btnCancel = $('#cancelPassword');
-        const inputCurrent = $('#currentPassword');
-        const inputNew = $('#newPassword');
-        const inputConfirm = $('#confirmPassword');
-        const errorsBox = $('#errors');
-
-        if (!modal) return;
-
-        const triggers = [
-            ...$$('.open-change-password'),
-            ...($$('#openChangePassword') || []),
-            ...$$('button, a').filter(el => typeof el.textContent === 'string' && el.textContent.trim().toLowerCase().includes('change password'))
-        ];
-
-        const uniqueTriggers = Array.from(new Set(triggers));
-
-        function openModal() {
-            inputCurrent.value = '';
-            inputNew.value = '';
-            inputConfirm.value = '';
-            errorsBox.innerHTML = '';
-            btnSave.disabled = true;
-
-            modal.classList.add('show');
-            modal.setAttribute('aria-hidden', 'false');
-
-            setTimeout(() => inputCurrent.focus(), 180);
-        }
-
-        function closeModal() {
-            modal.classList.remove('show');
-            modal.setAttribute('aria-hidden', 'true');
-
-            modal.style.display = "none";
-        }
-
-        uniqueTriggers.forEach(t => {
-            t.addEventListener('click', (e) => {
-            e.preventDefault();
-            openModal();
-            });
-        });
-
-        btnClose?.addEventListener('click', closeModal);
-        btnCancel?.addEventListener('click', closeModal);
-
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
-        });
-
-        function validate() {
-            const cur = inputCurrent.value.trim();
-            const neu = inputNew.value.trim();
-            const conf = inputConfirm.value.trim();
-            const errors = [];
-
-            if (!cur) errors.push('Current password is required.');
-            if (!neu) errors.push('New password is required.');
-            if (neu && neu.length < 6) errors.push('New password must be at least 6 characters.');
-            if (cur && neu && cur === neu) errors.push('New password must be different from current password.');
-            if (neu && conf && neu !== conf) errors.push('New password and confirmation do not match.');
-
-            errorsBox.innerHTML = '';
-            if (errors.length) {
-                shakeElements([inputCurrent, inputNew, inputConfirm]);
-            errors.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = 'error-item';
-                div.textContent = msg;
-                errorsBox.appendChild(div);
-            });
-            btnSave.disabled = true;
-            } else {
-            btnSave.disabled = false;
-            }
-        }
-
-        [inputCurrent, inputNew, inputConfirm].forEach(inp => {
-            inp.addEventListener('input', () => {
-            validate();
-            });
-        });
-
-        btnSave.addEventListener('click', async () => {
-            validate();
-            if (btnSave.disabled) return;
-
-            btnSave.disabled = true;
-            btnSave.textContent = 'Saving...';
-
-            try {
-            await new Promise(r => setTimeout(r, 900));
-
-            // TODO: here you would call your backend API to change password.
-            // Example:
-            // const res = await fetch('/api/change-password', { method: 'POST', body: JSON.stringify({ current: inputCurrent.value, new: inputNew.value }) });
-            // handle response/res.errors etc.
-
-            errorsBox.innerHTML = '';
-            const ok = document.createElement('div');
-            ok.className = 'error-item';
-            ok.style.background = 'rgba(55, 179, 122, 0.06)';
-            ok.style.borderLeftColor = 'rgba(55,179,122,0.9)';
-            ok.style.color = '#bff3d0';
-            ok.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.success) 
-                ? window.i18n.translations.profile.security.modal.success 
-                : 'Password changed successfully.';
-            errorsBox.appendChild(ok);
-
-            setTimeout(() => closeModal(), 900);
-            } catch (err) {
-            const errMsg = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.network_error)
-                ? window.i18n.translations.profile.security.modal.network_error
-                : 'Network error. Try again.';
-            errorsBox.innerHTML = `<div class="error-item">${errMsg}</div>`;
-            } finally {
-            btnSave.disabled = false;
-            btnSave.textContent = (window.i18n && window.i18n.translations && window.i18n.translations.profile && window.i18n.translations.profile.security.modal.btn_save)
-                ? window.i18n.translations.profile.security.modal.btn_save
-                : 'Save';
-            }
-        });
-        })();
-
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.eye-btn');
-            if (!btn) return;
-
-            const targetId = btn.dataset.target;
-            if (!targetId) return;
-            const input = document.getElementById(targetId);
-            if (!input) return;
-
-            const isPassword = input.type === 'password';
-            input.type = isPassword ? 'text' : 'password';
-
-            btn.classList.toggle('active', isPassword);
-
-            const svg = btn.querySelector('svg');
-            if (!svg) return;
-
-            if (isPassword) {
-                svg.innerHTML = `
-                <path d="M3 3l18 18" stroke="currentColor"></path>
-                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-                `;
-                svg.classList.add('eye-off');
-            } else {
-                svg.innerHTML = `
-                <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-                `;
-                svg.classList.remove('eye-off');
-            }
-            });
-
-            function shakeElements(elements) {
-            elements.forEach(el => {
-                el.classList.remove('shake');
-
-                void el.offsetWidth;
-                el.classList.add('shake');
-
-                setTimeout(() => {
-                el.classList.remove('shake');
-                }, 420);
-            });
-        }
 
     </script>
 
