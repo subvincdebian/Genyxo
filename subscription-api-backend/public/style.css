@@ -58,6 +58,17 @@ h1, h2, h3, .nav-logo {
     letter-spacing: -0.02em;
 }
 
+#neural-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Чтобы фон был под контентом */
+    pointer-events: none; /* Чтобы можно было кликать сквозь холст */
+    background: transparent; /* Оставляем ваш текущий фон */
+}
+
 .glass {
     background: var(--glass-light);
     backdrop-filter: blur(12px);
