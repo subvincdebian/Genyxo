@@ -2314,7 +2314,8 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
         flex-direction: column;
         justify-content: space-between;
         cursor: pointer;
-        z-index: 1100;
+        position: relative;
+        z-index: 2100;
         margin-left: 4px;
     }
 
@@ -2331,17 +2332,19 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
         position: fixed;
         top: 0;
         left: -100%;
+        right: auto;
         width: 75%;
         height: 100%;
         background: rgba(0,0,0,0.9);
         padding: 80px 30px;
         backdrop-filter: blur(10px);
         transition: 0.3s ease;
-        z-index: 1500;
+        z-index: 2000;
     }
 
     .mobile-menu.active {
         left: 0;
+        right: auto;
     }
 
     .mobile-menu ul {
@@ -2366,11 +2369,13 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
         height: 100%;
         backdrop-filter: blur(2px);
         background: rgba(0,0,0,0.5);
-        z-index: 1400;
+        z-index: 1900;
     }
 
     .menu-overlay.active {
         display: block;
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .profile-container {

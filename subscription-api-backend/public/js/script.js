@@ -30,6 +30,7 @@ const menuCredits = document.getElementById('menuCredits');
 const dropdownAvatars = document.querySelectorAll('.dropdown-avatar');
 const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
 const notificationBadge = document.getElementById('notificationBadge');
+const closeProfilePanelBtn = document.getElementById('closeProfilePanel');
 
 // Checkout Elements (НОВІ)
 const checkoutModal = document.getElementById('checkoutModal');
@@ -985,6 +986,13 @@ function setupEventListeners() {
             } else {
                 openLoginModal();
             }
+        });
+    }
+
+    if (closeProfilePanelBtn) {
+        closeProfilePanelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (profilePanel) profilePanel.classList.remove('show');
         });
     }
 
