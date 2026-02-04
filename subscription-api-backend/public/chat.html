@@ -43,11 +43,17 @@
 
     <style>
         
+        :root {
+            --app-height: 100vh;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --vv-bottom: 0px;
+        }
+
         body {
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: var(--app-height);
             margin: 0;
         }
 
@@ -785,7 +791,7 @@
 
             .input-wrapper {
                 transform: none !important; 
-                padding: 10px 15px !important;
+                padding: 10px 15px calc(10px + var(--safe-bottom) + var(--vv-bottom)) !important;
                 position: relative;
                 bottom: 0;
             }
@@ -801,6 +807,34 @@
         }
 
     </style>
+
+    <script>
+        (function() {
+            const docEl = document.documentElement;
+
+            function updateViewportVars() {
+                const vv = window.visualViewport;
+                const height = vv ? vv.height : window.innerHeight;
+                docEl.style.setProperty('--app-height', `${height}px`);
+
+                if (vv) {
+                    const bottom = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+                    docEl.style.setProperty('--vv-bottom', `${bottom}px`);
+                } else {
+                    docEl.style.setProperty('--vv-bottom', '0px');
+                }
+            }
+
+            updateViewportVars();
+
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', updateViewportVars);
+                window.visualViewport.addEventListener('scroll', updateViewportVars);
+            }
+
+            window.addEventListener('resize', updateViewportVars);
+        })();
+    </script>
 
     <script>
         (function() {
