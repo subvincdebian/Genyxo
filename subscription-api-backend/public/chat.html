@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title data-i18n="chat.meta_title">Genyxo AI Chat - Intelligent assistant</title>
     <meta name="description" data-i18n="chat.meta_description" content="Access all top neural networks in one place. Use tokens to interact with GPT-5, Gemini, and generate videos in Sora. Try Genyxo AI!">
     <meta name="keywords" content="AI, neural networks, subscriptions, GPT-4, Gemini, Sora, AI tools">
@@ -35,780 +34,1734 @@
     <meta name="twitter:description" content="Chat with artificial intelligence with Genyxo.">
 
     <link rel="icon" type="image/svg+xml" href="./images/logo.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="chat.css">
     <link rel="stylesheet" href="style.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
-        
         :root {
-            --app-height: 100vh;
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --vv-bottom: 0px;
+            --sidebar-width: 260px;
+            --rail-width: 60px;
+            --bg-black: #000000;
+            --bg-dark: #0d0d0d;
+            --border: #2d2d2d;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            --text-main: #ffffff;
+            --text-secondary: #b4b4b4;
+            --bg-input: #2f2f2f;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-hover: rgba(0, 242, 255, 0.05);
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --menu-bg: rgba(30, 30, 30, 0.95);
         }
 
-        body {
-            overflow: hidden;
+        [data-theme="light"] {
+            --bg-black: #ffffff;
+            --bg-dark: #f0f4f9;
+            --border: #e5e7eb;
+            --text-main: #1f1f1f;
+            --text-secondary: #5f6368;
+            --bg-input: #f0f4f9;
+            --card-bg: #ffffff;
+            --card-hover: #eef5ff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --menu-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-black); color: white; height: 100vh; overflow: hidden; }
+
+        .app-container { display: flex; width: 100%; height: 100vh; }
+
+        #sidebar {
+            width: var(--sidebar-width);
+            height: 100%;
+            background: var(--bg-black);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            height: var(--app-height);
-            margin: 0;
-        }
-
-        .navbar {
             position: relative;
-            flex-shrink: 0;
+            transition: var(--transition);
+            z-index: 3500;
         }
 
-        .chat-item {
+        .sidebar-closed #sidebar { width: var(--rail-width); }
+
+        .sidebar-full {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: var(--sidebar-width);
+            padding: 12px;
+            transition: opacity 0.2s;
+        }
+        .sidebar-closed .sidebar-full { opacity: 0; pointer-events: none; width: 0; padding: 0; overflow: hidden; }
+
+        .sb-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 14px;
-            margin: 4px 0;
-            cursor: pointer;
+            margin-bottom: 16px;
+        }
+        .sb-logo-area { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; }
+        .logo-circle { 
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sb-actions {
+            display: grid;
+            grid-template-columns: 1fr 40px 40px;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: #ececec;
+            height: 40px;
             border-radius: 8px;
-            color: var(--text-gray);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: 0.2s;
             position: relative;
         }
-        .chat-item:hover, .chat-item.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-light);
+        .icon-btn:hover { background: #1a1a1a; }
+        .icon-btn.new-chat { justify-content: flex-start; padding: 0 12px; font-size: 14px; gap: 8px; }
+
+        .history-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin: 0 -4px;
+            padding: 0 4px;
         }
-        .chat-title {
+        .history-container::-webkit-scrollbar { width: 4px; }
+        .history-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        .history-item {
+            padding: 10px;
+            margin-bottom: 2px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 170px;
-            font-size: 0.9rem;
+            color: #b4b4b4;
         }
-        .chat-options-btn {
+        .history-item:hover { background: #0d0d0d; color: white; }
+
+        .sidebar-mini {
+            position: absolute;
+            top: 0; left: 0;
+            width: var(--rail-width);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
             opacity: 0;
-            color: var(--text-gray);
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
+            pointer-events: none;
             transition: 0.2s;
         }
-        .chat-item:hover .chat-options-btn, .chat-item.active .chat-options-btn {
-            opacity: 1;
-        }
-        .chat-options-btn:hover { color: white; }
+        .sidebar-closed .sidebar-mini { opacity: 1; pointer-events: auto; }
 
-        .options-dropdown {
-            position: absolute;
-            right: 10px;
-            top: 35px;
-            background: #252525;
-            border: 1px solid rgba(255,255,255,0.1);
+        .mini-btn {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 12px;
             border-radius: 8px;
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-            min-width: 120px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-        .options-dropdown.show { display: flex; }
-        .dropdown-item {
-            padding: 8px 12px;
-            font-size: 0.85rem;
-            color: #ddd;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .dropdown-item:hover { background: rgba(255,255,255,0.1); }
-        .dropdown-item.delete { color: #ff6b6b; }
-
-        #profilePanel {
-            background: black;
-        }
-
-        .chat-layout {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .chat-sidebar {
-            width: 260px;
-            background: rgba(0, 0, 0, 0.4);
-            border-right: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            flex-shrink: 0;
-            transition: transform 0.3s ease;
-        }
-
-        .new-chat-btn {
-            background: var(--text-light);
-            color: var(--text-dark);
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            transition: all 0.2s;
-        }
-
-        .new-chat-btn:hover {
-            background: #e0e0e0;
-            transform: translateY(-1px);
-        }
-
-        .history-label {
-            color: var(--text-gray);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .history-list {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
-
-        .chat-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            cursor: pointer;
             position: relative;
-            background: radial-gradient(circle at 50% 30%, rgba(16, 230, 204, 0.4), transparent 70%);
-            height: 100%;
+            color: #b4b4b4;
+            transition: 0.2s;
+        }
+        .mini-btn:hover { background: black; color: white; }
+
+        .logo-toggle { margin-bottom: 20px; }
+        .logo-toggle .icon-alt { display: none; }
+        .logo-toggle:hover .logo-circle { display: none; }
+        .logo-toggle:hover .icon-alt { display: flex; }
+
+        /* Всплывающие подсказки */
+        [data-tooltip] {
+            position: relative;
+        }
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: calc(100% + 12px);
+            top: 50%;
+            transform: translateY(-50%) translateX(-4px);
+            background: rgba(0, 0, 0, 0.92);
+            color: #f5f7ff;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+            backdrop-filter: blur(6px);
+            pointer-events: none;
+            z-index: 3000;
+        }
+        [data-tooltip]::before {
+            content: "";
+            position: absolute;
+            left: calc(100% + 6px);
+            top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-right-color: rgba(0, 0, 0, 0.92);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.18s ease;
+            pointer-events: none;
+            z-index: 2999;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%) translateX(0);
+        }
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            visibility: visible;
         }
 
-        .chat-header {
-            padding: 15px 2rem;
+        .plus-btn[data-tooltip]::after {
+            left: 50%;
+            top: calc(100% + 12px);
+            transform: translateX(-50%) translateY(-4px);
+            border-radius: 8px;
+        }
+
+        .plus-btn[data-tooltip]::before {
+            left: 50%;
+            top: calc(100% + 6px);
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.92);
+            border-right-color: transparent;
+        }
+
+        .plus-btn[data-tooltip]:hover::after {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .main-container {
+            flex-grow: 1;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+
+        #chatContainer { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            overflow: hidden;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        header { 
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            background: rgba(0,0,0,0.2);
-        }
-
-        .model-select-wrapper {
+            padding: 10px 16px;
             position: relative;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: transparent;
-            padding: 4px 6px;
-            border-radius: 999px;
-            min-width: 180px;
-        }
-
-        .model-select-wrapper select {
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            outline: none;
-            font-size: 0.95rem;
-            cursor: pointer;
-            appearance: none;
-            padding-right: 22px;
-            width: 100%;
-        }
-
-        .model-select-wrapper select option {
-            color: #fff;
-            background: black;
-            border-radius: 8px;
-            border: none;
-        }
-
-        .model-select-wrapper select:focus {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-            border-radius: 16px;
+            z-index: 2000;
+            overflow: visible;
         }
         
-        .model-select-wrapper::after { display: none; }
+        textarea { flex-grow: 1; background: none; border: none; color: white; resize: none; outline: none; padding: 8px; font-size: 16px; }
 
-        .custom-select {
-            position: relative;
+        .chat-logo-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: transparent;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.02);
-            min-width: 220px;
-            color: #e6eef8;
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.02);
-            backdrop-filter: blur(4px);
-        }
-        .custom-select .current { flex: 1; font-weight: 600; }
-        .custom-select .caret { color: rgba(255,255,255,0.7); }
-
-        .model-select-wrapper .fa-robot {
-            display: inline-flex;
-            align-items: center;
             justify-content: center;
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            background: rgba(16,230,204,0.04);
-            color: #10e6cc;
-            border: 1px solid rgba(16,230,204,0.06);
-            font-size: 16px;
-            flex-shrink: 0;
+            color: #00f2ff;
+            font-weight: bold;
         }
 
-        .custom-options {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            left: 0;
-            background: linear-gradient(180deg, #0f1416 0%, #070808 100%);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            margin: 0;
-            padding: 6px 6px;
-            list-style: none;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
-            max-height: 260px;
-            overflow-y: auto;
-            z-index: 200;
-            display: none;
-            backdrop-filter: blur(6px);
-        }
-        .custom-options.show { display: block; }
-        .custom-options li {
-            padding: 8px 12px;
-            border-radius: 6px;
-            color: #cfe6ff;
-            cursor: pointer;
-            margin: 4px 0;
-            font-size: 0.95rem;
-            white-space: nowrap;
-            transition: background 0.12s ease, color 0.12s ease;
-        }
-        .custom-options li:hover,
-        .custom-options li.active {
-            background: rgba(255,255,255,0.04);
-            color: #ffffff;
-        }
-        .custom-options::-webkit-scrollbar { width: 8px; }
-        .custom-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 6px; }
-
-        .welcome-screen {
-            flex: 1;
+        /* === Welcome Screen & Neon Glow === */
+        .welcome-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            flex: 1;
+            min-height: 0;
             text-align: center;
-            padding: 2rem;
-            animation: fadeIn 0.5s ease;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
         }
 
-        .welcome-logo {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #fff, #aaa);
-            background-clip: text;
+        .logo-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-inner {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Неоновое свечение */
+        .glow-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: conic-gradient(from 0deg, #00f2ff, #0070f3, #00f2ff);
+            filter: blur(20px);
+            opacity: 0.5;
+            border-radius: 50%;
+            animation: spin 4s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .welcome-text {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #00f2ff, #21fcd0);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .welcome-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-light);
-            margin-bottom: 10px;
+        .welcome-subtext {
+            font-size: 1.1rem;
+            color: #888;
+            margin-bottom: 40px;
         }
 
-        .welcome-subtitle {
-            color: #e0e0e0;
-            font-size: 1rem;
-            max-width: 500px;
-            margin-bottom: 3rem;
-            line-height: 1.5;
-        }
-
-        .suggestions-grid {
+        /* === Feature Grid (Карточки) === */
+        .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
             width: 100%;
             max-width: 800px;
+            margin: 40px auto 0;
+            opacity: 1;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        .suggestion-card {
-            background: var(--glass-light);
-            border: 1px solid var(--glass-border);
-            padding: 1.5rem;
-            border-radius: 16px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .suggestion-card:hover {
-            background: rgba(255,255,255,0.15);
-            transform: translateY(-5px);
-            border-color: rgba(255,255,255,0.3);
-        }
-
-        .suggestion-icon {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: #10e6cc;
-        }
-
-        .suggestion-text {
-            font-size: 0.95rem;
-            color: var(--text-gray);
-            line-height: 1.4;
-        }
-
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 2rem;
+        .features-grid.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
             display: none;
+        }
+
+        @media (min-width: 768px) {
+            .features-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px 16px;
+            display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            scroll-behavior: smooth;
-            max-width: 900px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 120px;
+        }
+
+        .feature-card:hover {
+            background: rgba(0, 242, 255, 0.05);
+            border-color: #00f2ff;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-card i {
+            font-size: 24px;
+            margin-bottom: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card span {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #e4e4e7;
+            line-height: 1.2;
+        }
+
+        /* === Input Area Styling === */
+        .chat-input-container {
+            max-width: 840px;
             margin: 0 auto;
+            padding: 20px 20px 24px;
             width: 100%;
-        } 
-
-        .message.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
+            flex-shrink: 0;
         }
 
-        .message-content {
-            padding: 1rem 1.5rem;
-            border-radius: 18px;
-            line-height: 1.6;
-            font-size: 1rem;
-            word-wrap: break-word;
+        .unified-preview-area {
+            display: none;
+            width: 100%;
+            padding: 12px 0 8px 0;
+            margin-bottom: 8px;
+            order: -1;
         }
 
-        .user .message-content {
-            background: var(--text-light);
+        .unified-preview-area.has-items {
+            display: flex;
+        }
+
+        .preview-scroll-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+            width: 100%;
+        }
+
+        .unified-preview-item {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 12px;
+        }
+
+        .unified-preview-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: visible;
+            border: none;
+            background: #2a2a2a;
+            position: relative;
+            padding: 0;
+            gap: 0;
+        }
+
+        .unified-preview-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .unified-preview-file {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            color: #fff;
+            flex-direction: row;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .unified-preview-file-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(0, 242, 255, 0.85);
+            color: #00ffff;
+            font-size: 20px;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .unified-preview-file-icon i {
+            font-size: 20px;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
             color: black;
-            border-bottom-right-radius: 4px;
+            position: relative;
+            top: 8px;
+            left: 0px;
         }
 
-        .bot .message-content {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--glass-border);
-            color: var(--text-light);
-            border-bottom-left-radius: 4px;
-        }
-        
-        .bot .message-content img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 10px;
+        .unified-preview-file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
         }
 
-        .avatar {
-            width: 36px;
-            height: 36px;
+        .unified-preview-file-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .unified-preview-file-size {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .unified-remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #ff4d4d;
+            color: white;
+            border: none;
             border-radius: 50%;
+            width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            border: 1px solid var(--glass-border);
-            font-size: 0.9rem;
-        }
-        
-        #chatContainer {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0;
+            box-shadow: 0 2px 8px rgba(255, 77, 77, 0.4);
+            z-index: 10;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
-        .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            line-height: 1.5;
-            font-size: 15px;
+        .unified-remove-btn:hover {
+            background: #ff2222;
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(255, 77, 77, 0.6);
+        }
+
+        .unified-remove-btn i {
+            font-size: 10px;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+            color: #f0f0f0;
+            flex-shrink: 0;
             position: relative;
-            word-wrap: break-word;
+            left: 0px;
+            top: 5px;
+        }
+
+        .all-preview-items {
             display: flex;
-            gap: 1rem;
-            animation: fadeIn 0.3s ease;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
         }
 
-        .user-message {
-            align-self: flex-end;
-            background: #10e6cc;
-            color: white;
-            border-bottom-right-radius: 4px;
+        .input-form {
+            background: #2f2f2f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            transition: all 0.2s ease;
+            min-height: 52px;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            position: relative;
         }
 
-        .bot-message {
-            align-self: flex-start;
-            background: #252525;
-            color: #e0e0e0;
-            border-bottom-left-radius: 4px;
-            border: 1px solid #333;
+        .input-form:focus-within {
+            border-color: rgba(0, 242, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.05);
         }
-
-        .error-message {
-            align-self: center;
-            background: rgba(255, 82, 82, 0.1);
-            color: #ff5252;
-            border: 1px solid #ff5252;
-            font-size: 13px;
-            text-align: center;
-            max-width: 60%;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .bot .avatar { background: rgba(16, 230, 204, 0.2); color: #10e6cc; }
-        .user .avatar { background: var(--text-light); color: black; }
 
         .input-wrapper {
-            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 1rem 2rem;
-            max-width: 900px;
-            margin: 0 auto;
             width: 100%;
             background: transparent;
             z-index: 10;
             position: relative;
+            max-width: 900px;
+            justify-content: flex-end;
+            gap: 0;
         }
 
-        .input-container {
-            position: relative;
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            transition: border-color 0.3s;
-        }
-
-        .input-container:focus-within {
-            border-color: rgba(255,255,255,0.3);
-        }
-
-        .chat-input {
-            resize: none;
-            flex: 1;
+        #userInput {
+            width: 100%;
             background: transparent;
             border: none;
-            color: var(--text-light);
-            padding: 12px 20px;
-            font-size: 1rem;
+            color: #ececec;
+            font-size: 16px;
+            line-height: 24px;
+            resize: none;
+            padding: 8px 0;
             outline: none;
-            min-height: 50px;
+            display: block;
             max-height: 200px;
-            padding-top: 14px;
         }
 
         .send-btn {
-            width: 44px;
-            height: 44px;
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
             border-radius: 50%;
+            background: #fff;
+            color: #000;
             border: none;
-            background: white;
-            color: #111;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            flex-shrink: 0;
-            transition: transform .2s, box-shadow .2s;
+            transition: 0.2s;
+            margin-bottom: 6px;
+        }
+
+        .send-btn i {
             position: relative;
-            z-index: 2;
+            top: 8px;
+            left: 1px;
+            font-size: 16px;
+            margin: 0;
+            line-height: 1;
         }
 
-        .send-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255,255,255,0.3);
-            color: inherit;
+        .send-btn:hover { 
+            opacity: 0.9; 
+            color: #000;
         }
-        
+
         .send-btn:disabled {
-            opacity: 0.5;
+        background: #444;
+            color: #888;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .disclaimer {
+        .footer-text {
             text-align: center;
+            color: #666;
             font-size: 0.75rem;
-            color: rgba(255,255,255,0.3);
             margin-top: 10px;
         }
 
-        .typing-indicator {
-            display: none;
-            padding: 10px 20px;
-            margin-left: 50px;
-            margin-bottom: 15px;
+        .cyan-icon { 
+            color: #00f2ff;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.3); 
         }
-        
-        .dot {
-            width: 6px;
-            height: 6px;
-            background: #fff;
-            border-radius: 50%;
-            display: inline-block;
-            margin: 0 2px;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-        .dot:nth-child(1) { animation-delay: -0.32s; }
-        .dot:nth-child(2) { animation-delay: -0.16s; }
 
-        @keyframes slideIn {
+        /* Меню вложений */
+        .attachment-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 6px;
+            margin-bottom: 12px;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            min-width: 180px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform-origin: bottom left;
+            animation: menuPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        [data-theme="light"] .attachment-menu {
+            background: #ffffff !important;
+            border: 1px solid #e5e7eb !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+        }
+        @keyframes menuPop {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .attachment-menu.active {
+            display: flex;
+        }
+
+        @keyframes fadeInMenu {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .chat-input-wrapper {
-            position: relative;
+        .attachment-menu .plus-menu-item {
             display: flex;
-            align-items: flex-end;
+            align-items: center;
+            padding: 10px 14px;
+            gap: 0;
+            position: relative;
+            border: 50%;
+            user-select: none;
+            border-radius: 10px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .attachment-menu .plus-menu-item i.cyan-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            min-width: 24px;
+            height: 24px;
+            
+            line-height: 0; 
+            font-size: 18px;
+            
+            margin-right: 12px;
+            flex-shrink: 0;
+            position: relative;
+            transform: none;
+            left: auto;
+            top: auto;
+
+            color: #00f2ff;
+            text-shadow: 0 0 8px rgba(0, 242, 255, 0.4);
+        }
+
+        .attachment-menu .plus-menu-item i.fas {
+            width: auto;
+            height: auto;
+        }
+
+        .attachment-menu .plus-menu-item span {
+            display: block;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .plus-menu-item:hover { background: rgba(255,255,255,0.08); }
+
+        [data-theme="light"] .plus-menu-item:hover {
+            background: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .text-box {
+            color: #ececec;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        [data-theme="light"] .text-box {
+            color: #1f1f1f !important;
+        }
+
+        .input-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-preview-shelf {
+            display: none;
+        }
+
+        .attachment-preview-area {
+            display: none;
+        }
+
+        .preview-group {
+            display: none;
+        }
+
+        .preview-item {
+            display: none;
+        }
+
+        .preview-item-img {
+            display: none;
+        }
+
+        .preview-item-file {
+            display: none;
+        }
+
+        .plus-btn {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: #b4b4b4;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            padding: 0;
+            font-size: 18px;
+            position: relative;
+            outline: none;
+        }
+
+        .plus-btn i {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            line-height: 1;
+            margin: 0;
+        }
+
+        .plus-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #00f2ff;
+        }
+
+        .input-form-wrapper {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            order: 1;
+        }
+
+        .drop-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(30, 30, 30, 0.9);
+            border: 2px dashed #4a9eff;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: 0.2s;
+        }
+
+        /* Состояние, когда тащим файл */
+        .drop-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: all;
+        }
+
+        .drop-message {
+            color: #fff;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Стили для предпросмотра прикрепленного файла */
+        .file-preview {
+            display: none;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .file-preview.has-file {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e3e3e3;
+            font-size: 0.9rem;
+        }
+
+        .remove-file-btn {
+            background: none;
+            border: none;
+            color: #ff5f5f;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px;
+        }
+        .remove-file-btn:hover {
+            color: #ff3b3b;
+        }
+
+        .attachment-preview-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0 15px;
+            margin-bottom: 8px;
+        }
+        .preview-group {
+            display: flex;
+            flex-wrap: wrap;
             gap: 10px;
-            padding: 8px 15px;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, .05);
-            border: 1px solid rgba(255, 255, 255, .1);
-            box-sizing: border-box;
+        }
+
+        /* Стиль для картинок */
+        .preview-item-img {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #2a2a2a;
+        }
+
+        .preview-item-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        /* Стиль для файлов */
+        .preview-item-file {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            color: #fff;
+            gap: 8px;
+        }
+
+        .remove-btn {
+            cursor: pointer;
+            background: #ff4d4d;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: 0.2s;
+        }
+        .remove-btn:hover { background: #ff2222; }
+
+        /* === 2. Submenu Styles === */
+
+        /* Контейнер для меню с подменю */
+        .menu-item-wrapper {
+            position: relative;
             width: 100%;
         }
 
-        .chat-input-wrapper:focus-within {
-            border-color: #10e6cc;
-            box-shadow: 0 0 15px rgba(16, 230, 204, 0.1);
+        .chevron-right {
+            margin-left: auto;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: transform 0.2s;
         }
 
-        .chat-textarea {
-            flex: 1;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: white;
-            font-size: 1rem;
-            resize: none;
-            line-height: 1.4;
-            padding: 8px 0;
-            min-height: 24px;
-            max-height: 160px;
-            overflow-y: auto;
-            box-sizing: border-box;
-            display: block;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .send-btn i {
-            pointer-events: none;
-        }
-
-        #creditsBtn {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        /* Само подменю */
+        .theme-submenu {
+            position: absolute;
+            bottom: 0;
+            left: 100%;
+            margin-left: 1px;
+            background: var(--menu-bg);
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            [data-theme="light"] & { border: 1px solid var(--border); }
             border-radius: 12px;
-            padding: 6px 14px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 6px;
+            min-width: 160px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            z-index: 4000;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        #creditsBtn:hover {
-            border-color: #ffd700;
-            transform: translateY(-2px) scale(1.02);
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
+        /* Показ подменю при наведении */
+        .menu-item-wrapper:hover .theme-submenu {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
         }
 
-        #creditsBtn i {
-            color: #ffd700;
-            animation: coin-glow 2s infinite alternate;
-        }
-
-        .streaming::after {
-            content: '●';
-            margin-left: 4px;
-            color: #4a90e2; /* Цвет под твой бренд */
-            animation: blink 0.8s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* Плавное появление новых абзацев */
-        .message-content p {
-            animation: fadeIn 0.3s ease-out forwards;
-            margin-bottom: 0.5rem;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(2px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Стиль для лоадера видео (более Senior вид) */
-        .video-loading {
+        /* Пункты подменю */
+        .submenu-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-style: italic;
-            color: #888;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: inherit;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            justify-content: space-between;
         }
 
-        @keyframes coin-glow {
-            from { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4)); }
-            to { filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)); }
+        .submenu-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        [data-theme="light"] .submenu-item:hover {
+            background: #f0f4f9;
+        }
+
+        /* Галочка (показывает активную тему) */
+        .check-icon {
+            font-size: 12px;
+            color: #00f2ff;
+            opacity: 0;
+        }
+        [data-theme="light"] .check-icon { color: #0070f3; }
+
+        .submenu-item.active .check-icon {
+            opacity: 1;
+        }
+
+        /* Применение переменных к элементам при смене темы */
+        [data-theme="light"] body { color: var(--text-main); }
+        [data-theme="light"] .history-item { color: var(--text-main); }
+        [data-theme="light"] .history-item:hover { background: #e5e7eb; color: var(--text-dark) !important; }
+        [data-theme="light"] .icon-btn { color: var(--text-secondary); border-color: var(--border); }
+        [data-theme="light"] .icon-btn:hover { background: #f0f4f9; color: var(--text-main); }
+        [data-theme="light"] .input-form { background: #ffffff; border-color: var(--border); box-shadow: 0 4px 6px -1px var(--shadow-color); }
+        [data-theme="light"] #userInput { color: var(--text-main); }
+        [data-theme="light"] .welcome-text { color: var(--text-main); }
+        [data-theme="light"] .text-gradient {
+            background: linear-gradient(to right, #0088cc, #00a89a) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+        }
+        [data-theme="light"] .feature-card { background: #ffffff; border-color: var(--border); box-shadow: 0 4px 6px -1px var(--shadow-color); }
+        [data-theme="light"] .feature-card span { color: var(--text-main); }
+        [data-theme="light"] .feature-card:hover { background: var(--card-hover); }
+        [data-theme="light"] .welcome-subtext { color: var(--text-secondary); }
+        [data-theme="light"] .gemini-menu { background: var(--menu-bg); border-color: var(--border); color: var(--text-dark) !important; }
+        [data-theme="light"] .gemini-menu-item { color: var(--text-main); color: var(--text-dark) !important; }
+        [data-theme="light"] .gemini-menu-item:hover { background: #f0f4f9; color: var(--text-dark) !important; }
+        [data-theme="light"] .menu-divider { background: var(--border); }
+        [data-theme="light"] .gemini-menu-btn:hover {
+            background-color: #e8eaed !important;
+        }
+        /* 1. ЛОГОТИП (черный) */
+        [data-theme="light"] .logo svg path,
+        [data-theme="light"] .logo-mini svg path,
+        [data-theme="light"] .logo svg circle,
+        [data-theme="light"] .logo-mini svg circle,
+        [data-theme="light"] .logo-circle svg path,
+        [data-theme="light"] .logo-circle svg circle {
+            fill: #1f1f1f !important;
         }
         
+        [data-theme="light"] .chat-logo-icon {
+            color: #1f1f1f !important;
+        }
+        
+        [data-theme="light"] .glow-effect {
+            background: conic-gradient(from 0deg, #00f2ff, #0070f3, #00f2ff) !important;
+            opacity: 0.6 !important;
+            filter: blur(25px) !important;
+        }
+        
+        [data-theme="light"] .logo-inner {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* 2. Сайдбар Футер (Кнопка Меню) */
+        [data-theme="light"] .sidebar-footer .gemini-menu-btn {
+            color: #1f1f1f !important;
+        }
+
+        /* Состояние при наведении (Hover) */
+        [data-theme="light"] .sidebar-footer .gemini-menu-btn:hover {
+            background-color: #e1e5ea !important;
+            color: #1f1f1f !important;
+        }
+
+        /* 3. Кастомный Селект (Выбор модели) */
+        html[data-theme="light"] .custom-select-trigger {
+            background-color: #ffffff;
+            border: 1px solid var(--border-light) !important;
+            color: var(--text-dark) !important;
+        }
+        /* Стрелочка селекта */
+        html[data-theme="light"] .custom-select-trigger::after {
+            border-top-color: #5f6368; 
+        }
+
+        html[data-theme="light"] .custom-options {
+            background-color: #ffffff !important;
+            border: 1px solid var(--border-light) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+            color: black !important;
+        }
+
+        html[data-theme="light"] .custom-option {
+            color: var(--text-dark) !important;
+            border-bottom: 1px solid #f0f4f9;
+        }
+
+        html[data-theme="light"] .current-model-name {
+            color: #1f1f1f !important;
+        }
+
+        [data-theme="light"] .custom-option:hover {
+            background-color: #f1f3f4 !important;
+        }
+
+        [data-theme="light"] .user-profile {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        [data-theme="light"] .credits-text {
+            color: #1f1f1f !important;
+        }
+
+        [data-theme="light"] .credits-amount {
+            color: #1f1f1f !important;
+        }
+
+        [data-theme="light"] .credits-display {
+            color: #1f1f1f !important;
+        }
+
+        /* 5. Меню на "плюсик" (Новый чат/Действия) */
+        [data-theme="light"] .new-chat-menu {
+            background-color: #ffffff;
+            border: 1px solid var(--border-light) !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+        }
+
+        [data-theme="light"] .menu-option {
+            color: #1f1f1f !important;
+        }
+
+        [data-theme="light"] .menu-option:hover {
+            background-color: #f1f3f4 !important;
+            color: #000;
+        }
+
+        [data-theme="light"] .menu-option i {
+            color: #00f2ff !important;
+        }
+
+        [data-theme="light"] .shop-btn-icon {
+            color: black;
+        }
+
+        .shop-btn-icon {
+            color: white;
+        }
+
+        /* Desktop Header Styles - Default */
+        header {
+            display: flex !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            padding: 10px 16px !important;
+            background: transparent !important;
+            border-bottom: none !important;
+            gap: 16px !important;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: fit-content;
+        }
+
+        .header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            margin-left: auto !important;
+        }
+
+        .header-right {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+        }
+
         @media (max-width: 768px) {
-
-            #sidebarToggle {
-                display: block !important;
-            }
-            #creditsBtn .credits-cta {
-                display: none;
-            }
-            #creditsBtn {
-                position: relative;
-               right: 3px;
-                width: 180px;
-            }
-            .nav-links {
-                display: none;
-            }
-            .profile-container {
-                display: flex !important; 
-            }
-
-            .nav-container .left-side {
-                display: flex;
-                align-items: center;
-            }
-
-            .nav-container .left-side .burger {
-                order: 1;
-                margin-right: 15px;
-                margin-left: 0;
-            }
-            .nav-container .left-side .nav-logo {
-                order: 2;
-            }
-
-            .burger {
-                position: relative;
-                top: -7px;
-            }
-
-            .nav-logo {
-                position: relative;
-                left: -15px;
-            }
-
-            .nav-logo a {
-               position: relative;
-               top: -2px;
-            }
-
-            .chat-sidebar {
+            /* Sidebar - Mobile positioning */
+            #sidebar {
                 position: fixed;
                 left: 0;
-                top: 60px;
-                height: 100%;
-                z-index: 100;
-                background: #000;
+                top: 0;
                 width: 260px;
+                height: 100%;
+                background: var(--bg-black);
+                border-right: 1px solid var(--border);
+                z-index: 1001;
                 transform: translateX(-100%);
-                transition: transform 0.28s ease;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: none;
             }
-            .chat-sidebar.active {
+
+            #sidebar.mobile-open {
                 transform: translateX(0);
+                box-shadow: 2px 0 15px rgba(0, 0, 0, 0.5);
             }
-            .suggestions-grid {
-                grid-template-columns: 1fr;
-            }
-            .welcome-title { font-size: 1.5rem; }
 
             .sidebar-overlay {
-                display: none;
                 position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 90;
-                transition: opacity 0.15s ease;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(2px);
+                z-index: 1000;
                 opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                pointer-events: none;
             }
-            .sidebar-overlay.show {
-                display: block;
+
+            .sidebar-overlay.active {
                 opacity: 1;
+                visibility: visible;
+                pointer-events: all;
             }
 
-            .suggestions-grid {
-                display: none;
-            }
-
-            .suggestion-card {
-                display: none;
-            }
-
-            .input-wrapper {
-                transform: none !important; 
-                padding: 10px 15px calc(10px + var(--safe-bottom) + var(--vv-bottom)) !important;
+            header {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 6px 4px !important;
+                background: rgba(0, 0, 0, 0.3) !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+                height: 48px !important;
+                gap: 1px !important;
                 position: relative;
-                bottom: 0;
+                z-index: 999;
             }
 
-            .messages-container {
-                padding-bottom: 20px;
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                flex-shrink: 0;
+            }
+
+            .header-logo-mobile {
+                display: none !important;
+            }
+
+            .app-container {
+                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+
+            .main-container {
+                width: 100%;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sidebar-mini {
+                display: none !important;
+            }
+
+            /* Кнопка меню */
+            .mobile-menu-btn {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 34px !important;
+                height: 34px !important;
+                min-width: 34px !important;
+                background: transparent !important;
+                border: none !important;
+                color: #b4b4b4 !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                border-radius: 8px !important;
+                padding: 0 !important;
+                flex-shrink: 0 !important;
+                transition: background 0.2s ease !important;
+            }
+            
+            .mobile-menu-btn:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+            }
+
+            .mobile-menu-btn:active {
+                background: rgba(255, 255, 255, 0.15) !important;
+            }
+
+            /* Селект моделей */
+            .model-selector {
+                display: flex;
+                align-items: center;
+                padding: 4px 6px !important;
+                font-size: 12px !important;
+                min-width: auto !important;
+                max-width: 110px !important;
+                flex-shrink: 1;
+                background: transparent !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 4px !important;
+                gap: 2px !important;
+                transform: scale(1.2);
+                margin-left: 10px;
+            }
+
+            .model-selector .custom-select {
+                min-width: auto !important;
+                padding: 3px 4px !important;
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                gap: 2px !important;
+            }
+
+            .model-selector .current-model-name {
+                font-weight: 500 !important;
+                font-size: 11px !important;
+                max-width: 85px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+
+            .model-selector .caret {
+                font-size: 8px !important;
+                min-width: auto !important;
+            }
+
+            .model-selector .custom-options {
+                position: fixed !important;
+                top: 48px !important;
+                left: auto !important;
+                right: auto !important;
+                width: auto !important;
+                min-width: 160px !important;
+                display: none !important;
+                max-height: 300px !important;
+                overflow-y: auto !important;
+                background: var(--bg-dark) !important;
+                border: 1px solid var(--border) !important;
+                border-radius: 8px !important;
+                z-index: 10000 !important;
+                list-style: none !important;
+                padding: 4px 0 !important;
+                margin: 0 !important;
+                margin-top: -2px !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+            }
+
+            .model-selector .custom-options.show {
+                display: block !important;
+            }
+
+            .model-selector .custom-options li {
+                padding: 8px 12px !important;
+                cursor: pointer !important;
+                color: #b4b4b4 !important;
+                font-size: 11px !important;
+                white-space: nowrap !important;
+                transition: background 0.2s !important;
+            }
+
+            .model-selector .custom-options li:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+                color: #fff !important;
+            }
+
+            .model-selector .custom-options li.active {
+                background: rgba(0, 242, 255, 0.15) !important;
+                color: #00f2ff !important;
+                font-weight: 500 !important;
+            }
+
+            .bot-icon-to-hide {
+                display: none !important;
+            }
+
+            /* Правая часть хедера */
+            .header-actions {
+                display: flex !important;
+                align-items: center !important;
+                gap: 2px !important;
+                flex-shrink: 0 !important;
+                margin-right: 0px !important;
+            }
+
+            .header-right {
+                display: flex !important;
+                align-items: center !important;
+                gap: 4px !important;
+                flex-shrink: 0 !important;
+                margin-right: 20px !important;
+            }
+
+            .credits-display {
+                padding: 2px 6px !important;
+                font-size: 10px !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 4px !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 2px !important;
+                height: 34px !important;
+                min-width: auto !important;
+                margin-right: 0px !important;
+            }
+
+            .credits-display i {
+                font-size: 9px !important;
+                color: #ffd700 !important;
+            }
+
+            /* Скрываем текст "Credits - Get more" */
+            .credits-display .credits-text {
+                display: none !important;
+            }
+
+            .credits-display span {
+                font-weight: 500 !important;
+                color: #fff !important;
+                font-size: 14px !important;
+            }
+            
+            [data-theme="light"] header {
+                background: #ffffff !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            [data-theme="light"] .credits-display span {
+                color: #1f1f1f !important;
+            }
+
+            /* Аватарка */
+            .profile-trigger {
+                width: 36px !important;
+                height: 36px !important;
+                flex-shrink: 0 !important;
+                padding: 0 !important;
+                margin-right: 0px !important;
             }
 
             .login-btn {
+                width: 30px !important;
+                height: 30px !important;
+                padding: 0 !important;
+                min-width: 30px !important;
+                margin-right: -2px !important;
+            }
+
+            .nav-avatar-small {
+                width: 26px !important;
+                height: 26px !important;
+            }
+
+            .hide-on-mobile {
+                display: none !important;
+            }
+
+            /* Центральный контент */
+            .main-content {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+            }
+
+            .welcome-screen {
+                padding: 15px 0;
+                margin-top: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+            }
+
+            .welcome-container {
+                padding: 20px 8px;
+                text-align: center;
+                width: 100%;
+            }
+
+            .logo-wrapper {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 24px;
+            }
+
+            .welcome-logo-genyxo {
+                transform: scale(1.2);
+            }
+
+            .welcome-text {
+                font-size: 2rem;
+                margin-bottom: 12px;
+            }
+
+            .welcome-subtext {
+                font-size: 1rem;
+                margin-bottom: 32px;
+            }
+
+            .features-grid {
+                display: none !important;
+            }
+
+            .input-wrapper {
+                margin: 0 auto !important;
+                width: calc(100% - 16px) !important;
+                max-width: none !important;
+                padding: 0 !important;
+                align-self: center !important;
+            }
+
+            .chat-input-container {
+                padding: 10px 0 16px 0 !important;
+            }
+
+            .input-form {
+                border-radius: 20px !important;
+                min-height: 44px !important;
+                padding: 8px 12px !important;
+            }
+
+            #userInput {
+                font-size: 14px !important;
+                padding: 6px 0 !important;
+            }
+
+            .send-btn {
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+            }
+
+            .send-btn i {
+                font-size: 14px !important;
+            }
+
+            .plus-btn {
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+            }
+
+            .sidebar-footer {
+                padding: 10px !important;
+                margin-top: auto;
                 position: relative;
-                right: 25px;
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+                margin-bottom: 40px !important;
+            }
+
+            .sidebar-btn {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                background: transparent;
+                border: none;
+                color: #ccc;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background 0.2s;
+                font-size: 14px;
+                text-align: left;
+            }
+
+            .sidebar-mini {
+                display: none !important;
             }
         }
 
+        /* Desktop - скрываем мобильные элементы */
+        @media (min-width: 769px) {
+            #sidebar {
+                position: relative;
+                left: auto;
+                top: auto;
+                width: var(--sidebar-width);
+                height: 100%;
+                background: var(--bg-black);
+                border-right: 1px solid var(--border);
+                z-index: 3500;
+                transform: none;
+                box-shadow: none;
+            }
+
+            #sidebar.mobile-open {
+                transform: none;
+                box-shadow: none;
+            }
+
+            .sidebar-overlay {
+                display: none !important;
+            }
+
+            .mobile-menu-btn {
+                display: none !important;
+            }
+
+            .header-logo-mobile {
+                display: none !important;
+            }
+
+            .app-container {
+                grid-template-columns: auto 1fr;
+            }
+
+            header {
+                padding: 10px 16px !important;
+                height: auto !important;
+                background: transparent !important;
+                border-bottom: none !important;
+                justify-content: flex-start !important;
+                gap: 16px !important;
+            }
+
+            .model-selector {
+                max-width: none !important;
+                order: 1;
+            }
+
+            .model-selector .custom-options {
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                right: auto !important;
+                min-width: 200px !important;
+            }
+
+            .header-actions {
+                margin-left: auto !important;
+                gap: 12px !important;
+                order: 2;
+            }
+
+            .credits-display {
+                padding: 6px 14px !important;
+                font-size: 13px !important;
+                background: transparent !important;
+                border: none !important;
+            }
+
+            .profile-trigger {
+                width: 45px !important;
+                height: 45px !important;
+            }
+
+            .login-btn {
+                width: 45px !important;
+                height: 45px !important;
+            }
+
+            .sidebar-mini {
+                display: flex !important;
+            }
+        }
     </style>
 
-    <script>
+        <script>
         (function() {
             const docEl = document.documentElement;
 
@@ -913,188 +1866,363 @@
         ]
     }
     </script>
+
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="left-side">
-                <button class="burger" id="sidebarToggle" aria-label="Menu" style="display: none; background:none; border:none; color:white; font-size:1.5rem; margin-right: 15px;">
-                    <i class="fas fa-bars"></i>
-                </button>
+    <div class="app-container" id="app">
+        <aside id="sidebar">
+            <div class="sidebar-full">
+                <div class="sb-header">
+                    <div class="sb-logo-area">
+                        <div class="logo-circle">
+                            <a href="index.html" aria-label="Genyxo Home" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center; cursor: pointer;">
+                                <img src="./images/logo.svg" width="24" height="24" fetchpriority="high" class="chat-logo-icon" alt="Logo">
+                            </a>
+                        </div>
+                        <span>Genyxo AI</span>
+                    </div>
+                    <button class="icon-btn" onclick="toggleSidebar()" data-tooltip="Закрыть сайдбар" style="border:none; width:32px; height:32px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+                    </button>
+                </div>
 
-                <div class="nav-logo">
-                    <a href="index.html" aria-label="Genyxo Home" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
-                        <img src="./images/logo.svg" width="40" height="40" fetchpriority="high" class="logo-icon" alt="Logo">
-                        <span>Genyxo</span>
-                    </a>
+                <div class="sb-actions">
+                    <button class="icon-btn new-chat" onclick="location.reload()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        <span data-i18n="chat.new_chat">New Chat</span>
+                    </button>
+                    <button class="icon-btn" data-tooltip="Поиск">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    </button>
+                    <button class="icon-btn" data-tooltip="Архив">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+                    </button>
+                </div>
+
+                <div class="history-container">
+                    <div style="color: #666; font-size: 12px; padding: 10px 0;">Сегодня</div>
+                    <div class="history-item">Как написать чистый код на JS</div>
+                    <div class="history-item">Анализ маркетинговой стратегии</div>
+                    <div class="history-item">Рецепт идеального кофе</div>
+                    <div class="history-item">План тренировок на неделю</div>
+                    <div class="history-item">История запроса 5</div>
+                    <div class="history-item">История запроса 6</div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <div class="settings-wrapper">
+                        <div class="gemini-menu glass">
+                            <a href="#" class="gemini-menu-item">
+                                <i class="fas fa-history"></i>
+                                <span>Action History</span>
+                            </a>
+                            <div class="menu-item-wrapper">
+                                <a href="#" class="gemini-menu-item" onclick="return false;"> <i class="fas fa-magic"></i> <span>Theme</span>
+                                    <i class="fas fa-chevron-right chevron-right"></i> 
+                                </a>
+
+                                <div class="theme-submenu" id="themeMenu">
+                                    
+                                    <div class="submenu-item" onclick="setTheme('system')" id="theme-system">
+                                        <span>System</span>
+                                        <i class="fas fa-check check-icon"></i>
+                                    </div>
+
+                                    <div class="submenu-item" onclick="setTheme('dark')" id="theme-dark">
+                                        <span>Dark</span>
+                                        <i class="fas fa-check check-icon"></i>
+                                    </div>
+
+                                    <div class="submenu-item" onclick="setTheme('light')" id="theme-light">
+                                        <span>Light</span>
+                                        <i class="fas fa-check check-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="support.html" class="gemini-menu-item">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Help Center</span>
+                            </a>
+                            <a href="mailto:info@genyxo.com" class="gemini-menu-item">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Send Feedback</span>
+                            </a>
+                            <div class="menu-divider"></div>
+                            <a href="profile.html" class="gemini-menu-item">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                        </div>
+
+                        <button class="sidebar-btn settings-trigger">
+                            <i class="fas fa-bars"></i> <span class="link-text">Menu</span>
+                        </button>
+                    </div>  
                 </div>
             </div>
 
-            <div class="right-side">
-                <div class="nav-links">
-                    <a href="index.html" class="nav-link" aria-label="Back To Home">Home</a>
-                    <a href="chat.html" class="nav-link active" aria-label="Chat Page">Chat</a>
+            <div class="sidebar-mini">
+                <div class="mini-btn logo-toggle" onclick="toggleSidebar()" data-tooltip="Открыть сайдбар">
+                    <div class="logo-circle">
+                        <img src="./images/logo.svg" width="24" height="24" fetchpriority="high" class="logo-icon" alt="Logo">
+                    </div>
+                    <div class="icon-alt">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+                    </div>
                 </div>
 
-                <button id="creditsBtn" class="creditsBtn primary" aria-label="Get More Credits" onclick="location.href='index.html#products'" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); min-width: auto; padding: 0.5rem 1rem;">
-                    <i class="fas fa-coins" style="color: #ffd700;"></i> 
-                    <span id="creditBalance">0</span> Credits<span class="credits-cta"> - Get more</span>
-                </button>
+                <div class="mini-btn" data-tooltip="Новый чат">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                </div>
 
-                <div class="profile-container" style="display: flex; gap: 10px; align-items: center;">
+                <div class="mini-btn" data-tooltip="Поиск">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
 
-                    <button class="login-btn" id="profileToggleBtn" id="loginBtn" aria-label="Login / Signup" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 35px; height: 35px;" alt="Avatar">
-                    </button>
-                    
-                    <div class="profile-dropdown glass" id="profilePanel">
-                        <button class="close-profile-panel" aria-label="Close Profile Dropdown" id="closeProfilePanel">✕</button>
-                        
-                        <div class="dropdown-header">
-                            <div class="user-details">
-                                <img src="" alt="Avatar" class="avatar-big dropdown-avatar" id="dropdownAvatars">
-                                <div class="user-text">
-                                    <h3 id="menuName">Loading...</h3>
-                                    <p id="menuEmail">loading@gmail.com</p>
+                <div style="margin-top: auto; display: flex; flex-direction: column; align-items: center;">
+                    <div class="mini-btn" data-tooltip="Магазин">
+                    <a class="shop-btn-icon" href="index.html#products">   
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                    </a> 
+                    </div>
+                    <div class="sidebar-footer">
+                        <div class="settings-wrapper" data-tooltip="Menu">
+                            <div class="gemini-menu glass">
+                            <a href="#" class="gemini-menu-item">
+                                    <i class="fas fa-history"></i>
+                                    <span>Action History</span>
+                                </a>
+                                <div class="menu-item-wrapper">
+                                    <a href="#" class="gemini-menu-item" onclick="return false;"> <i class="fas fa-magic"></i> <span>Theme</span>
+                                        <i class="fas fa-chevron-right chevron-right"></i> </a>
+
+                                    <div class="theme-submenu" id="themeMenu">
+                                        
+                                        <div class="submenu-item" onclick="setTheme('system')" id="theme-system">
+                                            <span>System</span>
+                                            <i class="fas fa-check check-icon"></i>
+                                        </div>
+
+                                        <div class="submenu-item" onclick="setTheme('dark')" id="theme-dark">
+                                            <span>Dark</span>
+                                            <i class="fas fa-check check-icon"></i>
+                                        </div>
+
+                                        <div class="submenu-item" onclick="setTheme('light')" id="theme-light">
+                                            <span>Light</span>
+                                            <i class="fas fa-check check-icon"></i>
+                                        </div>
+                                    </div>
                                 </div>
+                                <a href="support.html" class="gemini-menu-item">
+                                    <i class="fas fa-question-circle"></i>
+                                    <span>Help Center</span>
+                                </a>
+                                <a href="mailto:info@genyxo.com" class="gemini-menu-item">
+                                    <i class="fas fa-question-circle"></i>
+                                    <span>Send Feedback</span>
+                                </a>
+                                <div class="menu-divider"></div>
+                                <a href="profile.html" class="gemini-menu-item">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Settings</span>
+                                </a>
                             </div>
-                        </div>
 
-                        <div class="credits-card">
-                            <div class="credits-top">
-                                <div class="credits-amount">
-                                    <span class="icon-flask">🪙</span>
-                                    <span class="amount-number" id="menuCredits">0</span>
-                                </div>
-                            </div>
-                            <div class="credits-meta">
-                                Available Balance
-                            </div>
-                            <a href="index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
-                                <button class="upgrade-full-btn" aria-label="Buy Credits">Buy Credits</button>
-                            </a>
-                        </div>
-
-                        <div class="dropdown-menu">
-                            <a href="profile.html" class="menu-item" aria-label="Profile">
-                                <i class="fas fa-user-cog"></i> <span>Profile</span>
-                            </a>
-
-                            <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;" aria-label="Notifications">
-                                <div style="display:flex; align-items:center;">
-                                    <i class="fas fa-bell"></i> 
-                                    <span data-i18n="menu.notifications">Notifications</span>
-                                </div>
-                                <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
-                            </a>
-
-                            <a href="support.html" class="menu-item" aria-label="Help Center">
-                                <i class="fas fa-question-circle"></i> <span>Help Center</span>
-                            </a>
-
-                            <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
-                                <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
-                                <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
-                            </a>
-
-                        </div>
-
-                        <div class="dropdown-footer">
-                            <button class="menu-item logout-item" aria-label="Log out" id="dropdownLogoutBtn">
-                                <i class="fas fa-sign-out-alt"></i> <span>Log out</span>
+                            <button class="sidebar-btn settings-trigger">
+                                <i class="fas fa-bars"></i> <span class="link-text">Menu</span>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </nav>
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
-    
-    <div class="chat-layout">
-        <aside class="chat-sidebar" id="sidebar">
-            <button class="new-chat-btn" aria-label="New Chat" onclick="location.reload()">
-                <i class="fas fa-plus"></i> <span data-i18n="chat.new_chat">New Chat</span>
-            </button>
-            
-            <div class="history-label" data-i18n="chat.history_title">History</div>
-            <div class="history-list" id="historyList">
-                <div style="font-size:0.85rem; color: #666; padding: 10px 0;" data-i18n="chat.no_history">No messages yet</div>
-            </div>
         </aside>
 
-        <main class="chat-main">
-            
-            <div class="chat-header">
-                <div style="font-weight: 600; color: #fff;">Genyxo AI</div>
-                
-                <div class="model-select-wrapper">
-                    <i class="fas fa-robot" style="color: #10e6cc;"></i>
-
-                    <div class="custom-select" id="customModelSelect" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
-                        <span class="current">GPT-4o (40 cr)</span>
-                        <i class="fas fa-chevron-down caret"></i>
-                        <ul class="custom-options" role="listbox"></ul>
-                    </div>
-
-                    <select id="modelSelect" style="display:none;">
-                        <option value="openai/gpt-5.1" selected>GPT-5.1 (150 cr)</option>
-                        <option value="openai/gpt-5-mini">GPT-5 (70 cr)</option>
-                        <option value="openai/gpt-5-nano">GPT-5 Mini (45 cr)</option>
-                        <option value="openai/gpt-4.1">GPT-4.1 (55 cr)</option>
-                        <option value="openai/gpt-4.1-mini">GPT-4 Mini (25 cr)</option>
-                        <option value="openai/gpt-4o">GPT-4o (40 cr)</option>
-                        <option value="openai/gpt-4o-mini">GPT-4o Mini (20 cr)</option>
-                        <option value="openai/o1-preview">GPT-o1 (100 cr)</option>
-                        <option value="openai/o3-reasoning">GPT-o3 Reasoning (150 cr)</option>
-                        <option value="openai/dall-e-3">DALL-E Image (120 cr)</option>
-                        <option value="kling-video">Kling Video (500 cr)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="welcome-screen" id="welcomeScreen">
-                <div class="welcome-logo">
-                    <i class="fas fa-atom"></i>
-                </div>
-                <h1 class="welcome-title" data-i18n="chat.welcome_title">Genyxo AI: Advanced Chatbot Hub</h1>
-                <p class="welcome-subtitle" data-i18n="chat.welcome_subtitle">
-                    Your AI assistant designed to help you with all your needs. Get started by selecting a suggestion below or typing your own question!
-                </p>
-
-                <div class="suggestions-grid">
-                    <div class="suggestion-card" onclick="useSuggestion(this)">
-                        <div class="suggestion-icon"><i class="fas fa-rocket"></i></div>
-                        <div class="suggestion-text" data-i18n="chat.suggestion_1">Help me build a new website</div>
-                    </div>
-                    <div class="suggestion-card" onclick="useSuggestion(this)">
-                        <div class="suggestion-icon"><i class="fas fa-code"></i></div>
-                        <div class="suggestion-text" data-i18n="chat.suggestion_2">I want to link my domain to services</div>
-                    </div>
-                    <div class="suggestion-card" onclick="useSuggestion(this)">
-                        <div class="suggestion-icon"><i class="fas fa-paint-brush"></i></div>
-                        <div class="suggestion-text" data-i18n="chat.suggestion_3">Can you suggest me good domain names?</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="messages-container" id="chatBox">
-                </div>
-
-            <div class="typing-indicator" id="typingIndicator">
-                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-            </div>
-
-            <div class="input-wrapper">
-                <div class="chat-input-wrapper">
-                    <textarea class="chat-textarea" id="userInput" rows="1" placeholder="Ask AI anything..." autocomplete="off" data-i18n="chat.input_placeholder"></textarea>
-                    <button class="send-btn" aria-label="Send message" id="sendBtn">
-                        <i class="fas fa-paper-plane"></i>
+        <main class="main-container">
+            <header>
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+                        <i class="fa-solid fa-bars-staggered"></i>
                     </button>
                 </div>
-                <div class="disclaimer" data-i18n="chat.disclaimer">
-                    AI is smart, but not perfect. Double-check important info!
+
+                <div class="model-select-wrapper model-selector" id="model-selector">
+                        <i class=" fa-solid fas fa-robot bot-icon-to-hide" style="color: #10e6cc;"></i>
+
+                        <div class="custom-select" id="customModelSelect" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="current-model-name">GPT-4o (40 cr)</span>
+                            <i class="fas fa-chevron-down caret"></i>
+                            <ul class="custom-options" role="listbox"></ul>
+                        </div>
+
+                        <select id="modelSelect" style="display:none;">
+                            <option value="openai/gpt-5.1" selected>GPT-5.1 (150 cr)</option>
+                            <option value="openai/gpt-5-mini">GPT-5 (70 cr)</option>
+                            <option value="openai/gpt-5-nano">GPT-5 Mini (45 cr)</option>
+                            <option value="openai/gpt-4.1">GPT-4.1 (55 cr)</option>
+                            <option value="openai/gpt-4.1-mini">GPT-4 Mini (25 cr)</option>
+                            <option value="openai/gpt-4o">GPT-4o (40 cr)</option>
+                            <option value="openai/gpt-4o-mini">GPT-4o Mini (20 cr)</option>
+                            <option value="openai/o1-preview">GPT-o1 (100 cr)</option>
+                            <option value="openai/o3-reasoning">GPT-o3 Reasoning (150 cr)</option>
+                            <option value="openai/dall-e-3">DALL-E Image (120 cr)</option>
+                            <option value="kling-video">Kling Video (500 cr)</option>
+                        </select>
+                </div>
+
+                <div class="header-actions">
+
+                    <div class="header-right">
+                        <div class="credits-display" id="credits-btn">
+                            <button id="creditsBtn" class="creditsBtn primary" aria-label="Get More Credits" onclick="location.href='index.html#products'" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); min-width: auto; padding: 0.5rem 1rem;">
+                                <i class="fas fa-coins" style="color: #ffd700;"></i> 
+                                <span id="creditBalance credits-count">0</span> Credits<span class="credits-cta hide-on-mobile credits-text"> - Get more</span>
+                            </button>
+                        </div>
+
+                        <div class="profile-container profile-trigger" id="profile-trigger" style="display: flex; gap: 10px; align-items: center;">
+
+                            <button class="login-btn" id="profileToggleBtn" id="loginBtn" aria-label="Login / Signup" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 35px; height: 35px;" alt="Avatar">
+                            </button>
+                            
+                            <div class="profile-dropdown glass" id="profilePanel">
+                                <button class="close-profile-panel" aria-label="Close Profile Dropdown" id="closeProfilePanel">✕</button>
+                                
+                                <div class="dropdown-header">
+                                    <div class="user-details">
+                                        <img src="" alt="Avatar" class="avatar-big dropdown-avatar" id="dropdownAvatars">
+                                        <div class="user-text">
+                                            <h3 id="menuName">Loading...</h3>
+                                            <p id="menuEmail">loading@gmail.com</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="credits-card">
+                                    <div class="credits-top">
+                                        <div class="credits-amount">
+                                            <span class="icon-flask">🪙</span>
+                                            <span class="amount-number" id="menuCredits">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="credits-meta">
+                                        Available Balance
+                                    </div>
+                                    <a href="index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
+                                        <button class="upgrade-full-btn" aria-label="Buy Credits">Buy Credits</button>
+                                    </a>
+                                </div>
+
+                                <div class="dropdown-menu">
+                                    <a href="profile.html" class="menu-item" aria-label="Profile">
+                                        <i class="fas fa-user-cog"></i> <span>Profile</span>
+                                    </a>
+
+                                    <a href="notifications.html" class="menu-item" id="menuNotificationsLink" style="justify-content: space-between;" aria-label="Notifications">
+                                        <div style="display:flex; align-items:center;">
+                                            <i class="fas fa-bell"></i> 
+                                            <span data-i18n="menu.notifications">Notifications</span>
+                                        </div>
+                                        <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
+                                    </a>
+
+                                    <a href="support.html" class="menu-item" aria-label="Help Center">
+                                        <i class="fas fa-question-circle"></i> <span>Help Center</span>
+                                    </a>
+
+                                    <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
+                                        <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
+                                        <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
+                                    </a>
+
+                                </div>
+
+                                <div class="dropdown-footer">
+                                    <button class="menu-item logout-item" aria-label="Log out" id="dropdownLogoutBtn">
+                                        <i class="fas fa-sign-out-alt"></i> <span>Log out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div id="chatContainer">
+                <div class="welcome-container" id="welcomeScreen">
+                    <div class="logo-wrapper">
+                        <div class="glow-effect"></div>
+                        <div class="logo-inner">
+                            <img class="welcome-logo-genyxo" src="./images/logo.svg" width="46" height="46" fetchpriority="high" alt="Logo">
+                        </div>
+                    </div>
+                    <h1 class="welcome-text">Hi, I'm <span class="text-gradient">Genyxo</span></h1>
+                    <p class="welcome-subtext">How can I help you today?</p>
+                    <div class="features-grid">
+                        <div class="feature-card" onclick="setInput('Generate a futuristic image')">
+                            <i class="fas fa-image cyan-icon"></i>
+                            <span>Image Generation</span>
+                        </div>
+                        <div class="feature-card" onclick="setInput('Write a Python script')">
+                            <i class="fas fa-code cyan-icon"></i>
+                            <span>Code Assistant</span>
+                        </div>
+                        <div class="feature-card" onclick="setInput('Create a short video')">
+                            <i class="fas fa-video cyan-icon"></i>
+                            <span>Video Creation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="input-wrapper" id="dropZone">
+                        <div id="dropOverlay" class="drop-overlay">
+                            <div class="drop-message">
+                                <i class="fas fa-cloud-upload-alt"></i> 
+                                <span>Drop the file here</span>
+                                <span>Drop up to 5 files (max 100MB)</span>
+                            </div>
+                        </div>
+
+                        <div class="unified-preview-area" id="unifiedPreviewArea">
+                            <div class="preview-scroll-container">
+                                <div id="allPreviewItems" class="all-preview-items"></div>
+                            </div>
+                        </div>
+
+                        <div class="input-form-wrapper">
+                            <form class="input-form" id="chatForm">
+                                <div class="attachment-menu" id="attachmentMenu">
+                                    <label class="plus-menu-item">
+                                        <i class="fas fa-image cyan-icon"></i>
+                                        <span class="text-box">Add Photo</span>
+                                        <input type="file" accept="image/*" hidden id="photoInput" onchange="handleFileSelect(this)">
+                                    </label>
+                                    <label class="plus-menu-item">
+                                        <i class="fas fa-file-alt cyan-icon"></i>
+                                        <span class="text-box">Add Files</span>
+                                        <input type="file" hidden id="fileInput" onchange="handleFileSelect(this)">
+                                    </label>
+                                </div>  
+
+                                <button type="button" class="plus-btn" id="plusBtn" data-tooltip="Add Files">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                
+                                <div class="input-content">
+                                    <div class="textarea-wrapper">
+                                        <textarea id="userInput" placeholder="Message Genyxo..." rows="1"></textarea>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="send-btn" id="sendBtn">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="footer-text">AI is smart, but not perfect. Double-check important info!</div>
                 </div>
             </div>
         </main>
@@ -1143,608 +2271,409 @@
                 </div>
             </div>
         </div>
-    </section>
 
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="js/i18n.js" defer></script>
-    <script src="js/script.js" defer></script>
+   <script src="js/i18n.js" defer></script>
+    <script src="script.js" defer></script>
+    <script src="chat.js" defer></script>
 
     <script>
+        let attachedFiles = [];
 
-        let currentChatId = null; 
-        let conversations = [];
-
-        const token = localStorage.getItem('authToken');
-
-        const chatBox = document.getElementById('chatBox');
-        const welcomeScreen = document.getElementById('welcomeScreen');
-        const userInput = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const typingIndicator = document.getElementById('typingIndicator');
-        const creditBalanceEl = document.getElementById('creditBalance');
-        const modelSelect = document.getElementById('modelSelect');
-        const historyList = document.getElementById('historyList');
-
-        const navAvatarImg = document.getElementById('navAvatarImg');
-
-        const toggleBtn = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-        function toggleChatView(hasMessages) {
-            if (hasMessages) {
-                welcomeScreen.style.display = 'none';
-                chatBox.style.display = 'flex';
-            } else {
-                welcomeScreen.style.display = 'flex';
-                chatBox.style.display = 'none';
-            }
+        function toggleSidebar() {
+            document.getElementById('app').classList.toggle('sidebar-closed');
         }
 
-        function renderHistoryList() {
-            historyList.innerHTML = '';
-
-            if (conversations.length === 0) {
-                historyList.innerHTML = '<div style="font-size:0.85rem; color: #666; padding: 10px 0;" data-i18n="chat.no_history">No messages yet</div>';
-                return;
-            }
-
-            conversations.forEach(chat => {
-                const div = document.createElement('div');
-                div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
-                
-                div.onclick = () => selectChat(chat.id);
-                div.innerHTML = `
-                    <span class="chat-title">
-                        <i class="far fa-message" style="margin-right:8px; font-size:0.8rem;"></i>
-                        ${chat.title}
-                    </span>
-                    <button class="chat-options-btn" aria-label="Chat Details" onclick="toggleDropdown(event, ${chat.id})">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                    <div class="options-dropdown" id="dropdown-${chat.id}">
-                        <div class="dropdown-item" onclick="renameChat(${chat.id})">
-                            <i class="fas fa-pencil-alt"></i> Rename
-                        </div>
-                        <div class="dropdown-item delete" onclick="deleteChat(${chat.id})">
-                            <i class="fas fa-trash"></i> Delete
-                        </div>
-                    </div>
-                `;
-                historyList.appendChild(div);
-            });
-        }
-
-        async function selectChat(id) {
-            if (currentChatId === id) return;
-            
-            currentChatId = id;
-            renderHistoryList();
-            
-            chatBox.innerHTML = ''; 
-            toggleChatView(true);
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const messages = await res.json();
-                    messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        function startNewChat() {
-            currentChatId = null;
-            chatBox.innerHTML = '';
-            renderHistoryList();
-            toggleChatView(false);
-            
-            history.pushState({}, '', window.location.pathname);
-        }
-
-        async function loadConversations() {
-            try {
-                const res = await fetch(`${API_BASE_URL}/chat/conversations`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    conversations = await res.json();
-                    renderHistoryList();
-                    
-                    if (conversations.length > 0 && !currentChatId) {
-                        selectChat(conversations[0].id);
-                    } else if (conversations.length === 0) {
-                        startNewChat();
-                    }
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        /* function appendMessage(sender, text, type = 'text') {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}-message`;
-            
-            let senderClass = 'bot-message';
-
-            if (sender === 'user') senderClass = 'user-message';
-            if (sender === 'error') senderClass = 'error-message';
-
-            msgDiv.className = `message ${senderClass}`;
-
-            if (type === 'video') {
-                msgDiv.innerHTML = `<video src="${text}" controls style="max-width: 100%; border-radius: 12px;"></video>`;
-            } else {
-                if (sender === 'user') {
-                    msgDiv.textContent = text;
-                } else if (sender === 'error') {
-                    msgDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
-                } else {
-                    msgDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
-                }
-            }
-            
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        } */
-
-        function appendMessage(sender, text, model = '') {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
-
-            msgDiv.innerHTML = `
-                <div class="message-content">
-                    ${sender === 'bot' ? (text ? marked.parse(text) : '') : escapeHTML(text)}
-                </div>
-                ${model ? `<div class="message-meta">${model}</div>` : ''}
-            `;
-
-            chatBox.appendChild(msgDiv);
-            scrollToBottom();
-            return msgDiv;
-        }
-
-        function escapeHTML(str) {
-            const p = document.createElement('p');
-            p.textContent = str;
-            return p.innerHTML;
-        }
-
-        document.querySelector('.new-chat-btn').onclick = (e) => {
-            e.preventDefault();
-            startNewChat();
-        };
-
-        function adjustHeight() {
-            userInput.style.height = 'auto'; 
-            userInput.style.height = (userInput.scrollHeight) + 'px';
-        }
-
-        function useSuggestion(text) {
-            if (userInput) {
-                userInput.value = text;
-                userInput.focus();
-                adjustHeight();
-            }
-        }
-
-        function showBotLoading() {
-            const div = document.createElement('div');
-            div.className = 'message bot-message loading';
-            div.id = 'temp-loader';
-            div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-            return div;
-        }
-
-        function updateUrl(id) {
-            const newUrl = `${window.location.pathname}?id=${id}`;
-            window.history.pushState({ path: newUrl }, '', newUrl);
-        }
-
-        async function sendMessage() {
-            const text = userInput.value.trim();
-            const token = localStorage.getItem('authToken');
-            const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
-
-            if (!text || !token || sendBtn.disabled) return;
-
-            sendBtn.disabled = true;
-            userInput.disabled = true;
-
-            if (!window.currentChatId) toggleChatView(true);
-
-            appendMessage('user', text);
-            userInput.value = '';
-            userInput.style.height = 'auto';
-
-            const botBubble = appendMessage('bot', '');
-            botBubble.classList.add('streaming');
-
-            const contentDiv = botBubble.querySelector('.message-content') || botBubble;
-            let fullContent = "";
-
-            try {
-                const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${window.currentChatId ? `&conversationId=${window.currentChatId}` : ''}`;
-                
-                const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.message || 'Server error');
-                }
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-
-                    const chunk = decoder.decode(value);
-                    const lines = chunk.split('\n');
-
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const jsonStr = line.replace('data: ', '').trim();
-                            if (!jsonStr || jsonStr === '[DONE]') continue;
-                            
-                            try {
-                                const data = JSON.parse(jsonStr);
-
-                                if (data.token) {
-                                    fullContent += data.token;
-                                    contentDiv.innerHTML = marked.parse(fullContent);
-                                }
-
-                                if (data.conversationId && !window.currentChatId) {
-                                    window.currentChatId = data.conversationId;
-                                    updateUrl(data.conversationId);
-                                    if (typeof loadConversations === 'function') await loadConversations();
-                                }
-
-                                if (data.messageId && (selectedModel.includes('kling') || selectedModel.includes('luma'))) {
-                                    botBubble.classList.remove('streaming');
-                                    startVideoPolling(data.messageId, contentDiv);
-                                    reader.cancel(); 
-                                    break;
-                                }
-
-                                if (data.status === 'done' && data.creditBalance !== undefined) {
-                                    updateBalanceUI(data.creditBalance);
-                                }
-                            } catch (e) { 
-                                console.error("JSON parse error in stream:", e); 
-                            }
-                        }
-                    }
-                    scrollToBottom();
-                }
-            } catch (err) {
-                showToast(err.message, 'error');
-                botBubble.innerHTML = `❌ Error: ${err.message}`;
-            } finally {
-                botBubble.classList.remove('streaming');
-                sendBtn.disabled = false;
-                userInput.disabled = false;
-                userInput.focus();
-            }
-        }
-
-        window.useSuggestion = function(cardElement) {
-            const text = cardElement.querySelector('.suggestion-text').innerText;
-            userInput.value = text;
-            sendMessage();
-        }
-
-        async function startVideoPolling(messageId, element) {
-            let attempts = 0;
-            const maxAttempts = 60;
-            const token = localStorage.getItem('authToken');
-
-            element.innerHTML = `
-                <div class="video-loading-status">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span class="status-text">Magic is happening... Generating your video</span>
-                </div>
-            `;
-
-            const interval = setInterval(async () => {
-                attempts++;
-                
-                try {
-                    const res = await fetch(`${API_BASE_URL}/chat/message-status/${messageId}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (!res.ok) throw new Error('Failed to fetch status');
-
-                    const data = await res.json();
-
-                    if (data.isReady && data.videoUrl) {
-                        clearInterval(interval);
-                        element.innerHTML = `
-                            <div class="video-wrapper">
-                                <video controls poster="">
-                                    <source src="${data.videoUrl}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                                <div class="video-actions">
-                                    <a href="${data.videoUrl}" target="_blank" class="download-btn">
-                                        <i class="fas fa-download"></i> Download Video
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                        scrollToBottom();
-                        return;
-                    }
-
-                    if (data.status === 'error' || (data.content && data.content.includes('❌'))) {
-                        clearInterval(interval);
-                        element.innerHTML = `<div class="error-box">❌ Generation failed: ${data.content || 'Unknown error'}</div>`;
-                        return;
-                    }
-
-                    if (attempts >= maxAttempts) {
-                        clearInterval(interval);
-                        element.innerHTML = `<div class="error-box">⚠️ Generation is taking longer than expected. Please check your history in a few minutes.</div>`;
-                    }
-
-                } catch (e) {
-                    console.error("Polling error:", e);
-                }
-            }, 5000);
-        }
-
-        function scrollToBottom() {
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function appendError(msg) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message bot';
-            msgDiv.innerHTML = `
-                 <div class="avatar" style="background:#e74c3c; color:white;"><i class="fas fa-exclamation"></i></div>
-                <div class="message-content" style="color:#ff6b6b; border-color:#e74c3c;">
-                    ${msg}
-                </div>
-            `;
-            chatBox.appendChild(msgDiv);
-            scrollToBottom();
-        }
-
-        async function initChat() {
-            try {
-                const profileRes = await fetch(`${API_BASE_URL}/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (profileRes.ok) {
-                    const user = await profileRes.json();
-                    updateBalanceUI(user.credits || 0);
-
-                    if (navAvatarImg) navAvatarImg.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                    
-                    const dropdownAv = document.getElementById('dropdownAvatars');
-                    if (dropdownAv) dropdownAv.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-                    
-                    if (menuName) menuName.textContent = user.name || 'User';
-                    if (menuEmail) menuEmail.textContent = user.email || '';
-                    if (menuCredits) menuCredits.textContent = user.credits || 0;
-                }
-
-                if (!token) {
-                    console.warn("No token found, skipping history load.");
-                    toggleChatView(false);
-                    return;
-                }
-
-                const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (historyRes.status === 401) {
-                    console.error("User not authorized");
-                    return;
-                }
-                
-                const contentType = historyRes.headers.get("content-type");
-                if (historyRes.ok && contentType && contentType.includes("application/json")) {
-                    const history = await historyRes.json();
-                    
-                    if (Array.isArray(history) && history.length > 0) {
-                        toggleChatView(true);
-                        history.forEach(msg => {
-                            appendMessage(msg.sender, msg.content, msg.model);
-                        });
-                    } else {
-                        toggleChatView(false);
-                    }
-                } else {
-                    console.warn("Chat history is unavailable or returned an error. Loading empty chat.");
-                    toggleChatView(false); 
-                }
-
-            } catch (e) {
-                console.error("Critical initialization error:", e);
-                toggleChatView(false);
-            }
-        }
-
-        window.toggleDropdown = function(e, id) {
-            e.stopPropagation();
-            document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
-            const dropdown = document.getElementById(`dropdown-${id}`);
-            if(dropdown) dropdown.classList.toggle('show');
-        }
-
-        window.addEventListener('click', () => {
-            document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
+        const tx = document.getElementById('userInput');
+        tx.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
         });
 
-        window.renameChat = async function(id) {
-            const newTitle = prompt("New chat name:");
-            if(!newTitle) return;
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/chat/conversation/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ title: newTitle })
-                });
-                if(res.ok) {
-                    const chat = conversations.find(c => c.id === id);
-                    if(chat) chat.title = newTitle;
-                    renderHistoryList();
-                }
-            } catch(e) { showToast("Error Renaming Chat!", "error");  }
+        function setInput(text) {
+            const input = document.getElementById('userInput');
+            input.value = text;
+            input.focus();
         }
 
-        window.deleteChat = async function(id) {
-            if(!confirm("Delete this chat?")) return;
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/chat/conversation/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if(res.ok) {
-                    conversations = conversations.filter(c => c.id !== id);
-                    renderHistoryList();
-                    if(currentChatId === id) startNewChat();
-                }
-            } catch(e) { showToast("Error Deleting Chat!", "error");  }
+        // Helper function to format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        // Unified preview rendering function
+        function renderAllPreviews() {
+            const previewContainer = document.getElementById('allPreviewItems');
+            const featuresGrid = document.querySelector('.features-grid');
+            previewContainer.innerHTML = '';
+
+            attachedFiles.forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    // Image preview
+                    const reader = new FileReader();
+                    const div = document.createElement('div');
+                    div.className = 'unified-preview-item unified-preview-img';
+                    reader.onload = (e) => {
+                        div.innerHTML = `
+                            <img src="${e.target.result}" alt="preview" title="${file.name}">
+                            <button type="button" class="unified-remove-btn" onclick="removeFile(${index})" title="Remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                    previewContainer.appendChild(div);
+                } else {
+                    // File preview with better layout
+                    const div = document.createElement('div');
+                    div.className = 'unified-preview-item unified-preview-file';
+                    const fileName = file.name.length > 30 ? file.name.substring(0, 27) + '...' : file.name;
+                    const fileSize = formatFileSize(file.size);
+                    
+                    div.innerHTML = `
+                        <div class="unified-preview-file-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="unified-preview-file-info">
+                            <div class="unified-preview-file-name" title="${file.name}">${fileName}</div>
+                            <div class="unified-preview-file-size">${fileSize}</div>
+                        </div>
+                        <button type="button" class="unified-remove-btn" onclick="removeFile(${index})" title="Remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    previewContainer.appendChild(div);
+                }
+            });
+
+            // Show/hide preview area and feature cards based on content
+            const previewArea = document.getElementById('unifiedPreviewArea');
+            if (attachedFiles.length > 0) {
+                previewArea.classList.add('has-items');
+                // Hide feature cards when files are added
+                if (featuresGrid) {
+                    featuresGrid.classList.add('hidden');
+                }
+            } else {
+                previewArea.classList.remove('has-items');
+                // Check if input has text, if not show feature cards
+                const userInput = document.getElementById('userInput');
+                if (userInput && !userInput.value.trim()) {
+                    if (featuresGrid) {
+                        featuresGrid.classList.remove('hidden');
+                    }
+                }
+            }
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const newFiles = Array.from(input.files);
+                const MAX_FILES = 5;
+                const MAX_SIZE_MB = 100;
+
+                for (let file of newFiles) {
+                    if (attachedFiles.length >= MAX_FILES) {
+                        alert("Maximum 5 files");
+                        break;
+                    }
+
+                    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                        alert(`File ${file.name} exceeds 100MB and won't be added.`);
+                        continue;
+                    }
+
+                    attachedFiles.push(file);
+                }
+
+                renderAllPreviews();
+                
+                const menu = document.getElementById('attachmentMenu');
+                if (menu) menu.classList.remove('active');
+
+                input.value = ''; 
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
-            if(window.i18n && typeof window.i18n.init === 'function') {
-                window.i18n.init().then(initChat);
-            } else {
-                initChat();
-            }
-            loadConversations();
-        });
+            const fileInput = document.getElementById('fileInput');
+            const plusBtn = document.getElementById('plusBtn');
+            const attachMenu = document.getElementById('attachmentMenu');
+            const userInput = document.getElementById('userInput');
+            const settingsWrappers = document.querySelectorAll('.settings-wrapper');
 
-        if (toggleBtn && sidebar) {
-            toggleBtn.addEventListener('click', () => {
-                const opened = sidebar.classList.toggle('active');
-                if (sidebarOverlay) sidebarOverlay.classList.toggle('show', opened);
-            });
-        }
+            const dropZone = document.getElementById('dropZone');
+            const dropOverlay = document.getElementById('dropOverlay');
 
-        if (sidebarOverlay && sidebar) {
-            sidebarOverlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('show');
-            });
-        }
+            const MAX_FILES = 5;
+            const MAX_SIZE_MB = 100;
 
-        (function(){
-            const native = document.getElementById('modelSelect');
-            const custom = document.getElementById('customModelSelect');
-            if (!native || !custom) return;
-
-            const optionsList = custom.querySelector('.custom-options');
-            const current = custom.querySelector('.current');
-
-            Array.from(native.options).forEach(opt => {
-                const li = document.createElement('li');
-                li.textContent = opt.textContent;
-                li.dataset.value = opt.value;
-                if (opt.selected) li.classList.add('active');
-                optionsList.appendChild(li);
-            });
-
-            const selected = native.options[native.selectedIndex];
-            if (selected) current.textContent = selected.textContent;
-
-            function closeOptions(){
-                optionsList.classList.remove('show');
-                custom.setAttribute('aria-expanded','false');
-            }
-            function openOptions(){
-                optionsList.classList.add('show');
-                custom.setAttribute('aria-expanded','true');
+            if (plusBtn && attachMenu) {
+                plusBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    attachMenu.classList.toggle('active');
+                });
             }
 
-            custom.addEventListener('click', (e)=>{
-                e.stopPropagation();
-                const isOpen = optionsList.classList.contains('show');
-                if (isOpen) closeOptions(); else openOptions();
-            });
-
-            optionsList.addEventListener('click', (e)=>{
-                const li = e.target.closest('li');
-                if (!li) return;
-                native.value = li.dataset.value;
-                current.textContent = li.textContent;
-                optionsList.querySelectorAll('li').forEach(n=>n.classList.remove('active'));
-                li.classList.add('active');
-                closeOptions();
-                native.dispatchEvent(new Event('change'));
-            });
-
-            document.addEventListener('click', (e)=>{
-                if (!custom.contains(e.target)) closeOptions();
-            });
-
-            custom.addEventListener('keydown', (e)=>{
-                const items = Array.from(optionsList.querySelectorAll('li'));
-                const idx = items.findIndex(it => it.classList.contains('active'));
-                if (e.key === 'ArrowDown'){
-                    const next = items[Math.min(items.length-1, Math.max(0, idx+1))];
-                    if (next) next.click();
-                    e.preventDefault();
-                } else if (e.key === 'ArrowUp'){
-                    const prev = items[Math.max(0, idx-1)];
-                    if (prev) prev.click();
-                    e.preventDefault();
-                } else if (e.key === 'Enter' || e.key === ' ') {
-                    const isOpen = optionsList.classList.contains('show');
-                    if (!isOpen) openOptions(); else closeOptions();
-                    e.preventDefault();
-                } else if (e.key === 'Escape'){
-                    closeOptions();
+            document.addEventListener('click', (e) => {
+                if (attachMenu && !attachMenu.contains(e.target) && !plusBtn.contains(e.target)) {
+                    attachMenu.classList.remove('active');
                 }
             });
-        })();
 
-        userInput.addEventListener('input', adjustHeight);
+            const closeAllMenus = () => {
+                document.querySelectorAll('.gemini-menu.active').forEach((menu) => {
+                    menu.classList.remove('active');
+                });
+            };
 
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {    
-                e.preventDefault();
-                sendMessage();
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.settings-wrapper')) {
+                    closeAllMenus();
+                }
+            });
+
+            settingsWrappers.forEach((wrapper) => {
+                const settingsBtn = wrapper.querySelector('.settings-trigger');
+                const settingsMenu = wrapper.querySelector('.gemini-menu');
+
+                if (settingsBtn && settingsMenu) {
+                    settingsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isOpen = settingsMenu.classList.contains('active');
+                        
+                        document.querySelectorAll('.gemini-menu.active').forEach(m => m.classList.remove('active'));
+                        
+                        if (!isOpen) {
+                            settingsMenu.classList.add('active');
+                        }
+                    });
+                }
+            });
+
+            if (userInput) {
+                userInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    let newHeight = this.scrollHeight;
+                    this.style.height = (newHeight > 200 ? 200 : newHeight) + 'px';
+                    
+                    // Hide feature cards if there's text or files
+                    const featuresGrid = document.querySelector('.features-grid');
+                    if (featuresGrid) {
+                        if (this.value.trim() || attachedFiles.length > 0) {
+                            featuresGrid.classList.add('hidden');
+                        } else {
+                            featuresGrid.classList.remove('hidden');
+                        }
+                    }
+                });
             }
-        });
 
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('q');
+            document.addEventListener('paste', (e) => {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let item of items) {
+                    if (item.kind === 'file' && item.type.includes('image')) {
+                        const blob = item.getAsFile();
+                        if (attachedFiles.length < MAX_FILES && blob.size <= MAX_SIZE_MB * 1024 * 1024) {
+                            attachedFiles.push(blob);
+                            renderAllPreviews();
+                        }
+                    }
+                }
+            });
 
-            if (searchQuery && userInput) {
-                userInput.value = searchQuery;
+            function handleFiles(files) {
+                const newFiles = Array.from(files);
                 
-                setTimeout(() => {
-                    sendMessage();
-                }, 500); 
+                for (let file of newFiles) {
+                    if (attachedFiles.length >= MAX_FILES) {
+                        alert("Maximum 5 files");
+                        break;
+                    }
+
+                    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                        alert(`File ${file.name} exceeds 100MB and won't be added.`);
+                        continue;
+                    }
+
+                    attachedFiles.push(file);
+                }
+                renderAllPreviews();
             }
 
-            setTimeout(() => {
-                if (userInput && userInput.value.length > 0) {
-                    userInput.placeholder = userInput.value;
-                    userInput.value = "";
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    handleFiles(e.target.files);
+                    fileInput.value = '';
+                });
+            }
+
+            window.removeFile = (index) => {
+                attachedFiles.splice(index, 1);
+                renderAllPreviews();
+            };
+
+            dropZone.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                dropOverlay.classList.add('active');
+            });
+
+            dropOverlay.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            dropOverlay.addEventListener('dragleave', (e) => {
+                if (e.relatedTarget === null || !dropOverlay.contains(e.relatedTarget)) {
+                    dropOverlay.classList.remove('active');
                 }
-            }, 500);
+            });
+
+            dropOverlay.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropOverlay.classList.remove('active');
+                if (e.dataTransfer.files.length > 0) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
         });
     </script>
+
+    <!-- Смена темы и сохранение выбора в  localStorage -->
+    <script>
+    // Функция установки темы
+    function setTheme(theme) {
+        const root = document.documentElement;
+        const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Снимаем активный класс со всех кнопок
+        document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+
+        // Логика выбора
+        if (theme === 'system') {
+            localStorage.removeItem('theme'); // Удаляем сохраненную настройку
+            // Если система в темном режиме - ставим темную, иначе светлую
+            if (isSystemDark) {
+                root.removeAttribute('data-theme');
+            } else {
+                root.setAttribute('data-theme', 'light');
+            }
+            document.getElementById('theme-system').classList.add('active');
+        } 
+        else if (theme === 'dark') {
+            localStorage.setItem('theme', 'dark');
+            root.removeAttribute('data-theme'); // Убираем атрибут (т.к. темная тема дефолтная)
+            document.getElementById('theme-dark').classList.add('active');
+        } 
+        else if (theme === 'light') {
+            localStorage.setItem('theme', 'light');
+            root.setAttribute('data-theme', 'light');
+            document.getElementById('theme-light').classList.add('active');
+        }
+    }
+
+    // Инициализация темы при загрузке страницы
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else {
+            setTheme('system');
+        }
+    }
+
+    // Запускаем сразу
+    initTheme();
+
+    // Слушатель изменений системной темы (если выбрано System)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('theme')) {
+            setTheme('system');
+        }
+    });
+</script>
+
+<!--Мобильная Версия-->
+<script>
+// --- Mobile Sidebar Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileBtn = document.getElementById('mobile-menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const body = document.body;
+
+    // Убеираем активный класс и мобильный класс при загрузке
+    sidebar.classList.remove('active');
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+    
+    if (window.innerWidth <= 768) {
+        sidebar.style.display = '';
+        
+        // Убеждаемся, что мини-сайдбар выключен
+        const miniSidebar = document.querySelector('.mini-sidebar');
+        if(miniSidebar) miniSidebar.style.display = 'none';
+    }
+    
+    // Функция открытия/закрытия
+    function toggleMobileSidebar() {
+        sidebar.classList.toggle('mobile-open');
+        overlay.classList.toggle('active');
+    }
+
+    // Клик по кнопке гамбургера
+    if(mobileBtn) {
+        mobileBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Чтобы клик не уходил в документ
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        });
+    }
+
+    // Клик по затемнению (чтобы закрыть меню)
+    if(overlay) {
+        overlay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+        });
+    }
+
+    // Предотвращаем закрытие сайдбара при клике на кнопки внутри него
+    const sidebarButtons = document.querySelectorAll('.sidebar-btn, .settings-trigger, .gemini-menu-item, [onclick]');
+    sidebarButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
+    // Предотвращаем события внутри сайдбара
+    if(sidebar) {
+        sidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    // Закрываем меню при выборе чата (опционально)
+    const chatItems = document.querySelectorAll('.chat-item');
+    chatItems.forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+            }
+        });
+    });
+});
+</script>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 </body>
 </html>
