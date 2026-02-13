@@ -123,13 +123,24 @@
             });
         }
 
-        function startNewChat() {
+        function startNewChat(e) {
+            if (e) e.preventDefault();
+            
             currentChatId = null;
             chatBox.innerHTML = '';
-            renderHistoryList();
-            toggleChatView(false);
+            welcomeScreen.style.display = 'flex';
             
-            history.pushState({}, '', window.location.pathname);
+            document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+            
+            updateUrl(null);
+            
+            // Если на мобилке — закрываем сайдбар (если у тебя есть функция closeSidebar)
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                if(sidebar) sidebar.classList.remove('mobile-open');
+                if(overlay) overlay.classList.remove('active');
+            }
         }
 
         async function loadConversations() {
@@ -330,7 +341,17 @@
                                 if (data.conversationId && !currentChatId) {
                                     currentChatId = data.conversationId;
                                     updateUrl(data.conversationId);
-                                    if (typeof loadConversations === 'function') await loadConversations();
+
+                                    const newChatTitle = userInput.value.trim().substring(0, 30); // Берем начало вопроса как имя
+                                    const newChat = {
+                                        id: currentChatId,
+                                        title: newChatTitle || "New Chat",
+                                        model: selectedModel
+                                    };
+
+                                    conversations.unshift(newChat);
+                                    
+                                    renderHistoryList();
                                 }
 
                                 if (data.messageId && (selectedModel.includes('kling') || selectedModel.includes('luma'))) {

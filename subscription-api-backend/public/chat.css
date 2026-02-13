@@ -423,7 +423,8 @@
             word-wrap: break-word;
             display: flex;
             gap: 1rem;
-            animation: fadeIn 0.3s ease;
+            animation: messageSlideIn 0.3s ease-out forwards;
+            will-change: transform, opacity;
         }
 
         .user-message {
@@ -439,6 +440,7 @@
             color: #e0e0e0;
             border-bottom-left-radius: 4px;
             border: 1px solid #333;
+            animation-duration: 0.4s;
         }
 
         .error-message {
