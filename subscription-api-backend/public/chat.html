@@ -1872,7 +1872,7 @@
 
     <div class="app-container" id="app">
         <aside id="sidebar">
-            <div class="sidebar-full">
+            <div class="sidebar-full" id="sidebarOverlay">
                 <div class="sb-header">
                     <div class="sb-logo-area">
                         <div class="logo-circle">
@@ -2038,7 +2038,7 @@
         <main class="main-container">
             <header>
                 <div class="header-left">
-                    <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+                    <button class="mobile-menu-btn" id="sidebarToggle" aria-label="Toggle menu">
                         <i class="fa-solid fa-bars-staggered"></i>
                     </button>
                 </div>
@@ -2169,6 +2169,13 @@
                             <span>Video Creation</span>
                         </div>
                     </div>
+                </div>
+
+                <div class="messages-container" id="chatBox">
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
                 </div>
 
                 <div class="chat-input-container">
@@ -2599,7 +2606,7 @@
 <script>
 // --- Mobile Sidebar Logic ---
 document.addEventListener('DOMContentLoaded', () => {
-    const mobileBtn = document.getElementById('mobile-menu-toggle');
+    const mobileBtn = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
     const body = document.body;
