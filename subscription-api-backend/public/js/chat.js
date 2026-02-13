@@ -349,6 +349,10 @@
                                         model: selectedModel
                                     };
 
+                                    if (!Array.isArray(conversations)) {
+                                        conversations = [];
+                                    }
+
                                     conversations.unshift(newChat);
                                     
                                     renderHistoryList();

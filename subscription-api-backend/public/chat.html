@@ -121,9 +121,11 @@
 
         .sb-actions {
             display: grid;
-            grid-template-columns: 1fr 40px 40px;
+            grid-template-columns: minmax(0, 1fr) 40px 40px;
             gap: 8px;
             margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .icon-btn {
@@ -138,9 +140,11 @@
             justify-content: center;
             transition: 0.2s;
             position: relative;
+            padding: 0;
+            overflow: hidden;
         }
         .icon-btn:hover { background: #1a1a1a; }
-        .icon-btn.new-chat { justify-content: flex-start; padding: 0 12px; font-size: 14px; gap: 8px; }
+        .icon-btn.new-chat { justify-content: flex-start; padding: 0 12px; font-size: 14px; gap: 8px; white-space: nowrap; }
 
         .history-container {
             flex-grow: 1;
