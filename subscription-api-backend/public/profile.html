@@ -45,6 +45,65 @@
             }
         })();
     </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+            "@type": "WebPage",
+            "@id": "https://genyxo.com/profile.html#webpage",
+            "url": "https://genyxo.com/profile.html",
+            "name": "User Profile - Genyxo AI",
+            "description": "Manage your Genyxo AI account settings, subscriptions, and affiliate dashboard.",
+            "isPartOf": { "@id": "https://genyxo.com/#website" },
+            "breadcrumb": { "@id": "https://genyxo.com/profile.html#breadcrumb" }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://genyxo.com/#website",
+          "url": "https://genyxo.com/",
+          "name": "Genyxo AI",
+          "description": "Premium AI Subscriptions and Tools",
+          "publisher": { "@id": "https://genyxo.com/#organization" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://genyxo.com/#organization",
+          "name": "Genyxo",
+          "url": "https://genyxo.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://genyxo.com/images/logo.svg",
+            "width": "192",
+            "height": "192"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "info@genyxo.com",
+            "contactType": "customer service"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://genyxo.com/profile.html#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://genyxo.com/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "My Profile",
+              "item": "https://genyxo.com/profile.html"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
     
@@ -110,7 +169,7 @@
                         <div class="dropdown-menu">
 
                             <a href="profile.html" class="menu-item" aria-label="Profile">
-                                <i class="fas fa-user-cog"></i> <span data-i18n="menu.profile">Profile</span>
+                                <i class="fas fa-user-cog fa-fw"></i> <span data-i18n="menu.profile">Profile</span>
                             </a>
 
                             <a href="notifications.html" class="menu-item" id="menuNotificationsLink" aria-label="Notifications" style="justify-content: space-between;">
