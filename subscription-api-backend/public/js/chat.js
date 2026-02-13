@@ -56,7 +56,39 @@
             }
         }
 
+        function showModal(title, placeholder = null) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customModal');
+                const input = document.getElementById('modalInput');
+                const titleEl = document.getElementById('modalTitle');
+                
+                titleEl.textContent = title;
+                modal.style.display = 'flex';
+                
+                if (placeholder !== null) {
+                    input.style.display = 'block';
+                    input.value = placeholder;
+                    setTimeout(() => input.focus(), 50);
+                } else {
+                    input.style.display = 'none';
+                }
+
+                document.getElementById('modalConfirm').onclick = () => {
+                    const val = input.value;
+                    modal.style.display = 'none';
+                    resolve(placeholder !== null ? val : true);
+                };
+                
+                document.getElementById('modalCancel').onclick = () => {
+                    modal.style.display = 'none';
+                    resolve(null);
+                };
+            });
+        }
+
         function renderHistoryList() {
+            const historyList = document.getElementById('historyList');
+            if (!historyList) return;
             historyList.innerHTML = '';
 
             if (conversations.length === 0) {
@@ -67,12 +99,12 @@
             conversations.forEach(chat => {
                 const div = document.createElement('div');
                 div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
-                
+                div.id = `chat-item-${chat.id}`;
                 div.onclick = () => selectChat(chat.id);
                 div.innerHTML = `
                     <span class="chat-title">
                         <i class="far fa-message" style="margin-right:8px; font-size:0.8rem;"></i>
-                        ${chat.title}
+                        <span class="title-text"></span>
                     </span>
                     <button class="chat-options-btn" aria-label="Chat Details" onclick="toggleDropdown(event, ${chat.id})">
                         <i class="fas fa-ellipsis-h"></i>
@@ -86,28 +118,9 @@
                         </div>
                     </div>
                 `;
+                div.querySelector('.title-text').textContent = chat.title;
                 historyList.appendChild(div);
             });
-        }
-
-        async function selectChat(id) {
-            if (currentChatId === id) return;
-            
-            currentChatId = id;
-            renderHistoryList();
-            
-            chatBox.innerHTML = ''; 
-            toggleChatView(true);
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const messages = await res.json();
-                    messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
-                }
-            } catch(e) { console.error(e); }
         }
 
         function startNewChat() {
@@ -168,16 +181,48 @@
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
 
-            msgDiv.innerHTML = `
-                <div class="message-content">
-                    ${sender === 'bot' ? (text ? marked.parse(text) : '') : escapeHTML(text)}
-                </div>
-                ${model ? `<div class="message-meta">${model}</div>` : ''}
-            `;
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            if (sender === 'bot') {
+                const rawHtml = text ? marked.parse(text) : '';
+                contentDiv.innerHTML = DOMPurify.sanitize(rawHtml);
+            } else {
+                contentDiv.textContent = text;
+            }
+
+            msgDiv.appendChild(contentDiv);
+            
+            if (model) {
+                const meta = document.createElement('div');
+                meta.className = 'message-meta';
+                meta.textContent = model;
+                msgDiv.appendChild(meta);
+            }
 
             chatBox.appendChild(msgDiv);
             scrollToBottom();
             return msgDiv;
+        }
+
+        async function selectChat(id) {
+            if (currentChatId === id) return;
+            
+            currentChatId = id;
+            renderHistoryList();
+            
+            chatBox.innerHTML = ''; 
+            toggleChatView(true);
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const messages = await res.json();
+                    messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
+                }
+            } catch(e) { console.error(e); }
         }
 
         function escapeHTML(str) {
@@ -232,7 +277,7 @@
             sendBtn.disabled = true;
             userInput.disabled = true;
 
-            if (!window.currentChatId) toggleChatView(true);
+            if (!currentChatId) toggleChatView(true);
 
             appendMessage('user', text);
             userInput.value = '';
@@ -245,7 +290,7 @@
             let fullContent = "";
 
             try {
-                const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${window.currentChatId ? `&conversationId=${window.currentChatId}` : ''}`;
+                const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${currentChatId ? `&conversationId=${currentChatId}` : ''}`;
                 
                 const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -258,13 +303,16 @@
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                let leftover = '';
 
                 while (true) {
                     const { value, done } = await reader.read();
                     if (done) break;
 
-                    const chunk = decoder.decode(value);
+                    const chunk = leftover + decoder.decode(value, { stream: true });
                     const lines = chunk.split('\n');
+
+                    leftover = lines.pop();
 
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
@@ -276,11 +324,11 @@
 
                                 if (data.token) {
                                     fullContent += data.token;
-                                    contentDiv.innerHTML = marked.parse(fullContent);
+                                    contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(fullContent));
                                 }
 
-                                if (data.conversationId && !window.currentChatId) {
-                                    window.currentChatId = data.conversationId;
+                                if (data.conversationId && !currentChatId) {
+                                    currentChatId = data.conversationId;
                                     updateUrl(data.conversationId);
                                     if (typeof loadConversations === 'function') await loadConversations();
                                 }
@@ -296,7 +344,7 @@
                                     updateBalanceUI(data.creditBalance);
                                 }
                             } catch (e) { 
-                                console.error("JSON parse error in stream:", e); 
+                                console.error("JSON parse error in stream:", e, "Line was:", line); 
                             }
                         }
                     }
@@ -465,38 +513,61 @@
             document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
         });
 
-        window.renameChat = async function(id) {
-            const newTitle = prompt("New chat name:");
-            if(!newTitle) return;
+        async function renameChat(id) {
+            const chat = conversations.find(c => c.id === id);
+            if (!chat) return;
+
+            const newTitle = await showModal('Enter a new chat name', chat.title);
+            
+            if (newTitle === null || newTitle.trim() === '') return;
 
             try {
-                const res = await fetch(`${API_BASE_URL}/chat/conversation/${id}`, {
+                const res = await fetch(`${API_BASE_URL}/api/conversations/${id}`, {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ title: newTitle })
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: newTitle.trim() })
                 });
-                if(res.ok) {
-                    const chat = conversations.find(c => c.id === id);
-                    if(chat) chat.title = newTitle;
-                    renderHistoryList();
+
+                if (res.ok) {
+                    const titleElement = document.querySelector(`#chat-item-${id} .title-text`);
+                    if (titleElement) titleElement.textContent = newTitle.trim();
+
+                    chat.title = newTitle.trim();
                 }
-            } catch(e) { showToast("Error Renaming Chat!", "error");  }
+            } catch (err) {
+                console.error('Error while renaming:', err);
+            }
         }
 
-        window.deleteChat = async function(id) {
-            if(!confirm("Delete this chat?")) return;
+        async function deleteChat(id) {
+            const confirmed = await showModal('Are you sure you want to delete this chat?');
+            if (!confirmed) return;
 
             try {
-                const res = await fetch(`${API_BASE_URL}/chat/conversation/${id}`, {
+                const res = await fetch(`${API_BASE_URL}/api/conversations/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if(res.ok) {
+
+                if (res.ok) {
+                    const element = document.getElementById(`chat-item-${id}`);
+                    if (element) element.remove();
+
                     conversations = conversations.filter(c => c.id !== id);
-                    renderHistoryList();
-                    if(currentChatId === id) startNewChat();
+
+                    if (currentChatId === id) {
+                        currentChatId = null;
+                        chatBox.innerHTML = '';
+                        welcomeScreen.style.display = 'flex';
+                        updateUrl(null);
+                    }
                 }
-            } catch(e) { showToast("Error Deleting Chat!", "error");  }
+            } catch (err) {
+                console.error('Error while deleting:', err);
+            }
         }
 
         if (sendBtn) {
