@@ -11,10 +11,11 @@ if (tokenFromUrl) {
     window.history.replaceState({}, document.title, cleanUrl);
 }
 
-const token = localStorage.getItem('authToken');
+let token = localStorage.getItem('authToken');
 
 if (refId) {
     localStorage.setItem('referrerId', refId);
+    console.log('Referrer ID saved:', refId);
     // Можно тоже почистить URL от ref:
     // const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     // window.history.replaceState({}, document.title, cleanUrl);
@@ -1400,8 +1401,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Successfully logged in with Google!', 'success');
 
     } else {
-        if (authToken) {
-            fetchUserProfile(authToken);
+        if (token) {
+            fetchUserProfile(token);
         } else {
             updateUIState(false);
         }
@@ -1441,20 +1442,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadProfileData();
 });
 
-if (refId) {
-    localStorage.setItem('referrerId', refId);
-    console.log('Referrer ID saved:', refId);
-}
-
 // --- INITIALIZATION ---
 function init() {
     setupEventListeners();
     setupNavigation();
     setupBurgerMenu();
-    updateLoginButton(currentUserName, authToken);
+    updateLoginButton(currentUserName, token);
     checkPaymentStatus();
 
-    if (authToken) {
+    if (token) {
         updateUIState(true, {
             name: currentUserName,
             email: currentUserEmail,
