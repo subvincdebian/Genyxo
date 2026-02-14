@@ -36,15 +36,15 @@ export class PaymentService {
     if (!pack) throw new BadRequestException('Package not found');
 
     const transaction = this.transactionRepo.create({
-      userId: userId,
+      userId,
       amount: pack.price,
       creditsAmount: pack.credits,
-      packId: packId,
+      packId,
       status: TransactionStatus.PENDING,
       provider: 'NOWPAYMENTS',
     });
 
-    await this.transactionRepo.save(transaction);
+    const savedTx = await this.transactionRepo.save(transaction);
 
     try {
       const response = await axios.post(
@@ -52,22 +52,22 @@ export class PaymentService {
         {
           price_amount: pack.price,
           price_currency: 'usd',
-          order_id: transaction.id.toString(),
+          order_id: savedTx.id.toString(),
           order_description: `Purchase: ${pack.name}`,
-          ipn_callback_url: 'https://genyxo.com/payment/webhook',
+          ipn_callback_url: this.configService.get<string>('NOWPAYMENTS_IPN_URL'),
           success_url: 'https://genyxo.com/#success', 
           cancel_url: 'https://genyxo.com/#cancel', 
         },
         {
           headers: {
-            'x-api-key': process.env.NOWPAYMENTS_API_KEY,
+            'x-api-key': this.configService.get<string>('NOWPAYMENTS_API_KEY'),
             'Content-Type': 'application/json',
           },
         }
       );
 
-      transaction.externalId = response.data.id;
-      await this.transactionRepo.save(transaction);
+      savedTx.externalId = response.data.payment_id || response.data.id;
+      await this.transactionRepo.save(savedTx);
 
       return { url: response.data.invoice_url };
 
@@ -91,11 +91,11 @@ export class PaymentService {
         throw new BadRequestException('Invalid signature');
     }
 
-    const transactionId = Number(body.order_id);
+    const txId = Number(body.order_id);
     const status = body.payment_status; 
 
     const transaction = await this.transactionRepo.findOne({ 
-        where: { id: transactionId },
+        where: { id: txId },
         relations: ['user'] 
     });
 
@@ -103,9 +103,9 @@ export class PaymentService {
 
     if (status === 'finished' || status === 'confirmed') {
         if (transaction.status !== TransactionStatus.APPROVED) {
-            await this.finalizeTransaction(transaction);
+          await this.finalizeTransaction(txId);
         }
-    } else if (status === 'failed' || status === 'expired') {
+    } else if (status === 'failed' || status === 'expired' || status === 'rejected') {
         transaction.status = TransactionStatus.DECLINED;
         await this.transactionRepo.save(transaction);
     } else {
@@ -128,38 +128,42 @@ export class PaymentService {
     await this.transactionRepo.save(transaction);
 
     if (newStatus === TransactionStatus.APPROVED) {
-        await this.finalizeTransaction(transaction);
+        await this.finalizeTransaction(txId);
     }
 
     return { status: 'success', newStatus };
   }
 
-  private async finalizeTransaction(transaction: Transaction) {
-    transaction.status = TransactionStatus.APPROVED;
-    await this.transactionRepo.save(transaction);
+  private async finalizeTransaction(txId: number) {
+    return await this.transactionRepo.manager.transaction(async (manager) => {
+      const transaction = await manager.findOne(Transaction, {
+        where: { id: txId },
+        relations: ['user'],
+        lock: { mode: 'pessimistic_write' }
+      });
 
-    if (!transaction.user) {
-      throw new Error(`Data Integrity Error: User relation not loaded for transaction ${transaction.id}`);
-    }
+      if (!transaction || transaction.status === TransactionStatus.APPROVED) {
+        return;
+      }
 
-    const buyer = transaction.user;
-    if (!buyer) return;
+      const user = transaction.user;
+      if (!user) throw new Error('User not found for transaction');
 
-    await this.usersService.addCredits(buyer.id, transaction.creditsAmount);
+      transaction.status = TransactionStatus.APPROVED;
+      await manager.save(transaction);
 
-    try {
-        if (transaction.packId) {
-          await this.usersService.processReferralBonus(buyer.id, transaction.packId);
-        }
-    } catch (error) {
-        console.error('Affiliate bonus error:', error);
-    }
+      await this.usersService.addCredits(user.id, transaction.creditsAmount);
 
-    await this.notificationsService.create(
-      buyer.id,
-      'Payment Successful! ✅',
-      `You have successfully purchased ${transaction.creditsAmount} credits.`,
-      NotificationType.SYSTEM
-    );
+      if (transaction.packId) {
+        await this.usersService.processReferralBonus(user.id, transaction.packId);
+      }
+
+      await this.notificationsService.create(
+        user.id,
+        'Payment Successful! ✅',
+        `You have successfully purchased ${transaction.creditsAmount} credits.`,
+        NotificationType.SYSTEM
+      );
+    });
   }
 }

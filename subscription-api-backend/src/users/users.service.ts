@@ -58,7 +58,8 @@ export class UsersService {
   }
 
   async updateUser(id: number, updates: Partial<User>) {
-    await this.usersRepository.update(id, updates);
+    const { name, avatar } = updates;
+    await this.usersRepository.update(id, { name, avatar });
   }
 
   async save(user: User): Promise<User> {

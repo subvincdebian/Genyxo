@@ -1,6 +1,7 @@
 import { Controller, Post, Body, UseGuards, Request, HttpStatus, HttpCode, Headers } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentService } from './payment.service';
+import { BuyPackDto } from './dto/payment.dto';
 
 @Controller('payment')
 export class PaymentController {
@@ -9,8 +10,8 @@ export class PaymentController {
   @UseGuards(AuthGuard('jwt'))
   @Post('buy')
   @HttpCode(HttpStatus.OK)
-  async buyPack(@Request() req, @Body() body: { packId: number }) {
-    return this.paymentService.createPayment(req.user.id, body.packId);
+  async buyPack(@Request() req, @Body() buyPackDto: BuyPackDto) {
+    return this.paymentService.createPayment(req.user.id, buyPackDto.packId);
   }
 
   @Post('webhook')

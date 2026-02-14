@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Transaction } from '../transactions/transaction.entity';
 import { UsersService } from '../users/users.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('profile')
 export class ProfileController {
@@ -31,16 +32,9 @@ export class ProfileController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('update')
-  async updateProfile(@Request() req, @Body() body: { name?: string, avatar?: string }) {
-    await this.usersService.updateUser(req.user.id, body);
+  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+    await this.usersService.updateUser(req.user.id, updateProfileDto);
     return { status: 'success' };
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('affiliate')
-  async getAffiliateInfo(@Request() req) {
-    const userId = req.user.id;
-    return this.usersService.getAffiliateStats(userId);
   }
 
   @UseGuards(AuthGuard('jwt'))

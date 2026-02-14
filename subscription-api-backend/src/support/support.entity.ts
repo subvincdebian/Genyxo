@@ -47,6 +47,9 @@ export class SupportTicket {
   @UpdateDateColumn()
   updatedAt?: Date;
 
+  @Column()
+  userId!: number;
+
   @ManyToOne(() => User, (user) => user.tickets)
   @JoinColumn({ name: 'userId' })
   user!: User;
