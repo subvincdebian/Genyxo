@@ -29,8 +29,6 @@
         let currentChatId = null; 
         let conversations = [];
 
-        const token = localStorage.getItem('authToken');
-
         const chatBox = document.getElementById('chatBox');
         const welcomeScreen = document.getElementById('welcomeScreen');
         const userInput = document.getElementById('userInput');
@@ -292,7 +290,6 @@
 
         async function sendMessage() {
             const text = userInput.value.trim();
-            const token = localStorage.getItem('authToken');
             const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
 
             if (!text || !token || sendBtn.disabled) return;
@@ -422,7 +419,6 @@
         async function startVideoPolling(messageId, element) {
             let attempts = 0;
             const maxAttempts = 60;
-            const token = localStorage.getItem('authToken');
 
             element.innerHTML = `
                 <div class="video-loading-status">

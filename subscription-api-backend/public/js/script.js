@@ -7,11 +7,13 @@ const refId = urlParams.get('ref');
 
 if (tokenFromUrl) {
     localStorage.setItem('authToken', tokenFromUrl);
+    window.token = tokenFromUrl;
     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
     window.history.replaceState({}, document.title, cleanUrl);
 }
 
 let token = localStorage.getItem('authToken');
+window.token = token;
 
 if (refId) {
     localStorage.setItem('referrerId', refId);
@@ -137,7 +139,6 @@ function renderBadge(count) {
 }
 
 async function updateNotificationsBadge() {
-    const token = localStorage.getItem('authToken'); 
     if (!token) return;
 
     try {
@@ -165,17 +166,16 @@ function handleLogout() {
 }
 
 async function loadAffiliateData() {
-    const authToken = localStorage.getItem('authToken');
     const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
     const linkInput = document.getElementById('referralLinkInput');
 
-    if (!authToken || !affBalance) return;
+    if (!token || !affBalance) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
             method: 'GET',
             headers: { 
-                'Authorization': `Bearer ${authToken}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -310,7 +310,6 @@ function showToast(message, type = 'success', duration = 3000) {
 }
 
 function initGlobalSockets() {
-    const token = localStorage.getItem('authToken');
     if (!token || typeof io === 'undefined') return;
 
     socket = io('https://genyxo.com/notifications', {
