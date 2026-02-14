@@ -6,31 +6,31 @@ import { Conversation } from './conversation.entity';
 @Entity('messages')
 export class Message {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  content: string;
+  content!: string;
 
   @Column()
-  sender: 'user' | 'bot';
+  sender!: 'user' | 'bot';
 
   @Column()
-  model: string;
+  model!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @Index()
   @ManyToOne(() => Conversation, (conversation) => conversation.messages, { onDelete: 'CASCADE' })
-  conversation: Conversation;
+  conversation!: Conversation;
 
   @ManyToOne(() => User)
-  user: User;
+  user!: User;
 
   @Index()
   @Column({ nullable: true })
-  requestId: string;
+  requestId!: string;
 
   @Column({ default: 'text' })
-  type: 'text' | 'video';
+  type!: 'text' | 'video';
 }

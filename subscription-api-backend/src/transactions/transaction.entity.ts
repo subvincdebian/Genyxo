@@ -16,43 +16,51 @@ export enum TransactionType {
   REFUND = 'REFUND'      // Возврат при ошибке
 }
 
+export class ColumnNumericTransformer {
+  to(data: number): number { return data; }
+  from(data: string): number { return parseFloat(data); }
+}
+
 @Entity('transactions')
 export class Transaction {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ type: 'int', nullable: true })
-  packId: number;
+  packId?: number;
 
   @Column({ nullable: true })
-  externalId: string;
+  externalId?: string;
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  amount: number;
+  @Column('decimal', { precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
+  amount!: number;
 
   @Column()
-  creditsAmount: number;
+  creditsAmount!: number;
 
   @Column({ type: 'enum', enum: TransactionStatus, default: TransactionStatus.PENDING })
-  status: TransactionStatus;
+  status!: TransactionStatus;
 
   @Column()
-  provider: string;
+  provider!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ManyToOne(() => User, (user) => user.transactions)
   @JoinColumn({ name: 'userId' })
-  user: User;
+  user?: User;
+
+  @Column({ nullable: true })
+  userId?: number;
 
   @Column({
     type: 'enum',
     enum: TransactionType,
     default: TransactionType.PURCHASE
   })
-  type: TransactionType;
+  type!: TransactionType;
 
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 }

@@ -280,6 +280,7 @@
 
         async function sendMessage() {
             const text = userInput.value.trim();
+            const messageForTitle = text;
             const token = localStorage.getItem('authToken');
             const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
 
@@ -322,7 +323,6 @@
 
                     const chunk = leftover + decoder.decode(value, { stream: true });
                     const lines = chunk.split('\n');
-
                     leftover = lines.pop();
 
                     for (const line of lines) {
@@ -342,16 +342,15 @@
                                     currentChatId = data.conversationId;
                                     updateUrl(data.conversationId);
 
-                                    const newChatTitle = userInput.value.trim().substring(0, 30); // Берем начало вопроса как имя
                                     const newChat = {
                                         id: currentChatId,
-                                        title: newChatTitle || "New Chat",
+                                        title: messageForTitle.substring(0, 30) + (messageForTitle.length > 30 ? '...' : ''),
                                         model: selectedModel
                                     };
 
-                                    if (!Array.isArray(conversations)) {
-                                        conversations = [];
-                                    }
+                                    if (!Array.isArray(conversations)) conversations = [];
+                                    conversations.unshift(newChat);
+                                    renderHistoryList();
 
                                     conversations.unshift(newChat);
                                     
@@ -547,7 +546,7 @@
             if (newTitle === null || newTitle.trim() === '') return;
 
             try {
-                const res = await fetch(`${API_BASE_URL}/api/conversations/${id}`, {
+                const res = await fetch(`${API_BASE_URL}/chat/conversations/${id}`, {
                     method: 'PATCH',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -572,7 +571,7 @@
             if (!confirmed) return;
 
             try {
-                const res = await fetch(`${API_BASE_URL}/api/conversations/${id}`, {
+                const res = await fetch(`${API_BASE_URL}/chat/conversations/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });

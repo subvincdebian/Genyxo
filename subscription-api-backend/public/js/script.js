@@ -1,5 +1,7 @@
 var API_BASE_URL = 'https://genyxo.com';
 
+let socket;
+
 let authToken = localStorage.getItem('authToken') || null;
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
 let currentUserEmail = localStorage.getItem('userEmail');
@@ -107,28 +109,29 @@ function updateUIState(isLoggedIn, userData = null) {
     }
 }
 
+function renderBadge(count) {
+    const badge = document.getElementById('notificationBadge');
+    if (!badge) return;
+
+    if (count > 0) {
+        badge.style.display = 'flex';
+        badge.innerText = count > 99 ? '99+' : count;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
 async function updateNotificationsBadge() {
     const token = localStorage.getItem('authToken'); 
     if (!token) return;
-
-    const badge = document.getElementById('notificationBadge');
-    if (!badge) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-
         if (response.ok) {
             const data = await response.json();
-            const count = data.count;
-
-            if (count > 0) {
-                badge.style.display = 'flex';
-                badge.innerText = count > 99 ? '99+' : count;
-            } else {
-                badge.style.display = 'none';
-            }
+            renderBadge(data.count);
         }
     } catch (e) {
         console.warn("Could not update badge:", e);
@@ -289,6 +292,29 @@ function showToast(message, type = 'success', duration = 3000) {
         hideTimer,
         element: toast
     };
+}
+
+function initGlobalSockets() {
+    const token = localStorage.getItem('authToken');
+    if (!token || typeof io === 'undefined') return;
+
+    socket = io('https://genyxo.com/notifications', {
+        auth: { token }
+    });
+
+    socket.on('unread_count_update', (data) => {
+        renderBadge(data.count);
+    });
+
+    socket.on('new_notification', (n) => {
+        if (typeof showToast === 'function') {
+            showToast(`${n.title}: ${n.message}`, 'info');
+        }
+        
+        if (window.location.pathname.includes('notifications.html') && typeof prependNotification === 'function') {
+            prependNotification(n);
+        }
+    });
 }
 
 async function loadProfileData() {
@@ -1421,7 +1447,9 @@ function init() {
             avatar: currentUserAvatar
         });
         
-        fetchUserData(); 
+        fetchUserData();
+        updateNotificationsBadge();
+        initGlobalSockets();
     } else {
         updateUIState(false);
     }

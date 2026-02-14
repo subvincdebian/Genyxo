@@ -16,38 +16,38 @@ export enum TicketPriority {
 @Entity('support_tickets')
 export class SupportTicket {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  subject: string;
+  subject!: string;
 
   @Column('text')
-  message: string;
+  message!: string;
 
   @Column({ type: 'text', nullable: true })
-  adminResponse: string;
+  adminResponse?: string;
 
   @Column({
     type: 'enum',
     enum: TicketStatus,
     default: TicketStatus.OPEN,
   })
-  status: TicketStatus;
+  status!: TicketStatus;
 
   @Column({
     type: 'enum',
     enum: TicketPriority,
     default: TicketPriority.MEDIUM,
   })
-  priority: TicketPriority;
+  priority!: TicketPriority;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt?: Date;
 
   @ManyToOne(() => User, (user) => user.tickets)
   @JoinColumn({ name: 'userId' })
-  user: User;
+  user!: User;
 }

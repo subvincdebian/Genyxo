@@ -77,11 +77,28 @@ export class ChatService {
     return conversation.messages;
   }
 
+  private async getOrCreateConversation(userId: number, conversationId?: number, firstMessage?: string) {
+    if (conversationId) {
+        const chat = await this.conversationRepository.findOne({ 
+          where: { id: conversationId, user: { id: userId } } 
+        });
+        if (!chat) throw new NotFoundException('Chat not found');
+        return chat;
+    }
+    const title = firstMessage ? (firstMessage.substring(0, 30)) : "New Chat";
+    const newChat = this.conversationRepository.create({ 
+      user: { id: userId } as any, 
+      title: title 
+    });
+  
+    return this.conversationRepository.save(newChat);
+  }
+
   async processMessage(userId: number, text: string, model: string, conversationId?: number) {
     const modelConfig = this.pricingService.getModelConfig(model);
     if (!modelConfig) throw new BadRequestException('Unsupported model');
     
-    let conversation = await this.getOrCreateConversation(userId, conversationId);
+    let conversation = await this.getOrCreateConversation(userId, conversationId, text);
     await this.saveMessage(conversation, text, 'user', model, userId);
 
     if (modelConfig.type === ModelType.VIDEO) {
@@ -118,22 +135,9 @@ export class ChatService {
     }
   }
 
-  private async getOrCreateConversation(userId: number, conversationId?: number) {
-    if (conversationId) {
-        const chat = await this.conversationRepository.findOne({ 
-          where: { id: conversationId, user: { id: userId } } 
-        });
-        if (!chat) throw new NotFoundException('Chat not found');
-        return chat;
-    }
-    return this.conversationRepository.save(
-        this.conversationRepository.create({ user: { id: userId }, title: "New Chat" })
-    );
-  }
-
   async processStreamingMessage(userId: number, text: string, model: string, conversationId: number | undefined, cost: number) {
       const eventStream = new Subject<MessageEvent>();
-      let conversation = await this.getOrCreateConversation(userId, conversationId);
+      let conversation = await this.getOrCreateConversation(userId, conversationId, text);
       
       await this.saveMessage(conversation, text, 'user', model, userId);
 
@@ -168,7 +172,7 @@ export class ChatService {
               eventStream.complete();
           })();
 
-      } catch (error) {
+      } catch (error: any) {
           await this.usersService.addCredits(userId, cost);
           eventStream.error(error);
       }
@@ -216,7 +220,7 @@ export class ChatService {
         reply: completion.choices[0].message.content || "AI did not respond",
         tokensUsed: completion.usage?.total_tokens || 0
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('OpenRouter API Error:', error.message);
       throw error;
     }

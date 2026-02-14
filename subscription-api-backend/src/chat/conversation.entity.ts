@@ -5,20 +5,20 @@ import { Message } from './message.entity';
 @Entity()
 export class Conversation {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ default: 'New Chat' })
-  title: string;
+  title!: string;
 
   @ManyToOne(() => User, (user) => user.conversations)
-  user: User;
+  user!: User;
 
   @OneToMany(() => Message, (message) => message.conversation)
-  messages: Message[];
+  messages!: Message[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

@@ -6,14 +6,14 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'Email cannot be empty.' })
   @IsEmail({}, { message: 'Invalid email format.' })
   @Transform(({ value }) => value.toLowerCase().trim())
-  email: string;
+  email!: string;
 
   @IsNotEmpty({ message: 'Password cannot be empty.' })
   @MinLength(6, { message: 'Password must be at least 6 characters long.' })
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, { 
         message: 'Password must contain uppercase, lowercase letters and numbers' 
   })
-  password: string;
+  password!: string;
 
   @IsString()
   @IsNotEmpty()

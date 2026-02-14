@@ -8,13 +8,13 @@ export class CreateTicketDto {
   @IsNotEmpty()
   @Length(5, 100)
   @Transform(({ value }) => sanitizeHtml(value))
-  subject: string;
+  subject!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(10, 2000)
   @Transform(({ value }) => sanitizeHtml(value))
-  message: string;
+  message!: string;
 
   @IsOptional()
   @IsEnum(TicketPriority)

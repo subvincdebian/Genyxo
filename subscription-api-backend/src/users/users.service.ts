@@ -45,11 +45,15 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { verificationToken: token } });
   }
 
+  async generateUniqueReferralCode(): Promise<string> {
+    const code = Math.random().toString(36).substring(2, 9).toUpperCase();
+    const existing = await this.usersRepository.findOne({ where: { referralCode: code } });
+    return existing ? this.generateUniqueReferralCode() : code;
+  }
+
   async create(userData: Partial<User>): Promise<User> {
-    if (!userData.referralCode) {
-      userData.referralCode = await this.generateUniqueReferralCode();
-    }
-    const newUser = this.usersRepository.create(userData);
+    const referralCode = userData.referralCode || await this.generateUniqueReferralCode();
+    const newUser = this.usersRepository.create({ ...userData, referralCode });
     return this.usersRepository.save(newUser);
   }
 
@@ -61,46 +65,23 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async generateUniqueReferralCode(): Promise<string> {
-    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let isUnique = false;
-    let code = '';
-
-    while (!isUnique) {
-      code = '';
-      for (let i = 0; i < 7; i++) {
-        code += characters.charAt(Math.floor(Math.random() * characters.length));
-      }
-
-      const existing = await this.usersRepository.findOne({ where: { referralCode: code } });
-      if (!existing) {
-        isUnique = true;
-      }
-    }
-    return code;
-  }
-
   async addCredits(userId: number, amount: number): Promise<void> {
-    const user = await this.findOneById(userId);
-    if (user) {
-      const currentCredits = Number(user.credits) || 0;
-      const creditsToAdd = Number(amount) || 0;
-      user.credits = currentCredits + creditsToAdd;
-      await this.usersRepository.increment({ id: userId }, 'credits', amount);
-    }
+    const creditsToAdd = Number(amount);
+    if (isNaN(creditsToAdd) || creditsToAdd <= 0) return;
+
+    await this.usersRepository.increment({ id: userId }, 'credits', creditsToAdd);
   }
 
   async addReferralBalance(userId: number, amountUsd: number): Promise<void> {
-    const user = await this.findOneById(userId);
-    if (user) {
-        const currentBalance = parseFloat(user.referralBalance?.toString() || '0');
-        const addAmount = parseFloat(amountUsd.toString());
-        user.referralBalance = currentBalance + addAmount;
-        await this.usersRepository.save(user);
-    }
+    const addAmount = Number(amountUsd);
+    if (isNaN(addAmount) || addAmount <= 0) return;
+
+    await this.usersRepository.increment({ id: userId }, 'referralBalance', addAmount);
   }
 
   async deductCredits(userId: number, amount: number): Promise<boolean> {
+    if (amount <= 0) return true;
+
     const result = await this.usersRepository
       .createQueryBuilder()
       .update(User)
@@ -117,24 +98,14 @@ export class UsersService {
   }
 
   async getAffiliateStats(userId: number) {
-    const baseUrl = 'https://genyxo.com'; 
-    const user = await this.usersRepository.findOne({
-        where: { id: userId },
-        select: ['id', 'referralBalance']
-    });
+    const user = await this.usersRepository.findOne({ where: { id: userId }, select: ['id', 'referralBalance'] });
+    if (!user) throw new NotFoundException('User not found');
     
-    if (!user) {
-        throw new NotFoundException('User not found');
-    }
-    
-    const invitedCount = await this.usersRepository.count({
-        where: { referrerId: userId }
-    });
-
+    const invitedCount = await this.usersRepository.count({ where: { referrerId: userId } });
     return {
-        balance: Number(user.referralBalance || 0),
-        invitedCount: invitedCount,
-        referralLink: `${baseUrl}?ref=${user.id}`
+      balance: Number(user.referralBalance || 0),
+      invitedCount,
+      referralLink: `https://genyxo.com?ref=${user.id}`
     };
   }
 
@@ -175,12 +146,12 @@ export class UsersService {
 
   async logTransaction(userId: number, amount: number, type: TransactionType, description: string) {
     const tx = this.transactionRepository.create({
-        user: { id: userId },
+        userId,
         creditsAmount: amount,
         amount: 0,
         status: TransactionStatus.APPROVED,
-        type: type,
-        description: description,
+        type,
+        description,
         provider: 'INTERNAL'
     });
     return this.transactionRepository.save(tx);

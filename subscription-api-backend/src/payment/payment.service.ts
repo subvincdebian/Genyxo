@@ -36,7 +36,7 @@ export class PaymentService {
     if (!pack) throw new BadRequestException('Package not found');
 
     const transaction = this.transactionRepo.create({
-      user: { id: userId },
+      userId: userId,
       amount: pack.price,
       creditsAmount: pack.credits,
       packId: packId,
@@ -71,7 +71,7 @@ export class PaymentService {
 
       return { url: response.data.invoice_url };
 
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('NowPayments Create Error:', error.response?.data || error.message);
       throw new BadRequestException('Payment gateway error');
     }
@@ -138,13 +138,19 @@ export class PaymentService {
     transaction.status = TransactionStatus.APPROVED;
     await this.transactionRepo.save(transaction);
 
-    const buyer = await this.usersService.findOneById(transaction.user.id);
+    if (!transaction.user) {
+      throw new Error(`Data Integrity Error: User relation not loaded for transaction ${transaction.id}`);
+    }
+
+    const buyer = transaction.user;
     if (!buyer) return;
 
-    await this.usersService.addCredits(buyer.id, Number(transaction.creditsAmount));
+    await this.usersService.addCredits(buyer.id, transaction.creditsAmount);
 
     try {
-        await this.usersService.processReferralBonus(buyer.id, transaction.packId);
+        if (transaction.packId) {
+          await this.usersService.processReferralBonus(buyer.id, transaction.packId);
+        }
     } catch (error) {
         console.error('Affiliate bonus error:', error);
     }

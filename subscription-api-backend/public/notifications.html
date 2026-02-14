@@ -36,6 +36,8 @@
     <link rel="icon" type="image/svg+xml" href="./images/logo.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="profile.css">
+
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     
     <style>
 
@@ -282,6 +284,29 @@
                 else return defaultText;
             }
             return res || defaultText;
+        }
+
+        function prependNotification(n) {
+            const container = document.getElementById('notifList');
+            if (!container) return;
+            
+            const empty = container.querySelector('.empty-state');
+            if (empty) empty.remove();
+
+            let icon = 'fa-bell';
+            if(n.type === 'SYSTEM' || n.title.includes('Payment')) icon = 'fa-wallet';
+            if(n.type === 'SUPPORT') icon = 'fa-headset';
+
+            const html = `
+                <div class="notif-card unread" onclick="markRead(${n.id}, this)">
+                    <div class="notif-icon"><i class="fas ${icon}"></i></div>
+                    <div class="notif-content">
+                        <h3>${n.title}</h3>
+                        <p>${n.message}</p>
+                        <span class="notif-time">${safeTranslate('notifications.just_now', 'Just now')}</span>
+                    </div>
+                </div>`;
+            container.insertAdjacentHTML('afterbegin', html);
         }
 
         async function loadNotifications() {

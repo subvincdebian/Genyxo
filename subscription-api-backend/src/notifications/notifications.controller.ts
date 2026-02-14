@@ -1,6 +1,7 @@
 import { Controller, Get, Post, UseGuards, Request, Patch, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { NotificationsService } from './notifications.service';
+import { ParseIntPipe } from '@nestjs/common';
 
 @Controller('notifications')
 @UseGuards(AuthGuard('jwt'))
@@ -19,7 +20,10 @@ export class NotificationsController {
   }
 
   @Patch(':id/read')
-  async markRead(@Request() req, @Param('id') id: number) {
+  async markRead(
+    @Request() req, 
+    @Param('id', ParseIntPipe) id: number
+  ) {
     await this.service.markAsRead(id, req.user.id);
     return { success: true };
   }

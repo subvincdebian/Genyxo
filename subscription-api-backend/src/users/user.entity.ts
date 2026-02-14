@@ -18,81 +18,81 @@ import { SupportTicket } from '../support/support.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ unique: true, type: 'varchar', length: 255 })
-  email: string;
+  email!: string;
 
   @Column({ nullable: true, select: false, type: 'varchar' })
-  password: string;
+  password?: string;
 
   @Column({ nullable: true, type: 'varchar', length: 255 })
-  name: string;
+  name?: string;
 
   @Column({ type: 'longtext', nullable: true })
-  avatar: string;
+  avatar?: string;
 
   @Column({
     type: 'enum',
     enum: Role,
     default: Role.USER,
   })
-  role: Role;
+  role!: Role;
 
   @Column({ default: false })
-  isEmailVerified: boolean;
+  isEmailVerified!: boolean;
 
   @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
-  verificationToken: string | null;
+  verificationToken?: string | null;
 
   @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
-  googleId: string;
+  googleId?: string;
 
   @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
-  facebookId: string;
+  facebookId?: string;
 
   @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 }) 
-  credits: number;
+  credits!: number;
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
-  transactions: Transaction[];
+  transactions?: Transaction[];
 
   @OneToMany(() => SupportTicket, (ticket) => ticket.user)
-  tickets: SupportTicket[];
+  tickets?: SupportTicket[];
 
   @OneToMany(() => Message, (message) => message.user) 
-  messages: Message[];
+  messages?: Message[];
 
   @Column({ nullable: true })
-  requestId: string;
+  requestId?: string;
 
   @Column({ default: 'text' })
-  type: 'text' | 'video';
+  type?: 'text' | 'video';
 
   @OneToMany(() => Notification, (notification) => notification.user)
-  notifications: Notification[];
+  notifications?: Notification[];
 
   @OneToMany(() => Conversation, (conversation) => conversation.user)
-  conversations: Conversation[];
+  conversations?: Conversation[];
 
   @Column({ type: 'int', nullable: true })
-  referrerId: number | null;
+  referrerId!: number | null;
 
   @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
-  referralBalance: number;
+  referralBalance!: number;
 
   @Column({ nullable: true, unique: true, type: 'varchar', length: 255 })
-  referralCode: string;
+  referralCode!: string;
 
   @ManyToOne(() => User, user => user.referrals)
   @JoinColumn({ name: 'referrerId' })
-  referrer: User;
+  referrer?: User;
 
   @OneToMany(() => User, user => user.referrer)
-  referrals: User[];
+  referrals?: User[];
 
   @Column({ default: false })
-  isReferralPaid: boolean;
+  isReferralPaid?: boolean;
 
   @BeforeInsert()
   async hashPassword() {
