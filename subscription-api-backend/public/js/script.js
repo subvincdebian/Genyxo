@@ -208,7 +208,7 @@ async function fetchUserData() {
     
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
@@ -343,7 +343,7 @@ async function loadProfileData() {
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (!response.ok) throw new Error('Failed to fetch profile');
@@ -500,7 +500,7 @@ function showSignupForm() {
 }
 
 async function processPayment() {
-    if (!authToken) {
+    if (!token) {
         checkoutModal.style.display = 'none';
         openLoginModal();
         return;
@@ -516,7 +516,7 @@ async function processPayment() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 packId: currentProduct.id
@@ -812,7 +812,7 @@ async function handleLoginSubmit(e) {
 
         if (response.ok) {
             localStorage.setItem('authToken', data.access_token);
-            authToken = data.access_token;
+            token = data.access_token;
 
             if (data.user) {
                 localStorage.setItem('userName', data.user.name);
@@ -871,7 +871,7 @@ async function handleSignupSubmit(e) {
 
         if (response.ok) {
             localStorage.setItem('authToken', data.access_token);
-            authToken = data.access_token;
+            token = data.access_token;
 
             if (data.user) {
                 localStorage.setItem('userName', data.user.name);
@@ -902,7 +902,7 @@ async function handleSignupSubmit(e) {
 
 function handleLoginButtonClick(e) {
     e.stopPropagation();
-    if (authToken) {
+    if (token) {
         profilePanel.classList.toggle('show');
     } else {
         openLoginModal();
@@ -1316,7 +1316,7 @@ async function loadTransactionHistory(page = 1) {
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile/transactions?page=${page}&limit=5`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         
         const data = await response.json();
