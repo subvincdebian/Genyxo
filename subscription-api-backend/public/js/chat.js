@@ -376,10 +376,6 @@
                                     if (!Array.isArray(conversations)) conversations = [];
                                     conversations.unshift(newChat);
                                     renderHistoryList();
-
-                                    conversations.unshift(newChat);
-                                    
-                                    renderHistoryList();
                                 }
 
                                 if (data.messageId && (selectedModel.includes('kling') || selectedModel.includes('luma'))) {

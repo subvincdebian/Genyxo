@@ -79,7 +79,7 @@ export class ChatService {
   }
 
   private async getOrCreateConversation(userId: number, conversationId?: number, firstMessage?: string) {
-    if (conversationId) {
+    if (conversationId && conversationId !== 0) {
         const chat = await this.conversationRepository.findOne({ 
           where: { id: conversationId, user: { id: userId } } 
         });
@@ -91,7 +91,7 @@ export class ChatService {
       user: { id: userId } as any, 
       title: title 
     });
-  
+    
     return this.conversationRepository.save(newChat);
   }
 
@@ -170,9 +170,9 @@ export class ChatService {
           
           eventStream.complete();
         } catch (error: any) {
-          this.logger.error(`Stream Error: ${error.message}`);
-          await this.usersService.addCredits(userId, cost);
-          eventStream.error(error);
+            this.logger.error(`Stream Error: ${error.message}`);
+            await this.usersService.addCredits(userId, cost);
+            eventStream.error(error);
         }
       })();
 

@@ -123,12 +123,6 @@ export class ChatController {
       return this.chatService.renameConversation(req.user.id, id, title);
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Delete('conversation/:id')
-  async delete(@Param('id') id: number, @Request() req) {
-      return this.chatService.deleteConversation(req.user.id, id);
-  }
-
   @Post('webhook/video')
   async handleFalWebhook(
     @Body() data: any, 
