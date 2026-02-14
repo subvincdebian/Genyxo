@@ -51,7 +51,7 @@ export class User {
   @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
   facebookId?: string;
 
-  @Column({ default: 0, type: 'int', precision: 10, scale: 2 }) // использовали раньше decimal для дробных чисел
+  @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
   credits!: number;
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)

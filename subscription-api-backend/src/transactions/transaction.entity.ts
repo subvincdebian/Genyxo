@@ -35,7 +35,7 @@ export class Transaction {
   @Column('decimal', { precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   amount!: number;
 
-  @Column()
+  @Column({ type: 'int' })
   creditsAmount!: number;
 
   @Column({ type: 'enum', enum: TransactionStatus, default: TransactionStatus.PENDING })
