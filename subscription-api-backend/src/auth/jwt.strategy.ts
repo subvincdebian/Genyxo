@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.service';
 export interface JwtPayload {
   email: string;
   sub: number;
+  role: string;
 }
 
 @Injectable()
@@ -16,7 +17,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private usersService: UsersService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), 
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        (req: any) => {
+          const token = req?.query?.token;
+          return token && token.length > 0 ? token : null;
+        },
+      ]),
       ignoreExpiration: false, 
       secretOrKey: configService.get<string>('JWT_SECRET')!, 
     });

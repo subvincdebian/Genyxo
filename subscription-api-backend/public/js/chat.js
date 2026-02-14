@@ -188,6 +188,18 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         } */
 
+        function scrollToBottom() {
+            const threshold = 100;
+            const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight <= threshold;
+
+            if (isAtBottom) {
+                chatBox.scrollTo({
+                    top: chatBox.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
         function appendMessage(sender, text, model = '') {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
@@ -280,7 +292,6 @@
 
         async function sendMessage() {
             const text = userInput.value.trim();
-            const messageForTitle = text;
             const token = localStorage.getItem('authToken');
             const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
 
@@ -302,13 +313,21 @@
             let fullContent = "";
 
             try {
-                const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${currentChatId ? `&conversationId=${currentChatId}` : ''}`;
+                const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${currentChatId ? `&conversationId=${currentChatId}` : ''}&token=${token}`;
                 
                 const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    method: 'GET',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'text/event-stream' 
+                    }
                 });
 
                 if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
                     const errData = await response.json();
                     throw new Error(errData.message || 'Server error');
                 }
@@ -317,6 +336,7 @@
                 const decoder = new TextDecoder();
                 let leftover = '';
 
+                let pendingUpdate = false;
                 while (true) {
                     const { value, done } = await reader.read();
                     if (done) break;
@@ -335,7 +355,15 @@
 
                                 if (data.token) {
                                     fullContent += data.token;
-                                    contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(fullContent));
+                                    
+                                    if (!pendingUpdate) {
+                                        pendingUpdate = true;
+                                        requestAnimationFrame(() => {
+                                            contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(fullContent));
+                                            scrollToBottom();
+                                            pendingUpdate = false;
+                                        });
+                                    }
                                 }
 
                                 if (data.conversationId && !currentChatId) {
@@ -344,7 +372,7 @@
 
                                     const newChat = {
                                         id: currentChatId,
-                                        title: messageForTitle.substring(0, 30) + (messageForTitle.length > 30 ? '...' : ''),
+                                        title: text.substring(0, 30) + (text.length > 30 ? '...' : ''),
                                         model: selectedModel
                                     };
 
@@ -449,10 +477,6 @@
                     console.error("Polling error:", e);
                 }
             }, 5000);
-        }
-
-        function scrollToBottom() {
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         function appendError(msg) {

@@ -14,7 +14,8 @@ import {
   InternalServerErrorException,
   Query,
   Sse,
-  MessageEvent
+  MessageEvent,
+  Headers
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,6 +25,7 @@ import { UsersService } from '../users/users.service';
 import { ChatService } from './chat.service';
 import { FalService } from './fal.service';
 import { PricingService } from './pricing.service';
+import { SendMessageDto } from './dto/send-message.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -70,13 +72,12 @@ export class ChatController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('message')
-  async sendMessage(@Body() body: { message: string, model: string, conversationId?: number }, @Request() req) {
+  async sendMessage(@Body() dto: SendMessageDto, @Request() req) {
       const userId = req.user.id;
-      const { message, conversationId, model } = body;
-      const selectedModel = model || 'openai/gpt-4o-mini';
+      const { message, conversationId, model } = dto;
 
-      const modelConfig = this.pricingService.getModelConfig(selectedModel);
-      if (!modelConfig) throw new BadRequestException(`Model ${selectedModel} not supported`);
+      const modelConfig = this.pricingService.getModelConfig(model);
+      if (!modelConfig) throw new BadRequestException(`Model ${model} not supported`);
 
       const cost = modelConfig.cost;
 
@@ -87,12 +88,12 @@ export class ChatController {
       if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
 
       try {
-          const result = await this.chatService.processMessage(userId, message, selectedModel, conversationId);
+          const result = await this.chatService.processMessage(userId, message, model, conversationId);
           await this.usersService.logTransaction(
               userId, 
               -cost,
               TransactionType.SPEND, 
-              `Used AI Model: ${selectedModel}`
+              `Used AI Model: ${model}`
           );
 
           return {
@@ -107,7 +108,7 @@ export class ChatController {
             userId, 
             cost, 
             TransactionType.REFUND, 
-            `Refund for failed ${selectedModel} request`
+            `Refund for failed ${model} request`
           );
           
           throw new InternalServerErrorException(
@@ -129,18 +130,21 @@ export class ChatController {
   }
 
   @Post('webhook/video')
-  async handleFalWebhook(@Body() data: any, @Query('secret') secret: string) {
-      const configSecret = this.configService.get('WEBHOOK_SECRET');
-      if (secret !== configSecret) throw new ForbiddenException('Invalid secret');
+  async handleFalWebhook(
+    @Body() data: any, 
+    @Headers('x-webhook-secret') secret: string
+  ) {
+    const configSecret = this.configService.get('WEBHOOK_SECRET');
+    if (secret !== configSecret) throw new ForbiddenException('Invalid webhook secret');
 
-      const { request_id, status, payload } = data;
+    const { request_id, status, payload } = data;
 
-      if (status === 'COMPLETED' && payload?.video?.url) {
-          await this.chatService.updateVideoUrl(request_id, payload.video.url);
-      } else if (status === 'ERROR') {
-          await this.chatService.updateVideoUrl(request_id, "❌ Error Generating Video.");
-      }
-      return { status: 'ok' };
+    if (status === 'COMPLETED' && payload?.video?.url) {
+      await this.chatService.updateVideoUrl(request_id, payload.video.url);
+    } else if (status === 'ERROR') {
+      await this.chatService.updateVideoUrl(request_id, "❌ Error Generating Video.");
+    }
+    return { status: 'ok' };
   }
 
   @UseGuards(AuthGuard('jwt'))

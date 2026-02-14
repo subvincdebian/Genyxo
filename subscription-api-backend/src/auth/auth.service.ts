@@ -15,20 +15,19 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOneByEmail(email);
+      const user = await this.usersService.findOneByEmail(email);
 
-    if (!user || !user.password || !(await bcrypt.compare(pass, user.password))) {
-        return null; 
-    }
+      if (!user || !user.password) return null;
 
-    if (user && user.password && (await bcrypt.compare(pass, user.password))) {
+      const isMatch = await bcrypt.compare(pass, user.password);
+      if (!isMatch) return null;
+
       if (!user.isEmailVerified) {
-        throw new UnauthorizedException('Please verify your email first (check your spam folder).');
+          throw new UnauthorizedException('Please verify your email first.');
       }
+
       const { password, ...result } = user;
       return result;
-    }
-    return null;
   }
 
   async login(user: any) {

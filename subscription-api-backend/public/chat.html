@@ -2306,7 +2306,6 @@
             input.focus();
         }
 
-        // Helper function to format file size
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -2315,7 +2314,6 @@
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
-        // Unified preview rendering function
         function renderAllPreviews() {
             const previewContainer = document.getElementById('allPreviewItems');
             const featuresGrid = document.querySelector('.features-grid');
@@ -2323,7 +2321,6 @@
 
             attachedFiles.forEach((file, index) => {
                 if (file.type.startsWith('image/')) {
-                    // Image preview
                     const reader = new FileReader();
                     const div = document.createElement('div');
                     div.className = 'unified-preview-item unified-preview-img';
@@ -2338,7 +2335,6 @@
                     reader.readAsDataURL(file);
                     previewContainer.appendChild(div);
                 } else {
-                    // File preview with better layout
                     const div = document.createElement('div');
                     div.className = 'unified-preview-item unified-preview-file';
                     const fileName = file.name.length > 30 ? file.name.substring(0, 27) + '...' : file.name;
@@ -2360,17 +2356,14 @@
                 }
             });
 
-            // Show/hide preview area and feature cards based on content
             const previewArea = document.getElementById('unifiedPreviewArea');
             if (attachedFiles.length > 0) {
                 previewArea.classList.add('has-items');
-                // Hide feature cards when files are added
                 if (featuresGrid) {
                     featuresGrid.classList.add('hidden');
                 }
             } else {
                 previewArea.classList.remove('has-items');
-                // Check if input has text, if not show feature cards
                 const userInput = document.getElementById('userInput');
                 if (userInput && !userInput.value.trim()) {
                     if (featuresGrid) {
@@ -2399,7 +2392,6 @@
 
                     attachedFiles.push(file);
                 }
-
                 renderAllPreviews();
                 
                 const menu = document.getElementById('attachmentMenu');
@@ -2472,7 +2464,6 @@
                     let newHeight = this.scrollHeight;
                     this.style.height = (newHeight > 200 ? 200 : newHeight) + 'px';
                     
-                    // Hide feature cards if there's text or files
                     const featuresGrid = document.querySelector('.features-grid');
                     if (featuresGrid) {
                         if (this.value.trim() || attachedFiles.length > 0) {
@@ -2553,135 +2544,127 @@
         });
     </script>
 
-    <!-- Смена темы и сохранение выбора в  localStorage -->
     <script>
-    // Функция установки темы
-    function setTheme(theme) {
-        const root = document.documentElement;
-        const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        // Снимаем активный класс со всех кнопок
-        document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+        function setTheme(theme) {
+            const root = document.documentElement;
+            const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
 
-        // Логика выбора
-        if (theme === 'system') {
-            localStorage.removeItem('theme'); // Удаляем сохраненную настройку
-            // Если система в темном режиме - ставим темную, иначе светлую
-            if (isSystemDark) {
+            if (theme === 'system') {
+                localStorage.removeItem('theme');
+                if (isSystemDark) {
+                    root.removeAttribute('data-theme');
+                } else {
+                    root.setAttribute('data-theme', 'light');
+                }
+                document.getElementById('theme-system').classList.add('active');
+            } 
+            else if (theme === 'dark') {
+                localStorage.setItem('theme', 'dark');
                 root.removeAttribute('data-theme');
-            } else {
+                document.getElementById('theme-dark').classList.add('active');
+            } 
+            else if (theme === 'light') {
+                localStorage.setItem('theme', 'light');
                 root.setAttribute('data-theme', 'light');
+                document.getElementById('theme-light').classList.add('active');
             }
-            document.getElementById('theme-system').classList.add('active');
-        } 
-        else if (theme === 'dark') {
-            localStorage.setItem('theme', 'dark');
-            root.removeAttribute('data-theme'); // Убираем атрибут (т.к. темная тема дефолтная)
-            document.getElementById('theme-dark').classList.add('active');
-        } 
-        else if (theme === 'light') {
-            localStorage.setItem('theme', 'light');
-            root.setAttribute('data-theme', 'light');
-            document.getElementById('theme-light').classList.add('active');
         }
-    }
 
-    // Инициализация темы при загрузке страницы
-    function initTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        
-        if (savedTheme) {
-            setTheme(savedTheme);
-        } else {
-            setTheme('system');
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else {
+                setTheme('system');
+            }
         }
-    }
 
-    // Запускаем сразу
-    initTheme();
+        initTheme();
 
-    // Слушатель изменений системной темы (если выбрано System)
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        if (!localStorage.getItem('theme')) {
-            setTheme('system');
-        }
-    });
-</script>
-
-<!--Мобильная Версия-->
-<script>
-// --- Mobile Sidebar Logic ---
-document.addEventListener('DOMContentLoaded', () => {
-    const mobileBtn = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    const body = document.body;
-
-    // Убеираем активный класс и мобильный класс при загрузке
-    sidebar.classList.remove('active');
-    sidebar.classList.remove('mobile-open');
-    overlay.classList.remove('active');
-    
-    if (window.innerWidth <= 768) {
-        sidebar.style.display = '';
-        
-        // Убеждаемся, что мини-сайдбар выключен
-        const miniSidebar = document.querySelector('.mini-sidebar');
-        if(miniSidebar) miniSidebar.style.display = 'none';
-    }
-    
-    // Функция открытия/закрытия
-    function toggleMobileSidebar() {
-        sidebar.classList.toggle('mobile-open');
-        overlay.classList.toggle('active');
-    }
-
-    // Клик по кнопке гамбургера
-    if(mobileBtn) {
-        mobileBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Чтобы клик не уходил в документ
-            sidebar.classList.toggle('mobile-open');
-            overlay.classList.toggle('active');
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                setTheme('system');
+            }
         });
-    }
+    </script>
 
-    // Клик по затемнению (чтобы закрыть меню)
-    if(overlay) {
-        overlay.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
+    <!--Мобильная Версия-->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const body = document.body;
+
+            // Убеираем активный класс и мобильный класс при загрузке
+            sidebar.classList.remove('active');
             sidebar.classList.remove('mobile-open');
             overlay.classList.remove('active');
-        });
-    }
-
-    // Предотвращаем закрытие сайдбара при клике на кнопки внутри него
-    const sidebarButtons = document.querySelectorAll('.sidebar-btn, .settings-trigger, .gemini-menu-item, [onclick]');
-    sidebarButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-    });
-
-    // Предотвращаем события внутри сайдбара
-    if(sidebar) {
-        sidebar.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-    }
-
-    // Закрываем меню при выборе чата (опционально)
-    const chatItems = document.querySelectorAll('.chat-item');
-    chatItems.forEach(item => {
-        item.addEventListener('click', () => {
+            
             if (window.innerWidth <= 768) {
-                sidebar.classList.remove('mobile-open');
-                overlay.classList.remove('active');
+                sidebar.style.display = '';
+                
+                // Убеждаемся, что мини-сайдбар выключен
+                const miniSidebar = document.querySelector('.mini-sidebar');
+                if(miniSidebar) miniSidebar.style.display = 'none';
             }
+            
+            // Функция открытия/закрытия
+            function toggleMobileSidebar() {
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+            }
+
+            // Клик по кнопке гамбургера
+            if(mobileBtn) {
+                mobileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Чтобы клик не уходил в документ
+                    sidebar.classList.toggle('mobile-open');
+                    overlay.classList.toggle('active');
+                });
+            }
+
+            // Клик по затемнению (чтобы закрыть меню)
+            if(overlay) {
+                overlay.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    sidebar.classList.remove('mobile-open');
+                    overlay.classList.remove('active');
+                });
+            }
+
+            // Предотвращаем закрытие сайдбара при клике на кнопки внутри него
+            const sidebarButtons = document.querySelectorAll('.sidebar-btn, .settings-trigger, .gemini-menu-item, [onclick]');
+            sidebarButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            });
+
+            // Предотвращаем события внутри сайдбара
+            if(sidebar) {
+                sidebar.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
+            // Закрываем меню при выборе чата (опционально)
+            const chatItems = document.querySelectorAll('.chat-item');
+            chatItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('mobile-open');
+                        overlay.classList.remove('active');
+                    }
+                });
+            });
         });
-    });
-});
-</script>
+    </script>
+
     <div id="customModal" class="modal-overlay" style="display:none;">
         <div class="modal-content">
             <h3 id="modalTitle" style="margin-top:0; color:#fff;">Confirm:</h3>

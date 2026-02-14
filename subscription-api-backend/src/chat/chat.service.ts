@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,6 +15,7 @@ import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
   private openRouter: OpenAI;
 
   constructor(
@@ -141,41 +142,39 @@ export class ChatService {
       
       await this.saveMessage(conversation, text, 'user', model, userId);
 
-      try {
+      (async () => {
+        try {
           const response = await this.openRouter.chat.completions.create({
-              model: model,
-              messages: (await this.getHistory(conversation.id)) as any,
-              stream: true,
+            model: model,
+            messages: (await this.getHistory(conversation.id)) as any,
+            stream: true,
           });
 
           let fullReply = '';
-
-          (async () => {
-              for await (const chunk of response) {
-                  const content = chunk.choices[0]?.delta?.content || '';
-                  if (content) {
-                      fullReply += content;
-                      eventStream.next({ 
-                        data: { token: content, conversationId: conversation.id } 
-                      } as MessageEvent);
-                  }
-              }
-
-              const savedMsg = await this.saveMessage(conversation, fullReply, 'bot', model, userId);
-              
-              await this.usersService.logTransaction(userId, -cost, TransactionType.SPEND, `AI: ${model}`);
-
+          for await (const chunk of response) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            if (content) {
+              fullReply += content;
               eventStream.next({ 
-                data: { status: 'done', messageId: savedMsg.id, creditsLeft: await this.usersService.getBalance(userId) } 
+                data: { token: content, conversationId: conversation.id } 
               } as MessageEvent);
-              
-              eventStream.complete();
-          })();
+            }
+          }
 
-      } catch (error: any) {
+          const savedMsg = await this.saveMessage(conversation, fullReply, 'bot', model, userId);
+          await this.usersService.logTransaction(userId, -cost, TransactionType.SPEND, `AI: ${model}`);
+
+          eventStream.next({ 
+            data: { status: 'done', messageId: savedMsg.id, creditsLeft: await this.usersService.getBalance(userId) } 
+          } as MessageEvent);
+          
+          eventStream.complete();
+        } catch (error: any) {
+          this.logger.error(`Stream Error: ${error.message}`);
           await this.usersService.addCredits(userId, cost);
           eventStream.error(error);
-      }
+        }
+      })();
 
       return eventStream.asObservable();
   }

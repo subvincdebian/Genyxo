@@ -1,8 +1,25 @@
 var API_BASE_URL = 'https://genyxo.com';
-
 let socket;
 
-let authToken = localStorage.getItem('authToken') || null;
+const urlParams = new URLSearchParams(window.location.search);
+const tokenFromUrl = urlParams.get('token');
+const refId = urlParams.get('ref');
+
+if (tokenFromUrl) {
+    localStorage.setItem('authToken', tokenFromUrl);
+    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+}
+
+const token = localStorage.getItem('authToken');
+
+if (refId) {
+    localStorage.setItem('referrerId', refId);
+    // Можно тоже почистить URL от ref:
+    // const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    // window.history.replaceState({}, document.title, cleanUrl);
+}
+
 let currentUserName = localStorage.getItem('userName') || 'My Profile';
 let currentUserEmail = localStorage.getItem('userEmail');
 let currentUserAvatar = localStorage.getItem('userAvatar');
@@ -43,9 +60,6 @@ const payBtn = document.getElementById('payBtn');
 const searchInput = document.querySelector('.search-input');
 const exploreBtn = document.getElementById('exploreBtn');
 const navLinks = document.querySelectorAll('.nav-link');
-
-const urlParams = new URLSearchParams(window.location.search);
-const refId = urlParams.get('ref');
 
 let pollingInterval = null;
 let currentProduct = null;
