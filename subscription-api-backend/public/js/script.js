@@ -332,7 +332,7 @@ function initGlobalSockets() {
 }
 
 async function loadProfileData() {
-    if (!authToken) {
+    if (!token) {
         const protectedPages = ['profile.html', 'notifications.html', 'support.html'];
         if (protectedPages.some(page => window.location.pathname.includes(page))) {
             window.location.href = 'index.html';
