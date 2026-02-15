@@ -9,7 +9,6 @@ const typingIndicator = document.getElementById('typingIndicator');
 const creditBalance = document.getElementById('creditBalance');
 const modelSelect = document.getElementById('modelSelect');
 const historyList = document.getElementById('historyList');
-const menuCredits = document.getElementById('menuCredits');
 
 const navAvatarImg = document.getElementById('navAvatarImg');
 
