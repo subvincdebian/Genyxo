@@ -2081,7 +2081,7 @@
                         <div class="credits-display" id="credits-btn">
                             <button id="creditsBtn" class="creditsBtn primary" aria-label="Get More Credits" onclick="location.href='index.html#products'" style="cursor: default; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); min-width: auto; padding: 0.5rem 1rem;">
                                 <i class="fas fa-coins" style="color: #ffd700;"></i> 
-                                <span id="creditBalance credits-count">0</span> Credits<span class="credits-cta hide-on-mobile credits-text"> - Get more</span>
+                                <span id="creditBalance">0</span> Credits<span class="credits-cta hide-on-mobile credits-text"> - Get more</span>
                             </button>
                         </div>
 
@@ -2464,7 +2464,7 @@
                 userInput.addEventListener('input', function() {
                     this.style.height = 'auto';
                     let newHeight = this.scrollHeight;
-                    /* this.style.height = (newHeight > 200 ? 200 : newHeight) + 'px';*/
+                    this.style.height = (newHeight > 200 ? 200 : newHeight) + 'px';
                     
                     const featuresGrid = document.querySelector('.features-grid');
                     if (featuresGrid) {
