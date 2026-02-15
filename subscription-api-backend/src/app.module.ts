@@ -41,13 +41,27 @@ import { EmailModule } from './email/email.module';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.MYSQLHOST || 'localhost',
+      host: process.env.MYSQLHOST,
       port: parseInt(process.env.MYSQLPORT!) || 3306,
-      username: process.env.MYSQLUSER || 'nest_user',
-      password: process.env.MYSQLPASSWORD || 'Atlanticus123cus123',
-      database: process.env.MYSQLDATABASE || 'my_perfect_db',
+      username: process.env.MYSQLUSER,
+      password: process.env.MYSQLPASSWORD,
+      database: process.env.MYSQLDATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      extra: {
+        connectionLimit: 100, 
+        
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 10000,
+        
+        waitForConnections: true,
+        queueLimit: 0,
+        connectTimeout: 20000,
+      },
+
+      retryAttempts: 10,
+      retryDelay: 3000,
+      autoLoadEntities: true,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'), 
