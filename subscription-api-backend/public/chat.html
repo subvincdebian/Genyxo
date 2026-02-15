@@ -1319,12 +1319,14 @@
                 visibility: hidden;
                 transition: all 0.3s ease;
                 pointer-events: none;
+                -webkit-tap-highlight-color: transparent;
             }
 
             .sidebar-overlay.active {
                 opacity: 1;
                 visibility: visible;
-                pointer-events: all;
+                pointer-events: auto;
+                cursor: pointer;
             }
 
             header {
@@ -2619,6 +2621,11 @@
                 const miniSidebar = document.querySelector('.mini-sidebar');
                 if(miniSidebar) miniSidebar.style.display = 'none';
             }
+
+            function closeMobileMenu() {
+                if (sidebar) sidebar.classList.remove('mobile-open');
+                if (overlay) overlay.classList.remove('active');
+            }
             
             function toggleMobileSidebar() {
                 sidebar.classList.toggle('mobile-open');
@@ -2635,11 +2642,10 @@
 
             if(overlay) {
                 overlay.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    sidebar.classList.remove('mobile-open');
-                    overlay.classList.remove('active');
-                });
+                e.preventDefault();
+                e.stopPropagation();
+                closeMobileMenu();
+            });
             }
 
             const sidebarButtons = document.querySelectorAll('.sidebar-btn, .settings-trigger, .gemini-menu-item, [onclick]');
@@ -2653,6 +2659,27 @@
                 sidebar.addEventListener('click', (e) => {
                     e.stopPropagation();
                 });
+            }
+
+            // 3. Закрытие при свайпе влево (опционально, удобно для телефона)
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            if (sidebar) {
+                sidebar.addEventListener('touchstart', e => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, {passive: true});
+
+                sidebar.addEventListener('touchend', e => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, {passive: true});
+            }
+
+            function handleSwipe() {
+                if (touchStartX - touchEndX > 50) { // Если свайпнули влево
+                    closeMobileMenu();
+                }
             }
 
             const chatItems = document.querySelectorAll('.chat-item');
