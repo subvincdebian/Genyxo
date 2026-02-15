@@ -407,15 +407,12 @@
         }
         
         #chatContainer {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            width: 100%;
-            position: relative;
-            justify-content: flex-start; 
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+            align-items: stretch !important;
         }
-
         #chatBox {
             flex-grow: 1;
             overflow-y: auto;
