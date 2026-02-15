@@ -314,6 +314,12 @@ async function sendMessage() {
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
                     const jsonStr = line.replace('data: ', '').trim();
+
+                    if (jsonStr.startsWith('402')) {
+                        contentDiv.innerHTML = "❌ Insufficient funds on OpenRouter. Please top up your balance.";
+                        return;
+                    }
+
                     if (!jsonStr || jsonStr === '[DONE]') continue;
                     
                     try {
@@ -473,10 +479,9 @@ async function initChat() {
             return;
         }
 
-        /* const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
+        const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
             headers: { 'Authorization': `Bearer ${token}` }
-        });*/
-        loadConversations();
+        })
 
         if (historyRes.status === 401) {
             console.error("User not authorized");

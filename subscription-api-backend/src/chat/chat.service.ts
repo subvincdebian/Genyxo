@@ -148,6 +148,7 @@ export class ChatService {
             model: model,
             messages: (await this.getHistory(conversation.id)) as any,
             stream: true,
+            max_tokens: 2000,
           });
 
           let fullReply = '';
@@ -172,6 +173,10 @@ export class ChatService {
         } catch (error: any) {
             this.logger.error(`Stream Error: ${error.message}`);
             await this.usersService.addCredits(userId, cost);
+            await this.usersService.logTransaction(userId, cost, TransactionType.REFUND, `Stream Error Refund: ${model}`);
+            eventStream.next({ 
+                data: { error: error.message || 'Connection lost' } 
+            } as any);
             eventStream.error(error);
         }
       })();
