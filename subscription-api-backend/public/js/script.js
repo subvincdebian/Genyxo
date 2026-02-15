@@ -53,6 +53,7 @@ const dropdownAvatars = document.querySelectorAll('.dropdown-avatar');
 const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
 const notificationBadge = document.getElementById('notificationBadge');
 const closeProfilePanelBtn = document.getElementById('closeProfilePanel');
+const creditBalance = document.getElementById('creditBalance');
 
 // Checkout Elements (НОВІ)
 const checkoutModal = document.getElementById('checkoutModal');
@@ -77,7 +78,15 @@ const products = [
 ];
 
 function updateBalanceUI(amount) {
-    menuCredits.textContent = `${amount} Credits`;
+    if (creditBalance) {
+        creditBalance.textContent = amount;
+    }
+    const menuCredits = document.getElementById('menuCredits');
+    if (menuCredits) {
+        menuCredits.textContent = amount;
+    }
+    
+    localStorage.setItem('userCredits', amount);
 }
 
 function updateUIState(isLoggedIn, userData = null) {

@@ -6,7 +6,6 @@ const welcomeScreen = document.getElementById('welcomeScreen');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const typingIndicator = document.getElementById('typingIndicator');
-const creditBalance = document.getElementById('creditBalance');
 const modelSelect = document.getElementById('modelSelect');
 const historyList = document.getElementById('historyList');
 
@@ -14,7 +13,7 @@ const navAvatarImg = document.getElementById('navAvatarImg');
 
 const toggleBtn = document.getElementById('sidebarToggle');
 const sidebar = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
+const sidebarOverlay = document.getElementById('sidebarOverlay');м
 
 function toggleChatView(hasMessages) {
     if (hasMessages) {
