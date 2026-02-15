@@ -134,11 +134,6 @@ async function selectChat(id) {
 }
 
 async function loadConversations() {
-    const API_BASE_URL = 'https://genyxo.com';
-    const token = localStorage.getItem('authToken');
-
-    console.log("Пытаюсь отправить запрос на:", `${API_BASE_URL}/chat/conversations`);
-
     try {
         const res = await fetch(`${API_BASE_URL}/chat/conversations`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -146,12 +141,6 @@ async function loadConversations() {
         if (res.ok) {
             conversations = await res.json();
             renderHistoryList();
-            
-            if (conversations.length > 0 && !currentChatId) {
-                selectChat(conversations[0].id);
-            } else if (conversations.length === 0) {
-                startNewChat();
-            }
         }
     } catch(e) { console.error(e); }
 }
@@ -474,35 +463,21 @@ async function initChat() {
         }
 
         if (!token) {
-            console.warn("No token found, skipping history load.");
             toggleChatView(false);
             return;
         }
 
-        const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatIdFromUrl = urlParams.get('id');
 
-        if (historyRes.status === 401) {
-            console.error("User not authorized");
-            return;
-        }
-        
-        const contentType = historyRes.headers.get("content-type");
-        if (historyRes.ok && contentType && contentType.includes("application/json")) {
-            const history = await historyRes.json();
-            
-            if (Array.isArray(history) && history.length > 0) {
-                toggleChatView(true);
-                history.forEach(msg => {
-                    appendMessage(msg.sender, msg.content, msg.model);
-                });
-            } else {
-                toggleChatView(false);
-            }
+        await loadConversations();
+
+        if (chatIdFromUrl) {
+            await selectChat(chatIdFromUrl);
+        } else if (conversations && conversations.length > 0) {
+            await selectChat(conversations[0].id);
         } else {
-            console.warn("Chat history is unavailable or returned an error. Loading empty chat.");
-            toggleChatView(false); 
+            startNewChat();
         }
 
     } catch (e) {
@@ -744,5 +719,4 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         initChat();
     }
-    loadConversations();
 });
