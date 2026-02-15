@@ -2464,16 +2464,16 @@
                 userInput.addEventListener('input', function() {
                     this.style.height = 'auto';
                     let newHeight = this.scrollHeight;
-                    this.style.height = (newHeight > 200 ? 200 : newHeight) + 'px';
+                    /* this.style.height = (newHeight > 200 ? 200 : newHeight) + 'px';*/
                     
-                    /* const featuresGrid = document.querySelector('.features-grid');
+                    const featuresGrid = document.querySelector('.features-grid');
                     if (featuresGrid) {
                         if (this.value.trim() || attachedFiles.length > 0) {
                             featuresGrid.classList.add('hidden');
                         } else {
                             featuresGrid.classList.remove('hidden');
                         }
-                    }*/
+                    }
                 });
             }
 
