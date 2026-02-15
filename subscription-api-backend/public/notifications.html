@@ -272,8 +272,6 @@
     <script src="js/script.js" defer></script>
 
     <script>
-
-        const token = localStorage.getItem('authToken');
         
         function safeTranslate(path, defaultText) {
             if (!window.i18n || !window.i18n.translations) return defaultText;
@@ -310,6 +308,7 @@
         }
 
         async function loadNotifications() {
+            let API_BASE_URL = 'https://genyxo.com';
             if (!token) return;
 
             try {
@@ -349,6 +348,7 @@
         }
 
         async function markRead(id, element) {
+            let API_BASE_URL = 'https://genyxo.com';
             element.classList.remove('unread');
             await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
                 method: 'PATCH',
@@ -360,6 +360,7 @@
         }
         
         async function markAllRead() {
+            let API_BASE_URL = 'https://genyxo.com';
             const confirmText = safeTranslate('notifications.confirm_read_all', 'Mark all as read?');
             if(!confirm(confirmText)) return;
             
@@ -382,8 +383,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const t = localStorage.getItem('authToken');
-            if (!t) {
+            if (!token) {
                 window.location.href = 'index.html';
             } else {
                 loadNotifications();

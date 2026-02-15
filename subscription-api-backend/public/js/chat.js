@@ -467,10 +467,9 @@ async function initChat() {
             const dropdownAv = document.getElementById('dropdownAvatars');
             if (dropdownAv) dropdownAv.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
             
-            const cb = document.getElementById('creditBalance');
             if (menuName) menuName.textContent = user.name || 'User';
             if (menuEmail) menuEmail.textContent = user.email || '';
-            if (cb) cb.textContent = user.credits || 0;
+            if (menuCredits) menuCredits.textContent = user.credits || 0;
         }
 
         if (!token) {
