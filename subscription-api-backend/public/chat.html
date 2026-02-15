@@ -2582,13 +2582,13 @@
             }
         }
 
-        initTheme();
-
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
             if (!localStorage.getItem('theme')) {
                 setTheme('system');
             }
         });
+
+        initTheme();
     </script>
 
     <!--Мобильная Версия-->
@@ -2599,7 +2599,6 @@
             const overlay = document.getElementById('sidebar-overlay');
             const body = document.body;
 
-            // Убеираем активный класс и мобильный класс при загрузке
             sidebar.classList.remove('active');
             sidebar.classList.remove('mobile-open');
             overlay.classList.remove('active');
@@ -2607,27 +2606,23 @@
             if (window.innerWidth <= 768) {
                 sidebar.style.display = '';
                 
-                // Убеждаемся, что мини-сайдбар выключен
                 const miniSidebar = document.querySelector('.mini-sidebar');
                 if(miniSidebar) miniSidebar.style.display = 'none';
             }
             
-            // Функция открытия/закрытия
             function toggleMobileSidebar() {
                 sidebar.classList.toggle('mobile-open');
                 overlay.classList.toggle('active');
             }
 
-            // Клик по кнопке гамбургера
             if(mobileBtn) {
                 mobileBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Чтобы клик не уходил в документ
+                    e.stopPropagation();
                     sidebar.classList.toggle('mobile-open');
                     overlay.classList.toggle('active');
                 });
             }
 
-            // Клик по затемнению (чтобы закрыть меню)
             if(overlay) {
                 overlay.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -2637,7 +2632,6 @@
                 });
             }
 
-            // Предотвращаем закрытие сайдбара при клике на кнопки внутри него
             const sidebarButtons = document.querySelectorAll('.sidebar-btn, .settings-trigger, .gemini-menu-item, [onclick]');
             sidebarButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -2645,14 +2639,12 @@
                 });
             });
 
-            // Предотвращаем события внутри сайдбара
             if(sidebar) {
                 sidebar.addEventListener('click', (e) => {
                     e.stopPropagation();
                 });
             }
 
-            // Закрываем меню при выборе чата (опционально)
             const chatItems = document.querySelectorAll('.chat-item');
             chatItems.forEach(item => {
                 item.addEventListener('click', () => {
