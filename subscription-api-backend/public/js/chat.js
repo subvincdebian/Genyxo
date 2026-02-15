@@ -134,7 +134,7 @@ async function selectChat(id) {
 }
 
 async function loadConversations() {
-    const API_BASE_URL = 'http://genyxo.com';
+    const API_BASE_URL = 'https://genyxo.com';
     const token = localStorage.getItem('authToken');
 
     console.log("Пытаюсь отправить запрос на:", `${API_BASE_URL}/chat/conversations`);
