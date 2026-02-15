@@ -113,6 +113,11 @@ function startNewChat(e) {
 }
 
 async function selectChat(id) {
+    if (!id || id === 'null') {
+        startNewChat();
+        return;
+    }
+
     if (currentChatId === id) return;
     
     currentChatId = id;
@@ -120,6 +125,7 @@ async function selectChat(id) {
     
     chatBox.innerHTML = ''; 
     toggleChatView(true);
+    updateUrl(id);
 
     try {
         const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
@@ -127,7 +133,12 @@ async function selectChat(id) {
         });
         if (res.ok) {
             const messages = await res.json();
-            messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
+            chatBox.innerHTML = ''; 
+            if (messages.length > 0) {
+                messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
+            } else {
+                toggleChatView(false);
+            }
         }
     } catch(e) { console.error(e); }
 }
@@ -471,9 +482,9 @@ async function initChat() {
 
         await loadConversations();
 
-        if (chatIdFromUrl) {
+        if (chatIdFromUrl && chatIdFromUrl !== 'null') {
             await selectChat(chatIdFromUrl);
-        } else if (conversations && conversations.length > 0) {
+        } else if (Array.isArray(conversations) && conversations.length > 0 && conversations[0].id) {
             await selectChat(conversations[0].id);
         } else {
             startNewChat();
