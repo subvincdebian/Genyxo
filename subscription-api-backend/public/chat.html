@@ -1558,8 +1558,8 @@
             }
 
             .login-btn {
-                width: 38px !important;
-                height: 38px !important;
+                width: 36px !important;
+                height: 36px !important;
                 padding: 0 !important;
                 min-width: 30px !important;
                 margin-right: -2px !important;
@@ -1570,8 +1570,8 @@
             }
 
             .nav-avatar-small {
-                width: 26px !important;
-                height: 26px !important;
+                width: 36px !important;
+                height: 36px !important;
                 background-color: none;
                 border: none;
                 background: none;
@@ -2615,7 +2615,7 @@
 
     <!--Мобильная Версия-->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+         document.addEventListener('DOMContentLoaded', () => {
             const mobileBtn = document.getElementById('sidebarToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
@@ -2636,17 +2636,14 @@
                 });
             }
 
-            // 2. КЛИК ПО ПУСТОМУ МЕСТУ (Оверлею)
+            // 2. КЛИК ПО ПУСТОМУ МЕСТУ (Оверлею) - теперь будет работать!
             if(overlay) {
-                
-                overlay.addEventListener('click', closeAll);
-                overlay.addEventListener('touchend', (e) => {
-                    e.preventDefault(); // Чтобы не было двойного клика
-                    closeAll();
+                overlay.addEventListener('click', () => {
+                    closeMenu();
                 });
             }
 
-            // 3. Свайп влево для закрытия
+            // 3. Свайп влево для закрытия (ваш рабочий код)
             let touchStartX = 0;
             let touchEndX = 0;
             sidebar.addEventListener('touchstart', e => {
