@@ -13,7 +13,7 @@ const navAvatarImg = document.getElementById('navAvatarImg');
 
 const toggleBtn = document.getElementById('sidebarToggle');
 const sidebar = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');м
+const sidebarOverlay = document.getElementById('sidebarOverlay');
 
 function toggleChatView(hasMessages) {
     if (hasMessages) {
