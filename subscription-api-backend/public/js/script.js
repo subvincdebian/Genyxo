@@ -78,14 +78,16 @@ const products = [
 ];
 
 function updateBalanceUI(amount) {
-    if (creditBalance) {
-        creditBalance.textContent = amount;
+    const creditBalanceEl = document.getElementById('creditBalance');
+    if (creditBalanceEl) {
+        creditBalanceEl.textContent = amount;
     }
+
     const menuCredits = document.getElementById('menuCredits');
     if (menuCredits) {
         menuCredits.textContent = amount;
     }
-    
+
     localStorage.setItem('userCredits', amount);
 }
 
