@@ -332,13 +332,13 @@ function initGlobalSockets() {
 }
 
 async function loadProfileData() {
-    /* if (!authToken) {
+    if (!authToken) {
         const protectedPages = ['profile.html', 'notifications.html', 'support.html'];
         if (protectedPages.some(page => window.location.pathname.includes(page))) {
             window.location.href = 'index.html';
         }
         return;
-    } */
+    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {

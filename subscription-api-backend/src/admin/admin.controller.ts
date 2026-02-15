@@ -8,9 +8,10 @@ import { TransactionStatus } from '../transactions/transaction.entity';
 import { AdminService } from './admin.service';
 import { PaymentService } from '../payment/payment.service'; 
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('are-you-sure-you-want-to-admin')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
   constructor(

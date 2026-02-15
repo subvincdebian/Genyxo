@@ -7,6 +7,7 @@ import { PaymentModule } from '../payment/payment.module';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     PaymentModule,
     NotificationsModule,
   ],
-  providers: [AdminService],
+  providers: [AdminService, RolesGuard],
   controllers: [AdminController],
 })
 export class AdminModule {}

@@ -473,9 +473,10 @@ async function initChat() {
             return;
         }
 
-        const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
+        /* const historyRes = await fetch(`${API_BASE_URL}/chat/history`, {
             headers: { 'Authorization': `Bearer ${token}` }
-        });
+        });*/
+        loadConversations();
 
         if (historyRes.status === 401) {
             console.error("User not authorized");
