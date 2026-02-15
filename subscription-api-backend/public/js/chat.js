@@ -6,9 +6,10 @@ const welcomeScreen = document.getElementById('welcomeScreen');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const typingIndicator = document.getElementById('typingIndicator');
-const creditBalanceEl = document.getElementById('creditBalance');
+const creditBalance = document.getElementById('creditBalance');
 const modelSelect = document.getElementById('modelSelect');
 const historyList = document.getElementById('historyList');
+const menuCredits = document.getElementById('menuCredits');
 
 const navAvatarImg = document.getElementById('navAvatarImg');
 
