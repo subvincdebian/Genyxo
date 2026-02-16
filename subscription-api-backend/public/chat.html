@@ -1470,6 +1470,189 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+.search-modal-overlay {
+    display: none; /* Скрыто по умолчанию */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px); /* Эффект размытия фона */
+    z-index: 10000; /* Поверх всего */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.search-modal-window {
+    background-color: #1e1e1e; /* Чуть светлее фона body */
+    width: 100%;
+    max-width: 600px; /* Ширина как у ChatGPT */
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.search-modal-overlay.active .search-modal-window {
+    transform: scale(1);
+}
+
+/* Шапка модального окна */
+.search-modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.search-modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.search-close-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 5px;
+}
+
+.search-close-btn:hover {
+    color: #fff;
+}
+
+/* Поле ввода */
+.search-input-container {
+    padding: 15px 20px;
+    position: relative;
+    border-bottom: 1px solid #333;
+}
+
+.search-input-container i {
+    position: absolute;
+    left: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+#modalSearchInput {
+    width: 100%;
+    background-color: #2a2a2a;
+    border: 1px solid transparent;
+    color: #fff;
+    padding: 12px 15px 12px 40px; /* Отступ слева под иконку */
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+#modalSearchInput:focus {
+    background-color: #333;
+    border-color: #555;
+}
+
+/* Список результатов */
+.search-results-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    list-style: none;
+    margin: 0;
+}
+
+/* Скроллбар для списка */
+.search-results-list::-webkit-scrollbar {
+    width: 6px;
+}
+.search-results-list::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+/* Элементы списка (копируем стиль из сайдбара, но адаптируем) */
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #ececec;
+    transition: background 0.2s;
+    margin-bottom: 4px;
+}
+
+.search-result-item:hover {
+    background-color: #2a2a2a;
+}
+
+.search-result-item i {
+    color: #888;
+    font-size: 14px;
+}
+.search-result-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+}
+
+/* Сообщение "Ничего не найдено" */
+.search-no-results {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    display: none;
+}
+
+/* Нижняя панель с кнопкой Новый чат */
+.search-modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #333;
+    background-color: #1e1e1e; /* Или чуть темнее */
+}
+
+.modal-new-chat-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #00c1cb, #16aa8d);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+}
+
+.modal-new-chat-btn:hover {
+    opacity: 0.9;
+}
+
         @media (max-width: 768px) {
             /* Sidebar - Mobile positioning */
             #sidebar {
@@ -2105,7 +2288,7 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                         <span data-i18n="chat.new_chat">New Chat</span>
                     </button>
-                    <button class="icon-btn" data-tooltip="Search">
+                    <button class="icon-btn" data-tooltip="Search" id="searchChatsBtn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     </button>
                     <button class="icon-btn" data-tooltip="Archive">
@@ -2199,7 +2382,7 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                 </div>
 
-                <div class="mini-btn" data-tooltip="Search">
+                <div class="mini-btn" id="railSearchBtn" data-tooltip="Search">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
 
@@ -2484,6 +2667,30 @@
     <section class="seo-content" style="display:none;"> <h2>Why choose Genyxo AI Chat?</h2>
         <p>Genyxo provides a seamless interface for interacting with multiple artificial intelligence models. Whether you need help with coding using GPT-4o, creative writing with Gemini, or cinematic video generation with Sora, our token-based platform (cr) makes it accessible. Our neural network chat services are designed for developers and creative professionals seeking high-performance AI tools in one integrated chat room.</p>
     </section>
+
+    <div id="searchChatsModal" class="search-modal-overlay">
+        <div class="search-modal-window">
+            <div class="search-modal-header">
+                <span class="search-modal-title">Search history</span>
+                <button class="search-close-btn" id="closeSearchModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="search-input-container">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="modalSearchInput" placeholder="Find previous chats..." autocomplete="off">
+            </div>
+
+            <ul class="search-results-list" id="modalSearchResults">
+                </ul>
+            <div id="searchNoResults" class="search-no-results">No chats found matching your search.</div>
+
+            <div class="search-modal-footer">
+                <button class="modal-new-chat-btn" id="modalNewChatBtn">
+                    <i class="fa-solid fa-plus"></i> Start New Chat
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div id="faqWindow">
         <div class="faq-header">
@@ -2987,6 +3194,127 @@
             }, 300);
         });
     });
+    </script>
+
+    <!-- Поиск в Сайдбарах-->
+    <script>
+        /* --- Логика Модального Окна Поиска --- */
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchModalOverlay = document.getElementById('searchChatsModal');
+            const closeSearchBtn = document.getElementById('closeSearchModal');
+            const modalSearchInput = document.getElementById('modalSearchInput');
+            const modalSearchResults = document.getElementById('modalSearchResults');
+            const modalNewChatBtn = document.getElementById('modalNewChatBtn');
+            const noResultsMsg = document.getElementById('searchNoResults');
+            
+            // Кнопки открытия из сайдбаров (используем существующие ID)
+            const sidebarSearchBtn = document.getElementById('searchChatsBtn');
+            const railSearchBtn = document.getElementById('railSearchBtn');
+
+            // Функция открытия модального окна
+            function openSearchModal() {
+                populateModalList(); // Загружаем актуальный список чатов
+                searchModalOverlay.classList.add('active');
+                // Фокус на поле ввода с небольшой задержкой для анимации
+                setTimeout(() => modalSearchInput.focus(), 100);
+            }
+
+            // Функция закрытия
+            function closeSearchModal() {
+                searchModalOverlay.classList.remove('active');
+                modalSearchInput.value = ''; // Очистка поля
+            }
+
+            // Клик по кнопкам поиска
+            if(sidebarSearchBtn) sidebarSearchBtn.addEventListener('click', openSearchModal);
+            if(railSearchBtn) railSearchBtn.addEventListener('click', openSearchModal);
+
+            // Закрытие на крестик
+            closeSearchBtn.addEventListener('click', closeSearchModal);
+
+            // Закрытие по клику на затемненный фон
+            searchModalOverlay.addEventListener('click', (e) => {
+                if (e.target === searchModalOverlay) {
+                    closeSearchModal();
+                }
+            });
+
+            // Закрытие по ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && searchModalOverlay.classList.contains('active')) {
+                    closeSearchModal();
+                }
+            });
+
+            // Функция для копирования списка чатов из основного сайдбара в модальное окно
+            function populateModalList() {
+                modalSearchResults.innerHTML = ''; // Очистить текущий список
+                noResultsMsg.style.display = 'none';
+
+                // Берем оригинальный список из DOM (так мы сохраним все ID и данные)
+                const originalList = document.querySelectorAll('#chatHistory li');
+                
+                originalList.forEach(li => {
+                    // Клонируем элемент списка
+                    const clone = li.cloneNode(true);
+                    
+                    // Убираем кнопку удаления (мусорку) из поиска для чистоты, если нужно
+                    const deleteBtn = clone.querySelector('.delete-chat-btn');
+                    if(deleteBtn) deleteBtn.remove();
+                    
+                    clone.classList.add('search-result-item'); // Добавляем класс для стилизации в модальном окне
+                    
+                    // Добавляем обработчик клика (так как клонирование не копирует ивенты)
+                    clone.addEventListener('click', () => {
+                        const originalId = li.getAttribute('data-id') || li.id; // Пытаемся найти ID
+                        
+                        // Имитируем клик по оригинальному элементу в сайдбаре
+                        // Это самый надежный способ запустить логику загрузки чата
+                        if (li) li.click(); 
+                        
+                        closeSearchModal();
+                        
+                        // Если мобильная версия, можно закрыть и сайдбар
+                        if (window.innerWidth <= 768) {
+                            document.querySelector('.sidebar').classList.remove('active');
+                            document.querySelector('.modal-overlay').classList.remove('active');
+                        }
+                    });
+
+                    modalSearchResults.appendChild(clone);
+                });
+            }
+
+            // Логика "Живого поиска"
+            modalSearchInput.addEventListener('input', function() {
+                const filter = this.value.toLowerCase();
+                const items = modalSearchResults.querySelectorAll('li');
+                let hasVisibleItems = false;
+
+                items.forEach(item => {
+                    // Ищем текст внутри span или самого li
+                    const text = item.textContent || item.innerText;
+                    if (text.toLowerCase().indexOf(filter) > -1) {
+                        item.style.display = 'flex'; // Показываем (flex, так как в CSS search-result-item display: flex)
+                        hasVisibleItems = true;
+                    } else {
+                        item.style.display = 'none'; // Скрываем
+                    }
+                });
+
+                // Показать/скрыть сообщение "Ничего не найдено"
+                noResultsMsg.style.display = hasVisibleItems ? 'none' : 'block';
+            });
+
+            // Кнопка "Новый чат" внутри модального окна
+            modalNewChatBtn.addEventListener('click', () => {
+                // Кликаем по настоящей кнопке New Chat в сайдбаре
+                const realNewChatBtn = document.getElementById('newChatBtn');
+                if (realNewChatBtn) realNewChatBtn.click();
+                
+                closeSearchModal();
+            });
+        });
     </script>
 
     <div id="customModal" class="modal-overlay" style="display:none;">
