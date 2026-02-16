@@ -3252,40 +3252,47 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Функция для копирования списка чатов
+    // Функция для копирования списка чатов из сайдбара в модальное окно поиска
     function populateModalList() {
         if (!modalSearchResults) return;
         modalSearchResults.innerHTML = ''; 
         if (noResultsMsg) noResultsMsg.style.display = 'none';
 
-        // ИСПРАВЛЕНО: берем .history-item (так как у вас в CSS это дивы, а не li)
-        const originalList = document.getElementById('historyList');
+        // ИСПРАВЛЕНО: берем элементы так, как они называются в вашем renderHistoryList
+        const originalList = document.querySelectorAll('#historyList .chat-item');
         
         if (originalList.length === 0) {
+            // Если в сайдбаре пусто
             if (noResultsMsg) noResultsMsg.style.display = 'block';
             return;
         }
 
-        originalList.forEach(li => {
-            // Клонируем элемент чата из сайдбара
-            const clone = li.cloneNode(true);
+        originalList.forEach(originalItem => {
+            // Клонируем элемент чата
+            const clone = originalItem.cloneNode(true);
             
-            // Удаляем иконки удаления/редактирования из клона, чтобы в поиске было чисто
-            const extraIcons = clone.querySelectorAll('button, .delete-chat-btn, i.fa-trash, i.fa-pen');
-            extraIcons.forEach(icon => icon.remove());
+            // 1. Убираем лишнее: удаляем кнопку настроек (три точки) и выпадающее меню
+            const optionsBtn = clone.querySelector('.chat-options-btn');
+            const dropdown = clone.querySelector('.options-dropdown');
+            if (optionsBtn) optionsBtn.remove();
+            if (dropdown) dropdown.remove();
             
+            // 2. Стилизуем клон для поиска
+            clone.classList.remove('active'); // Убираем подсветку активного чата из сайдбара
             clone.classList.add('search-result-item'); 
             
-            // Обработчик клика: имитируем нажатие на настоящий чат в сайдбаре
+            // 3. Обработка клика
             clone.addEventListener('click', () => {
-                li.click(); 
+                // Имитируем клик по настоящему элементу в сайдбаре
+                originalItem.click(); 
                 closeSearchModal();
                 
                 // Закрываем мобильный сайдбар, если он открыт
-                const sidebar = document.getElementById('sidebar');
-                const overlay = document.getElementById('sidebar-overlay');
-                if (sidebar) sidebar.classList.remove('mobile-open');
-                if (overlay) overlay.classList.remove('active');
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar && sidebar.classList.contains('active')) {
+                   const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+                   if(closeSidebarBtn) closeSidebarBtn.click();
+                }
             });
 
             modalSearchResults.appendChild(clone);
