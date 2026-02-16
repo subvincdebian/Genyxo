@@ -3259,7 +3259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (noResultsMsg) noResultsMsg.style.display = 'none';
 
         // ИСПРАВЛЕНО: берем .history-item (так как у вас в CSS это дивы, а не li)
-        const originalList = document.querySelectorAll('#chatHistory .history-item');
+        const originalList = document.getElementById('historyList');
         
         if (originalList.length === 0) {
             if (noResultsMsg) noResultsMsg.style.display = 'block';
