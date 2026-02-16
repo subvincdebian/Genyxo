@@ -6,7 +6,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
-import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
+import { ThrottlerStorageRedisService } from './common/throttler-redis.storage';
+import { RedisService } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 
 import { join } from 'path';
@@ -20,9 +21,11 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
 import { SupportModule } from './support/support.module';
 import { EmailModule } from './email/email.module';
+import { RedisCacheModule } from './common/redis-cache.module';
 
 @Module({
   imports: [
+    RedisCacheModule,
     RedisModule.forRoot({
       config: {
         host: process.env.REDISHOST || 'localhost',
@@ -31,19 +34,18 @@ import { EmailModule } from './email/email.module';
       },
     }),
     ThrottlerModule.forRootAsync({
-      useFactory: () => ({
-        throttlers: [{
-          ttl: 60000,
-          limit: 20,
-        }],
-        storage: new ThrottlerStorageRedisService(
-          new Redis({
-            host: process.env.REDISHOST || 'localhost',
-            port: parseInt(process.env.REDISPORT!) || 6379,
-            password: process.env.REDISPASSWORD,
-          })
-        ),
-      }),
+      imports: [RedisModule],
+      inject: [RedisService],
+      useFactory: (redisService: RedisService) => {
+        const redisInstance = redisService.getOrThrow();
+        return {
+          throttlers: [{
+            ttl: 60000,
+            limit: 20,
+          }],
+          storage: new ThrottlerStorageRedisService(redisInstance),
+        };
+      },
     }),
     ConfigModule.forRoot({ isGlobal: true }),
     MailerModule.forRoot({

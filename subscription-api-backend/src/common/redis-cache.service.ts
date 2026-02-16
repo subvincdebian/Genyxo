@@ -10,16 +10,16 @@ export class RedisCacheService {
     this.redis = this.redisService.getOrThrow();
   }
 
-  async getUserBalance(userId: number): Promise<number | null> {
-    const balance = await this.redis.get(`user_balance:${userId}`);
-    return balance ? parseFloat(balance) : null;
+  async getBalance(userId: number): Promise<number | null> {
+    const res = await this.redis.get(`user_balance:${userId}`);
+    return res ? parseFloat(res) : null;
   }
 
-  async setUserBalance(userId: number, balance: number) {
-    await this.redis.set(`user_balance:${userId}`, balance.toString(), 'EX', 3600);
+  async setBalance(userId: number, amount: number) {
+    await this.redis.set(`user_balance:${userId}`, amount.toString(), 'EX', 3600);
   }
 
-  async invalidateBalance(userId: number) {
+  async invalidate(userId: number) {
     await this.redis.del(`user_balance:${userId}`);
   }
 }
