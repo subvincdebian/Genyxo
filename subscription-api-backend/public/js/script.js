@@ -177,10 +177,13 @@ function handleLogout() {
 }
 
 async function loadAffiliateData() {
-    const affBalance = parseFloat(document.getElementById('affiliateBalance').innerText);
-    const linkInput = document.getElementById('referralLinkInput');
+    const els = {
+        balance: document.getElementById('affiliateBalance'),
+        link:    document.getElementById('referralLinkInput'),
+        invited: document.getElementById('invitedCount')
+    };
 
-    if (!token || !affBalance) return;
+    if (!token) return;
 
     try {
         const response = await fetch(`${API_BASE_URL}/profile/affiliate`, {
@@ -191,26 +194,31 @@ async function loadAffiliateData() {
             }
         });
         
-        if (response.ok) {
-            const data = await response.json();
-            
-            const rawBalance = parseFloat(data.balance || 0);
-            affBalance.textContent = rawBalance.toFixed(2);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-            if (linkInput) {
-                linkInput.value = data.referralLink || 'Error generating link';
-            }
+        const data = await response.json();
 
-            const invitedElement = document.getElementById('invitedCount');
-            if (invitedElement) {
-                invitedElement.textContent = data.invitedCount || 0;
-            }
+        const { 
+            balance = 0, 
+            referralLink = '', 
+            invitedCount = 0 
+        } = data;
 
-        } else {
-            console.warn('Failed to load affiliate stats');
+        if (els.balance) {
+            els.balance.textContent = Number(balance).toFixed(2);
+        }
+
+        if (els.link) {
+            els.link.value = referralLink || 'Link not available';
+        }
+
+        if (els.invited) {
+            els.invited.textContent = invitedCount;
         }
     } catch (e) {
         console.error("Affiliate load error:", e);
+        if (els.balance) els.balance.textContent = "0.00";
+        if (els.link) els.link.value = "Failed to load link";
     }
 }
 
@@ -1311,15 +1319,6 @@ function requestPayout() {
     }
 } */
 
-function renderPagination(meta) {
-    const container = document.getElementById('pagination-controls');
-    let html = '';
-    for (let i = 1; i <= meta.totalPages; i++) {
-        html += `<button class="${i === meta.currentPage ? 'active' : ''}" onclick="loadTransactionHistory(${i})">${i}</button>`;
-    }
-    container.innerHTML = html;
-}
-
 async function loadTransactionHistory(page = 1) {
     const tbody = document.getElementById('transactions-body');
     if (!tbody) return;
@@ -1354,6 +1353,15 @@ async function loadTransactionHistory(page = 1) {
     } catch (err) {
         console.error("Failed to load transactions", err);
     }
+}
+
+function renderPagination(meta) {
+    const container = document.getElementById('pagination-controls');
+    let html = '';
+    for (let i = 1; i <= meta.totalPages; i++) {
+        html += `<button class="${i === meta.currentPage ? 'active' : ''}" onclick="loadTransactionHistory(${i})">${i}</button>`;
+    }
+    container.innerHTML = html;
 }
 
 async function purchasePack(packId) {
