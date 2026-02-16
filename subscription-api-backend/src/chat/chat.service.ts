@@ -7,11 +7,10 @@ import { Subject } from 'rxjs';
 import { fal } from "@fal-ai/client"; 
 import { Message } from './message.entity';
 import { Conversation } from './conversation.entity';
+import { TransactionType } from '../transactions/transaction.entity';
+import { UsersService } from '../users/users.service';
+import { PricingService, ModelType } from './pricing.service';
 import { FalService } from './fal.service';
-import { PricingService } from './pricing.service';
-import { ModelType } from './pricing.service';
-import { TransactionType } from 'src/transactions/transaction.entity';
-import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ChatService {
@@ -41,8 +40,8 @@ export class ChatService {
         content,
         sender,
         model,
-        conversation,
-        user: { id: userId } as any,
+        conversationId: conversation.id,
+        userId: userId,
         requestId
     });
     return this.messageRepository.save(msg);
@@ -50,7 +49,7 @@ export class ChatService {
 
   async getHistory(conversationId: number) {
     const messages = await this.messageRepository.find({
-        where: { conversation: { id: conversationId } },
+        where: { conversationId },
         order: { createdAt: 'ASC' },
         take: 50
     });
@@ -62,14 +61,14 @@ export class ChatService {
 
   async getUserConversations(userId: number) {
     return this.conversationRepository.find({
-      where: { user: { id: userId } },
+      where: { userId },
       order: { updatedAt: 'DESC' }, 
     });
   }
 
   async getConversationMessages(userId: number, conversationId: number) {
     const conversation = await this.conversationRepository.findOne({
-      where: { id: conversationId, user: { id: userId } },
+      where: { id: conversationId, userId },
       relations: ['messages'],
       order: { messages: { createdAt: 'ASC' } } as any
     });
@@ -78,17 +77,17 @@ export class ChatService {
     return conversation.messages;
   }
 
-  private async getOrCreateConversation(userId: number, conversationId?: number, firstMessage?: string) {
+  private async getOrCreateConversation(userId: number, conversationId?: number, firstMessage?: string): Promise<Conversation> {
     if (conversationId && conversationId !== 0) {
         const chat = await this.conversationRepository.findOne({ 
-          where: { id: conversationId, user: { id: userId } } 
+          where: { id: conversationId, userId } 
         });
         if (!chat) throw new NotFoundException('Chat not found');
         return chat;
     }
     const title = firstMessage ? (firstMessage.substring(0, 30)) : "New Chat";
     const newChat = this.conversationRepository.create({ 
-      user: { id: userId } as any, 
+      userId, 
       title: title 
     });
     
@@ -110,7 +109,7 @@ export class ChatService {
             sender: 'bot',
             model,
             conversation,
-            user: { id: userId } as any,
+            userId: userId,
             requestId: requestId
         });
         const savedBotMsg = await this.messageRepository.save(botMsg);
@@ -253,14 +252,14 @@ export class ChatService {
   }
 
   async renameConversation(userId: number, id: number, newTitle: string) {
-    const chat = await this.conversationRepository.findOne({ where: { id, user: { id: userId } } });
+    const chat = await this.conversationRepository.findOne({ where: { id, userId } });
     if (!chat) throw new NotFoundException();
     chat.title = newTitle;
     return this.conversationRepository.save(chat);
   }
 
   async deleteConversation(userId: number, id: number) {
-    const chat = await this.conversationRepository.findOne({ where: { id, user: { id: userId } } });
+    const chat = await this.conversationRepository.findOne({ where: { id, userId } });
     if (!chat) throw new NotFoundException();
     return this.conversationRepository.remove(chat);
   }

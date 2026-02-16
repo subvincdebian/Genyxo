@@ -15,6 +15,11 @@ const toggleBtn = document.getElementById('sidebarToggle');
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 
+function updateUrl(id) {
+    const newUrl = `${window.location.pathname}?id=${id}`;
+    window.history.pushState({ path: newUrl }, '', newUrl);
+}
+
 function toggleChatView(hasMessages) {
     if (hasMessages) {
         welcomeScreen.style.display = 'none';
@@ -24,163 +29,6 @@ function toggleChatView(hasMessages) {
         chatBox.style.display = 'none';
     }
 }
-
-function showModal(title, placeholder = null) {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('customModal');
-        const input = document.getElementById('modalInput');
-        const titleEl = document.getElementById('modalTitle');
-        
-        titleEl.textContent = title;
-        modal.style.display = 'flex';
-        
-        if (placeholder !== null) {
-            input.style.display = 'block';
-            input.value = placeholder;
-            setTimeout(() => input.focus(), 50);
-        } else {
-            input.style.display = 'none';
-        }
-
-        document.getElementById('modalConfirm').onclick = () => {
-            const val = input.value;
-            modal.style.display = 'none';
-            resolve(placeholder !== null ? val : true);
-        };
-        
-        document.getElementById('modalCancel').onclick = () => {
-            modal.style.display = 'none';
-            resolve(null);
-        };
-    });
-}
-
-function renderHistoryList() {
-    const historyList = document.getElementById('historyList');
-    if (!historyList) return;
-    historyList.innerHTML = '';
-
-    if (conversations.length === 0) {
-        historyList.innerHTML = '<div style="font-size:0.85rem; color: #666; padding: 10px 0;" data-i18n="chat.no_history">No messages yet</div>';
-        return;
-    }
-
-    conversations.forEach(chat => {
-        const div = document.createElement('div');
-        div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
-        div.id = `chat-item-${chat.id}`;
-        div.onclick = () => selectChat(chat.id);
-        div.innerHTML = `
-            <span class="chat-title">
-                <i class="far fa-message" style="margin-right:8px; font-size:0.8rem;"></i>
-                <span class="title-text"></span>
-            </span>
-            <button class="chat-options-btn" aria-label="Chat Details" onclick="toggleDropdown(event, ${chat.id})">
-                <i class="fas fa-ellipsis-h"></i>
-            </button>
-            <div class="options-dropdown" id="dropdown-${chat.id}">
-                <div class="dropdown-item" onclick="renameChat(${chat.id})">
-                    <i class="fas fa-pencil-alt"></i> Rename
-                </div>
-                <div class="dropdown-item delete" onclick="deleteChat(${chat.id})">
-                    <i class="fas fa-trash"></i> Delete
-                </div>
-            </div>
-        `;
-        div.querySelector('.title-text').textContent = chat.title;
-        historyList.appendChild(div);
-    });
-}
-
-function startNewChat(e) {
-    if (e) e.preventDefault();
-    
-    currentChatId = null;
-    chatBox.innerHTML = '';
-    welcomeScreen.style.display = 'flex';
-    
-    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
-    
-    updateUrl(null);
-    
-    // Если на мобилке — закрываем сайдбар (если у тебя есть функция closeSidebar)
-    if (window.innerWidth <= 768) {
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.querySelector('.sidebar-overlay');
-        if(sidebar) sidebar.classList.remove('mobile-open');
-        if(overlay) overlay.classList.remove('active');
-    }
-}
-
-async function selectChat(id) {
-    if (!id || id === 'null') {
-        startNewChat();
-        return;
-    }
-
-    if (currentChatId === id) return;
-    
-    currentChatId = id;
-    renderHistoryList();
-    
-    chatBox.innerHTML = ''; 
-    toggleChatView(true);
-    updateUrl(id);
-
-    try {
-        const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            const messages = await res.json();
-            chatBox.innerHTML = ''; 
-            if (messages.length > 0) {
-                messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
-            } else {
-                toggleChatView(false);
-            }
-        }
-    } catch(e) { console.error(e); }
-}
-
-async function loadConversations() {
-    try {
-        const res = await fetch(`${API_BASE_URL}/chat/conversations`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            conversations = await res.json();
-            renderHistoryList();
-        }
-    } catch(e) { console.error(e); }
-}
-
-/* function appendMessage(sender, text, type = 'text') {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${sender}-message`;
-    
-    let senderClass = 'bot-message';
-
-    if (sender === 'user') senderClass = 'user-message';
-    if (sender === 'error') senderClass = 'error-message';
-
-    msgDiv.className = `message ${senderClass}`;
-
-    if (type === 'video') {
-        msgDiv.innerHTML = `<video src="${text}" controls style="max-width: 100%; border-radius: 12px;"></video>`;
-    } else {
-        if (sender === 'user') {
-            msgDiv.textContent = text;
-        } else if (sender === 'error') {
-            msgDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
-        } else {
-            msgDiv.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
-        }
-    }
-    
-    chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-} */
 
 function scrollToBottom() {
     const threshold = 100;
@@ -194,306 +42,34 @@ function scrollToBottom() {
     }
 }
 
-function appendMessage(sender, text, model = '') {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
-
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-
-    if (sender === 'bot') {
-        const rawHtml = text ? marked.parse(text) : '';
-        contentDiv.innerHTML = DOMPurify.sanitize(rawHtml);
-    } else {
-        contentDiv.textContent = text;
-    }
-
-    msgDiv.appendChild(contentDiv);
-    
-    if (model) {
-        const meta = document.createElement('div');
-        meta.className = 'message-meta';
-        meta.textContent = model;
-        msgDiv.appendChild(meta);
-    }
-
-    chatBox.appendChild(msgDiv);
-    scrollToBottom();
-    return msgDiv;
-}
-
-function escapeHTML(str) {
-    const p = document.createElement('p');
-    p.textContent = str;
-    return p.innerHTML;
-}
-
-function adjustHeight() {
-    userInput.style.height = 'auto'; 
-    userInput.style.height = (userInput.scrollHeight) + 'px';
-}
-
-function useSuggestion(text) {
-    if (userInput) {
-        userInput.value = text;
-        userInput.focus();
-        adjustHeight();
-    }
-}
-
-function showBotLoading() {
-    const div = document.createElement('div');
-    div.className = 'message bot-message loading';
-    div.id = 'temp-loader';
-    div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    return div;
-}
-
-function updateUrl(id) {
-    const newUrl = `${window.location.pathname}?id=${id}`;
-    window.history.pushState({ path: newUrl }, '', newUrl);
-}
-
-async function sendMessage() {
-    const text = userInput.value.trim();
-    const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
-
-    if (!text || !token || sendBtn.disabled) return;
-
-    sendBtn.disabled = true;
-    userInput.disabled = true;
-
-    if (!currentChatId) toggleChatView(true);
-
-    appendMessage('user', text);
-    userInput.value = '';
-    userInput.style.height = 'auto';
-
-    const botBubble = appendMessage('bot', '');
-    botBubble.classList.add('streaming');
-
-    const contentDiv = botBubble.querySelector('.message-content') || botBubble;
-    let fullContent = "";
-
-    try {
-        const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${currentChatId ? `&conversationId=${currentChatId}` : ''}&token=${token}`;
+function showModal(title, placeholder = null) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customModal');
+        const input = document.getElementById('modalInput');
+        const confirmBtn = document.getElementById('modalConfirm');
+        const cancelBtn = document.getElementById('modalCancel');
         
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'text/event-stream' 
-            }
-        });
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                window.location.href = '/index.html';
-                return;
-            }
-            const errData = await response.json();
-            throw new Error(errData.message || 'Server error');
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let leftover = '';
-
-        let pendingUpdate = false;
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-
-            const chunk = leftover + decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
-            leftover = lines.pop();
-
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    const jsonStr = line.replace('data: ', '').trim();
-
-                    if (jsonStr.startsWith('402')) {
-                        contentDiv.innerHTML = "❌ Insufficient funds on OpenRouter. Please top up your balance.";
-                        return;
-                    }
-
-                    if (!jsonStr || jsonStr === '[DONE]') continue;
-                    
-                    try {
-                        const data = JSON.parse(jsonStr);
-
-                        if (data.token) {
-                            fullContent += data.token;
-                            
-                            if (!pendingUpdate) {
-                                pendingUpdate = true;
-                                requestAnimationFrame(() => {
-                                    contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(fullContent));
-                                    scrollToBottom();
-                                    pendingUpdate = false;
-                                });
-                            }
-                        }
-
-                        if (data.conversationId && !currentChatId) {
-                            currentChatId = data.conversationId;
-                            updateUrl(data.conversationId);
-
-                            const newChat = {
-                                id: currentChatId,
-                                title: text.substring(0, 30) + (text.length > 30 ? '...' : ''),
-                                model: selectedModel
-                            };
-
-                            if (!Array.isArray(conversations)) conversations = [];
-                            conversations.unshift(newChat);
-                            renderHistoryList();
-                        }
-
-                        if (data.messageId && (selectedModel.includes('kling') || selectedModel.includes('luma'))) {
-                            botBubble.classList.remove('streaming');
-                            startVideoPolling(data.messageId, contentDiv);
-                            reader.cancel(); 
-                            break;
-                        }
-
-                        if (data.status === 'done' && data.creditBalance !== undefined) {
-                            updateBalanceUI(data.creditBalance);
-                        }
-                    } catch (e) { 
-                        console.error("JSON parse error in stream:", e, "Line was:", line); 
-                    }
-                }
-            }
-            scrollToBottom();
-        }
-    } catch (err) {
-        showToast(err.message, 'error');
-        botBubble.innerHTML = `❌ Error: ${err.message}`;
-    } finally {
-        botBubble.classList.remove('streaming');
-        sendBtn.disabled = false;
-        userInput.disabled = false;
-        userInput.focus();
-    }
-}
-
-async function startVideoPolling(messageId, element) {
-    let attempts = 0;
-    const maxAttempts = 60;
-
-    element.innerHTML = `
-        <div class="video-loading-status">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span class="status-text">Magic is happening... Generating your video</span>
-        </div>
-    `;
-
-    const interval = setInterval(async () => {
-        attempts++;
+        document.getElementById('modalTitle').textContent = title;
+        modal.style.display = 'flex';
         
-        try {
-            const res = await fetch(`${API_BASE_URL}/chat/message-status/${messageId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) throw new Error('Failed to fetch status');
-
-            const data = await res.json();
-
-            if (data.isReady && data.videoUrl) {
-                clearInterval(interval);
-                element.innerHTML = `
-                    <div class="video-wrapper">
-                        <video controls poster="">
-                            <source src="${data.videoUrl}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                        <div class="video-actions">
-                            <a href="${data.videoUrl}" target="_blank" class="download-btn">
-                                <i class="fas fa-download"></i> Download Video
-                            </a>
-                        </div>
-                    </div>
-                `;
-                scrollToBottom();
-                return;
-            }
-
-            if (data.status === 'error' || (data.content && data.content.includes('❌'))) {
-                clearInterval(interval);
-                element.innerHTML = `<div class="error-box">❌ Generation failed: ${data.content || 'Unknown error'}</div>`;
-                return;
-            }
-
-            if (attempts >= maxAttempts) {
-                clearInterval(interval);
-                element.innerHTML = `<div class="error-box">⚠️ Generation is taking longer than expected. Please check your history in a few minutes.</div>`;
-            }
-
-        } catch (e) {
-            console.error("Polling error:", e);
-        }
-    }, 5000);
-}
-
-function appendError(msg) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'message bot';
-    msgDiv.innerHTML = `
-            <div class="avatar" style="background:#e74c3c; color:white;"><i class="fas fa-exclamation"></i></div>
-        <div class="message-content" style="color:#ff6b6b; border-color:#e74c3c;">
-            ${msg}
-        </div>
-    `;
-    chatBox.appendChild(msgDiv);
-    scrollToBottom();
-}
-
-async function initChat() {
-    try {
-        const profileRes = await fetch(`${API_BASE_URL}/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (profileRes.ok) {
-            const user = await profileRes.json();
-            updateBalanceUI(user.credits || 0);
-
-            if (navAvatarImg) navAvatarImg.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-            
-            const dropdownAv = document.getElementById('dropdownAvatars');
-            if (dropdownAv) dropdownAv.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-            
-            if (menuName) menuName.textContent = user.name || 'User';
-            if (menuEmail) menuEmail.textContent = user.email || '';
-            if (menuCredits) menuCredits.textContent = user.credits || 0;
-        }
-
-        if (!token) {
-            toggleChatView(false);
-            return;
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const chatIdFromUrl = urlParams.get('id');
-
-        await loadConversations();
-
-        if (chatIdFromUrl && chatIdFromUrl !== 'null') {
-            await selectChat(chatIdFromUrl);
-        } else if (Array.isArray(conversations) && conversations.length > 0 && conversations[0].id) {
-            await selectChat(conversations[0].id);
+        if (placeholder !== null) {
+            input.style.display = 'block';
+            input.value = placeholder;
+            setTimeout(() => input.focus(), 50);
         } else {
-            startNewChat();
+            input.style.display = 'none';
         }
 
-    } catch (e) {
-        console.error("Critical initialization error:", e);
-        toggleChatView(false);
-    }
+        const cleanup = (result) => {
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+            modal.style.display = 'none';
+            resolve(result);
+        };
+
+        confirmBtn.onclick = () => cleanup(placeholder !== null ? input.value : true);
+        cancelBtn.onclick = () => cleanup(null);
+    });
 }
 
 async function renameChat(id) {
@@ -550,6 +126,431 @@ async function deleteChat(id) {
         }
     } catch (err) {
         console.error('Error while deleting:', err);
+    }
+}
+
+function initHistoryListEvents(container) {
+    container.onclick = null; 
+
+    container.onclick = (e) => {
+        const item = e.target.closest('.chat-item');
+        if (!item) return;
+        
+        const chatId = parseInt(item.dataset.id);
+
+        if (e.target.closest('.chat-options-btn')) {
+            e.stopPropagation();
+            toggleDropdown(e, chatId);
+            return;
+        }
+
+        if (e.target.closest('.action-rename')) {
+            e.stopPropagation();
+            renameChat(chatId);
+            return;
+        }
+
+        if (e.target.closest('.action-delete')) {
+            e.stopPropagation();
+            deleteChat(chatId);
+            return;
+        }
+
+        selectChat(chatId);
+    };
+}
+
+function renderHistoryList() {
+    const historyList = document.getElementById('historyList');
+    if (!historyList) return;
+
+    if (!conversations || conversations.length === 0) {
+        historyList.innerHTML = `
+            <div class="no-history-msg" data-i18n="chat.no_history">
+                No messages yet
+            </div>`;
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    conversations.forEach(chat => {
+        const isActive = chat.id === currentChatId;
+        
+        const div = document.createElement('div');
+        div.className = `chat-item ${isActive ? 'active' : ''}`;
+        div.id = `chat-item-${chat.id}`;
+        div.dataset.id = chat.id;
+
+        div.innerHTML = `
+            <span class="chat-title">
+                <i class="far fa-message" style="margin-right:8px; font-size:0.8rem;"></i>
+                <span class="title-text"></span>
+            </span>
+            <button class="chat-options-btn" aria-label="Chat Details">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+            <div class="options-dropdown" id="dropdown-${chat.id}">
+                <div class="dropdown-item action-rename">
+                    <i class="fas fa-pencil-alt"></i> <span data-i18n="chat.rename">Rename</span>
+                </div>
+                <div class="dropdown-item delete action-delete">
+                    <i class="fas fa-trash"></i> <span data-i18n="chat.delete">Delete</span>
+                </div>
+            </div>
+        `;
+
+        div.querySelector('.title-text').textContent = chat.title || "New Chat";
+        
+        fragment.appendChild(div);
+    });
+
+    historyList.replaceChildren(fragment);
+    
+    initHistoryListEvents(historyList);
+}
+
+function startNewChat(e) {
+    if (e) e.preventDefault();
+    
+    currentChatId = null;
+    chatBox.innerHTML = '';
+    welcomeScreen.style.display = 'flex';
+    
+    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+    
+    updateUrl(null);
+    
+    if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if(sidebar) sidebar.classList.remove('mobile-open');
+        if(overlay) overlay.classList.remove('active');
+    }
+}
+
+function appendMessage(sender, text, model = '') {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+
+    if (sender === 'bot') {
+        const rawHtml = text ? marked.parse(text) : '';
+        contentDiv.innerHTML = DOMPurify.sanitize(rawHtml);
+    } else {
+        contentDiv.textContent = text;
+    }
+
+    msgDiv.appendChild(contentDiv);
+    
+    if (model) {
+        const meta = document.createElement('div');
+        meta.className = 'message-meta';
+        meta.textContent = model;
+        msgDiv.appendChild(meta);
+    }
+
+    chatBox.appendChild(msgDiv);
+    scrollToBottom();
+    return msgDiv;
+}
+
+async function selectChat(id) {
+    if (!id || id === 'null') {
+        startNewChat();
+        return;
+    }
+
+    if (currentChatId === id) return;
+    
+    currentChatId = id;
+    renderHistoryList();
+    toggleChatView(true);
+    updateUrl(id);
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const messages = await res.json();
+            chatBox.innerHTML = ''; 
+            if (messages.length > 0) {
+                messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
+            } else {
+                toggleChatView(false);
+            }
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function loadConversations() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/chat/conversations`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            conversations = await res.json();
+            renderHistoryList();
+        }
+    } catch(e) { console.error(e); }
+}
+
+function adjustHeight() {
+    userInput.style.height = 'auto'; 
+    userInput.style.height = (userInput.scrollHeight) + 'px';
+}
+
+function useSuggestion(text) {
+    if (userInput) {
+        userInput.value = text;
+        userInput.focus();
+        adjustHeight();
+    }
+}
+
+async function sendMessage() {
+    const text = userInput.value.trim();
+    const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
+
+    if (!text || !token || sendBtn.disabled) return;
+
+    sendBtn.disabled = true;
+    userInput.disabled = true;
+
+    if (!currentChatId) toggleChatView(true);
+
+    appendMessage('user', text);
+    userInput.value = '';
+    userInput.style.height = 'auto';
+
+    const botBubble = appendMessage('bot', '<div class="typing-indicator"><span></span><span></span><span></span></div>');
+    botBubble.classList.add('streaming');
+    const contentDiv = botBubble.querySelector('.message-content') || botBubble;
+
+    let fullContent = "";
+    let isUpdating = false;
+    const controller = new AbortController();
+
+    try {
+        const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${currentChatId ? `&conversationId=${currentChatId}` : ''}&token=${token}`;
+        
+        const response = await fetch(url, {
+            signal: controller.signal,
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'text/event-stream' 
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                window.location.href = '/index.html';
+                return;
+            }
+            const errData = await response.json();
+            throw new Error(errData.message || 'Server error');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let leftover = '';
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            const chunk = leftover + decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            leftover = lines.pop();
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const jsonStr = line.replace('data: ', '').trim();
+                    if (jsonStr.startsWith('402')) {
+                        throw new Error("❌ Insufficient funds on OpenRouter. Please top up your balance.");
+                    }
+
+                    if (!jsonStr || jsonStr === '[DONE]') continue;
+                    
+                    try {
+                        const data = JSON.parse(jsonStr);
+
+                        if (data.token) {
+                            if (fullContent === "") contentDiv.innerHTML = "";
+                            fullContent += data.token;
+                            
+                            if (!isUpdating) {
+                                isUpdating = true;
+                                requestAnimationFrame(() => {
+                                    contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(fullContent));
+                                    scrollToBottom();
+                                    isUpdating = false;
+                                });
+                            }
+                        }
+
+                        if (data.conversationId && !currentChatId) {
+                            currentChatId = data.conversationId;
+                            updateUrl(data.conversationId);
+                            conversations.unshift({ 
+                                id: currentChatId, 
+                                title: text.slice(0, 30) + (text.length > 30 ? '...' : ''), 
+                                model: selectedModel 
+                            });
+                            renderHistoryList();
+                        }
+
+                        if (data.messageId && (selectedModel.includes('kling') || selectedModel.includes('luma'))) {
+                            botBubble.classList.remove('streaming');
+                            startVideoPolling(data.messageId, contentDiv);
+                            reader.cancel(); 
+                            break;
+                        }
+
+                        if (data.status === 'done' && data.creditBalance !== undefined) {
+                            updateBalanceUI(data.creditBalance);
+                        }
+                    } catch (e) { 
+                        console.error("JSON parse error in stream:", e, "Line was:", line); 
+                    }
+                }
+            }
+            scrollToBottom();
+        }
+    } catch (err) {
+        if (err.name === 'AbortError') return;
+        showToast(err.message, 'error');
+        contentDiv.textContent = `❌ Error: ${err.message}`;
+        contentDiv.style.color = 'var(--error-red)';
+    } finally {
+        botBubble.classList.remove('streaming');
+        sendBtn.disabled = false;
+        userInput.disabled = false;
+        userInput.focus();
+    }
+}
+
+async function startVideoPolling(messageId, element) {
+    let attempts = 0;
+    const maxAttempts = 60;
+
+    element.innerHTML = `
+        <div class="video-loading-status">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span class="status-text">Magic is happening... Generating your video</span>
+        </div>
+    `;
+
+    const interval = setInterval(async () => {
+        if (!element.isConnected) {
+            clearInterval(interval);
+            return;
+        }
+
+        attempts++;
+        
+        try {
+            const res = await fetch(`${API_BASE_URL}/chat/message-status/${messageId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error('Failed to fetch status');
+
+            const data = await res.json();
+
+            if (data.isReady && data.videoUrl) {
+                clearInterval(interval);
+                element.innerHTML = `
+                    <div class="video-wrapper">
+                        <video controls poster="">
+                            <source src="${data.videoUrl}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-actions">
+                            <a href="${data.videoUrl}" target="_blank" class="download-btn">
+                                <i class="fas fa-download"></i> Download Video
+                            </a>
+                        </div>
+                    </div>
+                `;
+                scrollToBottom();
+                return;
+            }
+
+            if (data.status === 'error' || (data.content && data.content.includes('❌'))) {
+                clearInterval(interval);
+                element.innerHTML = `<div class="error-box">❌ Generation failed: ${data.content || 'Unknown error'}</div>`;
+                return;
+            }
+
+            if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                element.innerHTML = `<div class="error-box">⚠️ Generation is taking longer than expected. Please check your history in a few minutes.</div>`;
+            }
+
+        } catch (e) {
+            console.error("Polling error:", e);
+            clearInterval(interval);
+        }
+    }, 5000);
+}
+
+function appendError(msg) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message bot-message error-message';
+    msgDiv.innerHTML = `
+        <div class="message-content">
+            <i class="fas fa-exclamation-circle"></i> ${msg}
+        </div>
+    `;
+    chatBox.appendChild(msgDiv);
+    scrollToBottom();
+}
+
+async function initChat() {
+    try {
+        const profileRes = await fetch(`${API_BASE_URL}/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (profileRes.ok) {
+            const user = await profileRes.json();
+            updateBalanceUI(user.credits || 0);
+
+            if (navAvatarImg) navAvatarImg.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+            
+            const dropdownAv = document.getElementById('dropdownAvatars');
+            if (dropdownAv) dropdownAv.src = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+            
+            if (menuName) menuName.textContent = user.name || 'User';
+            if (menuEmail) menuEmail.textContent = user.email || '';
+            if (menuCredits) menuCredits.textContent = user.credits || 0;
+        }
+
+        if (!token) {
+            toggleChatView(false);
+            return;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatIdFromUrl = urlParams.get('id');
+
+        await loadConversations();
+
+        if (chatIdFromUrl && chatIdFromUrl !== 'null') {
+            await selectChat(chatIdFromUrl);
+        } else if (Array.isArray(conversations) && conversations.length > 0 && conversations[0].id) {
+            await selectChat(conversations[0].id);
+        } else {
+            startNewChat();
+        }
+
+    } catch (e) {
+        console.error("Critical initialization error:", e);
+        toggleChatView(false);
     }
 }
 

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { RedisCacheService } from './redis-cache.service';
 import { User } from './user.entity';
 import { Transaction, TransactionStatus, TransactionType } from '../transactions/transaction.entity';
 
@@ -18,9 +19,9 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-
     @InjectRepository(Transaction)
     private transactionRepository: Repository<Transaction>,
+    private redisCache: RedisCacheService,
   ) {}
 
   get repo(): Repository<User> {
@@ -71,6 +72,11 @@ export class UsersService {
     if (isNaN(creditsToAdd) || creditsToAdd <= 0) return;
 
     await this.usersRepository.increment({ id: userId }, 'credits', creditsToAdd);
+    
+    const updatedUser = await this.findOneById(userId);
+    if (updatedUser) {
+        await this.redisCache.setBalance(userId, Number(updatedUser.credits));
+    }
   }
 
   async addReferralBalance(userId: number, amountUsd: number): Promise<void> {
@@ -90,12 +96,25 @@ export class UsersService {
       .where("id = :id AND credits >= :amount", { id: userId, amount })
       .execute();
 
-    return (result.affected ?? 0) > 0;
+    const success = (result.affected ?? 0) > 0;
+    
+    if (success) {
+        await this.redisCache.invalidate(userId);
+    }
+
+    return success;
   }
 
   async getBalance(userId: number): Promise<number> {
-    const user = await this.findOneById(userId);
-    return user ? Number(user.credits) : 0;
+    let balance = await this.redisCache.getBalance(userId);
+    
+    if (balance === null) {
+      const user = await this.findOneById(userId);
+      balance = user ? Number(user.credits) : 0;
+      await this.redisCache.setBalance(userId, balance);
+    }
+    
+    return balance;
   }
 
   async getAffiliateStats(userId: number) {

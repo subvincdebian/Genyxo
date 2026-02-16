@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn, JoinColumn, Index } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Message } from './message.entity';
 
@@ -10,7 +10,12 @@ export class Conversation {
   @Column({ default: 'New Chat' })
   title!: string;
 
+  @Index()
+  @Column()
+  userId!: number;
+
   @ManyToOne(() => User, (user) => user.conversations)
+  @JoinColumn({ name: 'userId' })
   user!: User;
 
   @OneToMany(() => Message, (message) => message.conversation)

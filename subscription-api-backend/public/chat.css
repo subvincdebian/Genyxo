@@ -375,6 +375,17 @@
             word-wrap: break-word;
         }
 
+        .message.error-message .message-content {
+            background-color: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            color: #ff6b6b;
+        }
+
+        .message.error-message i {
+            margin-right: 8px;
+            color: #e74c3c;
+        }
+
         .user .message-content {
             background: var(--text-light);
             color: black;

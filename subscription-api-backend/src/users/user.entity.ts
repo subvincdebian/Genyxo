@@ -5,7 +5,8 @@ import {
   BeforeInsert,
   OneToMany,
   JoinColumn,
-  ManyToOne
+  ManyToOne,
+  Index
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Role } from './role.enum';
@@ -20,6 +21,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Index()
   @Column({ unique: true, type: 'varchar', length: 255 })
   email!: string;
 

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, JoinColumn, Index } from 'typeorm';
 import { User } from '../users/user.entity';
 
 export enum TransactionStatus {
@@ -51,6 +51,7 @@ export class Transaction {
   @JoinColumn({ name: 'userId' })
   user?: User;
 
+  @Index()
   @Column({ nullable: true })
   userId?: number;
 

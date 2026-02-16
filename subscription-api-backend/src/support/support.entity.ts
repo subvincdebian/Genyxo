@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, JoinColumn, Index } from 'typeorm';
 import { User } from '../users/user.entity';
 
 export enum TicketStatus {
@@ -47,6 +47,7 @@ export class SupportTicket {
   @UpdateDateColumn()
   updatedAt?: Date;
 
+  @Index()
   @Column()
   userId!: number;
 

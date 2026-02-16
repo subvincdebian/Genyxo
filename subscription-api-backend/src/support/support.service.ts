@@ -21,14 +21,14 @@ export class SupportService {
       subject,
       message,
       priority: priority || TicketPriority.MEDIUM,
-      user: { id: userId },
+      userId,
     });
     return this.ticketRepo.save(ticket);
   }
 
   async getUserTickets(userId: number) {
     return this.ticketRepo.find({
-      where: { user: { id: userId } },
+      where: { userId },
       order: { createdAt: 'DESC' },
     });
   }

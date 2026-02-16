@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn, Index } from 'typeorm';
 import { User } from '../users/user.entity';
 
 export enum NotificationType {
@@ -12,6 +12,7 @@ export class Notification {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Index()
   @Column()
   userId!: number;
 
