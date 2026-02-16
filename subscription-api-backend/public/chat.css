@@ -256,7 +256,7 @@
         opacity: 1 !important;
         visibility: visible !important;
         transform: translateY(0) scale(1) !important;
-        display: block !important; /* На всякий случай, если было none */
+        display: block !important;
 }
         .custom-options li {
             padding: 8px 12px;
@@ -681,7 +681,7 @@
         .streaming::after {
             content: '●';
             margin-left: 4px;
-            color: #4a90e2; /* Цвет под твой бренд */
+            color: #4a90e2;
             animation: blink 0.8s infinite;
         }
 
@@ -769,7 +769,6 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     z-index: 2000;
     
-    /* Анимация */
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px) scale(0.95);
@@ -820,7 +819,7 @@
     margin: 6px 0;
 }
 
-/* --- АДАПТАЦИЯ ПОД МИНИ-САЙДБАР (.sidebar-closed) --- */
+/* --- АДАПТАЦИЯ ПОД МИНИ-САЙДБАР --- */
 
 /* Скрываем текст, оставляем иконки */
 .sidebar-closed .link-text {
@@ -828,7 +827,7 @@
 }
 
 .sidebar-closed {
-    display: none; /* Скрываем локацию в мини режиме */
+    display: none;
 }
 
 /* Центрируем иконку кнопки в мини-режиме */
@@ -841,7 +840,6 @@
     margin: 0;
 }
 
-/* Align text and icons to the left for Preference blocks in mini sidebar */
 .sidebar-closed .sidebar-mini-preference-btn {
     justify-content: flex-start;
     padding: 12px;
@@ -851,7 +849,6 @@
     margin: 0 2px 0 0;
 }
 
-/* Меню в мини-режиме сдвигаем чуть вправо, чтобы не перекрывало кнопку */
 .sidebar-closed .gemini-menu {
     left: 10px;
     bottom: 100%;

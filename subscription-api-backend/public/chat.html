@@ -199,7 +199,7 @@
             color: #b4b4b4;
             transition: 0.2s;
         }
-        .mini-btn:hover { background: black; color: white; }
+        .mini-btn:hover { background: black; color: white;}
 
         .logo-toggle { margin-bottom: 20px; }
         .logo-toggle .icon-alt { display: none; }
@@ -1042,7 +1042,6 @@
             transition: transform 0.2s;
         }
 
-        /* Само подменю */
         .theme-submenu {
             position: absolute;
             bottom: 0;
@@ -1153,7 +1152,11 @@
         [data-theme="light"] .chat-logo-icon {
             filter: invert(1);
         }
-        
+
+        [data-theme="light"] .mini-sidebar-logo {
+            filter: invert(1);
+        }
+
         [data-theme="light"] .glow-effect {
             background: conic-gradient(from 0deg, #00f2ff, #0070f3, #00f2ff) !important;
             opacity: 0.6 !important;
@@ -1226,6 +1229,10 @@
             color: #1f1f1f !important;
         }
 
+        [data-theme="light"] .mini-sidebar-search-btn:hover {
+           filter: brightness(0) invert(1) !important;
+        }
+
         /* 5. Меню на "плюсик" (Новый чат/Действия) */
         [data-theme="light"] .new-chat-menu {
             background-color: #ffffff;
@@ -1250,11 +1257,15 @@
             color: black;
         }
 
+        [data-theme="light"] .shop-btn-icon:hover {
+            stroke: #ffffff !important;
+            color: #ffffff !important;
+        }
+
         .shop-btn-icon {
             color: white;
         }
 
-        /* Desktop Header Styles - Default */
         header {
             display: flex !important;
             justify-content: flex-start !important;
@@ -1285,9 +1296,8 @@
             gap: 12px !important;
         }
 
-/* --- Новые стили для FAQ (Gemini Style) --- */
+/* --- Новые стили для FAQ --- */
 #faqWindow {
-    /* Базовые стили окна */
     position: fixed;
     bottom: 20px;
     right: 20px; 
@@ -1411,7 +1421,7 @@
     color: #666;
 }
 
-/* Экран с контентом (Скрыт по умолчанию) */
+/* Экран с контентом*/
 .faq-content-page {
     display: none;
     padding: 20px;
@@ -1471,15 +1481,15 @@
 }
 
 .search-modal-overlay {
-    display: none; /* Скрыто по умолчанию */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px); /* Эффект размытия фона */
-    z-index: 10000; /* Поверх всего */
+    backdrop-filter: blur(5px);
+    z-index: 10000;
     opacity: 0;
     transition: opacity 0.3s ease;
     align-items: center;
@@ -1492,9 +1502,9 @@
 }
 
 .search-modal-window {
-    background-color: #1e1e1e; /* Чуть светлее фона body */
+    background-color: #1e1e1e;
     width: 100%;
-    max-width: 600px; /* Ширина как у ChatGPT */
+    max-width: 600px;
     max-height: 80vh;
     border-radius: 12px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
@@ -1539,7 +1549,6 @@
     color: #fff;
 }
 
-/* Поле ввода */
 .search-input-container {
     padding: 15px 20px;
     position: relative;
@@ -1559,7 +1568,7 @@
     background-color: #2a2a2a;
     border: 1px solid transparent;
     color: #fff;
-    padding: 12px 15px 12px 40px; /* Отступ слева под иконку */
+    padding: 12px 15px 12px 40px;
     border-radius: 8px;
     font-size: 15px;
     outline: none;
@@ -1589,7 +1598,7 @@
     border-radius: 3px;
 }
 
-/* Элементы списка (копируем стиль из сайдбара, но адаптируем) */
+/* Элементы списка */
 .search-result-item {
     display: flex;
     align-items: center;
@@ -1630,7 +1639,7 @@
 .search-modal-footer {
     padding: 15px 20px;
     border-top: 1px solid #333;
-    background-color: #1e1e1e; /* Или чуть темнее */
+    background-color: #1e1e1e;
 }
 
 .modal-new-chat-btn {
@@ -1654,7 +1663,9 @@
 }
 
 .nav-avatar-small {
-     background-color: none;
+    width: 48px;
+    height: 48px;
+    background-color: none;
     border: none;
     background: none;
     box-shadow: none;
@@ -2020,7 +2031,7 @@
             .chat-input-container {
                 padding: 10px 0 16px 0 !important;
                 padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-                background: var(--bg-dark); /* Чтобы фон заходил под системную полоску */
+                background: var(--bg-dark);
                 position: relative;
                 z-index: 20;
             }
@@ -2378,7 +2389,7 @@
             <div class="sidebar-mini">
                 <div class="mini-btn logo-toggle" onclick="toggleSidebar()" data-tooltip="Open Sidebar">
                     <div class="logo-circle">
-                        <img src="./images/logo.svg" width="24" height="24" fetchpriority="high" class="logo-icon" alt="Logo">
+                        <img src="./images/logo.svg" width="24" height="24" fetchpriority="high" class="logo-icon mini-sidebar-logo" alt="Logo">
                     </div>
                     <div class="icon-alt">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
@@ -2390,19 +2401,19 @@
                 </div>
 
                 <div class="mini-btn" id="railSearchBtn" data-tooltip="Search">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <svg class="mini-sidebar-search-btn" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
 
                 <div style="margin-top: auto; display: flex; flex-direction: column; align-items: center;">
                     <div class="mini-btn" data-tooltip="Shop">
-                    <a class="shop-btn-icon" href="index.html#products">   
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-                    </a> 
+                        <a a class="shop-btn-icon" href="index.html#products">   
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                        </a> 
                     </div>
                     <div class="sidebar-footer">
                         <div class="settings-wrapper" data-tooltip="Menu">
                             <div class="gemini-menu glass">
-                            <a href="#" class="gemini-menu-item">
+                                <a href="#" class="gemini-menu-item">
                                     <i class="fas fa-history"></i>
                                     <span>Action History</span>
                                 </a>
@@ -2456,7 +2467,6 @@
                                     </button>
                                 </div>
                             </div>
-
                             <button class="sidebar-btn settings-trigger">
                                 <i class="fas fa-bars"></i> <span class="link-text">Menu</span>
                             </button>
@@ -2512,8 +2522,8 @@
 
                         <div class="profile-container profile-trigger" id="profile-trigger" style="display: flex; gap: 10px; align-items: center;">
 
-                            <button class="login-btn" id="profileToggleBtn" id="loginBtn" aria-label="Login / Signup" style="min-width: auto; padding: 5px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 35px; height: 35px;" alt="Avatar">
+                            <button class="login-btn" id="profileToggleBtn" id="loginBtn" aria-label="Login / Signup" style="min-width: auto; padding: 5px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 46px; height: 46px;" alt="Avatar">
                             </button>
                             
                             <div class="profile-dropdown glass" id="profilePanel">
@@ -3092,7 +3102,6 @@
             const overlay = document.getElementById('sidebar-overlay');
             const body = document.body;
 
-            // Функция для закрытия
             const closeMenu = () => {
                 sidebar.classList.remove('mobile-open');
                 overlay.classList.remove('active');
@@ -3107,14 +3116,14 @@
                 });
             }
 
-            // 2. КЛИК ПО ПУСТОМУ МЕСТУ (Оверлею) - теперь будет работать!
+            // 2. КЛИК ПО ПУСТОМУ МЕСТУ (Оверлею)
             if(overlay) {
                 overlay.addEventListener('click', () => {
                     closeMenu();
                 });
             }
 
-            // 3. Свайп влево для закрытия (ваш рабочий код)
+            // 3. Свайп влево для закрытия
             let touchStartX = 0;
             let touchEndX = 0;
             sidebar.addEventListener('touchstart', e => {
@@ -3135,7 +3144,6 @@
 
     <!--FAQ Window-->
     <script>
-    // Ждем полной загрузки документа
     document.addEventListener('DOMContentLoaded', function() {
         const faqWindow = document.getElementById('faqWindow');
         const faqMenu = document.getElementById('faqMenu');
@@ -3143,9 +3151,8 @@
         const faqCloseBtn = document.getElementById('faqCloseBtn');
         const faqTitle = document.querySelector('.faq-title');
 
-        // Функция открытия страницы FAQ
         window.openFaqPage = function(pageId) {
-            // 1. Скрываем меню
+
             faqMenu.style.display = 'none';
             
             // 2. Скрываем все страницы контента
@@ -3172,7 +3179,7 @@
             document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
             
             // 2. Показываем меню
-            faqMenu.style.display = 'block'; // или 'block', если не flex
+            faqMenu.style.display = 'block';
             
             // 3. Скрываем кнопку "Назад"
             faqBackBtn.style.visibility = 'hidden';
@@ -3205,137 +3212,127 @@
     });
     </script>
 
-    <!-- Поиск в Сайдбарах-->
     <script>
-/* --- Логика Модального Окна Поиска --- */
-document.addEventListener('DOMContentLoaded', () => {
-    const searchModalOverlay = document.getElementById('searchChatsModal');
-    const closeSearchBtn = document.getElementById('closeSearchModal');
-    const modalSearchInput = document.getElementById('modalSearchInput');
-    const modalSearchResults = document.getElementById('modalSearchResults');
-    const modalNewChatBtn = document.getElementById('modalNewChatBtn');
-    const noResultsMsg = document.getElementById('searchNoResults');
-    
-    // Кнопки открытия из сайдбаров
-    const sidebarSearchBtn = document.getElementById('searchChatsBtn');
-    const railSearchBtn = document.getElementById('railSearchBtn');
-
-    // Функция открытия модального окна
-    function openSearchModal() {
-        if (!searchModalOverlay) return;
-        populateModalList(); // Загружаем список чатов
-        searchModalOverlay.classList.add('active');
-        setTimeout(() => modalSearchInput.focus(), 100);
-    }
-
-    // Функция закрытия
-    function closeSearchModal() {
-        if (!searchModalOverlay) return;
-        searchModalOverlay.classList.remove('active');
-        modalSearchInput.value = ''; 
-    }
-
-     // Закрытие по ESC
-
-            document.addEventListener('keydown', (e) => {
-
-                if (e.key === 'Escape' && searchModalOverlay.classList.contains('active')) {
-
-                    closeSearchModal();
-
-                }
-
-            });
-
-    // Слушатели на кнопки открытия
-    if(sidebarSearchBtn) sidebarSearchBtn.addEventListener('click', openSearchModal);
-    if(railSearchBtn) railSearchBtn.addEventListener('click', openSearchModal);
-
-    // Закрытие
-    if(closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearchModal);
-    if(searchModalOverlay) {
-        searchModalOverlay.addEventListener('click', (e) => {
-            if (e.target === searchModalOverlay) closeSearchModal();
-        });
-    }
-
-    // Функция для копирования списка чатов из сайдбара в модальное окно поиска
-    function populateModalList() {
-        if (!modalSearchResults) return;
-        modalSearchResults.innerHTML = ''; 
-        if (noResultsMsg) noResultsMsg.style.display = 'none';
-
-        // ИСПРАВЛЕНО: берем элементы так, как они называются в вашем renderHistoryList
-        const originalList = document.querySelectorAll('#historyList .chat-item');
+    /* --- Логика Модального Окна Поиска --- */
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchModalOverlay = document.getElementById('searchChatsModal');
+        const closeSearchBtn = document.getElementById('closeSearchModal');
+        const modalSearchInput = document.getElementById('modalSearchInput');
+        const modalSearchResults = document.getElementById('modalSearchResults');
+        const modalNewChatBtn = document.getElementById('modalNewChatBtn');
+        const noResultsMsg = document.getElementById('searchNoResults');
         
-        if (originalList.length === 0) {
-            // Если в сайдбаре пусто
-            if (noResultsMsg) noResultsMsg.style.display = 'block';
-            return;
+        const sidebarSearchBtn = document.getElementById('searchChatsBtn');
+        const railSearchBtn = document.getElementById('railSearchBtn');
+
+        function openSearchModal() {
+            if (!searchModalOverlay) return;
+            populateModalList(); // Загружаем список чатов
+            searchModalOverlay.classList.add('active');
+            setTimeout(() => modalSearchInput.focus(), 100);
         }
 
-        originalList.forEach(originalItem => {
-            // Клонируем элемент чата
-            const clone = originalItem.cloneNode(true);
+        function closeSearchModal() {
+            if (!searchModalOverlay) return;
+            searchModalOverlay.classList.remove('active');
+            modalSearchInput.value = ''; 
+        }
+
+        // Закрытие по ESC
+                document.addEventListener('keydown', (e) => {
+
+                    if (e.key === 'Escape' && searchModalOverlay.classList.contains('active')) {
+                        closeSearchModal();
+                    }
+                });
+
+        // Слушатели на кнопки открытия
+        if(sidebarSearchBtn) sidebarSearchBtn.addEventListener('click', openSearchModal);
+        if(railSearchBtn) railSearchBtn.addEventListener('click', openSearchModal);
+
+        // Закрытие
+        if(closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearchModal);
+        if(searchModalOverlay) {
+            searchModalOverlay.addEventListener('click', (e) => {
+                if (e.target === searchModalOverlay) closeSearchModal();
+            });
+        }
+
+        // Функция для копирования списка чатов из сайдбара в модальное окно поиска
+        function populateModalList() {
+            if (!modalSearchResults) return;
+            modalSearchResults.innerHTML = ''; 
+            if (noResultsMsg) noResultsMsg.style.display = 'none';
+
+            const originalList = document.querySelectorAll('#historyList .chat-item');
             
-            // 1. Убираем лишнее: удаляем кнопку настроек (три точки) и выпадающее меню
-            const optionsBtn = clone.querySelector('.chat-options-btn');
-            const dropdown = clone.querySelector('.options-dropdown');
-            if (optionsBtn) optionsBtn.remove();
-            if (dropdown) dropdown.remove();
-            
-            // 2. Стилизуем клон для поиска
-            clone.classList.remove('active'); // Убираем подсветку активного чата из сайдбара
-            clone.classList.add('search-result-item'); 
-            
-            // 3. Обработка клика
-            clone.addEventListener('click', () => {
-                // Имитируем клик по настоящему элементу в сайдбаре
-                originalItem.click(); 
-                closeSearchModal();
+            if (originalList.length === 0) {
+                // Если в сайдбаре пусто
+                if (noResultsMsg) noResultsMsg.style.display = 'block';
+                return;
+            }
+
+            originalList.forEach(originalItem => {
+                // Клонируем элемент чата
+                const clone = originalItem.cloneNode(true);
                 
-                // Закрываем мобильный сайдбар, если он открыт
-                const sidebar = document.querySelector('.sidebar');
-                if (sidebar && sidebar.classList.contains('active')) {
-                   const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-                   if(closeSidebarBtn) closeSidebarBtn.click();
-                }
+                // 1. Убираем лишнее: удаляем кнопку настроек (три точки) и выпадающее меню
+                const optionsBtn = clone.querySelector('.chat-options-btn');
+                const dropdown = clone.querySelector('.options-dropdown');
+                if (optionsBtn) optionsBtn.remove();
+                if (dropdown) dropdown.remove();
+                
+                // 2. Стилизуем клон для поиска
+                clone.classList.remove('active'); // Убираем подсветку активного чата из сайдбара
+                clone.classList.add('search-result-item'); 
+                
+                clone.addEventListener('click', () => {
+                    // Имитируем клик по настоящему элементу в сайдбаре
+                    originalItem.click(); 
+                    closeSearchModal();
+                    
+                    // Закрываем мобильный сайдбар, если он открыт
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar && sidebar.classList.contains('active')) {
+                    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+                    if(closeSidebarBtn) closeSidebarBtn.click();
+                    }
+                });
+
+                modalSearchResults.appendChild(clone);
             });
+        }
 
-            modalSearchResults.appendChild(clone);
-        });
-    }
+        // Живой поиск
+        if (modalSearchInput) {
+            modalSearchInput.addEventListener('input', function() {
+                const filter = this.value.toLowerCase();
+                const items = modalSearchResults.querySelectorAll('.search-result-item');
+                let hasVisibleItems = false;
 
-    // Живой поиск
-    if (modalSearchInput) {
-        modalSearchInput.addEventListener('input', function() {
-            const filter = this.value.toLowerCase();
-            const items = modalSearchResults.querySelectorAll('.search-result-item');
-            let hasVisibleItems = false;
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(filter)) {
+                        item.style.display = 'flex';
+                        hasVisibleItems = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
 
-            items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                if (text.includes(filter)) {
-                    item.style.display = 'flex';
-                    hasVisibleItems = true;
-                } else {
-                    item.style.display = 'none';
-                }
+                if (noResultsMsg) noResultsMsg.style.display = hasVisibleItems ? 'none' : 'block';
             });
+        }
 
-            if (noResultsMsg) noResultsMsg.style.display = hasVisibleItems ? 'none' : 'block';
-        });
-    }
-
-    // Кнопка "Новый чат"
-    if (modalNewChatBtn) {
-        modalNewChatBtn.addEventListener('click', () => {
-            const realNewChatBtn = document.getElementById('newChatBtn');
-            if (realNewChatBtn) realNewChatBtn.click();
-            closeSearchModal();
-        });
-    }
-});
+        // Кнопка "Новый чат"
+        if (modalNewChatBtn) {
+            modalNewChatBtn.addEventListener('click', () => {
+                const realNewChatBtn = document.getElementById('newChatBtn');
+                if (realNewChatBtn) realNewChatBtn.click();
+                closeSearchModal();
+            });
+        }
+    });
     </script>
 
     <div id="customModal" class="modal-overlay" style="display:none;">

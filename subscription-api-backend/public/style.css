@@ -693,7 +693,6 @@ h1, h2, h3, .nav-logo {
     height: 24px;
     border-radius: 50%;
     margin-right: 8px;
-    border: 1px solid var(--text-light);
 }
 
 .profile-dropdown {
