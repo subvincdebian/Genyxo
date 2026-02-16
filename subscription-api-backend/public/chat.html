@@ -1285,6 +1285,191 @@
             gap: 12px !important;
         }
 
+/* --- Новые стили для FAQ (Gemini Style) --- */
+#faqWindow {
+    /* Базовые стили окна */
+    position: fixed;
+    bottom: 20px;
+    right: 20px; 
+    width: 320px;
+    max-height: 500px;
+    height: 70vh;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+#faqWindow.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Шапка окна */
+.faq-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 1px solid #333;
+    background: #1e1e1e;
+    flex-shrink: 0;
+}
+
+.faq-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+}
+
+/* Кнопки управления (Назад / Закрыть) */
+.faq-icon-btn {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.faq-icon-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+/* Тело окна (Скроллируемая часть) */
+.faq-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    position: relative;
+    padding: 0;
+}
+
+/* Кастомный скроллбар */
+.faq-body::-webkit-scrollbar {
+    width: 6px;
+}
+.faq-body::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 3px;
+}
+
+/* Меню категорий (Главный экран) */
+.faq-menu {
+    padding: 10px;
+    list-style: none;
+    margin: 0;
+}
+
+.faq-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    margin-bottom: 5px;
+    background: #2a2a2a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.faq-menu-item:hover {
+    background: #333;
+}
+
+.faq-menu-item:active {
+    transform: scale(0.98);
+}
+
+.faq-item-title {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.faq-arrow {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Экран с контентом (Скрыт по умолчанию) */
+.faq-content-page {
+    display: none;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.faq-content-page.active {
+    display: block;
+}
+
+.faq-content-page h4 {
+    margin-top: 0;
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.faq-content-page p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+/* Подвал (Кнопка репорта) */
+.faq-footer {
+    padding: 15px;
+    border-top: 1px solid #333;
+    background: #1e1e1e;
+    flex-shrink: 0;
+}
+
+.faq-report-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+    background: rgba(255, 59, 48, 0.1);
+    color: #ff5b5b;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.faq-report-btn:hover {
+    background: rgba(255, 59, 48, 0.2);
+    transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
         @media (max-width: 768px) {
             /* Sidebar - Mobile positioning */
             #sidebar {
@@ -1910,7 +2095,7 @@
                         </div>
                         <span>Genyxo AI</span>
                     </div>
-                    <button class="icon-btn" onclick="toggleSidebar()" data-tooltip="Закрыть сайдбар" style="border:none; width:32px; height:32px;">
+                    <button class="icon-btn" onclick="toggleSidebar()" data-tooltip="Close Sidebar" style="border:none; width:32px; height:32px;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
                     </button>
                 </div>
@@ -1973,10 +2158,24 @@
                                 <span>Send Feedback</span>
                             </a>
                             <div class="menu-divider"></div>
-                            <a href="profile.html" class="gemini-menu-item">
-                                <i class="fas fa-cog"></i>
-                                <span>Settings</span>
-                            </a>
+                                <div class="sb-section" style="margin-top: 20px;">
+                                    <h4 style="font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 10px; padding-left: 10px;">Reference</h4>
+                                    
+                                    <button class="sidebar-btn" onclick="window.open('privacy.html', '_blank')">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>Privacy Policy</span>
+                                    </button>
+                                    
+                                    <button class="sidebar-btn" onclick="window.open('terms.html', '_blank')">
+                                        <i class="fas fa-file-contract"></i>
+                                        <span>Terms of Service</span>
+                                    </button>
+                                    
+                                    <button class="sidebar-btn" id="openFaqBtn">
+                                        <i class="fas fa-question-circle"></i>
+                                        <span>FAQ</span>
+                                    </button>
+                                </div>
                         </div>
 
                         <button class="sidebar-btn settings-trigger">
@@ -1987,7 +2186,7 @@
             </div>
 
             <div class="sidebar-mini">
-                <div class="mini-btn logo-toggle" onclick="toggleSidebar()" data-tooltip="Открыть сайдбар">
+                <div class="mini-btn logo-toggle" onclick="toggleSidebar()" data-tooltip="Open Sidebar">
                     <div class="logo-circle">
                         <img src="./images/logo.svg" width="24" height="24" fetchpriority="high" class="logo-icon" alt="Logo">
                     </div>
@@ -1996,16 +2195,16 @@
                     </div>
                 </div>
 
-                <div class="mini-btn" data-tooltip="Новый чат">
+                <div class="mini-btn" data-tooltip="New Chat">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                 </div>
 
-                <div class="mini-btn" data-tooltip="Поиск">
+                <div class="mini-btn" data-tooltip="Search">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
 
                 <div style="margin-top: auto; display: flex; flex-direction: column; align-items: center;">
-                    <div class="mini-btn" data-tooltip="Магазин">
+                    <div class="mini-btn" data-tooltip="Shop">
                     <a class="shop-btn-icon" href="index.html#products">   
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
                     </a> 
@@ -2048,10 +2247,24 @@
                                     <span>Send Feedback</span>
                                 </a>
                                 <div class="menu-divider"></div>
-                                <a href="profile.html" class="gemini-menu-item">
-                                    <i class="fas fa-cog"></i>
-                                    <span>Settings</span>
-                                </a>
+                                <div class="sb-section" style="margin-top: 20px;">
+                                    <h4 style="font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 10px; padding-left: 10px;">Reference</h4>
+                                    
+                                    <button class="sidebar-btn sidebar-mini-preference-btn" onclick="window.open('privacy.html', '_blank')">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>Privacy Policy</span>
+                                    </button>
+                                    
+                                    <button class="sidebar-btn sidebar-mini-preference-btn" onclick="window.open('terms.html', '_blank')">
+                                        <i class="fas fa-file-contract"></i>
+                                        <span>Terms of Service</span>
+                                    </button>
+                                    
+                                    <button class="sidebar-btn sidebar-mini-preference-btn" id="openFaqBtn">
+                                        <i class="fas fa-question-circle"></i>
+                                        <span>FAQ</span>
+                                    </button>
+                                </div>
                             </div>
 
                             <button class="sidebar-btn settings-trigger">
@@ -2061,6 +2274,7 @@
                     </div>
                 </div>
             </div>
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
         </aside>
 
         <main class="main-container">
@@ -2271,37 +2485,78 @@
         <p>Genyxo provides a seamless interface for interacting with multiple artificial intelligence models. Whether you need help with coding using GPT-4o, creative writing with Gemini, or cinematic video generation with Sora, our token-based platform (cr) makes it accessible. Our neural network chat services are designed for developers and creative professionals seeking high-performance AI tools in one integrated chat room.</p>
     </section>
 
-    <section class="faq-container" style="display: none; padding: 20px; max-width: 800px; margin: 0 auto; color: var(--text-gray);">
-        <h2 style="color: var(--text-light);">Frequently Asked Questions</h2>
-        
-        <div itemscope itemtype="https://schema.org/FAQPage">
-            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
-                <h3 itemprop="name">Which AI models can I use in Genyxo?</h3>
-                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <div itemprop="text">
-                        In Genyxo, you can access top-tier neural networks including GPT-4o, Gemini, and the Sora video generation model. We provide a unified interface to chat with various AI assistants using a flexible token (cr) system.
-                    </div>
-                </div>
-            </div>
-
-            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
-                <h3 itemprop="name">How do tokens (cr) work?</h3>
-                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <div itemprop="text">
-                        Tokens or "cr" are our internal currency. Each AI model has a different cost per message. You can buy credit packs in your profile and use them to chat with GPT-4 or generate AI videos without multiple subscriptions.
-                    </div>
-                </div>
-            </div>
-
-            <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question" style="margin-bottom: 15px;">
-                <h3 itemprop="name">Is Genyxo AI Chat secure?</h3>
-                <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <div itemprop="text">
-                        Yes, security is our priority. Your conversations are private and encrypted. We do not use your personal data or chat history to train models, ensuring enterprise-grade privacy for all users.
-                    </div>
-                </div>
-            </div>
+    <div id="faqWindow">
+        <div class="faq-header">
+            <button id="faqBackBtn" class="faq-icon-btn" style="visibility: hidden;">
+                <i class="fas fa-arrow-left"></i> </button>
+            <span class="faq-title" data-i18n="faq.title">Help & FAQ</span>
+            <button id="faqCloseBtn" class="faq-icon-btn">
+                <i class="fas fa-times"></i> </button>
         </div>
+
+        <div class="faq-body">
+            
+            <div id="faqMenu" class="faq-menu">
+                <div class="faq-menu-item" onclick="openFaqPage('page-general')">
+                    <span class="faq-item-title" data-i18n="faq.general">General Questions</span>
+                    <span class="faq-arrow">❯</span>
+                </div>
+                <div class="faq-menu-item" onclick="openFaqPage('page-subscription')">
+                    <span class="faq-item-title" data-i18n="faq.subscription">Credits and Payment</span>
+                    <span class="faq-arrow">❯</span>
+                </div>
+                <div class="faq-menu-item" onclick="openFaqPage('page-models')">
+                    <span class="faq-item-title" data-i18n="faq.models">Модели (GPT, Gemini)</span>
+                    <span class="faq-arrow">❯</span>
+                </div>
+                <div class="faq-menu-item" onclick="openFaqPage('page-errors')">
+                    <span class="faq-item-title" data-i18n="faq.tech">Технические проблемы</span>
+                    <span class="faq-arrow">❯</span>
+                </div>
+            </div>
+
+            <div id="page-general" class="faq-content-page">
+                <h4 data-i18n="faq.general_title">What is Genyxo AI?</h4>
+                <p data-i18n="faq.general_text">Genyxo AI is a platform that combines the best neural networks in a single interface...</p>
+                
+                <h4 data-i18n="faq.safe_title">Is my data safe?</h4>
+                <p data-i18n="faq.safe_text">We transmit your prompts to neural networks via secure corporate API channels. According to our agreements, your data is not used to train global models. However, we still recommend that you do not enter your passwords or bank card information in the chat.</p>
+            </div>
+
+            <div id="page-subscription" class="faq-content-page">
+                <h4 data-i18n="faq.tokens_title">How do Credits work?</h4>
+                <p data-i18n="faq.tokens_text">You purchase a package of credits that are spent on each message. The amount spent depends on two factors: the chosen model and the length of the conversation..</p>
+                <h4 data-i18n="faq.tokens_title">How much does one message cost?</h4>
+                <p data-i18n="faq.tokens_text">Different models cost differently:<br>
+                • <b>GPT-4o / Claude 3 Opus:</b> High cost (smart models).<br>
+                • <b>GPT-3.5 / Gemini Flash:</b> Low cost (fast models).<br>
+                The exact price is displayed next to the model selection.</p>
+
+                <h4 data-i18n="faq.tokens_title">Do credits burn out?</h4>
+                <p data-i18n="faq.tokens_text">No! Purchased credit packages remain on your balance forever until you spend them. You can return to them even after a year.</p>
+
+                <h4 data-i18n="faq.tokens_title">What to do if you run out of credit?</h4>
+                <p data-i18n="faq.tokens_text">The chat will be paused. You need to click the "Top Up" button in the menu to purchase a new package.</p>
+            </div>
+
+            <div id="page-models" class="faq-content-page">
+                <h4 data-i18n="faq.models_diff">What is the difference between the models?</h4>
+                <p>GPT-4 is better suited for logic and code. Gemini works great with large texts. Sora generates video.</p>
+            </div>
+
+            <div id="page-errors" class="faq-content-page">
+                <h4>Why is the chat not responding?</h4>
+                <p>Check your internet connection or refresh the page. If the issue persists, click the "Report a Bug" button below.</p>
+            </div>
+
+        </div>
+
+        <div class="faq-footer">
+            <a href="support.html" class="faq-report-btn">
+                <i class="fas fa-bug" style="margin-right:8px;"></i> Сообщить об ошибке
+            </a>
+        </div>
+    </div>
 
     <div id="toast-container" class="toast-container"></div>
 
@@ -2662,6 +2917,78 @@
         });
     </script>
 
+    <!--FAQ Window-->
+    <script>
+    // Ждем полной загрузки документа
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqWindow = document.getElementById('faqWindow');
+        const faqMenu = document.getElementById('faqMenu');
+        const faqBackBtn = document.getElementById('faqBackBtn');
+        const faqCloseBtn = document.getElementById('faqCloseBtn');
+        const faqTitle = document.querySelector('.faq-title');
+
+        // Функция открытия страницы FAQ
+        window.openFaqPage = function(pageId) {
+            // 1. Скрываем меню
+            faqMenu.style.display = 'none';
+            
+            // 2. Скрываем все страницы контента
+            document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
+            
+            // 3. Показываем нужную страницу
+            const targetPage = document.getElementById(pageId);
+            if(targetPage) {
+                targetPage.classList.add('active');
+                // Обновляем заголовок (опционально можно брать из h4)
+                // faqTitle.innerText = "Info"; 
+            }
+            
+            // 4. Показываем кнопку "Назад"
+            faqBackBtn.style.visibility = 'visible';
+            
+            // 5. Скроллим наверх
+            document.querySelector('.faq-body').scrollTop = 0;
+        };
+
+        // Функция возврата назад
+        faqBackBtn.addEventListener('click', function() {
+            // 1. Скрываем все страницы
+            document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
+            
+            // 2. Показываем меню
+            faqMenu.style.display = 'block'; // или 'block', если не flex
+            
+            // 3. Скрываем кнопку "Назад"
+            faqBackBtn.style.visibility = 'hidden';
+            
+            // 4. Сбрасываем заголовок
+            // faqTitle.setAttribute('data-i18n', 'faq.title'); // Если используешь i18n
+        });
+
+        // Логика открытия FAQ окна
+        const openFaqBtn = document.getElementById('openFaqBtn');
+        if (openFaqBtn) {
+            openFaqBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                faqWindow.classList.add('active');
+                // Сбрасываем в главное меню
+                document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
+                faqMenu.style.display = 'block';
+                faqBackBtn.style.visibility = 'hidden';
+            });
+        }
+
+        // Логика закрытия на крестик
+        faqCloseBtn.addEventListener('click', function() {
+            faqWindow.classList.remove('active');
+            // Сброс к главному меню при следующем открытии (через 300мс чтобы не мигало)
+            setTimeout(() => {
+                faqBackBtn.click(); 
+            }, 300);
+        });
+    });
+    </script>
+
     <div id="customModal" class="modal-overlay" style="display:none;">
         <div class="modal-content">
             <h3 id="modalTitle" style="margin-top:0; color:#fff;">Confirm:</h3>
@@ -2672,7 +2999,5 @@
             </div>
         </div>
     </div>
-
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 </body>
 </html>
