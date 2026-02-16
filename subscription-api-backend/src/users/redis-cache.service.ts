@@ -16,8 +16,7 @@ export class RedisCacheService {
   }
 
   async setBalance(userId: number, amount: number) {
-    // Кешируем на 30 минут, этого достаточно для активной сессии
-    await this.redis.set(`user:balance:${userId}`, amount.toString(), 'EX', 1800);
+    await this.redis.set(`user:balance:${userId}`, amount.toString(), 'EX', 3600);
   }
 
   async invalidate(userId: number) {

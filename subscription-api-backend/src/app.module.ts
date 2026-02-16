@@ -25,7 +25,7 @@ import { RedisCacheModule } from './common/redis-cache.module';
 
 @Module({
   imports: [
-    RedisCacheModule,
+    ConfigModule.forRoot({ isGlobal: true }),
     RedisModule.forRoot({
       config: {
         host: process.env.REDISHOST || 'localhost',
@@ -47,7 +47,6 @@ import { RedisCacheModule } from './common/redis-cache.module';
         };
       },
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
     MailerModule.forRoot({
       transport: {
         host: 'smtp.zoho.eu',
@@ -88,6 +87,7 @@ import { RedisCacheModule } from './common/redis-cache.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'), 
     }),
+    RedisCacheModule,
     AuthModule,
     UsersModule,
     ProfileModule,

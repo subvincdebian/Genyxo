@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RedisCacheService } from './redis-cache.service';
+import { RedisCacheService } from '../common/redis-cache.service';
 import { User } from './user.entity';
 import { Transaction, TransactionStatus, TransactionType } from '../transactions/transaction.entity';
 
