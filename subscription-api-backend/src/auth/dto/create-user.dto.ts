@@ -24,8 +24,6 @@ export class CreateUserDto {
   name?: string;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber({}, { message: 'Referrer ID must be a number.' })
-  @IsInt({ message: 'Referrer ID must be an integer.' })
-  referrerId?: number;
+  @IsString()
+  referralCode?: string;
 }

@@ -3,27 +3,26 @@ let socket;
 
 const urlParams = new URLSearchParams(window.location.search);
 const tokenFromUrl = urlParams.get('token');
-const refId = urlParams.get('ref');
+const refCode = urlParams.get('referralCode') || urlParams.get('ref');
 
 if (tokenFromUrl) {
     localStorage.setItem('authToken', tokenFromUrl);
     window.token = tokenFromUrl;
-    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+}
+
+if (refCode) {
+    localStorage.setItem('pending_referral_code', refCode);
+}
+
+if (tokenFromUrl || refCode) {
+    const cleanUrl = window.location.origin + window.location.pathname;
     window.history.replaceState({}, document.title, cleanUrl);
 }
 
 let token = localStorage.getItem('authToken');
 window.token = token;
 
-if (refId) {
-    localStorage.setItem('referrerId', refId);
-    console.log('Referrer ID saved:', refId);
-    // Можно тоже почистить URL от ref:
-    // const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-    // window.history.replaceState({}, document.title, cleanUrl);
-}
-
-let currentUserName = localStorage.getItem('userName') || 'My Profile';
+let currentUserName = localStorage.getItem('userName') || 'Username';
 let currentUserEmail = localStorage.getItem('userEmail');
 let currentUserAvatar = localStorage.getItem('userAvatar');
 
@@ -861,6 +860,8 @@ async function handleLoginSubmit(e) {
 
 async function handleSignupSubmit(e) {
     e.preventDefault();
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     
@@ -870,16 +871,17 @@ async function handleSignupSubmit(e) {
         return;
     }
 
-    const savedRefId = localStorage.getItem('referrerId');
+    const savedRefCode = localStorage.getItem('pending_referral_code');
 
     const formData = {
-        name: document.getElementById('signupName').value,
-        email: document.getElementById('signupEmail').value,
-        password: document.getElementById('signupPassword').value,
-        referrerId: savedRefId ? Number(savedRefId) : null
+        name: name,
+        email: email,
+        password: password,
+        referralCode: savedRefCode || null
     };
     
     try {
+
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

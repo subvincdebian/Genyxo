@@ -45,6 +45,7 @@ export class AuthService {
   }
 
   async register(createUserDto: CreateUserDto) {
+    const { referralCode, ...userData } = createUserDto;
     const existingUser = await this.usersService.findOneByEmail(createUserDto.email);
     
     if (existingUser) {
@@ -54,10 +55,17 @@ export class AuthService {
         throw new ConflictException('User with this email already exists.');
     }
 
+    let referrerId: number | null = null;
+    if (referralCode) {
+        const referrer = await this.usersService.findByReferralCode(referralCode);
+        referrerId = referrer ? referrer.id : null;
+    }
+
     const verificationToken = uuidv4();
 
     const newUser = await this.usersService.create({
         ...createUserDto,
+        referrerId,
         isEmailVerified: false, 
         verificationToken: verificationToken
     });
@@ -78,16 +86,22 @@ export class AuthService {
     return this.login(user);
   }
 
-  async validateOAuthLogin(profile: any, provider: 'google' | 'facebook') {
+  async validateOAuthLogin(profile: any, provider: 'google' | 'facebook', referralCode?: string) {
     let user = await this.usersService.findOneByEmail(profile.email);
 
     if (!user) {
+        let referrerId: number | null = null;
+        if (referralCode) {
+            const referrer = await this.usersService.findByReferralCode(referralCode);
+            referrerId = referrer ? referrer.id : null;
+        }
+
         user = await this.usersService.create({
             email: profile.email,
             name: `${profile.firstName} ${profile.lastName}`,
             avatar: profile.picture,
             isEmailVerified: true,
-            password: undefined,
+            referrerId,
             [`${provider}Id`]: profile.id
         });
     } else {

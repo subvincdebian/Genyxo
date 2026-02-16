@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { randomBytes } from 'crypto';
 import { RedisCacheService } from '../common/redis-cache.service';
 import { User } from './user.entity';
 import { Transaction, TransactionStatus, TransactionType } from '../transactions/transaction.entity';
@@ -47,9 +48,29 @@ export class UsersService {
   }
 
   async generateUniqueReferralCode(): Promise<string> {
-    const code = Math.random().toString(36).substring(2, 9).toUpperCase();
-    const existing = await this.usersRepository.findOne({ where: { referralCode: code } });
-    return existing ? this.generateUniqueReferralCode() : code;
+    // Алфавит: большие, маленькие буквы и цифры (убрали похожие символы для удобства юзера)
+    const alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const size = 10; // Длина 10 символов как в Grass
+    
+    let code = '';
+    const bytes = randomBytes(size);
+    
+    for (let i = 0; i < size; i++) {
+      // Используем остаток от деления байта на длину алфавита
+      code += alphabet[bytes[i] % alphabet.length];
+    }
+
+    // Проверка на уникальность в БД
+    const existing = await this.usersRepository.findOne({ 
+      where: { referralCode: code },
+      select: ['id'] // Выбираем только id для скорости
+    });
+
+    if (existing) {
+      return this.generateUniqueReferralCode(); // Рекурсия при коллизии
+    }
+    
+    return code;
   }
 
   async create(userData: Partial<User>): Promise<User> {
@@ -118,15 +139,35 @@ export class UsersService {
   }
 
   async getAffiliateStats(userId: number) {
-    const user = await this.usersRepository.findOne({ where: { id: userId }, select: ['id', 'referralBalance'] });
+    const user = await this.usersRepository.findOne({ 
+      where: { id: userId }, 
+      select: ['id', 'referralBalance', 'referralCode'] 
+    });
+    
     if (!user) throw new NotFoundException('User not found');
     
+    let code = user.referralCode;
+    if (!code) {
+      code = await this.generateUniqueReferralCode();
+      await this.usersRepository.update(userId, { referralCode: code });
+    }
+    
     const invitedCount = await this.usersRepository.count({ where: { referrerId: userId } });
+    
     return {
       balance: Number(user.referralBalance || 0),
       invitedCount,
-      referralLink: `https://genyxo.com?ref=${user.id}`
+      // Изменяем формат ссылки на более современный
+      referralLink: `https://genyxo.com/?referralCode=${code}`
     };
+  }
+
+  async findByReferralCode(code: string): Promise<User | null> {
+    if (!code) return null;
+    return this.usersRepository.findOne({ 
+      where: { referralCode: code },
+      select: ['id']
+    });
   }
 
   async processReferralBonus(buyerId: number, packId: number): Promise<void> {
