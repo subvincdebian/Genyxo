@@ -199,7 +199,7 @@
             color: #b4b4b4;
             transition: 0.2s;
         }
-        .mini-btn:hover { background: black; color: white; }
+        .mini-btn:hover { background: black; color: white;}
 
         .logo-toggle { margin-bottom: 20px; }
         .logo-toggle .icon-alt { display: none; }
@@ -1230,6 +1230,10 @@
             color: #1f1f1f !important;
         }
 
+        [data-theme="light"] .mini-sidebar-search-btn:hover {
+           filter: brightness(0) invert(1) !important;
+        }
+
         /* 5. Меню на "плюсик" (Новый чат/Действия) */
         [data-theme="light"] .new-chat-menu {
             background-color: #ffffff;
@@ -1252,6 +1256,11 @@
 
         [data-theme="light"] .shop-btn-icon {
             color: black;
+        }
+
+        [data-theme="light"] .shop-btn-icon:hover {
+            stroke: #ffffff !important;
+            color: #ffffff !important;
         }
 
         .shop-btn-icon {
@@ -2396,7 +2405,7 @@
                 </div>
 
                 <div class="mini-btn" id="railSearchBtn" data-tooltip="Search">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <svg class="mini-sidebar-search-btn" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
 
                 <div style="margin-top: auto; display: flex; flex-direction: column; align-items: center;">
