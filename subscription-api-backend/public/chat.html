@@ -1106,12 +1106,12 @@
 
         .login-btn {
             background: none;
-            border: none;
+            border: none !important;
         }
 
         .login-btn:hover {
             background: none;
-            border: none;
+            border: none !important;
         }
 
         /* Применение переменных к элементам при смене темы */
@@ -1151,7 +1151,7 @@
         }
         
         [data-theme="light"] .chat-logo-icon {
-            color: #1f1f1f !important;
+            filter: invert(1);
         }
         
         [data-theme="light"] .glow-effect {
@@ -1651,6 +1651,13 @@
 
 .modal-new-chat-btn:hover {
     opacity: 0.9;
+}
+
+.nav-avatar-small {
+     background-color: none;
+    border: none;
+    background: none;
+    box-shadow: none;
 }
 
         @media (max-width: 768px) {
@@ -2457,8 +2464,9 @@
                     </div>
                 </div>
             </div>
-            <div class="sidebar-overlay" id="sidebar-overlay"></div>
         </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <main class="main-container">
             <header>
@@ -2526,6 +2534,7 @@
                                         <div class="credits-amount">
                                             <span class="icon-flask">🪙</span>
                                             <span class="amount-number" id="menuCredits">0</span>
+                                            <i class="fas fa-info-circle info-icon" id="openFaqBtn" title="Details"></i>
                                         </div>
                                     </div>
                                     <div class="credits-meta">
@@ -3198,123 +3207,135 @@
 
     <!-- Поиск в Сайдбарах-->
     <script>
-        /* --- Логика Модального Окна Поиска --- */
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchModalOverlay = document.getElementById('searchChatsModal');
-            const closeSearchBtn = document.getElementById('closeSearchModal');
-            const modalSearchInput = document.getElementById('modalSearchInput');
-            const modalSearchResults = document.getElementById('modalSearchResults');
-            const modalNewChatBtn = document.getElementById('modalNewChatBtn');
-            const noResultsMsg = document.getElementById('searchNoResults');
-            
-            // Кнопки открытия из сайдбаров (используем существующие ID)
-            const sidebarSearchBtn = document.getElementById('searchChatsBtn');
-            const railSearchBtn = document.getElementById('railSearchBtn');
+/* --- Логика Модального Окна Поиска --- */
+document.addEventListener('DOMContentLoaded', () => {
+    const searchModalOverlay = document.getElementById('searchChatsModal');
+    const closeSearchBtn = document.getElementById('closeSearchModal');
+    const modalSearchInput = document.getElementById('modalSearchInput');
+    const modalSearchResults = document.getElementById('modalSearchResults');
+    const modalNewChatBtn = document.getElementById('modalNewChatBtn');
+    const noResultsMsg = document.getElementById('searchNoResults');
+    
+    // Кнопки открытия из сайдбаров
+    const sidebarSearchBtn = document.getElementById('searchChatsBtn');
+    const railSearchBtn = document.getElementById('railSearchBtn');
 
-            // Функция открытия модального окна
-            function openSearchModal() {
-                populateModalList(); // Загружаем актуальный список чатов
-                searchModalOverlay.classList.add('active');
-                // Фокус на поле ввода с небольшой задержкой для анимации
-                setTimeout(() => modalSearchInput.focus(), 100);
-            }
+    // Функция открытия модального окна
+    function openSearchModal() {
+        if (!searchModalOverlay) return;
+        populateModalList(); // Загружаем список чатов
+        searchModalOverlay.classList.add('active');
+        setTimeout(() => modalSearchInput.focus(), 100);
+    }
 
-            // Функция закрытия
-            function closeSearchModal() {
-                searchModalOverlay.classList.remove('active');
-                modalSearchInput.value = ''; // Очистка поля
-            }
+    // Функция закрытия
+    function closeSearchModal() {
+        if (!searchModalOverlay) return;
+        searchModalOverlay.classList.remove('active');
+        modalSearchInput.value = ''; 
+    }
 
-            // Клик по кнопкам поиска
-            if(sidebarSearchBtn) sidebarSearchBtn.addEventListener('click', openSearchModal);
-            if(railSearchBtn) railSearchBtn.addEventListener('click', openSearchModal);
+     // Закрытие по ESC
 
-            // Закрытие на крестик
-            closeSearchBtn.addEventListener('click', closeSearchModal);
-
-            // Закрытие по клику на затемненный фон
-            searchModalOverlay.addEventListener('click', (e) => {
-                if (e.target === searchModalOverlay) {
-                    closeSearchModal();
-                }
-            });
-
-            // Закрытие по ESC
             document.addEventListener('keydown', (e) => {
+
                 if (e.key === 'Escape' && searchModalOverlay.classList.contains('active')) {
+
                     closeSearchModal();
+
+                }
+
+            });
+
+    // Слушатели на кнопки открытия
+    if(sidebarSearchBtn) sidebarSearchBtn.addEventListener('click', openSearchModal);
+    if(railSearchBtn) railSearchBtn.addEventListener('click', openSearchModal);
+
+    // Закрытие
+    if(closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearchModal);
+    if(searchModalOverlay) {
+        searchModalOverlay.addEventListener('click', (e) => {
+            if (e.target === searchModalOverlay) closeSearchModal();
+        });
+    }
+
+    // Функция для копирования списка чатов из сайдбара в модальное окно поиска
+    function populateModalList() {
+        if (!modalSearchResults) return;
+        modalSearchResults.innerHTML = ''; 
+        if (noResultsMsg) noResultsMsg.style.display = 'none';
+
+        // ИСПРАВЛЕНО: берем элементы так, как они называются в вашем renderHistoryList
+        const originalList = document.querySelectorAll('#historyList .chat-item');
+        
+        if (originalList.length === 0) {
+            // Если в сайдбаре пусто
+            if (noResultsMsg) noResultsMsg.style.display = 'block';
+            return;
+        }
+
+        originalList.forEach(originalItem => {
+            // Клонируем элемент чата
+            const clone = originalItem.cloneNode(true);
+            
+            // 1. Убираем лишнее: удаляем кнопку настроек (три точки) и выпадающее меню
+            const optionsBtn = clone.querySelector('.chat-options-btn');
+            const dropdown = clone.querySelector('.options-dropdown');
+            if (optionsBtn) optionsBtn.remove();
+            if (dropdown) dropdown.remove();
+            
+            // 2. Стилизуем клон для поиска
+            clone.classList.remove('active'); // Убираем подсветку активного чата из сайдбара
+            clone.classList.add('search-result-item'); 
+            
+            // 3. Обработка клика
+            clone.addEventListener('click', () => {
+                // Имитируем клик по настоящему элементу в сайдбаре
+                originalItem.click(); 
+                closeSearchModal();
+                
+                // Закрываем мобильный сайдбар, если он открыт
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar && sidebar.classList.contains('active')) {
+                   const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+                   if(closeSidebarBtn) closeSidebarBtn.click();
                 }
             });
 
-            // Функция для копирования списка чатов из основного сайдбара в модальное окно
-            function populateModalList() {
-                modalSearchResults.innerHTML = ''; // Очистить текущий список
-                noResultsMsg.style.display = 'none';
-
-                // Берем оригинальный список из DOM (так мы сохраним все ID и данные)
-                const originalList = document.querySelectorAll('#chatHistory li');
-                
-                originalList.forEach(li => {
-                    // Клонируем элемент списка
-                    const clone = li.cloneNode(true);
-                    
-                    // Убираем кнопку удаления (мусорку) из поиска для чистоты, если нужно
-                    const deleteBtn = clone.querySelector('.delete-chat-btn');
-                    if(deleteBtn) deleteBtn.remove();
-                    
-                    clone.classList.add('search-result-item'); // Добавляем класс для стилизации в модальном окне
-                    
-                    // Добавляем обработчик клика (так как клонирование не копирует ивенты)
-                    clone.addEventListener('click', () => {
-                        const originalId = li.getAttribute('data-id') || li.id; // Пытаемся найти ID
-                        
-                        // Имитируем клик по оригинальному элементу в сайдбаре
-                        // Это самый надежный способ запустить логику загрузки чата
-                        if (li) li.click(); 
-                        
-                        closeSearchModal();
-                        
-                        // Если мобильная версия, можно закрыть и сайдбар
-                        if (window.innerWidth <= 768) {
-                            document.querySelector('.sidebar').classList.remove('active');
-                            document.querySelector('.modal-overlay').classList.remove('active');
-                        }
-                    });
-
-                    modalSearchResults.appendChild(clone);
-                });
-            }
-
-            // Логика "Живого поиска"
-            modalSearchInput.addEventListener('input', function() {
-                const filter = this.value.toLowerCase();
-                const items = modalSearchResults.querySelectorAll('li');
-                let hasVisibleItems = false;
-
-                items.forEach(item => {
-                    // Ищем текст внутри span или самого li
-                    const text = item.textContent || item.innerText;
-                    if (text.toLowerCase().indexOf(filter) > -1) {
-                        item.style.display = 'flex'; // Показываем (flex, так как в CSS search-result-item display: flex)
-                        hasVisibleItems = true;
-                    } else {
-                        item.style.display = 'none'; // Скрываем
-                    }
-                });
-
-                // Показать/скрыть сообщение "Ничего не найдено"
-                noResultsMsg.style.display = hasVisibleItems ? 'none' : 'block';
-            });
-
-            // Кнопка "Новый чат" внутри модального окна
-            modalNewChatBtn.addEventListener('click', () => {
-                // Кликаем по настоящей кнопке New Chat в сайдбаре
-                const realNewChatBtn = document.getElementById('newChatBtn');
-                if (realNewChatBtn) realNewChatBtn.click();
-                
-                closeSearchModal();
-            });
+            modalSearchResults.appendChild(clone);
         });
+    }
+
+    // Живой поиск
+    if (modalSearchInput) {
+        modalSearchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            const items = modalSearchResults.querySelectorAll('.search-result-item');
+            let hasVisibleItems = false;
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    item.style.display = 'flex';
+                    hasVisibleItems = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            if (noResultsMsg) noResultsMsg.style.display = hasVisibleItems ? 'none' : 'block';
+        });
+    }
+
+    // Кнопка "Новый чат"
+    if (modalNewChatBtn) {
+        modalNewChatBtn.addEventListener('click', () => {
+            const realNewChatBtn = document.getElementById('newChatBtn');
+            if (realNewChatBtn) realNewChatBtn.click();
+            closeSearchModal();
+        });
+    }
+});
     </script>
 
     <div id="customModal" class="modal-overlay" style="display:none;">

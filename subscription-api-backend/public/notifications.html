@@ -193,7 +193,7 @@
                                 <div class="credits-amount">
                                     <span class="icon-flask">🪙</span>
                                     <span class="amount-number" id="menuCredits">70</span>
-                                    <i class="fas fa-info-circle info-icon" title="Details"></i>
+                                    <i class="fas fa-info-circle info-icon" id="openFaqBtn" title="Details"></i>
                                 </div>
                             </div>
                             <a href="index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
@@ -256,6 +256,79 @@
 
         <div id="notifList">
             <p style="text-align: center; color: #666;" data-i18n="notifications.loading">Loading notifications...</p>
+        </div>
+    </div>
+
+    <div id="faqWindow">
+        <div class="faq-header">
+            <button id="faqBackBtn" class="faq-icon-btn" style="visibility: hidden;">
+                <i class="fas fa-arrow-left"></i> </button>
+            <span class="faq-title" data-i18n="faq.title">Help & FAQ</span>
+            <button id="faqCloseBtn" class="faq-icon-btn">
+                <i class="fas fa-times"></i> </button>
+        </div>
+
+        <div class="faq-body">
+            
+            <div id="faqMenu" class="faq-menu">
+                <div class="faq-menu-item" onclick="openFaqPage('page-general')">
+                    <span class="faq-item-title" data-i18n="faq.general">General Questions</span>
+                    <span class="faq-arrow">❯</span>
+                </div>
+                <div class="faq-menu-item" onclick="openFaqPage('page-subscription')">
+                    <span class="faq-item-title" data-i18n="faq.subscription">Credits and Payment</span>
+                    <span class="faq-arrow">❯</span>
+                </div>
+                <div class="faq-menu-item" onclick="openFaqPage('page-models')">
+                    <span class="faq-item-title" data-i18n="faq.models">Models (GPT, Gemini)</span>
+                    <span class="faq-arrow">❯</span>
+                </div>
+                <div class="faq-menu-item" onclick="openFaqPage('page-errors')">
+                    <span class="faq-item-title" data-i18n="faq.tech">Technical problems</span>
+                    <span class="faq-arrow">❯</span>
+                </div>
+            </div>
+
+            <div id="page-general" class="faq-content-page">
+                <h4 data-i18n="faq.general_title">What is Genyxo AI?</h4>
+                <p data-i18n="faq.general_text">Genyxo AI is a platform that combines the best neural networks in a single interface...</p>
+                
+                <h4 data-i18n="faq.safe_title">Is my data safe?</h4>
+                <p data-i18n="faq.safe_text">We transmit your prompts to neural networks via secure corporate API channels. According to our agreements, your data is not used to train global models. However, we still recommend that you do not enter your passwords or bank card information in the chat.</p>
+            </div>
+
+            <div id="page-subscription" class="faq-content-page">
+                <h4 data-i18n="faq.tokens_title">How do Credits work?</h4>
+                <p data-i18n="faq.tokens_text">You purchase a package of credits that are spent on each message. The amount spent depends on two factors: the chosen model and the length of the conversation..</p>
+                <h4 data-i18n="faq.tokens_title">How much does one message cost?</h4>
+                <p data-i18n="faq.tokens_text">Different models cost differently:<br>
+                • <b>GPT-4o / Claude 3 Opus:</b> High cost (smart models).<br>
+                • <b>GPT-3.5 / Gemini Flash:</b> Low cost (fast models).<br>
+                The exact price is displayed next to the model selection.</p>
+
+                <h4 data-i18n="faq.tokens_title">Do credits burn out?</h4>
+                <p data-i18n="faq.tokens_text">No! Purchased credit packages remain on your balance forever until you spend them. You can return to them even after a year.</p>
+
+                <h4 data-i18n="faq.tokens_title">What to do if you run out of credit?</h4>
+                <p data-i18n="faq.tokens_text">The chat will be paused. You need to click the "Top Up" button in the menu to purchase a new package.</p>
+            </div>
+
+            <div id="page-models" class="faq-content-page">
+                <h4 data-i18n="faq.models_diff">What is the difference between the models?</h4>
+                <p>GPT-4 is better suited for logic and code. Gemini works great with large texts. Sora generates video.</p>
+            </div>
+
+            <div id="page-errors" class="faq-content-page">
+                <h4>Why is the chat not responding?</h4>
+                <p>Check your internet connection or refresh the page. If the issue persists, click the "Report a Bug" button below.</p>
+            </div>
+
+        </div>
+
+        <div class="faq-footer">
+            <a href="support.html" class="faq-report-btn">
+                <i class="fas fa-bug" style="margin-right:8px;"></i> Сообщить об ошибке
+            </a>
         </div>
     </div>
 
@@ -404,6 +477,78 @@
                 });
             }
         });
+    </script>
+
+    <!--FAQ Window-->
+    <script>
+    // Ждем полной загрузки документа
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqWindow = document.getElementById('faqWindow');
+        const faqMenu = document.getElementById('faqMenu');
+        const faqBackBtn = document.getElementById('faqBackBtn');
+        const faqCloseBtn = document.getElementById('faqCloseBtn');
+        const faqTitle = document.querySelector('.faq-title');
+
+        // Функция открытия страницы FAQ
+        window.openFaqPage = function(pageId) {
+            // 1. Скрываем меню
+            faqMenu.style.display = 'none';
+            
+            // 2. Скрываем все страницы контента
+            document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
+            
+            // 3. Показываем нужную страницу
+            const targetPage = document.getElementById(pageId);
+            if(targetPage) {
+                targetPage.classList.add('active');
+                // Обновляем заголовок (опционально можно брать из h4)
+                // faqTitle.innerText = "Info"; 
+            }
+            
+            // 4. Показываем кнопку "Назад"
+            faqBackBtn.style.visibility = 'visible';
+            
+            // 5. Скроллим наверх
+            document.querySelector('.faq-body').scrollTop = 0;
+        };
+
+        // Функция возврата назад
+        faqBackBtn.addEventListener('click', function() {
+            // 1. Скрываем все страницы
+            document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
+            
+            // 2. Показываем меню
+            faqMenu.style.display = 'block'; // или 'block', если не flex
+            
+            // 3. Скрываем кнопку "Назад"
+            faqBackBtn.style.visibility = 'hidden';
+            
+            // 4. Сбрасываем заголовок
+            // faqTitle.setAttribute('data-i18n', 'faq.title'); // Если используешь i18n
+        });
+
+        // Логика открытия FAQ окна
+        const openFaqBtns = document.querySelectorAll('#openFaqBtn');
+        openFaqBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                faqWindow.classList.add('active');
+                // Сбрасываем в главное меню
+                document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
+                faqMenu.style.display = 'block';
+                faqBackBtn.style.visibility = 'hidden';
+            });
+        });
+
+        // Логика закрытия на крестик
+        faqCloseBtn.addEventListener('click', function() {
+            faqWindow.classList.remove('active');
+            // Сброс к главному меню при следующем открытии (через 300мс чтобы не мигало)
+            setTimeout(() => {
+                faqBackBtn.click(); 
+            }, 300);
+        });
+    });
     </script>
 </body>
 </html>

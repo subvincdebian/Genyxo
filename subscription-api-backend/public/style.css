@@ -1323,7 +1323,6 @@ h1, h2, h3, .nav-logo {
     background: none;
     background: var(--text-light);
     color: var(--text-dark);
-    border: 1px solid var(--glass-border);
     padding: 0;
     cursor: pointer;
     transition: all 0.3s ease;
