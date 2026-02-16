@@ -2966,9 +2966,9 @@
         });
 
         // Логика открытия FAQ окна
-        const openFaqBtn = document.getElementById('openFaqBtn');
-        if (openFaqBtn) {
-            openFaqBtn.addEventListener('click', function(e) {
+        const openFaqBtns = document.querySelectorAll('#openFaqBtn');
+        openFaqBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 faqWindow.classList.add('active');
                 // Сбрасываем в главное меню
@@ -2976,7 +2976,7 @@
                 faqMenu.style.display = 'block';
                 faqBackBtn.style.visibility = 'hidden';
             });
-        }
+        });
 
         // Логика закрытия на крестик
         faqCloseBtn.addEventListener('click', function() {

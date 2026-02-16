@@ -830,6 +830,16 @@
     margin: 0;
 }
 
+/* Align text and icons to the left for Preference blocks in mini sidebar */
+.sidebar-closed .sidebar-mini-preference-btn {
+    justify-content: flex-start;
+    padding: 12px;
+}
+
+.sidebar-closed .sidebar-mini-preference-btn i {
+    margin: 0 2px 0 0;
+}
+
 /* Меню в мини-режиме сдвигаем чуть вправо, чтобы не перекрывало кнопку */
 .sidebar-closed .gemini-menu {
     left: 10px;
