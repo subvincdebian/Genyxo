@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Document</title>
     <script>
-        window.token = window.token || localStorage.getItem('token');
+        window.token = window.token || localStorage.getItem('authToken');
         if (!token) {
             window.location.href = '/';
         } else {

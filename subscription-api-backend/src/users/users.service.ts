@@ -157,7 +157,6 @@ export class UsersService {
     return {
       balance: Number(user.referralBalance || 0),
       invitedCount,
-      // Изменяем формат ссылки на более современный
       referralLink: `https://genyxo.com/?referralCode=${code}`
     };
   }
