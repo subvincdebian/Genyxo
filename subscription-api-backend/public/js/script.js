@@ -1393,80 +1393,139 @@ async function purchasePack(packId) {
     }
 }
 
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.style.display = "none";
-        if (event.target.id === 'verifyEmailModal') {
-            stopPolling();
+function initScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-active');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { 
+        threshold: CONFIG.ANIMATION_THRESHOLD, 
+        rootMargin: "0px 0px -50px 0px" 
+    });
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+}
+
+function handleBillingUpdate() {
+    loadTransactionHistory(1);
+    const credits = localStorage.getItem('userCredits') || '0';
+    const display = document.getElementById('display-credits');
+    if (display) display.innerText = credits;
+}
+
+function setupTabs() {
+    const container = document.querySelector('.tabs-nav-container');
+    if (!container) return;
+
+    container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.tab');
+        if (!btn) return;
+
+        const targetId = btn.dataset.tab;
+        if (!targetId) return;
+
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+
+        const targetContent = document.getElementById(targetId);
+        if (targetContent) {
+            targetContent.classList.add('active');
+            if (targetId === 'billing-section') handleBillingUpdate();
         }
+    });
+}
+
+const FAQManager = {
+    els: {},
+
+    init() {
+        this.els = {
+            window: document.getElementById('faqWindow'),
+            menu: document.getElementById('faqMenu'),
+            backBtn: document.getElementById('faqBackBtn'),
+            closeBtn: document.getElementById('faqCloseBtn'),
+            pages: document.querySelectorAll('.faq-content-page'),
+            openBtns: document.querySelectorAll('#openFaqBtn'),
+            body: document.querySelector('.faq-body')
+        };
+
+        if (!this.els.window) return;
+        this.bindEvents();
+    },
+
+    reset() {
+        this.els.pages.forEach(p => p.classList.remove('active'));
+    },
+
+    openPage(pageId) {
+        if (this.els.menu) this.els.menu.style.display = 'none';
+        this.reset();
+        document.getElementById(pageId)?.classList.add('active');
+        if (this.els.backBtn) this.els.backBtn.style.visibility = 'visible';
+        this.els.body?.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    goBack() {
+        this.reset();
+        if (this.els.menu) this.els.menu.style.display = 'block';
+        if (this.els.backBtn) this.els.backBtn.style.visibility = 'hidden';
+    },
+
+    bindEvents() {
+        this.els.backBtn?.addEventListener('click', () => this.goBack());
+        
+        this.els.openBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.els.window.classList.add('active');
+                this.goBack();
+            });
+        });
+
+        this.els.closeBtn?.addEventListener('click', () => {
+            this.els.window.classList.remove('active');
+            setTimeout(() => this.goBack(), 300);
+        });
     }
+};
+
+function setupGlobalClickHandlers() {
+    window.addEventListener('click', (event) => {
+        if (event.target.classList.contains(CONFIG.MODAL_CLASS)) {
+            event.target.style.display = "none";
+            if (event.target.id === 'verifyEmailModal') stopPolling();
+        }
+    });
 }
 
 setInterval(updateNotificationsBadge, 60000);
 
-document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    const navButtons = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    if (token) {
-        console.log("Google token found, starting login process...");
-        localStorage.setItem('authToken', token);
-
-        window.history.replaceState({}, document.title, "/");
-        
-        fetchUserProfile(token);
-
-        showToast('Successfully logged in with Google!', 'success');
-
-    } else {
-        if (token) {
-            fetchUserProfile(token);
-        } else {
-            updateUIState(false);
-        }
-    }
-
-    navButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetTabId = btn.getAttribute('data-tab');
-            if (!targetTabId) return;
-
-            console.log('Switching to tab:', targetTabId);
-
-            navButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            tabContents.forEach(content => {
-                content.style.display = 'none';
-                content.style.opacity = '0';
-            });
-
-            const targetTab = document.getElementById(targetTabId);
-            if (targetTab) {
-                targetTab.style.display = 'block';
-                setTimeout(() => {
-                    targetTab.style.opacity = '1';
-                }, 50);
-                
-                if (targetTabId === 'billing-section') {
-                    loadTransactionHistory(1);
-                    const credits = localStorage.getItem('userCredits') || '0';
-                    document.getElementById('display-credits').innerText = credits;
-                }
-            }
-        });
-    });
-
-    loadProfileData();
-});
-
 // --- INITIALIZATION ---
 function init() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (urlParams.has('token')) {
+        const freshToken = urlParams.get('token');
+        localStorage.setItem('authToken', freshToken);
+        window.history.replaceState({}, document.title, "/");
+        fetchUserProfile(freshToken);
+    }
+
+    setupGlobalClickHandlers();
     setupEventListeners();
     setupNavigation();
     setupBurgerMenu();
+    setupTabs();
+    FAQManager.init();
+    initScrollAnimations();
+
     updateLoginButton(currentUserName, token);
     checkPaymentStatus();
 
@@ -1476,100 +1535,16 @@ function init() {
             email: currentUserEmail,
             avatar: currentUserAvatar
         });
-        
         fetchUserData();
-        updateNotificationsBadge();
         initGlobalSockets();
+        updateNotificationsBadge();
     } else {
         updateUIState(false);
     }
 
-    const observerOptions = {
-        threshold: 0.1, 
-        rootMargin: "0px 0px -50px 0px"
-    };
+    window.openFaqPage = (id) => FAQManager.openPage(id);
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-active');
-                observer.unobserve(entry.target); 
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.animate-on-scroll').forEach(el => {
-        observer.observe(el);
-    });
+    loadProfileData();
 }
-
-   // Ждем полной загрузки документа
-    document.addEventListener('DOMContentLoaded', function() {
-        const faqWindow = document.getElementById('faqWindow');
-        const faqMenu = document.getElementById('faqMenu');
-        const faqBackBtn = document.getElementById('faqBackBtn');
-        const faqCloseBtn = document.getElementById('faqCloseBtn');
-        const faqTitle = document.querySelector('.faq-title');
-
-        // Функция открытия страницы FAQ
-        window.openFaqPage = function(pageId) {
-            // 1. Скрываем меню
-            faqMenu.style.display = 'none';
-            
-            // 2. Скрываем все страницы контента
-            document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
-            
-            // 3. Показываем нужную страницу
-            const targetPage = document.getElementById(pageId);
-            if(targetPage) {
-                targetPage.classList.add('active');
-                // Обновляем заголовок (опционально можно брать из h4)
-                // faqTitle.innerText = "Info"; 
-            }
-            
-            // 4. Показываем кнопку "Назад"
-            faqBackBtn.style.visibility = 'visible';
-            
-            // 5. Скроллим наверх
-            document.querySelector('.faq-body').scrollTop = 0;
-        };
-
-        // Функция возврата назад
-        faqBackBtn.addEventListener('click', function() {
-            // 1. Скрываем все страницы
-            document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
-            
-            // 2. Показываем меню
-            faqMenu.style.display = 'block'; // или 'block', если не flex
-            
-            // 3. Скрываем кнопку "Назад"
-            faqBackBtn.style.visibility = 'hidden';
-            
-            // 4. Сбрасываем заголовок
-            // faqTitle.setAttribute('data-i18n', 'faq.title'); // Если используешь i18n
-        });
-
-        // Логика открытия FAQ окна
-        const openFaqBtns = document.querySelectorAll('#openFaqBtn');
-        openFaqBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                faqWindow.classList.add('active');
-                // Сбрасываем в главное меню
-                document.querySelectorAll('.faq-content-page').forEach(el => el.classList.remove('active'));
-                faqMenu.style.display = 'block';
-                faqBackBtn.style.visibility = 'hidden';
-            });
-        });
-
-        // Логика закрытия на крестик
-        faqCloseBtn.addEventListener('click', function() {
-            faqWindow.classList.remove('active');
-            // Сброс к главному меню при следующем открытии (через 300мс чтобы не мигало)
-            setTimeout(() => {
-                faqBackBtn.click(); 
-            }, 300);
-        });
-    });
 
 document.addEventListener('DOMContentLoaded', init);
