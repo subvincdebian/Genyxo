@@ -1393,6 +1393,12 @@ async function purchasePack(packId) {
     }
 }
 
+const CONFIG = {
+    POLLING_INTERVAL: 60000,
+    ANIMATION_THRESHOLD: 0.1,
+    MODAL_CLASS: 'modal'
+};
+
 function initScrollAnimations() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
