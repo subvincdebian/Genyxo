@@ -1515,21 +1515,21 @@ setInterval(updateNotificationsBadge, 60000);
 // --- INITIALIZATION ---
 async function init() {
     const urlParams = new URLSearchParams(window.location.search);
-    let activeToken = urlParams.get('token');
+    let activeToken = urlParams.get('token') || localStorage.getItem('authToken');
 
-    if (activeToken) {
+    if (urlParams.has('token')) {
         localStorage.setItem('authToken', activeToken);
         window.token = activeToken;
         window.history.replaceState({}, document.title, "/");
         
         await fetchUserProfile(activeToken); 
-        
-        currentUserName = localStorage.getItem('userName');
-        currentUserAvatar = localStorage.getItem('userAvatar');
-        currentUserEmail = localStorage.getItem('userEmail');
     } else {
-        activeToken = localStorage.getItem('authToken');
+        window.token = activeToken;
     }
+
+    currentUserName = localStorage.getItem('userName') || 'User';
+    currentUserAvatar = localStorage.getItem('userAvatar');
+    currentUserEmail = localStorage.getItem('userEmail');
 
     setupGlobalClickHandlers();
     setupEventListeners();
@@ -1542,7 +1542,7 @@ async function init() {
     updateLoginButton(currentUserName, activeToken);
     checkPaymentStatus();
 
-    if (token) {
+    if (activeToken) {
         updateUIState(true, {
             name: currentUserName,
             email: currentUserEmail,

@@ -54,6 +54,10 @@ body::before {
     opacity: 0.4;
 }
 
+[data-auth-only], [data-guest-only] {
+    display: none;
+}
+
 h1, h2, h3, .nav-logo {
     letter-spacing: -0.02em;
 }
