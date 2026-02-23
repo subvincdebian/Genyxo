@@ -15,6 +15,7 @@
         body {
             padding-top: 0;
             display: none;
+            background-color: #0a0a0a;
         }
         
         .admin-container { max-width: 1400px; margin: 100px auto; padding: 20px; }
@@ -270,8 +271,9 @@
 
     <script>
         const API_BASE_URL = 'https://genyxo.com';
-        
-        (function() {
+        const token = localStorage.getItem('authToken');
+
+        async function initAdmin() {
             if (!token) {
                 window.location.href = '/';
                 return;
@@ -280,28 +282,38 @@
             try {
                 const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                const payload = JSON.parse(jsonPayload);
+                const payload = JSON.parse(window.atob(base64));
 
                 if (payload.role !== 'admin') {
-                    alert('Access Denied: You are not an administrator.');
+                    alert('Access Denied');
                     window.location.href = '/';
-                } else {
-                    document.addEventListener('DOMContentLoaded', function() {
-                        document.body.style.display = 'block';
-                    });
+                    return;
                 }
+
+                document.body.style.display = 'block';
+
+                await Promise.all([
+                    loadAdminProfile(),
+                    loadUsers(),
+                    loadTransactions(),
+                    loadAdminTickets()
+                ]);
+
+                const loader = document.getElementById('admin-loader');
+                if (loader) loader.style.display = 'none';
+
             } catch (e) {
-                console.error("Invalid token", e);
-                localStorage.removeItem('authToken');
-                window.location.href = 'index.html';
+                console.error("Auth error", e);
+                window.location.href = '/';
             }
-        })();
+        }
     </script>
 </head>
 <body>
+
+    <div id="admin-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:9999; display:flex; align-items:center; justify-content:center;">
+        <div style="color:white; font-family:sans-serif;">Loading...</div>
+    </div>
     
     <nav class="navbar">
         <div class="nav-container">
@@ -851,12 +863,7 @@
             }
         }
 
-        document.body.style.display = 'block';
-
-        loadAdminProfile();
-        loadUsers();
-        loadTransactions();
-        loadAdminTickets();
+        window.addEventListener('DOMContentLoaded', initAdmin);
     </script>
 </body>
 </html>
