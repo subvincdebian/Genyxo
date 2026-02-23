@@ -1517,19 +1517,21 @@ async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     let activeToken = urlParams.get('token') || localStorage.getItem('authToken');
 
-    if (urlParams.has('token')) {
-        localStorage.setItem('authToken', activeToken);
-        window.token = activeToken;
-        window.history.replaceState({}, document.title, "/");
-        
-        await fetchUserProfile(activeToken); 
-    } else {
-        window.token = activeToken;
-    }
+    window.token = activeToken;
 
     currentUserName = localStorage.getItem('userName') || 'User';
     currentUserAvatar = localStorage.getItem('userAvatar');
     currentUserEmail = localStorage.getItem('userEmail');
+
+    if (activeToken) {
+        updateUIState(true, {
+            name: currentUserName,
+            email: currentUserEmail,
+            avatar: currentUserAvatar
+        });
+    } else {
+        updateUIState(false);
+    }
 
     setupGlobalClickHandlers();
     setupEventListeners();
@@ -1539,20 +1541,25 @@ async function init() {
     FAQManager.init();
     initScrollAnimations();
 
+    if (urlParams.has('token')) {
+        localStorage.setItem('authToken', activeToken);
+        window.history.replaceState({}, document.title, "/");
+        
+        await fetchUserProfile(activeToken);
+        
+        updateUIState(true, {
+            name: localStorage.getItem('userName'),
+            email: localStorage.getItem('userEmail'),
+            avatar: localStorage.getItem('userAvatar')
+        });
+    }
+
     updateLoginButton(currentUserName, activeToken);
     checkPaymentStatus();
-
     if (activeToken) {
-        updateUIState(true, {
-            name: currentUserName,
-            email: currentUserEmail,
-            avatar: currentUserAvatar
-        });
         fetchUserData();
         initGlobalSockets();
         updateNotificationsBadge();
-    } else {
-        updateUIState(false);
     }
 
     window.openFaqPage = (id) => FAQManager.openPage(id);
