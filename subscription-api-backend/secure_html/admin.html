@@ -271,16 +271,16 @@
 
     <script>
         const API_BASE_URL = 'https://genyxo.com';
-        const token = localStorage.getItem('authToken');
 
         async function initAdmin() {
-            if (!token) {
+            const adminToken = localStorage.getItem('authToken');
+            if (!adminToken) {
                 window.location.href = '/';
                 return;
             }
 
             try {
-                const base64Url = token.split('.')[1];
+                const base64Url = adminToken.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
                 const payload = JSON.parse(window.atob(base64));
 
@@ -863,7 +863,9 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', initAdmin);
+        window.addEventListener('DOMContentLoaded', () => {
+            initAdmin(); 
+        });
     </script>
 </body>
 </html>
