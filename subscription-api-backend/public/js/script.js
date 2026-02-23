@@ -1563,6 +1563,7 @@ async function init() {
     }
 
     window.openFaqPage = (id) => FAQManager.openPage(id);
+    loadProfileData();
 }
 
 document.addEventListener('DOMContentLoaded', init);
