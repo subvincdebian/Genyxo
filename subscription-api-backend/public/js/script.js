@@ -1513,15 +1513,22 @@ function setupGlobalClickHandlers() {
 setInterval(updateNotificationsBadge, 60000);
 
 // --- INITIALIZATION ---
-function init() {
+async function init() {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    let activeToken = urlParams.get('token');
 
-    if (urlParams.has('token')) {
-        const freshToken = urlParams.get('token');
-        localStorage.setItem('authToken', freshToken);
+    if (activeToken) {
+        localStorage.setItem('authToken', activeToken);
+        window.token = activeToken;
         window.history.replaceState({}, document.title, "/");
-        fetchUserProfile(freshToken);
+        
+        await fetchUserProfile(activeToken); 
+        
+        currentUserName = localStorage.getItem('userName');
+        currentUserAvatar = localStorage.getItem('userAvatar');
+        currentUserEmail = localStorage.getItem('userEmail');
+    } else {
+        activeToken = localStorage.getItem('authToken');
     }
 
     setupGlobalClickHandlers();
@@ -1532,7 +1539,7 @@ function init() {
     FAQManager.init();
     initScrollAnimations();
 
-    updateLoginButton(currentUserName, token);
+    updateLoginButton(currentUserName, activeToken);
     checkPaymentStatus();
 
     if (token) {
@@ -1549,7 +1556,6 @@ function init() {
     }
 
     window.openFaqPage = (id) => FAQManager.openPage(id);
-
     loadProfileData();
 }
 
