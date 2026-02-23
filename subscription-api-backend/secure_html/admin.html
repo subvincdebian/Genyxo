@@ -270,17 +270,17 @@
     </style>
 
     <script>
-        const API_BASE_URL = 'https://genyxo.com';
+        window.API_BASE_URL = 'https://genyxo.com';
+        window.token = localStorage.getItem('authToken');
 
         async function initAdmin() {
-            const adminToken = localStorage.getItem('authToken');
-            if (!adminToken) {
+            if (!token) {
                 window.location.href = '/';
                 return;
             }
 
             try {
-                const base64Url = adminToken.split('.')[1];
+                const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
                 const payload = JSON.parse(window.atob(base64));
 
