@@ -50,9 +50,20 @@
         <div class="nav-container">
 
             <div class="burger" id="burger">
-                <span></span>
-                <span></span>
-                <span></span>
+                <aside class="privacy-sidebar" id="mobileSidebar">
+                    <div class="sidebar-header">Genyxo — Юридическая информация</div>
+                    <nav>
+                        <ul>
+                            <li><a href="#ai-specs" onclick="closeMenu()">AI Service Specifics</a></li>
+                            <li><a href="#credits" onclick="closeMenu()">Credits & Consumption</a></li>
+                            <li><a href="#privacy-data" onclick="closeMenu()">Data Privacy</a></li>
+                            <li><a href="#prohibited" onclick="closeMenu()">Prohibited Use</a></li>
+                            <li><a href="#referral" onclick="closeMenu()">Affiliate Program</a></li>
+                            <li><a href="#support" onclick="closeMenu()">Support & Disputes</a></li>
+                            <li><a href="#about" onclick="closeMenu()">About these Terms</a></li>
+                        </ul>
+                    </nav>
+                </aside>
             </div>
 
             <div class="left-side">
@@ -465,6 +476,32 @@
     </footer>
 
 <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<script>
+    function toggleMobileMenu() {
+        const sidebar = document.getElementById('mobileSidebar');
+        const overlay = document.getElementById('overlay');
+        
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        // Блокируем скролл страницы при открытом меню
+        if (sidebar.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+
+    function closeMenu() {
+        const sidebar = document.getElementById('mobileSidebar');
+        const overlay = document.getElementById('overlay');
+        
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+</script>
 
 </body>
 </html>
