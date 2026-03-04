@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title data-i18n="profile.title">Privacy Policy and Terms of Service - Genyxo</title>
+    <meta name="description" data-i18n="profile.description" content="Manage your Genyxo account settings, security options, billing history, and affiliate dashboard in one place.">
+    
+    <link rel="canonical" href="https://genyxo.com/profile.html">
+
+    <link rel="alternate" hreflang="x-default" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="en" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="uk" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="de" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="fr" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="es" href="https://genyxo.com/">
+
+    <meta property="og:title" content="Privacy Policy and Terms of Service - Genyxo">
+    <meta property="og:description" content="Manage your account and subscriptions.">
+    <meta property="og:site_name" content="Genyxo">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://genyxo.com/profile.html">
+    <meta property="og:image" content="https://genyxo.com/images/mainbanner2.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@genyxo">
+    <meta name="twitter:creator" content="@genyxo_ai">
+    <meta name="twitter:title" content="Privacy Policy and Terms of Service - Genyxo">
+    <meta name="twitter:description" content="Manage your Genyxo account settings and preferences.">
+    <meta name="twitter:image" content="https://genyxo.com/images/mainbanner2.png">
+
+    <link rel="icon" type="image/svg+xml" href="../images/logo.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="policies.css">
+    <link rel="stylesheet" href="../profile.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+    
+    <nav class="navbar" style="background-color: black;">
+        <div class="nav-container">
+
+            <div class="burger" id="burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="left-side">
+                <div class="nav-logo">
+                    <a href="../index.html" aria-label="Home Page" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
+                        <img src="../images/logo.svg" width="40" height="40" fetchpriority="high" class="logo-icon" alt="Logo">
+                    <span>Genyxo</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="right-side">
+                <div class="nav-links">
+                    <a href="../index.html" class="nav-link active" data-i18n="nav.home" aria-label="Back To Home">Home</a>
+                    <a href="../chat.html" class="nav-link" data-i18n="nav.chat" aria-label="Chat Page">Chat</a>
+                </div>
+                <div class="profile-container">
+                    <button class="login-btn profile-toggle-btn" id="loginBtn" aria-label="Register / Login">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
+                        <i class="fas fa-user fa-fw" id="navIcon"></i>
+                        <span id="navUsername" data-i18n="nav.login">Register / Login</span>
+                    </button>
+                    
+                    <div class="profile-dropdown glass" id="profilePanel">
+
+                        <button class="close-profile-panel" id="closeProfilePanel" aria-label="Close Profile Dropdown">✕</button>
+                        
+                        <div class="dropdown-header">
+                            <div class="user-details">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" class="avatar-big dropdown-avatar">
+                                <div class="user-text">
+                                    <h3 id="menuName">Loading...</h3>
+                                    <p id="menuEmail">loading@email.com</p>
+                                </div>
+                            </div>
+                        </div>
+
+                            <div class="credits-card">
+                                <div class="credits-top">
+                                    <div class="credits-amount">
+                                        <span class="icon-flask">🪙</span>
+                                        <span class="amount-number" id="menuCredits">70</span>
+                                        <i class="fas fa-info-circle info-icon" title="Details" id="openFaqBtn"></i>
+                                    </div>
+                                </div>
+                                <a href="../index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
+                                    <button class="upgrade-full-btn" aria-label="Buy Credits">Buy Credits</button>
+                                </a>
+                            </div>
+
+                        <div class="dropdown-menu">
+
+                            <a href="../profile.html" class="menu-item" aria-label="Profile">
+                                <i class="fas fa-user-cog fa-fw"></i> <span data-i18n="menu.profile">Profile</span>
+                            </a>
+
+                            <a href="../notifications.html" class="menu-item" id="menuNotificationsLink" aria-label="Notifications" style="justify-content: space-between;">
+                                <div style="display:flex; align-items:center;">
+                                    <i class="fas fa-bell"></i> 
+                                    <span data-i18n="menu.notifications">Notifications</span>
+                                </div>
+                                <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
+                            </a>
+
+                            <a href="../support.html" class="menu-item" aria-label="Help Center">
+                                <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
+                            </a>
+
+                            <a href="#" class="menu-item" aria-label="Change Language">
+                                <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
+                                <span class="lang-val">English ></span>
+                            </a>
+
+                            <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
+                                <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
+                                <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
+                            </a>
+
+                        </div>
+
+                        <div class="dropdown-footer">
+                            <button class="menu-item logout-item" id="dropdownLogoutBtn" aria-label="Log out">
+                                <i class="fas fa-sign-out-alt"></i> <span data-i18n="menu.logout">Log out</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="legal-nav-wrapper">
+        <div class="legal-tabs-container">
+            <button class="tab-link active" onclick="openTab(event, 'review')">Review</button>
+            <a href="privacy-policy.html"><button class="tab-link" onclick="openTab(event, 'privacy')">Privacy Policy</button></a>
+            <a href="terms-of-service.html"><button class="tab-link" onclick="openTab(event, 'terms')">Terms of Service</button></a>
+            <button class="tab-link" onclick="openTab(event, 'faq')">Frequently Asked Questions</button>
+        </div>
+    </div>
+
+    <div class="legal-content-wrapper">
+    
+    <div id="review" class="tab-content active">
+        <div class="cards-grid">
+            <div class="legal-card">
+                <h2>Privacy Policy</h2>
+                <p>Find out how we collect and process your data and how you can change it.</p>
+                <a href="privacy-policy.html" onclick="openTab(event, 'privacy')">Read more...</a>
+            </div>
+            
+            <div class="legal-card">
+                <h2>Terms of Service</h2>
+                <p>Please read the rules for users of our Genyxo services and AI models.</p>
+                <a href="terms-of-service.html" onclick="openTab(event, 'terms')">Read more...</a>
+            </div>
+
+            <div class="legal-card with-icon">
+                <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="card-text">
+                <h2>Genyxo Security</h2>
+                <p>Our products are designed for a wide range of users, and we strive to provide reliable protection for your data and AI prompts.</p>
+                <a href="#">Find out what we're doing to protect you</a>
+                </div>
+            </div>
+
+            <div class="legal-card with-icon">
+                <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                </div>
+                <div class="card-text">
+                <h2>Your Account</h2>
+                <p>The Account page provides tools to help you manage your credits, subscription, and privacy settings.</p>
+                <a href="../profile.html">Go to my account</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <ul>
+            <li><a href="../index.html" data-i18n="nav.home" aria-label="Home Page">Home</a></li>
+            <li><a href="../chat.html" data-i18n="nav.chat" aria-label="Chat Page">Chat</a></li>
+            <li><a href="../support.html" data-i18n="nav.about" aria-label="Support Page">Support</a></li>
+        </ul>
+    </div>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <footer class="footer animate-active" style="animation: fadeInUp 1s ease; margin-top: 150px;">
+        <div class="footer-content">
+            <div class="footer-section">
+                <span class="footer-logo">
+                    <img src="../images/logo.svg" width="40" height="40" fetchpriority="high" class="logo-icon" alt="Logo">
+                    <h3 class="footer-logo-title">Genyxo</h3>
+                </span>
+                <p data-i18n="footer.desc_1">Manual access to the latest AI models in one place.</p>
+                <p data-i18n="footer.desc_2">Fast, transparent, no overpayments.</p>
+                
+                <div class="social-links">
+                    <a href="https://instagram.com/username" class="social-icon" title="Instagram" target="_blank" aria-label="Instagram">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    </a>
+                    <a href="paste your tiktok profile link" class="social-icon" title="TikTok" target="_blank" aria-label="TikTok">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/>
+                    </svg>
+                    </a>
+                    <a href="https://wa.me/phonenumber" class="social-icon" title="WhatsApp" target="_blank" aria-label="WhatsApp">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893c0-3.189-1.248-6.189-3.515-8.444"/>
+                    </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3 data-i18n="footer.legal_title">Legal & Help</h3>
+                <ul class="footer-links">
+                    <li><a href="privacy-policy.html" data-i18n="footer.privacy">Privacy Policy</a></li>
+                    <li><a href="terms-of-service.html" data-i18n="footer.terms">Terms of Service</a></li>
+                    <li><a href="#" id="openFaqBtn" data-i18n="footer.faq">FAQ</a></li>
+                </ul>
+            </div>
+                
+            <div class="footer-section">
+                <h3 data-i18n="footer.links_title">Links</h3>
+                <ul class="footer-links">
+                    <li><a href="../index.html" aria-label="Home Page">Home</a></li>
+                    <li><a href="../index.html#products" aria-label="Product Section">All Products</a></li>
+                    <li><a href="../chat.html" aria-label="Chat Page">Chat With AI</a></li>
+                    <li><a href="mailto:aivaultcomsup@gmail.com" aria-label="Contact Us">Contacts</a></li>
+                </ul>
+            </div>
+                    
+            <div class="footer-section">
+                <h3 data-i18n="footer.contact_title">Contact Information</h3>
+                <p class="contact-info">
+                    <i class="fas fa-map-marker-alt"></i>
+                    USA, New York
+                </p>
+                <p class="contact-info">
+                    <i class="fas fa-phone"></i>
+                    @gmblessed
+                </p>
+                <p class="contact-info">
+                    <i class="fas fa-envelope"></i>
+                    aivaultcomsup@gmail.com
+                </p>
+            </div>
+        </div>    
+            
+        <div class="footer-bottom">
+            <p data-i18n="footer.rights">&copy; 2025 Genyxo. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="policies.js"></script>
+</body>
+</html>

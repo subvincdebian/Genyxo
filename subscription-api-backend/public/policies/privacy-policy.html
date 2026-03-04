@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title data-i18n="profile.title">Privacy Policy - Genyxo</title>
+    <meta name="description" data-i18n="profile.description" content="Manage your Genyxo account settings, security options, billing history, and affiliate dashboard in one place.">
+    
+    <link rel="canonical" href="https://genyxo.com/profile.html">
+
+    <link rel="alternate" hreflang="x-default" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="en" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="uk" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="de" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="fr" href="https://genyxo.com/">
+    <link rel="alternate" hreflang="es" href="https://genyxo.com/">
+
+    <meta property="og:title" content="Privacy Policy - Genyxo">
+    <meta property="og:description" content="Manage your account and subscriptions.">
+    <meta property="og:site_name" content="Genyxo">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://genyxo.com/profile.html">
+    <meta property="og:image" content="https://genyxo.com/images/mainbanner2.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@genyxo">
+    <meta name="twitter:creator" content="@genyxo_ai">
+    <meta name="twitter:title" content="Privacy Policy - Genyxo">
+    <meta name="twitter:description" content="Manage your Genyxo account settings and preferences.">
+    <meta name="twitter:image" content="https://genyxo.com/images/mainbanner2.png">
+
+    <link rel="icon" type="image/svg+xml" href="../images/logo.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="policies.css">
+    <link rel="stylesheet" href="../profile.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+</head>
+<body>
+    
+    
+    <div id="toast-container"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+
+            <div class="burger" id="burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="left-side">
+                <div class="nav-logo">
+                    <a href="../index.html" aria-label="Home Page" style="text-decoration: none; color: inherit; display: flex; gap: 0.5rem; align-items: center;">
+                        <img src="../images/logo.svg" width="40" height="40" fetchpriority="high" class="logo-icon" alt="Logo">
+                    <span>Genyxo</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="right-side">
+                <div class="nav-links">
+                    <a href="../index.html" class="nav-link active" data-i18n="nav.home" aria-label="Back To Home">Home</a>
+                    <a href="../chat.html" class="nav-link" data-i18n="nav.chat" aria-label="Chat Page">Chat</a>
+                </div>
+                <div class="profile-container">
+                    <button class="login-btn profile-toggle-btn" id="loginBtn" aria-label="Register / Login">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="nav-avatar-small" id="navAvatar" style="display: none;" alt="Avatar">
+                        <i class="fas fa-user fa-fw" id="navIcon"></i>
+                        <span id="navUsername" data-i18n="nav.login">Register / Login</span>
+                    </button>
+                    
+                    <div class="profile-dropdown glass" id="profilePanel">
+
+                        <button class="close-profile-panel" id="closeProfilePanel" aria-label="Close Profile Dropdown">✕</button>
+                        
+                        <div class="dropdown-header">
+                            <div class="user-details">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" class="avatar-big dropdown-avatar">
+                                <div class="user-text">
+                                    <h3 id="menuName">Loading...</h3>
+                                    <p id="menuEmail">loading@email.com</p>
+                                </div>
+                            </div>
+                        </div>
+
+                            <div class="credits-card">
+                                <div class="credits-top">
+                                    <div class="credits-amount">
+                                        <span class="icon-flask">🪙</span>
+                                        <span class="amount-number" id="menuCredits">70</span>
+                                        <i class="fas fa-info-circle info-icon" title="Details" id="openFaqBtn"></i>
+                                    </div>
+                                </div>
+                                <a href="../index.html#products" style="text-decoration:none;" aria-label="Buy Credits">
+                                    <button class="upgrade-full-btn" aria-label="Buy Credits">Buy Credits</button>
+                                </a>
+                            </div>
+
+                        <div class="dropdown-menu">
+
+                            <a href="../profile.html" class="menu-item" aria-label="Profile">
+                                <i class="fas fa-user-cog fa-fw"></i> <span data-i18n="menu.profile">Profile</span>
+                            </a>
+
+                            <a href="../notifications.html" class="menu-item" id="menuNotificationsLink" aria-label="Notifications" style="justify-content: space-between;">
+                                <div style="display:flex; align-items:center;">
+                                    <i class="fas fa-bell"></i> 
+                                    <span data-i18n="menu.notifications">Notifications</span>
+                                </div>
+                                <span id="notificationBadge" class="nav-badge" style="display: none;">0</span>
+                            </a>
+
+                            <a href="../support.html" class="menu-item" aria-label="Help Center">
+                                <i class="fas fa-question-circle"></i> <span data-i18n="menu.help">Help Center</span>
+                            </a>
+
+                            <a href="#" class="menu-item" aria-label="Change Language">
+                                <i class="fas fa-globe"></i> <span data-i18n="menu.language">Language</span>
+                                <span class="lang-val">English ></span>
+                            </a>
+
+                            <a href="mailto:info@genyxo.com" class="menu-item" aria-label="Contact Us">
+                                <i class="fas fa-envelope"></i> <span data-i18n="menu.contact">Contact us</span>
+                                <i class="fas fa-arrow-up-right-from-square" style="color:var(--text-gray); margin-left:8px; font-size:0.95rem; position: relative; left: 120px;" title="Mail us"></i>
+                            </a>
+
+                        </div>
+
+                        <div class="dropdown-footer">
+                            <button class="menu-item logout-item" id="dropdownLogoutBtn" aria-label="Log out">
+                                <i class="fas fa-sign-out-alt"></i> <span data-i18n="menu.logout">Log out</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="legal-nav-wrapper">
+        <div class="legal-tabs-container">
+            <a href="policies.html"><button class="tab-link" onclick="openTab(event, 'review')">Review</button></a>
+            <button class="tab-link active" onclick="openTab(event, 'privacy')">Privacy Policy</button>
+            <a href="terms-of-service.html"><button class="tab-link" onclick="openTab(event, 'terms')">Terms of Service</button></a>
+            <button class="tab-link" onclick="openTab(event, 'faq')">Frequently Asked Questions</button>
+        </div>
+    </div>
+
+    <div class="mobile-menu-bar">
+    <button id="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i> Content
+    </button>
+</div>
+
+<div class="privacy-layout">
+    <aside class="privacy-sidebar" id="sidebar">
+        <nav>
+            <ul>
+                <li><a href="#intro" onclick="closeSidebarOnMobile()">Introduction</a></li>
+                <li><a href="#data-collect" onclick="closeSidebarOnMobile()">What data do we collect?</a></li>
+                <li><a href="#why-collect" onclick="closeSidebarOnMobile()">Why does Genyxo collect data?</a></li>
+                <li><a href="#credits" onclick="closeSidebarOnMobile()">Credits & Payments</a></li>
+                <li><a href="#security" onclick="closeSidebarOnMobile()">Data Security</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="privacy-body">
+        <section id="intro">
+            <h1>Genyxo Privacy Policy</h1>
+            <p>Welcome to Genyxo. When you use our services, you trust us with your information. <br> This Privacy Policy explains how we collect, use, and protect your personal information <br> when you use our services.</p>
+        </section>
+
+        <hr>
+
+        <section id="data-collect">
+            <h2>What data do we collect?</h2>
+            <p>We want you to understand the types of information we collect as you use our services...</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam...</p>
+        </section>
+
+        <section id="why-collect">
+            <h2>Why does Genyxo collect data?</h2>
+            <p>We use data to build better services. From figuring out basic stuff like which language you speak...</p>
+        </section>
+
+        <section id="credits">
+            <h2>Credits & Payments</h2>
+            <p>Regarding the purchase of credit packages for AI models, we process payment information through secure providers...</p>
+        </section>
+
+        <section id="security">
+            <h2>Data Security</h2>
+            <p>We build security into our services to protect your information...</p>
+        </section>
+    </main>
+</div>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+</body>
+</html>
