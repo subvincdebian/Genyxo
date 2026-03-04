@@ -2485,7 +2485,7 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
         gap: 8px;
         position: absolute;
         right: 150px;
-        z-index: 1200;
+        z-index: 990;
     }
 
     .nav-links {

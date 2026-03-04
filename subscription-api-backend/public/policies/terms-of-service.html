@@ -481,13 +481,7 @@
         
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active');
-        
-        // Запрещаем скролл основной страницы, когда меню открыто
-        if (sidebar.classList.contains('active')) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
+        // Больше никакой блокировки скролла! Можно скроллить как у Google.
     }
 
     function closeMenu() {
@@ -496,7 +490,6 @@
         
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
-        document.body.style.overflow = '';
     }
 </script>
 

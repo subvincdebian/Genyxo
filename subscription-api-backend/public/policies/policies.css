@@ -463,7 +463,8 @@ html, body {
     .privacy-sidebar {
         position: fixed;
         top: 0;
-        width: 300px;
+        bottom: 0;
+        width: 280px;
         height: 100vh;
         background-color: #0a0a0a;
         z-index: 9999;
@@ -497,10 +498,12 @@ html, body {
         position: fixed;
         top: 0;
         left: 0;
+        bottom: 0;
         width: 100vw;
         height: 100vh;
         background: rgba(0, 0, 0, 0.7);
-        z-index: 1999;
+        backdrop-filter: blur(4px);
+        z-index: 99998;
         opacity: 0;
         visibility: hidden;
         transition: 0.3s;
@@ -508,6 +511,7 @@ html, body {
 
     .sidebar-overlay.active {
         display: block;
+        pointer-events: auto;
     }
 
     /* Основной текст на мобилках */
