@@ -53,9 +53,28 @@
             <div class="burger" id="toggleMobileMenu" onclick="toggleMobileMenu()">
                 <i class="fas fa-bars"></i>
                 <aside class="privacy-sidebar" id="mobileSidebar">
-                    <div class="sidebar-header">Genyxo — Privacy Policy and Terms of Service</div>
-                    <nav>
-                        <ul>
+                    <div class="sidebar-header-simple">
+                        <div class="brand-icon">
+                            <img src="../images/logo.svg" width="40" height="40" fetchpriority="high" class="logo-icon" alt="Logo">
+                        </div>
+                        <span class="brand-name">Genyxo - Privacy Policy and Terms of Service</span>
+                    </div>
+                    <nav class="sidebar-nav-clean">
+                        <a href="policies.html" class="nav-btn">
+                            <i class="fas fa-shield-alt"></i> Privacy Policy
+                        </a>
+                        <div class="nav-sep"></div>
+
+                        <a href="#" class="nav-btn">
+                            <i class="fas fa-cookie-bite"></i> Cookie Policy
+                        </a>
+                        <div class="nav-sep"></div>
+
+                        <a href="terms-of-service.html" class="nav-btn active">
+                            <i class="fas fa-file-contract"></i> Terms of Service
+                        </a>
+
+                        <div class="anchors-list">
                             <li><a href="#intro" onclick="closeSidebarOnMobile()">Introduction</a></li>
                             <li><a href="#data-collect" onclick="closeSidebarOnMobile()">Your relationship with Genyxo</a></li>
                             <li><a href="#service-specifics" onclick="closeSidebarOnMobile()"> AI Service Specifics</a></li>
@@ -65,7 +84,13 @@
                             <li><a href="#referral" onclick="closeSidebarOnMobile()">Affiliate & Referral Terms</a></li>
                             <li><a href="#support" onclick="closeSidebarOnMobile()">Support & Disputing Charges</a></li>
                             <li><a href="#about" onclick="closeSidebarOnMobile()">About these Terms</a></li>
-                        </ul>
+                        </div>
+                        
+                        <div class="nav-sep"></div>
+
+                        <a href="faq.html" class="nav-btn">
+                            <i class="fas fa-question-circle"></i> FAQ
+                        </a>
                     </nav>
                 </aside>
             </div>
@@ -502,8 +527,23 @@
         document.body.style.overflow = ''; // Возвращаем скролл
     }
 
-    // Обработка клика только по оверлею (если вдруг onclick в HTML не сработает)
+    // Обработка клика по оверлею для закрытия меню
     document.getElementById('overlay').addEventListener('click', closeMenu);
+
+    // Обработка клика по пустому пространству (вне сайдбара) для закрытия меню
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('mobileSidebar');
+        const overlay = document.getElementById('overlay');
+        const burger = document.getElementById('toggleMobileMenu');
+        
+        // Проверяем, что меню открыто
+        if (sidebar.classList.contains('active') && overlay.classList.contains('active')) {
+            // Проверяем, что клик был вне сайдбара и вне кнопки меню
+            if (!sidebar.contains(event.target) && !burger.contains(event.target)) {
+                closeMenu();
+            }
+        }
+    });
 </script>
 
 </body>
