@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
 
-    <title data-i18n="profile.title">Privacy Policy - Genyxo</title>
-    <meta name="description" data-i18n="profile.description" content="Manage your Genyxo account settings, security options, billing history, and affiliate dashboard in one place.">
+    <title data-i18n="profile.title">Terms of Service - Genyxo</title>
+    <meta name="description" data-i18n="profile.description" content="Learn more about our Terms of Service, including user responsibilities, content guidelines, and support policies. Your relationship with Genyxo and how we provide access to AI models.">
     
-    <link rel="canonical" href="https://genyxo.com/profile.html">
+    <link rel="canonical" href="https://genyxo.com/terms-of-service.html">
 
     <link rel="alternate" hreflang="x-default" href="https://genyxo.com/">
     <link rel="alternate" hreflang="en" href="https://genyxo.com/">
@@ -17,11 +17,11 @@
     <link rel="alternate" hreflang="fr" href="https://genyxo.com/">
     <link rel="alternate" hreflang="es" href="https://genyxo.com/">
 
-    <meta property="og:title" content="Privacy Policy - Genyxo">
-    <meta property="og:description" content="Manage your account and subscriptions.">
+    <meta property="og:title" content="Terms of Service - Genyxo">
+    <meta property="og:description" content="Learn more about our Terms of Service.">
     <meta property="og:site_name" content="Genyxo">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://genyxo.com/profile.html">
+    <meta property="og:url" content="https://genyxo.com/terms-of-service.html">
     <meta property="og:image" content="https://genyxo.com/images/mainbanner2.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -29,8 +29,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@genyxo">
     <meta name="twitter:creator" content="@genyxo_ai">
-    <meta name="twitter:title" content="Privacy Policy - Genyxo">
-    <meta name="twitter:description" content="Manage your Genyxo account settings and preferences.">
+    <meta name="twitter:title" content="Terms of Service - Genyxo">
+    <meta name="twitter:description" content="Learn more about our Terms of Service.">
     <meta name="twitter:image" content="https://genyxo.com/images/mainbanner2.png">
 
     <link rel="icon" type="image/svg+xml" href="../images/logo.svg">
@@ -46,7 +46,7 @@
     
     <div id="toast-container"></div>
     
-    <div class="sidebar-overlay" id="overlay" onclick="toggleMobileMenu()"></div>
+    <div class="sidebar-overlay" id="overlay" onclick="closeMenu()"></div>
 
     <nav class="navbar">
         <div class="nav-container">
@@ -475,13 +475,22 @@
     </footer>
 
 <script>
+    // 1. Исправляем прыжок страницы при загрузке
+    window.onload = function() {
+        // Прокрутка в самый верх при обновлении/загрузке
+        setTimeout(function() {
+            window.scrollTo(0, 0);
+        }, 10); 
+    };
+
+    // 2. Управление меню
     function toggleMobileMenu() {
         const sidebar = document.getElementById('mobileSidebar');
         const overlay = document.getElementById('overlay');
         
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-        // Больше никакой блокировки скролла! Можно скроллить как у Google.
+        sidebar.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Запрет скролла фона
     }
 
     function closeMenu() {
@@ -490,7 +499,11 @@
         
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
+        document.body.style.overflow = ''; // Возвращаем скролл
     }
+
+    // Обработка клика только по оверлею (если вдруг onclick в HTML не сработает)
+    document.getElementById('overlay').addEventListener('click', closeMenu);
 </script>
 
 </body>

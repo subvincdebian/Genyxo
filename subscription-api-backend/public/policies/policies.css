@@ -431,6 +431,11 @@ html, body {
 
 /* МОБИЛЬНАЯ АДАПТАЦИЯ */
 @media (max-width: 768px) {
+
+    html, body {
+        height: 100%;
+        overflow-x: hidden;
+    }
     /* Скрываем табы на мобилках */
     .legal-nav-wrapper {
         display: none !important;
@@ -467,7 +472,7 @@ html, body {
         width: 280px;
         height: 100vh;
         background-color: #0a0a0a;
-        z-index: 9999;
+        z-index: 99999;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: block !important;
         box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
@@ -503,10 +508,11 @@ html, body {
         height: 100vh;
         background: rgba(0, 0, 0, 0.7);
         backdrop-filter: blur(4px);
-        z-index: 99998;
+        z-index: 998;
         opacity: 0;
         visibility: hidden;
         transition: 0.3s;
+        inset: 0;
     }
 
     .sidebar-overlay.active {
@@ -523,10 +529,6 @@ html, body {
     .left-side {
         position: relative;
         left: -100px;
-    }
-
-    .right-side {
-        z-index: 999;
     }
 }
 
