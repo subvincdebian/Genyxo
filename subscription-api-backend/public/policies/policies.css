@@ -480,7 +480,7 @@ html, body {
         width: 280px;
         height: 100vh;
         background: #0f0f0f;
-        z-index: 2000;
+        z-index: 11000;
         transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         padding: 20px;
         box-shadow: 5px 0 15px rgba(0,0,0,0.5);
@@ -519,6 +519,15 @@ html, body {
     .privacy-layout {
         flex-direction: column;
         padding: 20px;
+    }
+
+    .left-side {
+        position: relative;
+        left: -100px;
+    }
+
+    .right-side {
+        z-index: 999;
     }
 }
 
