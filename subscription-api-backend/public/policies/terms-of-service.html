@@ -46,28 +46,29 @@
     
     <div id="toast-container"></div>
     
+    <div class="sidebar-overlay" id="overlay" onclick="toggleMobileMenu()"></div>
+
     <nav class="navbar">
         <div class="nav-container">
-
             <div class="burger" id="toggleMobileMenu" onclick="toggleMobileMenu()">
                 <i class="fas fa-bars"></i>
                 <aside class="privacy-sidebar" id="mobileSidebar">
-                    <div class="sidebar-header">Genyxo — Юридическая информация</div>
+                    <div class="sidebar-header">Genyxo — Privacy Policy and Terms of Service</div>
                     <nav>
                         <ul>
-                            <li><a href="#ai-specs" onclick="closeMenu()">AI Service Specifics</a></li>
-                            <li><a href="#credits" onclick="closeMenu()">Credits & Consumption</a></li>
-                            <li><a href="#privacy-data" onclick="closeMenu()">Data Privacy</a></li>
-                            <li><a href="#prohibited" onclick="closeMenu()">Prohibited Use</a></li>
-                            <li><a href="#referral" onclick="closeMenu()">Affiliate Program</a></li>
-                            <li><a href="#support" onclick="closeMenu()">Support & Disputes</a></li>
-                            <li><a href="#about" onclick="closeMenu()">About these Terms</a></li>
+                            <li><a href="#intro" onclick="closeSidebarOnMobile()">Introduction</a></li>
+                            <li><a href="#data-collect" onclick="closeSidebarOnMobile()">Your relationship with Genyxo</a></li>
+                            <li><a href="#service-specifics" onclick="closeSidebarOnMobile()"> AI Service Specifics</a></li>
+                            <li><a href="#credits" onclick="closeSidebarOnMobile()">Credit Consumption & Expiration</a></li>
+                            <li><a href="#security" onclick="closeSidebarOnMobile()">Data Residency & Prompt Privacy</a></li>
+                            <li><a href="#prohibited" onclick="closeSidebarOnMobile()">Prohibited Use</a></li>
+                            <li><a href="#referral" onclick="closeSidebarOnMobile()">Affiliate & Referral Terms</a></li>
+                            <li><a href="#support" onclick="closeSidebarOnMobile()">Support & Disputing Charges</a></li>
+                            <li><a href="#about" onclick="closeSidebarOnMobile()">About these Terms</a></li>
                         </ul>
                     </nav>
                 </aside>
             </div>
-
-            <div class="sidebar-overlay" id="overlay" onclick="toggleMobileMenu()"></div>
 
             <div class="left-side">
                 <div class="nav-logo">
@@ -473,8 +474,6 @@
         </div>
     </footer>
 
-<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
-
 <script>
     function toggleMobileMenu() {
         const sidebar = document.getElementById('mobileSidebar');
@@ -483,7 +482,7 @@
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active');
         
-        // Блокируем скролл страницы при открытом меню
+        // Запрещаем скролл основной страницы, когда меню открыто
         if (sidebar.classList.contains('active')) {
             document.body.style.overflow = 'hidden';
         } else {
