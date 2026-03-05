@@ -8,7 +8,7 @@ export class Message {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ type: 'mediumtext' })
   content!: string;
 
   @Column()

@@ -69,7 +69,7 @@ import { RedisCacheModule } from './common/redis-cache.module';
       password: process.env.MYSQLPASSWORD,
       database: process.env.MYSQLDATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: false,
+      synchronize: true,
       extra: {
         connectionLimit: 100, 
         

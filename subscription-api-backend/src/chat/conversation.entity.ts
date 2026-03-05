@@ -18,6 +18,7 @@ export class Conversation {
   @JoinColumn({ name: 'userId' })
   user!: User;
 
+  @Index(['conversationId', 'createdAt'])
   @OneToMany(() => Message, (message) => message.conversation)
   messages!: Message[];
 
