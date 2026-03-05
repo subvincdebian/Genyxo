@@ -619,13 +619,11 @@ html, body {
     }
 
     .sidebar-header-simple {
-        padding: 25px 20px;
-        border-bottom: none;
-        border: none;
-        background: transparent;
         display: flex;
         align-items: center;
         gap: 15px;
+        padding: 20px;
+        transform: translateY(13px);
     }
 
     .sidebar-header-simple .brand-icon {
@@ -644,13 +642,10 @@ html, body {
     }
 
     .sidebar-header-simple .brand-name {
-        font-weight: 700;
-        font-size: 18px;
-        border: none;
+        background: none;
         margin: 0;
-        padding: 0;
-        color: #ffffff;
         line-height: 1.2;
+        transform: translateY(-16px);
     }
 
     .sidebar-nav-clean {

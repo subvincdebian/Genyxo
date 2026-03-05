@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
+    <meta name="robots" content="index, follow">
 
     <title data-i18n="profile.title">Privacy Policy - Genyxo</title>
     <meta name="description" data-i18n="profile.description" content="Manage your Genyxo account settings, security options, billing history, and affiliate dashboard in one place.">
@@ -42,9 +42,8 @@
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
 </head>
 <body>
-    
-    
     <div id="toast-container"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
     
     <nav class="navbar">
         <div class="nav-container">
@@ -154,56 +153,53 @@
     </div>
 
     <div class="mobile-menu-bar">
-    <button id="menu-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i> Content
-    </button>
-</div>
+        <button id="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i> Content
+        </button>
+    </div>
 
-<div class="privacy-layout">
-    <aside class="privacy-sidebar" id="sidebar">
-        <nav>
-            <ul>
-                <li><a href="#intro" onclick="closeSidebarOnMobile()">Introduction</a></li>
-                <li><a href="#data-collect" onclick="closeSidebarOnMobile()">What data do we collect?</a></li>
-                <li><a href="#why-collect" onclick="closeSidebarOnMobile()">Why does Genyxo collect data?</a></li>
-                <li><a href="#credits" onclick="closeSidebarOnMobile()">Credits & Payments</a></li>
-                <li><a href="#security" onclick="closeSidebarOnMobile()">Data Security</a></li>
-            </ul>
-        </nav>
-    </aside>
+    <div class="privacy-layout">
+        <aside class="privacy-sidebar" id="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="#intro" onclick="closeSidebarOnMobile()">Introduction</a></li>
+                    <li><a href="#data-collect" onclick="closeSidebarOnMobile()">What data do we collect?</a></li>
+                    <li><a href="#why-collect" onclick="closeSidebarOnMobile()">Why does Genyxo collect data?</a></li>
+                    <li><a href="#credits" onclick="closeSidebarOnMobile()">Credits & Payments</a></li>
+                    <li><a href="#security" onclick="closeSidebarOnMobile()">Data Security</a></li>
+                </ul>
+            </nav>
+        </aside>
 
-    <main class="privacy-body">
-        <section id="intro">
-            <h1>Genyxo Privacy Policy</h1>
-            <p>Welcome to Genyxo. When you use our services, you trust us with your information. <br> This Privacy Policy explains how we collect, use, and protect your personal information <br> when you use our services.</p>
-        </section>
+        <main class="privacy-body">
+            <section id="intro">
+                <h1>Genyxo Privacy Policy</h1>
+                <p>Welcome to Genyxo. When you use our services, you trust us with your information. <br> This Privacy Policy explains how we collect, use, and protect your personal information <br> when you use our services.</p>
+            </section>
 
-        <hr>
+            <hr>
 
-        <section id="data-collect">
-            <h2>What data do we collect?</h2>
-            <p>We want you to understand the types of information we collect as you use our services...</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam...</p>
-        </section>
+            <section id="data-collect">
+                <h2>What data do we collect?</h2>
+                <p>We want you to understand the types of information we collect as you use our services...</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam...</p>
+            </section>
 
-        <section id="why-collect">
-            <h2>Why does Genyxo collect data?</h2>
-            <p>We use data to build better services. From figuring out basic stuff like which language you speak...</p>
-        </section>
+            <section id="why-collect">
+                <h2>Why does Genyxo collect data?</h2>
+                <p>We use data to build better services. From figuring out basic stuff like which language you speak...</p>
+            </section>
 
-        <section id="credits">
-            <h2>Credits & Payments</h2>
-            <p>Regarding the purchase of credit packages for AI models, we process payment information through secure providers...</p>
-        </section>
+            <section id="credits">
+                <h2>Credits & Payments</h2>
+                <p>Regarding the purchase of credit packages for AI models, we process payment information through secure providers...</p>
+            </section>
 
-        <section id="security">
-            <h2>Data Security</h2>
-            <p>We build security into our services to protect your information...</p>
-        </section>
-    </main>
-</div>
-
-<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
-
+            <section id="security">
+                <h2>Data Security</h2>
+                <p>We build security into our services to protect your information...</p>
+            </section>
+        </main>
+    </div>
 </body>
 </html>
