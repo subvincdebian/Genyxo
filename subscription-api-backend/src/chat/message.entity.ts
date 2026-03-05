@@ -4,6 +4,7 @@ import { User } from '../users/user.entity';
 import { Conversation } from './conversation.entity';
 
 @Entity('messages')
+@Index(['conversationId', 'createdAt'])
 export class Message {
   @PrimaryGeneratedColumn()
   id!: number;
