@@ -43,14 +43,44 @@
 </head>
 <body>
     <div id="toast-container"></div>
+    <div class="sidebar-overlay" id="overlay" onclick="closeMenu()"></div>
     
-    <nav class="navbar" style="background-color: black;">
+     <nav class="navbar">
         <div class="nav-container">
+            <div class="burger" id="toggleMobileMenu" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+                <aside class="privacy-sidebar" id="mobileSidebar">
+                    <div class="sidebar-header-simple">
+                        <div class="brand-icon">
+                            <img src="../images/logo.svg" width="40" height="40" fetchpriority="high" class="logo-icon" alt="Logo">
+                        </div>
+                        <span class="brand-name">Genyxo - Terms of Service</span>
+                    </div>
+                    <nav class="sidebar-nav-clean">
+                        <a href="policies.html" class="nav-btn active">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="#D3D3D3" style="flex-shrink: 0;">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg> Review
+                        </a>
+                        <div class="nav-sep"></div>
 
-            <div class="burger" id="burger">
-                <span></span>
-                <span></span>
-                <span></span>
+                        <a href="privacy-policy.html" class="nav-btn">
+                            <i class="fas fa-shield-alt"></i> Privacy Policy
+                        </a>
+
+                        <div class="nav-sep"></div>
+
+                        <a href="terms-of-service.html" class="nav-btn">
+                            <i class="fas fa-file-contract"></i> Terms of Service
+                        </a>
+
+                        <div class="nav-sep"></div>
+
+                        <a href="faq.html" class="nav-btn">
+                            <i class="fas fa-question-circle"></i> FAQ
+                        </a>
+                    </nav>
+                </aside>
             </div>
 
             <div class="left-side">
@@ -64,7 +94,7 @@
 
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="../index.html" class="nav-link active" data-i18n="nav.home" aria-label="Back To Home">Home</a>
+                    <a href="../index.html" class="nav-link" data-i18n="nav.home" aria-label="Back To Home">Home</a>
                     <a href="../chat.html" class="nav-link" data-i18n="nav.chat" aria-label="Chat Page">Chat</a>
                 </div>
                 <div class="profile-container">
@@ -270,6 +300,7 @@
         </div>
     </footer>
 
-    <script src="policies.js" defer></script>
+    <script src="../js/policies.js" defer></script>
+
 </body>
 </html>
