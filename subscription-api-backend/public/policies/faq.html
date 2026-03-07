@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="index, follow">
 
-    <title data-i18n="profile.title">Privacy Policy and Terms of Service - Genyxo</title>
-    <meta name="description" data-i18n="profile.description" content="Manage your Genyxo account settings, security options, billing history, and affiliate dashboard in one place.">
+    <title data-i18n="profile.title">Frequently Asked Questions - Genyxo</title>
+    <meta name="description" data-i18n="profile.description" content="Find answers to common questions about Genyxo, our AI models, credit system, billing, and privacy policies.">
     
-    <link rel="canonical" href="https://genyxo.com/profile.html">
+    <link rel="canonical" href="https://genyxo.com/faq.html">
 
     <link rel="alternate" hreflang="x-default" href="https://genyxo.com/">
     <link rel="alternate" hreflang="en" href="https://genyxo.com/">
@@ -17,11 +17,11 @@
     <link rel="alternate" hreflang="fr" href="https://genyxo.com/">
     <link rel="alternate" hreflang="es" href="https://genyxo.com/">
 
-    <meta property="og:title" content="Privacy Policy and Terms of Service - Genyxo">
-    <meta property="og:description" content="Manage your account and subscriptions.">
+    <meta property="og:title" content="Frequently Asked Questions - Genyxo">
+    <meta property="og:description" content="Find answers to common questions about Genyxo, our AI models, credit system, billing, and privacy policies.">
     <meta property="og:site_name" content="Genyxo">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://genyxo.com/profile.html">
+    <meta property="og:url" content="https://genyxo.com/faq.html">
     <meta property="og:image" content="https://genyxo.com/images/mainbanner2.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -29,8 +29,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@genyxo">
     <meta name="twitter:creator" content="@genyxo_ai">
-    <meta name="twitter:title" content="Privacy Policy and Terms of Service - Genyxo">
-    <meta name="twitter:description" content="Manage your Genyxo account settings and preferences.">
+    <meta name="twitter:title" content="Frequently Asked Questions - Genyxo">
+    <meta name="twitter:description" content="Find answers to common questions about Genyxo, our AI models, credit system, billing, and privacy policies.">
     <meta name="twitter:image" content="https://genyxo.com/images/mainbanner2.png">
 
     <link rel="icon" type="image/svg+xml" href="../images/logo.svg">
@@ -44,8 +44,8 @@
 <body>
     <div id="toast-container"></div>
     <div class="sidebar-overlay" id="overlay" onclick="closeMenu()"></div>
-    
-     <nav class="navbar">
+
+    <nav class="navbar">
         <div class="nav-container">
             <div class="burger" id="toggleMobileMenu" onclick="toggleMobileMenu()">
                 <i class="fas fa-bars"></i>
@@ -57,7 +57,7 @@
                         <span class="brand-name">Genyxo - Terms of Service</span>
                     </div>
                     <nav class="sidebar-nav-clean">
-                        <a href="policies.html" class="nav-btn active">
+                        <a href="policies.html" class="nav-btn">
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="#D3D3D3" style="flex-shrink: 0;">
                                 <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
                             </svg> Review
@@ -67,7 +67,6 @@
                         <a href="privacy-policy.html" class="nav-btn">
                             <i class="fas fa-shield-alt"></i> Privacy Policy
                         </a>
-
                         <div class="nav-sep"></div>
 
                         <a href="terms-of-service.html" class="nav-btn">
@@ -76,9 +75,17 @@
 
                         <div class="nav-sep"></div>
 
-                        <a href="faq.html" class="nav-btn">
+                        <a href="faq.html" class="nav-btn active">
                             <i class="fas fa-question-circle"></i> FAQ
                         </a>
+
+                        <div class="anchors-list">
+                            <li><a href="#general" onclick="closeSidebarOnMobile()">General Questions</a></li>
+                            <li><a href="#credits" onclick="closeSidebarOnMobile()">Credits & Billing</a></li>
+                            <li><a href="#models" onclick="closeSidebarOnMobile()">AI Models & Usage</a></li>
+                            <li><a href="#privacy" onclick="closeSidebarOnMobile()">Privacy & Security</a></li>
+                            <li><a href="#troubleshooting" onclick="closeSidebarOnMobile()">Troubleshooting</a></li>
+                        </div>
                     </nav>
                 </aside>
             </div>
@@ -174,63 +181,118 @@
 
     <div class="legal-nav-wrapper">
         <div class="legal-tabs-container">
-            <button class="tab-link active" onclick="openTab(event, 'review')">Review</button>
+            <a href="policies.html"><button class="tab-link" onclick="openTab(event, 'review')">Review</button></a>
             <a href="privacy-policy.html"><button class="tab-link" onclick="openTab(event, 'privacy')">Privacy Policy</button></a>
             <a href="terms-of-service.html"><button class="tab-link" onclick="openTab(event, 'terms')">Terms of Service</button></a>
-            <a href="faq.html"><button class="tab-link" onclick="openTab(event, 'faq')">Frequently Asked Questions</button></a>
+            <button class="tab-link active" onclick="openTab(event, 'faq')">Frequently Asked Questions</button>
         </div>
     </div>
 
-    <div class="legal-content-wrapper">
-    <div id="review" class="tab-content active">
-        <div class="cards-grid">
-            <div class="legal-card">
-                <h2>Privacy Policy</h2>
-                <p>Find out how we collect and process your data and how you can change it.</p>
-                <a href="privacy-policy.html" onclick="openTab(event, 'privacy')">Read more...</a>
-            </div>
-            
-            <div class="legal-card">
-                <h2>Terms of Service</h2>
-                <p>Please read the rules for users of our Genyxo services and AI models.</p>
-                <a href="terms-of-service.html" onclick="openTab(event, 'terms')">Read more...</a>
-            </div>
+    <div class="privacy-layout">
+        <aside class="privacy-sidebar" id="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="#intro" onclick="closeSidebarOnMobile()">Introduction</a></li>
+                    <li><a href="#general" onclick="closeSidebarOnMobile()">General Questions</a></li>
+                    <li><a href="#credits" onclick="closeSidebarOnMobile()">Credits & Billing</a></li>
+                    <li><a href="#models" onclick="closeSidebarOnMobile()">AI Models & Usage</a></li>
+                    <li><a href="#privacy" onclick="closeSidebarOnMobile()">Privacy & Security</a></li>
+                    <li><a href="#troubleshooting" onclick="closeSidebarOnMobile()">Troubleshooting</a></li>
+                </ul>
+            </nav>
+        </aside>
 
-            <div class="legal-card with-icon">
-                <div class="card-icon">
-                <svg viewBox="0 0 24 24" width="32" height="32"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-                </div>
-                <div class="card-text">
-                <h2>Genyxo Security</h2>
-                <p>Our products are designed for a wide range of users, and we strive to provide reliable protection for your data and AI prompts.</p>
-                <a href="#">Find out what we're doing to protect you</a>
-                </div>
-            </div>
+        <main class="privacy-body">
+            <section id="intro">
+                <h1>Frequently Asked Questions</h1>
+                <p><strong>Last updated:</strong> March 6, 2026</p>
+                <p>Welcome to the Genyxo Help Center. We’ve compiled answers to the most common questions to help you understand how our platform works, how credits are managed, and how to get the most out of your AI interactions.</p>
+            </section>
 
-            <div class="legal-card with-icon">
-                <div class="card-icon">
-                <svg viewBox="0 0 24 24" width="32" height="32"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            <hr>
+
+            <section id="general">
+                <h2><i class="fas fa-info-circle"></i> General Questions</h2>
+                
+                <div class="tos-container">
+                    <h3>What is Genyxo?</h3>
+                    <p>Genyxo is a unified platform that provides manual access to the latest artificial intelligence models (like GPT-4, Claude, Gemini, etc.) all in one place. Instead of buying multiple subscriptions for different AI services, you can use our single interface to interact with any model you need.</p>
+                    
+                    <h3>Do I need multiple accounts for different AI models?</h3>
+                    <p>No. One of the main benefits of Genyxo is that you only need <strong>one account</strong> with us to access a wide variety of both paid and free AI models from different providers.</p>
                 </div>
-                <div class="card-text">
-                <h2>Your Account</h2>
-                <p>The Account page provides tools to help you manage your credits, subscription, and privacy settings.</p>
-                <a href="../profile.html">Go to my account</a>
+            </section>
+
+            <section id="credits">
+                <h2><i class="fas fa-coins"></i> Credits & Billing</h2>
+                
+                <div class="relationship-grid">
+                    <div class="relation-block">
+                        <h3>How does the credit system work?</h3>
+                        <p>We use a transparent "Pay-as-you-go" system. You purchase a package of credits, and every time you send a message to an AI, a fixed amount of credits is deducted. The cost is static per message but varies depending on which AI model you choose (e.g., smarter models cost more credits per message).</p>
+                    </div>
+
+                    <div class="relation-block">
+                        <h3>Do my credits expire?</h3>
+                        <p>No. Your purchased credit packages do not expire. They will remain securely in your Genyxo account until you decide to use them.</p>
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                <div class="highlight-box">
+                    <h3>Are credit costs affected by message length?</h3>
+                    <p>No! Unlike API providers that charge by "tokens" (which means long texts cost you more), Genyxo charges a <strong>fixed price per message</strong>. The cost remains the same regardless of how long your prompt is or how detailed the AI's response is.</p>
+                </div>
+
+                <div class="tos-container">
+                    <h3>Can I get a refund if the AI gives a bad answer?</h3>
+                    <p>Since the computational cost on our end remains the same regardless of the content of the response, credits are non-refundable once an AI successfully generates an answer. We recommend tweaking your prompt for better results.</p>
+                </div>
+            </section>
+
+            <section id="models">
+                <h2><i class="fas fa-microchip"></i> AI Models & Usage</h2>
+                
+                <div class="tos-container">
+                    <h3>Which models are available on Genyxo?</h3>
+                    <p>We continuously update our library to include industry-leading models. Currently, you can access top-tier models from OpenAI, Anthropic, Google, and others. The full list and their fixed per-message prices are always visible in your chat interface.</p>
+
+                    <h3>Why did the AI give me incorrect information?</h3>
+                    <p>Artificial Intelligence models can occasionally produce inaccurate information, biased content, or "hallucinations" (invented facts). Genyxo provides the bridge to these models, but we do not author their responses. Always verify critical or sensitive data.</p>
+                </div>
+            </section>
+
+            <section id="privacy">
+                <h2><i class="fas fa-user-shield"></i> Privacy & Security</h2>
+                
+                <div class="info-card">
+                    <h3>Does Genyxo use my data to train models?</h3>
+                    <p><strong>Absolutely not.</strong> We never use your prompts, conversations, or generated content to train our own models, nor do we sell your interaction data to third parties.</p>
+                </div>
+
+                <div class="tos-container">
+                    <h3>Are my conversations private?</h3>
+                    <p>Yes. All interactions between your browser and Genyxo are encrypted via standard SSL technology. Data sent to the third-party AI providers is handled securely and anonymized wherever possible according to our Privacy Policy.</p>
+                </div>
+            </section>
+
+            <section id="troubleshooting" class="legal-section">
+                <h2><i class="fas fa-headset"></i> Troubleshooting & Support</h2>
+                
+                <div class="dispute-process">
+                    <h3>What if a system error occurs and my credits are gone?</h3>
+                    <p>If an AI model fails to generate a response due to a technical glitch or server timeout on our end, your credits <strong>should not be deducted</strong>. If you notice an unfair deduction:</p>
+                    <ol>
+                        <li>Write to our Telegram support: <strong>@gmblessed</strong></li>
+                        <li>Or email us at: <strong>aivaultcomsup@gmail.com</strong></li>
+                        <li>Include your account email and the approximate time of the error.</li>
+                    </ol>
+                    <p class="small-note">Please remember to dispute any charges within 14 days of the incident.</p>
+                </div>
+            </section>
+        </main>
     </div>
-    </div>
 
-    <div class="mobile-menu" id="mobileMenu">
-        <ul>
-            <li><a href="../index.html" data-i18n="nav.home" aria-label="Home Page">Home</a></li>
-            <li><a href="../chat.html" data-i18n="nav.chat" aria-label="Chat Page">Chat</a></li>
-            <li><a href="../support.html" data-i18n="nav.about" aria-label="Support Page">Support</a></li>
-        </ul>
-    </div>
-    <div class="menu-overlay" id="menuOverlay"></div>
-
-    <footer class="footer animate-active" style="animation: fadeInUp 1s ease; margin-top: 150px;">
+       <footer class="footer animate-active" style="animation: fadeInUp 1s ease; margin-top: 150px;">
         <div class="footer-content">
             <div class="footer-section">
                 <span class="footer-logo">
@@ -300,7 +362,44 @@
         </div>
     </footer>
 
-    <script src="../js/policies.js" defer></script>
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+            }, 10); 
+        };
 
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('overlay');
+            
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('overlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('overlay').addEventListener('click', closeMenu);
+
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('overlay');
+            const burger = document.getElementById('toggleMobileMenu');
+            
+            if (sidebar.classList.contains('active') && overlay.classList.contains('active')) {
+                if (!sidebar.contains(event.target) && !burger.contains(event.target)) {
+                    closeMenu();
+                }
+            }
+        });
+    </script>
 </body>
 </html>
