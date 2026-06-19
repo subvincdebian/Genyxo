@@ -26,12 +26,18 @@ import { RedisCacheModule } from './common/redis-cache.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     RedisModule.forRoot({
-      config: process.env.REDIS_PUBLIC_URL
-        ? { url: process.env.REDIS_PUBLIC_URL } // Vercel
+      config: process.env.REDIS_URL
+        ? { 
+            url: process.env.REDIS_URL,
+            maxRetriesPerRequest: null,
+            // ssl
+            // tls: { rejectUnauthorized: false }
+          }
         : {
             host: process.env.REDISHOST || 'localhost',
             port: parseInt(process.env.REDISPORT!) || 6379,
             password: process.env.REDISPASSWORD,
+            maxRetriesPerRequest: null,
           },
     }),
     ThrottlerModule.forRootAsync({
@@ -65,7 +71,10 @@ import { RedisCacheModule } from './common/redis-cache.module';
     TypeOrmModule.forRoot({
       type: 'mysql',
       ...(process.env.MYSQL_PUBLIC_URL 
-        ? { url: process.env.MYSQL_PUBLIC_URL } 
+        ? { 
+            url: process.env.MYSQL_PUBLIC_URL,
+            ssl: { rejectUnauthorized: false },
+          } 
         : {
             host: process.env.MYSQLHOST || 'localhost',
             port: parseInt(process.env.MYSQLPORT!) || 3306,
@@ -76,7 +85,7 @@ import { RedisCacheModule } from './common/redis-cache.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
       extra: {
-        connectionLimit: 100, 
+        connectionLimit: process.env.VERCEL ? 3 : 100, 
         enableKeepAlive: true,
         keepAliveInitialDelay: 10000,
         waitForConnections: true,
