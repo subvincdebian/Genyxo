@@ -357,7 +357,7 @@ async function loadProfileData() {
         }
         return;
     }
-
+    
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
