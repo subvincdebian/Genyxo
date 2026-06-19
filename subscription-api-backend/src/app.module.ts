@@ -8,7 +8,6 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { ThrottlerStorageRedisService } from './common/throttler-redis.storage';
 import { RedisService } from '@liaoliaots/nestjs-redis';
-import Redis from 'ioredis';
 
 import { join } from 'path';
 

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, Length, IsUrl } from 'class-validator';
+import { IsString, IsOptional, Length } from 'class-validator';
 import { Transform } from 'class-transformer';
 import sanitizeHtml from 'sanitize-html';
 

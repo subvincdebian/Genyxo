@@ -1,5 +1,5 @@
-import { IsEmail, IsNotEmpty, MinLength, Matches, IsString, IsOptional, IsInt, IsNumber, MaxLength } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { IsEmail, IsNotEmpty, MinLength, Matches, IsString, IsOptional, MaxLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateUserDto {
   

@@ -9,7 +9,6 @@ import {
   Get,
   Param,
   Patch,
-  Delete,
   NotFoundException,
   InternalServerErrorException,
   Query,
@@ -20,7 +19,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
-import { TransactionType } from 'src/transactions/transaction.entity';
+import { TransactionType } from '../transactions/transaction.entity';
 import { UsersService } from '../users/users.service';
 import { ChatService } from './chat.service';
 import { FalService } from './fal.service';
