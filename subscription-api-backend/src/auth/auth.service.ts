@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { UsersService } from '../users/users.service';
 import { EmailService } from '../email/email.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -61,7 +61,7 @@ export class AuthService {
         referrerId = referrer ? referrer.id : null;
     }
 
-    const verificationToken = uuidv4();
+    const verificationToken = randomUUID();
 
     const newUser = await this.usersService.create({
         ...createUserDto,
