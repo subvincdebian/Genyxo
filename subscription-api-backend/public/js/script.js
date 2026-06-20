@@ -25,6 +25,7 @@ window.token = token;
 let currentUserName = localStorage.getItem('userName') || 'Username';
 let currentUserEmail = localStorage.getItem('userEmail');
 let currentUserAvatar = localStorage.getItem('userAvatar');
+let currentUserRole = localStorage.getItem('userRole');
 
 // --- DOM Elements ---
 const productsGrid = document.getElementById('productsGrid');
@@ -117,8 +118,8 @@ function updateUIState(isLoggedIn, userData = null) {
         }
 
         if (loginBtn) {
+            loginBtn.classList.remove('login-btn');
             loginBtn.classList.add('profile-toggle-btn');
-            loginBtn.classList.add('login-btn');
         }
 
     } else {
@@ -128,8 +129,8 @@ function updateUIState(isLoggedIn, userData = null) {
         if (navAvatar) navAvatar.style.display = 'none';
         
         if (loginBtn) {
-            loginBtn.classList.add('login-btn');
             loginBtn.classList.remove('profile-toggle-btn');
+            loginBtn.classList.add('login-btn');
         }
         
         if (profilePanel) profilePanel.classList.remove('show');
@@ -169,10 +170,28 @@ function handleLogout() {
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userAvatar');
+    localStorage.removeItem('userRole');
     authToken = null;
     
     updateUIState(false);
     window.location.reload();
+}
+
+/**
+ * Управляє видимістю кнопки Admin Dashboard на основі ролі користувача
+ * Кнопка видима тільки для адміністраторів
+ */
+function updateAdminDashboardVisibility() {
+    const userRole = localStorage.getItem('userRole');
+    const dashboardBtn = document.querySelector('a[href="dashboard.html"]');
+    
+    if (dashboardBtn) {
+        if (userRole === 'admin') {
+            dashboardBtn.style.display = 'block';
+        } else {
+            dashboardBtn.style.display = 'none';
+        }
+    }
 }
 
 async function loadAffiliateData() {
@@ -234,8 +253,10 @@ async function fetchUserData() {
             localStorage.setItem('userName', user.name || '');
             localStorage.setItem('userEmail', user.email || '');
             if (user.avatar) localStorage.setItem('userAvatar', user.avatar);
+            if (user.role) localStorage.setItem('userRole', user.role);
 
             updateUIState(true, user);
+            updateAdminDashboardVisibility();
             updateNotificationsBadge();
 
             if (affBalance !== null && affBalance !== undefined) {
@@ -350,6 +371,7 @@ function initGlobalSockets() {
 }
 
 async function loadProfileData() {
+    /*
     if (!token) {
         const protectedPages = ['profile.html', 'notifications.html', 'support.html'];
         if (protectedPages.some(page => window.location.pathname.includes(page))) {
@@ -357,6 +379,7 @@ async function loadProfileData() {
         }
         return;
     }
+        */
     
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
@@ -390,10 +413,8 @@ async function loadProfileData() {
                 elements.navAvatar.alt = "User Avatar";
             }
 
-            if (elements.loginBtn) {
-                elements.loginBtn.classList.remove('login-btn');
-                elements.loginBtn.classList.add('profile-toggle-btn');
-            }
+            // Класи уже обновлены в updateUIState(), не дублируем
+            // Убеждаемся, что это не конфликтует с updateUIState()
 
             if (elements.menuName) elements.menuName.textContent = user.name ||  'User';
             if (elements.menuEmail) elements.menuEmail.textContent = user.email || '';
@@ -834,6 +855,7 @@ async function handleLoginSubmit(e) {
             if (data.user) {
                 localStorage.setItem('userName', data.user.name);
                 localStorage.setItem('userEmail', data.user.email);
+                if (data.user.role) localStorage.setItem('userRole', data.user.role);
             }
             
             await fetchUserData();
@@ -863,7 +885,7 @@ async function handleSignupSubmit(e) {
     const name = document.getElementById('signupName').value;
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
+    const confirmPassword = document.getElementById('signupConfirmPassword').value;
     
     if (password !== confirmPassword) {
         const msg = window.i18n?.translations?.toasts?.pass_mismatch || 'Passwords do not match!';
@@ -934,15 +956,24 @@ function updateLoginButton(name, token) {
     const navIcon = document.getElementById('navIcon');
     const navAvatar = document.getElementById('navAvatar');
     const profilePanel = document.getElementById('profilePanel');
+    const loginBtn = document.getElementById('loginBtn');
 
     if (token) {
         if (navUsername) navUsername.textContent = name;
         if (navIcon) navIcon.style.display = 'none'; 
-        if (navAvatar) navAvatar.style.display = 'block'; 
+        if (navAvatar) navAvatar.style.display = 'block';
+        if (loginBtn) {
+            loginBtn.classList.remove('login-btn');
+            loginBtn.classList.add('profile-toggle-btn');
+        }
     } else {
         if (navUsername) navUsername.textContent = 'Register / Login';
         if (navIcon) navIcon.style.display = 'inline-block';
         if (navAvatar) navAvatar.style.display = 'none';
+        if (loginBtn) {
+            loginBtn.classList.remove('profile-toggle-btn');
+            loginBtn.classList.add('login-btn');
+        }
         
         if (profilePanel) profilePanel.classList.remove('show');
     }
@@ -1127,7 +1158,7 @@ function setupEventListeners() {
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
-            const confirmPass = document.getElementById('confirmPassword').value;
+            const confirmPass = document.getElementById('signupConfirmPassword').value;
 
             if (password !== confirmPass) {
                 showToast('Passwords do not match', 'error');
@@ -1555,6 +1586,7 @@ async function init() {
     }
 
     updateLoginButton(currentUserName, activeToken);
+    updateAdminDashboardVisibility();
     checkPaymentStatus();
     if (activeToken) {
         fetchUserData();

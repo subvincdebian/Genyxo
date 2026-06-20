@@ -40,12 +40,14 @@
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     
     <script>
+        /*
         (function() {
             const token = localStorage.getItem('authToken');
             if (token) {
                 document.documentElement.classList.add('auth-active');
             }
         })();
+        */
     </script>
     <script type="application/ld+json">
     {
@@ -131,7 +133,7 @@
 
             <div class="right-side">
                 <div class="nav-links">
-                    <a href="dashboard.html" class="menu-item" style="border: 1px solid #10e6cc; margin-top: 10px; border-radius: 8px;">
+                    <a href="../secure_html/dashboard.html" class="menu-item" style="border: 1px solid #10e6cc; margin-top: 10px; border-radius: 8px;">
                         <i class="fas fa-hammer fa-fw" style="color: #10e6cc;"></i>
                         <span style="color: #10e6cc;">Admin Dashboard</span>
                     </a>

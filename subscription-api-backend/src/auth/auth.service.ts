@@ -39,7 +39,8 @@ export class AuthService {
         email: user.email, 
         name: user.name, 
         avatar: user.avatar,
-        credits: user.credits
+        credits: user.credits,
+        role: user.role
       }
     };
   }

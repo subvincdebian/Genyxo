@@ -264,7 +264,7 @@
 
                 <div class="button-group">
                     <button class="btn btn-primary" aria-label="View Packges" onclick="window.location.hash = '#products'">View Packages</button>
-                    <button class="btn btn-outline" aria-label="View Demo">View Demo</button>
+                    <button class="btn btn-outline hero-btn" aria-label="View Demo">View Demo</button>
                 </div>
 
                 <div class="trust-badge">
@@ -745,6 +745,39 @@
         </div>
     </div>
 
+       <div id="demoChatModal" class="demo-modal-overlay">
+        <div class="demo-modal-content">
+            <div class="demo-modal-header">
+                <div class="demo-header-info">
+                    <div class="demo-ai-avatar">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="demo-header-text">
+                        <h3 data-i18n="demo.title">Genyxo Flash (Free)</h3>
+                        <span class="demo-status">Online</span>
+                    </div>
+                </div>
+                <button id="closeDemoBtn" class="demo-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="demoChatHistory" class="demo-chat-history">
+                <div class="demo-message ai-message">
+                    <p>Hello! I am a free Genyxo demo model. Send me a message to test how fast and smart I am before you get your credits! 🚀</p>
+                </div>
+            </div>
+
+            <div class="demo-chat-input-area">
+                <input type="text" id="demoChatInput" placeholder="Type your message..." autocomplete="off">
+                <button id="demoSendBtn" class="demo-send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script src="js/demochat.js"></script>
 <script src="js/i18n.js" defer></script>
 <script src="js/script.js" defer></script>
 
