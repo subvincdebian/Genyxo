@@ -31,7 +31,7 @@ import { RedisCacheModule } from './common/redis-cache.module';
             url: process.env.REDIS_URL,
             maxRetriesPerRequest: null,
             // ssl
-            // tls: { rejectUnauthorized: false }
+            tls: { rejectUnauthorized: false }
           }
         : {
             host: process.env.REDISHOST || 'localhost',
@@ -70,10 +70,16 @@ import { RedisCacheModule } from './common/redis-cache.module';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      ...(process.env.MYSQL_PUBLIC_URL 
+      ...(process.env.MYSQL_TIDB_HOST
         ? { 
-            url: process.env.MYSQL_PUBLIC_URL,
-            ssl: { rejectUnauthorized: false },
+            host: process.env.MYSQL_TIDB_HOST,
+            port: parseInt(process.env.MYSQL_TIDB_PORT!) || 4000,
+            username: process.env.MYSQL_TIDB_USERNAME,
+            password: process.env.MYSQL_TIDB_PASSWORD,
+            database: process.env.MYSQL_TIDB_DATABASE,
+            ssl: {
+              rejectUnauthorized: true,
+            },
           } 
         : {
             host: process.env.MYSQLHOST || 'localhost',
