@@ -21,13 +21,13 @@ export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Index()
   @Column({ unique: true, type: 'varchar', length: 255 })
   email!: string;
 
   @Column({ nullable: true, select: false, type: 'varchar' })
   password?: string;
 
+  @Index()
   @Column({ nullable: true, type: 'varchar', length: 255 })
   name?: string;
 
@@ -83,8 +83,7 @@ export class User {
   @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
   referralBalance!: number;
 
-  @Index({ unique: true })
-  @Column({ nullable: true, type: 'varchar', length: 20 })
+  @Column({ unique:true, nullable: true, type: 'varchar', length: 20 })
   referralCode!: string;
 
   @ManyToOne(() => User, user => user.referrals)

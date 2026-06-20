@@ -47,7 +47,6 @@ export class SupportTicket {
   @UpdateDateColumn()
   updatedAt?: Date;
 
-  @Index()
   @Column()
   userId!: number;
 

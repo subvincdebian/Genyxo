@@ -21,8 +21,8 @@ export class Message {
   @CreateDateColumn()
   createdAt!: Date;
 
-  @Column()
   @Index()
+  @Column()
   conversationId!: number;
 
   @ManyToOne(() => Conversation, (conversation) => conversation.messages, { onDelete: 'CASCADE' })
@@ -30,7 +30,6 @@ export class Message {
   conversation!: Conversation;
 
   @Column()
-  @Index()
   userId!: number;
 
   @ManyToOne(() => User)

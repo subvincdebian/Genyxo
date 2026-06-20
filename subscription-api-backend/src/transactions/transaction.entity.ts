@@ -47,13 +47,12 @@ export class Transaction {
   @CreateDateColumn()
   createdAt!: Date;
 
+  @Column()
+  userId!: number;
+
   @ManyToOne(() => User, (user) => user.transactions)
   @JoinColumn({ name: 'userId' })
   user?: User;
-
-  @Index()
-  @Column({ nullable: true })
-  userId?: number;
 
   @Column({
     type: 'enum',

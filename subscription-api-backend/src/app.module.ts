@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -68,39 +68,57 @@ import { RedisCacheModule } from './common/redis-cache.module';
         from: '"Genyxo Support" <info@genyxo.com>',
       },
     }),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      ...(process.env.MYSQL_TIDB_HOST
-        ? { 
-            host: process.env.MYSQL_TIDB_HOST,
-            port: parseInt(process.env.MYSQL_TIDB_PORT!) || 4000,
-            username: process.env.MYSQL_TIDB_USERNAME,
-            password: process.env.MYSQL_TIDB_PASSWORD,
-            database: process.env.MYSQL_TIDB_DATABASE,
-            ssl: {
-              rejectUnauthorized: true,
-            },
-          } 
-        : {
-            host: process.env.MYSQLHOST || 'localhost',
-            port: parseInt(process.env.MYSQLPORT!) || 3306,
-            username: process.env.MYSQLUSER,
-            password: process.env.MYSQLPASSWORD,
-            database: process.env.MYSQLDATABASE,
-          }),
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
-      extra: {
-        connectionLimit: process.env.VERCEL ? 3 : 100, 
-        enableKeepAlive: true,
-        keepAliveInitialDelay: 10000,
-        waitForConnections: true,
-        queueLimit: 0,
-        connectTimeout: 20000,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const tidbHost = configService.get<string>('MYSQL_TIDB_HOST');
+        const isProduction = configService.get<string>('NODE_ENV') === 'production' || !!configService.get('VERCEL');
+
+        const connectionOptions = tidbHost
+          ? {
+              // TiDB CLOUD
+              host: tidbHost,
+              port: parseInt(configService.get<string>('MYSQL_TIDB_PORT')!) || 4000,
+              username: configService.get<string>('MYSQL_TIDB_USERNAME'),
+              password: configService.get<string>('MYSQL_TIDB_PASSWORD'),
+              database: configService.get<string>('MYSQL_TIDB_DATABASE') || 'test',
+              ssl: {
+                rejectUnauthorized: true,
+              },
+            }
+          : {
+              // RAILWAY / LOCAL MYSQL
+              host: configService.get<string>('MYSQLHOST') || 'localhost',
+              port: parseInt(configService.get<string>('MYSQLPORT')!) || 3306,
+              username: configService.get<string>('MYSQLUSER'),
+              password: configService.get<string>('MYSQLPASSWORD'),
+              database: configService.get<string>('MYSQLDATABASE'),
+              // ssl: configService.get('MYSQL_SSL') ? { rejectUnauthorized: false } : undefined
+            };
+
+        return {
+          type: 'mysql',
+          ...connectionOptions,
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          
+          // for local
+          synchronize: !isProduction,
+          logging: true,
+          
+          extra: {
+            connectionLimit: configService.get('VERCEL') ? 3 : 100, 
+            enableKeepAlive: true,
+            keepAliveInitialDelay: 10000,
+            waitForConnections: true,
+            queueLimit: 0,
+            connectTimeout: 20000,
+          },
+          retryAttempts: 10,
+          retryDelay: 3000,
+          autoLoadEntities: true,
+        };
       },
-      retryAttempts: 10,
-      retryDelay: 3000,
-      autoLoadEntities: true,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'), 

@@ -10,7 +10,6 @@ export class Conversation {
   @Column({ default: 'New Chat' })
   title!: string;
 
-  @Index()
   @Column()
   userId!: number;
 
