@@ -1324,7 +1324,7 @@ h1, h2, h3, .nav-logo {
 }
 
 .profile-toggle-btn {
-    background: var(--text-light);
+    background: none;
     color: var(--text-dark);
     padding: 0.5rem;
     cursor: pointer;
@@ -1334,8 +1334,8 @@ h1, h2, h3, .nav-logo {
     justify-content: center;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     border: none;
-    border-radius: 10px;
-    width: 150px;
+    border-radius: 25px;
+    width: 40px;
     height: 40px;
     flex-shrink: 0;
 }

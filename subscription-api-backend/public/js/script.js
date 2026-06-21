@@ -94,7 +94,7 @@ function updateBalanceUI(amount) {
 function updateUIState(isLoggedIn, userData = null) {
     if (isLoggedIn && userData) {
         // Якщо користувач увійшов:
-        if (navUsername) navUsername.textContent = userData.name || userData.email || 'User';
+        /* if (navUsername) navUsername.textContent = userData.name || userData.email || 'User'; */
         if (navIcon) navIcon.style.display = 'none';
         
         if (navAvatar) {
