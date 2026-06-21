@@ -2652,17 +2652,25 @@ html.auth-active .login-btn i {
         flex: 1;
     }
 
-    .login-btn {
-        padding: 0.4rem 1rem;
-        font-size: 0.9rem;
-        border-radius: 20px;
+    .login-btn, .profile-toggle-btn {
+        position: relative !important;
+        left: auto !important;
+        margin: 0 6px 0 0;
+        width: 40px;
         height: 40px;
-        width: 150px;
+        padding: 0;
+        min-width: auto;
+        max-width: none;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+        border-radius: 50%;
     }
 
     .nav-avatar-small {
         width: 40px;
         height: 40px;
+        margin: 0;
     }
 
     .search-container {

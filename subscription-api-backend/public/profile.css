@@ -2503,7 +2503,7 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
         width: auto !important;
         gap: 8px;
         position: absolute;
-        right: 150px;
+        right: 0;
         z-index: 990;
     }
 
