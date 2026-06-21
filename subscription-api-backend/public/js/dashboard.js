@@ -258,4 +258,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // ==========================================================================
+    // ЛОГИКА УПРАВЛЕНИЯ МОБИЛЬНЫМ САЙДБАРОМ
+    // ==========================================================================
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const adminSidebar = document.querySelector('.admin-sidebar') || document.querySelector('.sidebar');
+    const sidebarLinks = document.querySelectorAll('.admin-sidebar a, .sidebar-menu li, .menu-item');
+
+    if (sidebarToggle && adminSidebar && sidebarOverlay) {
+        
+        // Функция открытия меню
+        const openMobileSidebar = () => {
+            adminSidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Блокируем скролл страницы под меню
+        };
+
+        // Функция закрытия меню
+        const closeMobileSidebar = () => {
+            adminSidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Возвращаем скролл
+        };
+
+        // Навешиваем события клика
+        sidebarToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openMobileSidebar();
+        });
+
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', closeMobileSidebar);
+        }
+
+        sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+        // Автоматически закрываем сайдбар при клике на любой пункт меню (актуально для мобилок)
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 992) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+    }
+
 });

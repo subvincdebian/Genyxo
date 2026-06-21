@@ -628,3 +628,234 @@ body {
 .table-wrapper::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
+.sidebar-toggle-btn {
+    display: none; /* Скрыта на ПК */
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.sidebar-close-btn {
+    display: none; /* Скрыта на ПК */
+    position: absolute;
+    top: 18px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    color: var(--text-gray);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.sidebar-close-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(16, 230, 204, 0.3);
+}
+
+/* Эффект размытия заднего плана (Blur Overlay) */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Медиа-запрос для мобильных устройств и планшетов */
+@media (max-width: 992px) {
+    /* --- ЖЕЛЕЗОБЕТОННЫЙ НАВБАР --- */
+    .admin-navbar {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0 16px !important;
+        height: 70px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        /* Добавляем эффект стекла, чтобы контент красиво уходил под навбар */
+        background: rgba(18, 18, 18, 0.85) !important; 
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Логотип и бургер строго в один ряд */
+    .nav-left {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 12px !important; 
+    }
+
+    .nav-logo {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .nav-logo span {
+        font-size: 1.15rem !important;
+    }
+
+    /* Аккуратная кнопка-бургер */
+    .sidebar-toggle-btn {
+        width: 38px;
+        height: 38px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        transition: 0.2s ease;
+        border: none;
+        color: var(--text-light);
+        cursor: pointer;
+        flex-shrink: 0; /* Запрещаем кнопке сжиматься */
+    }
+
+    .sidebar-toggle-btn:active {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(0.95);
+    }
+
+    /* --- ФИКС САЙДБАРА --- */
+    .admin-sidebar {
+        animation: none !important;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        height: 100vh !important;
+        width: 280px !important;
+        z-index: 2000 !important;
+        background: var(--bg-panel) !important;
+        border-right: 1px solid var(--border);
+        transform: translateX(-100%) !important; 
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease !important;
+        box-shadow: none !important;
+        padding-top: 60px !important;
+    }
+
+    .admin-sidebar.active {
+        transform: translateX(0) !important;
+        box-shadow: 20px 0 50px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .admin-container {
+        display: block !important;
+    }
+
+    /* --- ОТСТУПЫ КОНТЕНТА --- */
+    .admin-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 95px 16px 30px 16px !important; 
+    }
+
+    /* --- КРАСИВЫЕ ЗАГОЛОВКИ И ПЛАШКИ (Overview и т.д.) --- */
+    /* Перестраиваем шапку в колонку, чтобы элементам не было тесно */
+    .dashboard-header {
+        display: flex !important;
+        flex-direction: column !important; 
+        align-items: flex-start !important;
+        gap: 16px !important;
+        margin-bottom: 24px !important;
+    }
+
+    .header-content {
+        padding: 0 4px; 
+    }
+
+    .header-content h1 {
+        font-size: 1.7rem !important; 
+        margin-bottom: 6px !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
+        color: var(--text-gray) !important;
+    }
+
+    .top-actions {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+
+    /* СТИЛЬНАЯ ПЛАШКА ONLINE */
+    .live-status {
+        background: rgba(255, 71, 87, 0.08) !important; /* Легкая прозрачная заливка */
+        border: 1px solid rgba(255, 71, 87, 0.2) !important;
+        padding: 6px 14px !important;
+        border-radius: 30px !important; /* Идеально круглые края-пилюли */
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        margin: 0 !important;
+    }
+
+    .pulse-dot {
+        width: 8px !important;
+        height: 8px !important;
+        box-shadow: 0 0 8px rgba(255, 71, 87, 0.6) !important; /* Приятное неоновое свечение */
+    }
+
+    /* --- СЕТКИ И ТАБЛИЦЫ --- */
+    .stats-grid, 
+    .grids-layout, 
+    .tables-grid, 
+    .charts-grid,
+    .analytics-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .table-card, 
+    .recent-orders,
+    .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px;
+    }
+    
+    .table-card table {
+        min-width: 550px; 
+    }
+}

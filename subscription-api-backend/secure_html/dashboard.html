@@ -15,10 +15,15 @@
 
     <nav class="admin-navbar animate-item">
         <div class="nav-left">
+            <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Open Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="../public/index.html" style="text-decoration:none; color: #fff; display:flex;">
             <div class="nav-logo">
                 <img src="../public/images/logo.svg" width="30" height="30" alt="Logo">
                 <span>Genyxo <span style="color: #10e6cc;">Admin</span></span>
             </div>
+            </a>
         </div>
         
         <div class="nav-right">
@@ -92,7 +97,11 @@
     </nav>
 
     <div class="admin-layout">
-        <aside class="admin-sidebar animate-item delay-1">
+        <aside class="admin-sidebar">
+
+            <button class="sidebar-close-btn" id="sidebarClose" aria-label="Close Menu">
+                <i class="fas fa-times"></i>
+            </button>
             
             <nav class="admin-menu">
                 <a href="#" class="admin-menu-item active" data-tab="overview"><i class="fas fa-chart-pie"></i> Overview</a>
@@ -498,6 +507,8 @@
 
         </main>
     </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <script src="../public/js/dashboard.js"></script>
 </body>
