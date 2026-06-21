@@ -1331,14 +1331,29 @@ h1, h2, h3, .nav-logo {
     align-items: center;
     justify-content: center;
     border: none;
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     flex-shrink: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .profile-toggle-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+    box-shadow: none;
+}
+
+/* Hide icon and username when showing avatar */
+.profile-toggle-btn #navIcon,
+.profile-toggle-btn #navUsername {
+    display: none;
+}
+
+/* Adjust avatar in profile-toggle-btn */
+.profile-toggle-btn .nav-avatar-small {
+    width: 30px;
+    height: 30px;
+    margin: 0;
 }
 
 ::-webkit-scrollbar {
@@ -1520,6 +1535,9 @@ html.auth-active .login-btn {
 
 html.auth-active .login-btn::before {
     content: "";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 400;
+    font-size: 1rem;
     position: absolute;
     left: 50%;
     top: 120%;
@@ -1530,38 +1548,6 @@ html.auth-active .login-btn span,
 html.auth-active .login-btn img,
 html.auth-active .login-btn i {
     visibility: visible !important;
-}
-
-/* ========================================= */
-/* СТИЛИ ДЛЯ АВТОРИЗОВАННОГО СОСТОЯНИЯ       */
-/* ========================================= */
-.login-btn.logged-in {
-    background: transparent !important; /* Убираем черный фон */
-    padding: 0 !important;              /* Убираем отступы вокруг аватарки */
-    border: none !important;
-    box-shadow: none !important;        /* Убираем белую тень */
-}
-
-/* Убираем эффекты при наведении (ховере) для залогиненного состояния */
-.login-btn.logged-in:hover {
-    background: transparent !important;
-    box-shadow: none !important;
-    transform: scale(1.05); /* Легкое увеличение аватарки при наведении (по желанию) */
-}
-
-/* Скрываем иконку и текст, если пользователь залогинен */
-.login-btn.logged-in #navIcon,
-.login-btn.logged-in #navUsername {
-    display: none !important;
-}
-
-/* Показываем аватарку */
-.login-btn.logged-in #navAvatar {
-    display: block !important;
-    width: 40px;            /* Укажи нужный размер */
-    height: 40px;
-    border-radius: 50%;     /* Делаем аватарку круглой */
-    object-fit: cover;      /* Чтобы картинка не искажалась */
 }
 
 .product-card {
