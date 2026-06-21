@@ -146,6 +146,32 @@
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
+
+                    <div class="search-results-dropdown glass" id="searchResultsDropdown">
+    
+                        <div id="searchDefaultState" class="search-state-view">
+                            <div class="search-section-label">Popular packs</div>
+                            <div id="defaultSearchList">
+                                </div>
+                            
+                            <div class="search-categories-grid">
+                                <button class="search-category-btn" onclick="openCategoryModal('packs')">
+                                    <i class="fas fa-box"></i>
+                                    Credit Packages
+                                </button>
+                                <button class="search-category-btn" onclick="openCategoryModal('models')">
+                                    <i class="fas fa-robot"></i>
+                                    AI Models
+                                </button>
+                                <button class="search-category-btn" onclick="openCategoryModal('actions')">
+                                    <i class="fas fa-bolt"></i>
+                                    Quick Actions
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="searchResultsState" class="search-state-view" style="display: none;"></div>
+                    </div>
                 </div>
             </div>
 
@@ -228,7 +254,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </nav>
 
@@ -774,6 +799,55 @@
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <div class="modal" id="aiModelModal">
+        <div class="modal-content glass" style="max-width: 500px; text-align: left;">
+            <span class="close-btn" onclick="document.getElementById('aiModelModal').style.display='none'">&times;</span>
+            
+            <div class="ai-modal-header">
+                <div class="ai-modal-icon-wrapper">
+                    <i id="aiModelIcon" class="fas fa-robot fa-2x" style="color: #10e6cc;"></i>
+                </div>
+                <div class="ai-modal-title-group">
+                    <h2 id="aiModelTitle">Name of the Model</h2>
+                    <div id="aiModelCompany" class="ai-modal-company">Google</div>
+                </div>
+            </div>
+            
+            <p id="aiModelDesc" class="ai-modal-desc">Description of the model will be here...</p>
+            
+            <button id="aiModelSelectBtn" class="submit-btn glow-on-hover" style="margin-bottom: 20px; width: 100%;">
+                Use this model
+            </button>
+
+            <h3 style="font-size: 1rem; margin-bottom: 10px; color: var(--text-light);">Model Comparison</h3>
+            <div class="ai-comparison-container">
+                <table class="ai-comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th id="compModel1">Gemini</th>
+                            <th id="compModel2">GPT-4</th>
+                            <th id="compModel3">Claude</th>
+                        </tr>
+                    </thead>
+                    <tbody id="aiComparisonBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="categoryModal">
+        <div class="modal-content glass" style="max-width: 450px; text-align: left;">
+            <span class="close-btn" onclick="document.getElementById('categoryModal').style.display='none'">&times;</span>
+            
+            <h2 id="categoryModalTitle" style="margin-bottom: 5px; font-size: 1.5rem;">Category Name</h2>
+            <p id="categoryModalDesc" style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 20px;">Category description...</p>
+            
+            <div id="categoryModalList" class="category-modal-list"></div>
         </div>
     </div>
 

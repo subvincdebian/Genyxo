@@ -731,3 +731,18 @@ document.addEventListener('DOMContentLoaded', () => {
         initChat();
     }
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const savedModel = localStorage.getItem('selectedAIModel');
+    if (savedModel) {
+        // Знаходиш свій select по ID
+        const selectBox = document.getElementById('yourChatSelectId'); 
+        if (selectBox) {
+            selectBox.value = savedModel;
+            // Викликаємо change, щоб чат оновився
+            selectBox.dispatchEvent(new Event('change')); 
+        }
+        // Очищаємо пам'ять
+        localStorage.removeItem('selectedAIModel'); 
+    }
+});

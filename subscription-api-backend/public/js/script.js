@@ -1598,4 +1598,343 @@ async function init() {
     loadProfileData();
 }
 
+// Бази даних для пошуку та відображення
+const aiModelsData = [
+    { id: 'gemini-pro', name: "Gemini Pro", company: "Google", creator: "Google", icon: "./images/google-gemini.svg", desc: "Google's most powerful model for complex logical tasks, coding, and analyzing large texts." },
+    { id: 'gemini-flash', name: "Gemini Flash", company: "Google", creator: "Google", icon: "./images/google-gemini.svg", desc: "A lightweight and lightning-fast model. Perfect for everyday tasks." },
+    { id: 'gemini-flash-lite', name: "Gemini Flash-Lite", company: "Google", creator: "Google", icon: "./images/google-gemini.svg", desc: "Google's fastest model. Perfect for quick answers." },
+    { id: 'gpt-5.1', name: "ChatGPT-5.1", company: "OpenAI", creator: "OpenAI", icon: "./images/chatgpt-icon.svg", desc: "a highly efficient AI model by OpenAI that introduces adaptive reasoning, allowing it to dynamically shift between a fast, lightweight chat mode and a deep, stepwise thinking mode" },
+    { id: 'gpt-5', name: "ChatGPT-5", company: "OpenAI", creator: "OpenAI", icon: "./images/chatgpt-icon.svg", desc: "OpenAI's flagship multimodal AI model family, featuring advanced deep reasoning, significantly reduced hallucination rates, and native integration for text, images, and audio." },
+    { id: 'gpt-5-mini', name: "ChatGPT-5 Mini", company: "OpenAI", creator: "OpenAI", icon: "./images/chatgpt-icon.svg", desc: "OpenAI's lightweight, efficiency-focused AI model. It is designed to deliver high-speed text and image processing, tool use, and strong coding capabilities at a fraction of the cost and latency of flagship models, making it ideal for high-volume tasks and multi-agent workflows." },
+    { id: 'gpt-4.1', name: "ChatGPT-4.1", company: "OpenAI", creator: "OpenAI", icon: "./images/chatgpt-icon.svg", desc: "high-speed, cost-effective AI model family by OpenAI. The series includes the flagship model, a low-latency Mini, and an exceptionally cheap Nano." },
+    { id: 'gpt-4-mini', name: "ChatGPT-4 Mini", company: "OpenAI", creator: "OpenAI", icon: "./images/chatgpt-icon.svg", desc: "OpenAI’s fastest, most cost-effective small AI model. Designed for high-volume, low-latency tasks, it combines advanced textual intelligence and multimodal reasoning (text + image input) with massive affordability, making it ideal for apps, chatbots, and focused workflows." },
+    { id: 'gpt-o1', name: "ChatGPT-o1", company: "OpenAI", creator: "OpenAI", icon: "./images/chatgpt-icon.svg", desc: "a cutting-edge AI model by OpenAI with exceptional reasoning capabilities." },
+    { id: 'gpt-o3-reasoning', name: "ChatGPT-o3 Reasoning", company: "OpenAI", creator: "OpenAI", icon: "./images/chatgpt-icon.svg", desc: "a highly advanced AI model by OpenAI designed for complex reasoning tasks." },
+    { id: 'gpt-4o', name: "ChatGPT-4o", company: "OpenAI", creator: "OpenAI", icon: "./images/chatgpt-icon.svg", desc: "the latest flagship AI model by OpenAI with enhanced multimodal capabilities." },
+    { id: 'claude-sonnet-4.6', name: "Claude Sonnet 4.6", company: "Anthropic", creator: "Anthropic", icon: "./images/claude-ai.svg", desc: "the latest flagship AI model by Anthropic with improved reasoning and safety features." },
+    { id: 'claude-sonnet-4.5', name: "Claude Sonnet 4.5", company: "Anthropic", creator: "Anthropic", icon: "./images/claude-ai.svg", desc: "a highly capable AI model by Anthropic designed for complex tasks." },
+    { id: 'claude-opus-4.6', name: "Claude Opus 4.6", company: "Anthropic", creator: "Anthropic", icon: "./images/claude-ai.svg", desc: "highly advanced, agentic reasoning model released by Anthropic. It is celebrated for its industry-leading capabilities in complex knowledge work, deep research, and multi-step tasks." },
+    { id: 'claude-opus-4.5', name: "Claude Opus 4.5", company: "Anthropic", creator: "Anthropic", icon: "./images/claude-ai.svg", desc: "Anthropic's flagship frontier AI model designed for complex reasoning, long-horizon agent workflows, and professional software engineering." },
+    { id: 'claude-haiku-4.5', name: "Claude Haiku 4.5", company: "Anthropic", creator: "Anthropic", icon: "./images/claude-ai.svg", desc: "Anthropic's flagship compact AI model. Designed for extreme speed and cost-efficiency, it matches the coding and reasoning capabilities of previous heavyweight models (like Sonnet 4) at a fraction of the cost." },
+    { id: 'claude-haiku-3', name: "Claude Haiku 3", company: "Anthropic", creator: "Anthropic", icon: "./images/claude-ai.svg", desc: "Anthropic's fastest and most compact AI model. It is specifically designed for ultra-low-latency, high-volume, and cost-efficient tasks like batch processing, rapid text summarization, and responsive customer support." },
+    { id: 'dall-e-image', name: "DALL-E Image", company: "OpenAI", creator: "OpenAI", icon: "./images/dalle-text.png", desc: "A model for creating images based on text descriptions." },
+    { id: 'kling-video', name: "Kling Video", company: "Kuaishou Technology", creator: "Kuaishou Technology", icon: "./images/kling-video.svg", desc: "the latest flagship AI model by Kuaishou Technology with enhanced multimodal capabilities." },
+    { id: 'arcee', name: "Arcee", company: "Arcee", creator: "Arcee", icon: "./images/arcee-ai.svg", desc: "the latest flagship AI model by Arcee with enhanced multimodal capabilities." },
+];
+
+const quickActionsData = [
+    { id: 'password', name: "Change Password", icon: "fas fa-lock", url: "profile.html#page-password" },
+    { id: 'billing', name: "Payment History", icon: "fas fa-receipt", url: "profile.html#billing" },
+    { id: 'support', name: "Support", icon: "fas fa-headset", url: "support.html" },
+    { id: 'chat', name: "Open Chat", icon: "fas fa-comments", url: "chat.html" },
+    { id: 'affiliate', name: "Affiliate", icon: "fas fa-user-friends", url: "profile.html#page-affiliate" },
+    { id: 'transactions', name: "Transactions", icon: "fas fa-exchange-alt", url: "profile.html#page-transactions" },
+    { id: 'notifications', name: "Notifications", icon: "fas fa-bell", url: "notifications.html" },
+    { id: 'faq', name: "FAQ", icon: "fas fa-question-circle", url: "./policies/faq.html" },
+    { id: 'policies', name: "Policies", icon: "fas fa-file-alt", url: "./policies/policies.html" },
+    { id: 'privacy-policy', name: "Privacy Policy", icon: "fas fa-shield-alt", url: "./policies/privacy-policy.html" },
+    { id: 'terms-of-service', name: "Terms of Service", icon: "fas fa-file-contract", url: "./policies/terms-of-service.html" },
+];
+
+function isImageIcon(icon) {
+    return /\.(svg|png|jpe?g|webp)$/i.test(icon || '');
+}
+
+function renderAiModelIcon(icon, alt, size = 24) {
+    if (isImageIcon(icon)) {
+        return `<img src="${icon}" alt="${alt || 'AI model'}" style="width: ${size}px; height: ${size}px; object-fit: contain;" onerror="this.replaceWith(Object.assign(document.createElement('i'), { className: 'fas fa-bolt' }))">`;
+    }
+
+    return `<i class="${icon || 'fas fa-bolt'}" style="color: #10e6cc;"></i>`;
+}
+
+// Ініціалізація пошуку та дефолтного стану після завантаження DOM
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.querySelector('.search-input');
+    const dropdown = document.getElementById('searchResultsDropdown');
+    const defaultState = document.getElementById('searchDefaultState');
+    const resultsState = document.getElementById('searchResultsState');
+    const defaultList = document.getElementById('defaultSearchList');
+
+    if (!searchInput || !dropdown) return;
+
+    // 1. Рендер дефолтних паків (3 найдешевші від меншого до більшого)
+    const renderDefaultPacks = () => {
+        defaultList.innerHTML = '';
+        // Беремо перші 3 паки з глобального масиву products
+        if (typeof products !== 'undefined' && products.length > 0) {
+            products.slice(0, 3).forEach(product => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `
+                    <img src="${product.image}" alt="${product.alt}" class="search-result-img">
+                    <div class="search-result-info">
+                        <span class="search-result-name">${product.alt}</span>
+                        <span class="search-result-price">${product.price}</span>
+                    </div>
+                `;
+                item.onclick = () => {
+                    openCheckout(product);
+                    dropdown.classList.remove('show');
+                };
+                defaultList.appendChild(item);
+            });
+        }
+    };
+    renderDefaultPacks();
+
+    // 2. Логіка відкриття/закриття меню пошуку
+    searchInput.addEventListener('focus', () => {
+        dropdown.classList.add('show');
+        if (searchInput.value.trim().length === 0) {
+            defaultState.style.display = 'flex';
+            resultsState.style.display = 'none';
+        }
+    });
+
+    // Ховаємо якщо клік поза пошуком
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-container')) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+    // 3. Супер-пошук при вводі тексту
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        
+        // Якщо стерли текст — повертаємо дефолтний вигляд
+        if (!query) {
+            defaultState.style.display = 'flex';
+            resultsState.style.display = 'none';
+            return;
+        }
+
+        defaultState.style.display = 'none';
+        resultsState.style.display = 'flex';
+        resultsState.innerHTML = '';
+
+        // Шукаємо по всіх трьох базах даних
+        const matchedProducts = (typeof products !== 'undefined' ? products : []).filter(p => p.alt.toLowerCase().includes(query)).map(p => ({...p, type: 'product'}));
+        const matchedModels = aiModelsData.filter(m => m.name.toLowerCase().includes(query)).map(m => ({...m, type: 'model'}));
+        const matchedActions = quickActionsData.filter(a => a.name.toLowerCase().includes(query)).map(a => ({...a, type: 'action'}));
+
+        // Об'єднуємо результати і беремо максимум 4 штуки
+        const allMatches = [...matchedProducts, ...matchedModels, ...matchedActions].slice(0, 10);
+
+        if (allMatches.length === 0) {
+            resultsState.innerHTML = `<div class="search-no-results">Nothing found</div>`;
+            return;
+        }
+
+        // Рендеримо результати пошуку залежно від їхнього типу
+        allMatches.forEach(match => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            
+            if (match.type === 'product') {
+                item.innerHTML = `
+                    <img src="${match.image}" class="search-result-img">
+                    <div class="search-result-info">
+                        <span class="search-result-name">${match.alt}</span>
+                        <span class="search-result-price" style="color: #2ecc71;">${match.price}</span>
+                    </div>
+                `;
+                item.onclick = () => { openCheckout(match); dropdown.classList.remove('show'); searchInput.value = ''; };
+            
+            } else if (match.type === 'model') {
+                item.innerHTML = `
+                    <div class="search-result-icon-box">
+                        ${renderAiModelIcon(match.icon, match.name, 20)}
+                    </div>
+                    <div class="search-result-info">
+                        <span class="search-result-name">${match.name}</span>
+                        <span class="search-result-price">AI Model</span>
+                    </div>
+                `;
+                item.onclick = () => { openAiModelModal(match); dropdown.classList.remove('show'); searchInput.value = ''; };
+            
+            } else if (match.type === 'action') {
+                item.innerHTML = `
+                    <div class="search-result-icon-box"><i class="${match.icon}" style="color: #aaa;"></i></div>
+                    <div class="search-result-info">
+                        <span class="search-result-name">${match.name}</span>
+                        <span class="search-result-price">Quick Action</span>
+                    </div>
+                `;
+                item.onclick = () => { window.location.href = match.url; };
+            }
+            
+            resultsState.appendChild(item);
+        });
+    });
+});
+
+// =======================================================
+// Універсальне модальне вікно для 3-х категорій кнопок знизу
+// =======================================================
+function openCategoryModal(type) {
+    const modal = document.getElementById('categoryModal');
+    const title = document.getElementById('categoryModalTitle');
+    const desc = document.getElementById('categoryModalDesc');
+    const listContainer = document.getElementById('categoryModalList');
+    
+    // Закриваємо випадаюче меню пошуку
+    document.getElementById('searchResultsDropdown').classList.remove('show');
+    listContainer.innerHTML = '';
+
+    if (type === 'packs') {
+        title.innerHTML = '<i class="fas fa-box" style="color: #10e6cc;"></i> Credit Packages';
+        desc.textContent = 'Choose the loan package that best suits your needs.';
+        
+        if (typeof products !== 'undefined') {
+            products.forEach(p => {
+                listContainer.innerHTML += `
+                    <div class="category-modal-item" onclick="openCheckout({alt: '${p.alt}', price: '${p.price}', image: '${p.image}'}); document.getElementById('categoryModal').style.display='none';">
+                        <div class="category-item-icon"><img src="${p.image}" alt="pack"></div>
+                        <div>
+                            <div style="color: #fff; font-weight: 500;">${p.alt}</div>
+                            <div style="color: #2ecc71; font-size: 0.85rem;">${p.price}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    } else if (type === 'models') {
+        title.innerHTML = '<i class="fas fa-robot" style="color: #10e6cc;"></i> AI Models';
+        desc.textContent = 'Catalog of available neural networks for use on the platform.';
+        
+        aiModelsData.forEach(m => {
+            listContainer.innerHTML += `
+                <div class="category-modal-item" onclick="document.getElementById('categoryModal').style.display='none'; openAiModelModalById('${m.id}')">
+                    <div class="category-item-icon">
+                        ${renderAiModelIcon(m.icon, m.name, 24)}
+                    </div>
+                    <div>
+                        <div style="color: #fff; font-weight: 500;">${m.name}</div>
+                        <div style="color: #aaa; font-size: 0.85rem;">Developer: ${m.company}</div>
+                    </div>
+                </div>
+            `;
+        });
+    } else if (type === 'actions') {
+        title.innerHTML = '<i class="fas fa-bolt" style="color: #10e6cc;"></i> Quick Actions';
+        desc.textContent = 'Quick access to key account management sections.';
+        
+        quickActionsData.forEach(a => {
+            listContainer.innerHTML += `
+                <div class="category-modal-item" onclick="window.location.href='${a.url}'">
+                    <div class="category-item-icon" style="color: #aaa;"><i class="${a.icon}"></i></div>
+                    <div style="color: #fff; font-weight: 500;">${a.name}</div>
+                </div>
+            `;
+        });
+    }
+
+    modal.style.display = 'flex';
+}
+
+// Допоміжна функція для відкриття вікна моделі по ID (використовується в списку категорій)
+function openAiModelModalById(id) {
+    const model = aiModelsData.find(m => m.id === id);
+    if (model) openAiModelModal(model);
+}
+
+// =======================================================
+// Оновлене інформаційне модальне вікно для окремої AI Моделі
+// =======================================================
+function openAiModelModal(modelData) {
+    const modal = document.getElementById('aiModelModal');
+    const iconEl = document.getElementById('aiModelIcon');
+    
+    // Заполняем основные поля. Обрати внимание на формат Company
+    document.getElementById('aiModelTitle').textContent = modelData.name;
+    document.getElementById('aiModelCompany').textContent = `Company: "${modelData.company}"`;
+    document.getElementById('aiModelDesc').textContent = modelData.desc;
+    iconEl.className = '';
+    iconEl.removeAttribute('style');
+
+    // Проверяем, является ли иконка путем к файлу или классом FontAwesome
+    if (isImageIcon(modelData.icon)) {
+        // Это картинка
+        iconEl.innerHTML = renderAiModelIcon(modelData.icon, modelData.name, 48);
+    } else {
+        // Это FontAwesome класс
+        iconEl.innerHTML = `<i class="${modelData.icon} fa-4x" style="color: #10e6cc;"></i>`;
+    }
+    
+    // Кнопка выбора
+    document.getElementById('aiModelSelectBtn').onclick = () => {
+        localStorage.setItem('selectedAIModel', modelData.id);
+        modal.style.display = 'none';
+        window.location.href = 'chat.html';
+    };
+
+    // Берем заголовки колонок
+    const th1 = document.getElementById('compModel1');
+    const th2 = document.getElementById('compModel2');
+    const th3 = document.getElementById('compModel3');
+    
+    let comparisonData = [];
+
+    // Генерируем данные в зависимости от компании модели
+    if (modelData.company === 'Google') {
+        th1.textContent = 'Flash-Lite';
+        th2.textContent = 'Flash';
+        th3.textContent = 'Pro';
+        
+        comparisonData = [
+            { feature: "Generation speed", m1: true, m2: true, m3: false },
+            { feature: "Complex logical tasks", m1: false, m2: true, m3: true },
+            { feature: "Video processing", m1: false, m2: true, m3: true },
+            { feature: "Code generation", m1: false, m2: true, m3: true }
+        ];
+    } else if (modelData.company === 'OpenAI') {
+        th1.textContent = 'GPT-4o Mini';
+        th2.textContent = 'GPT-4o';
+        th3.textContent = 'o1-preview';
+        
+        comparisonData = [
+            { feature: "Generation speed", m1: true, m2: false, m3: false },
+            { feature: "Mathematics / Logic", m1: false, m2: true, m3: true },
+            { feature: "Multimodality", m1: false, m2: true, m3: false },
+            { feature: "Code generation", m1: false, m2: true, m3: true }
+        ];
+    } else {
+        // Дефолт (например, для Anthropic / Claude)
+        th1.textContent = 'Haiku';
+        th2.textContent = 'Sonnet';
+        th3.textContent = 'Opus';
+        
+        comparisonData = [
+            { feature: "Generation speed", m1: true, m2: false, m3: false },
+            { feature: "Mathematics / Logic", m1: false, m2: true, m3: true },
+            { feature: "Code analysis", m1: false, m2: true, m3: true },
+            { feature: "Text processing", m1: true, m2: true, m3: true }
+        ];
+    }
+
+    const tbody = document.getElementById('aiComparisonBody');
+    tbody.innerHTML = '';
+    
+    // Рендерим строки
+    comparisonData.forEach(row => {
+        // Функция для красивых иконок: зеленая галочка или красный крестик
+        const getIcon = (isActive) => isActive 
+            ? '<i class="fas fa-check" style="color: #2ecc71;"></i>' 
+            : '<i class="fas fa-times" style="color: #e74c3c;"></i>';
+        
+        tbody.innerHTML += `
+            <tr>
+                <td style="color: #ccc;">${row.feature}</td>
+                <td>${getIcon(row.m1)}</td>
+                <td>${getIcon(row.m2)}</td>
+                <td>${getIcon(row.m3)}</td>
+            </tr>
+        `;
+    });
+
+    modal.style.display = 'flex';
+}
+
 document.addEventListener('DOMContentLoaded', init);
