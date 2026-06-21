@@ -403,7 +403,7 @@ async function loadProfileData() {
         if (user.id) {
             const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
 
-            if (elements.navUsername) elements.navUsername.textContent = user.name || 'Profile';
+            // if (elements.navUsername) elements.navUsername.textContent = user.name || 'Profile';
             
             if (elements.navIcon) elements.navIcon.style.display = 'none';
             
@@ -809,7 +809,7 @@ function loadProducts() {
 }
 
 function updateUserUI(user) {
-    if (navUsername) navUsername.textContent = user.name || user.email;
+   // if (navUsername) navUsername.textContent = user.name || user.email;
     
     if (user.avatar) {
         if(navIcon) navIcon.style.display = 'none';
@@ -959,7 +959,7 @@ function updateLoginButton(name, token) {
     const loginBtn = document.getElementById('loginBtn');
 
     if (token) {
-        if (navUsername) navUsername.textContent = name;
+        //if (navUsername) navUsername.textContent = name;
         if (navIcon) navIcon.style.display = 'none'; 
         if (navAvatar) navAvatar.style.display = 'block';
         if (loginBtn) {

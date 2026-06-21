@@ -694,8 +694,8 @@ h1, h2, h3, .nav-logo {
 }
 
 .nav-avatar-small {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     margin-right: 8px;
 }
@@ -1325,16 +1325,12 @@ h1, h2, h3, .nav-logo {
 
 .profile-toggle-btn {
     background: none;
-    color: var(--text-dark);
-    padding: 0.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     border: none;
-    border-radius: 25px;
     width: 40px;
     height: 40px;
     flex-shrink: 0;
@@ -2653,8 +2649,8 @@ html.auth-active .login-btn i {
     }
 
     .nav-avatar-small {
-        width: 22px;
-        height: 22px;
+        width: 30px;
+        height: 30px;
     }
 
     .search-container {
