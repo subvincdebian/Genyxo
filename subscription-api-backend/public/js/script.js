@@ -964,14 +964,14 @@ function updateLoginButton(name, token) {
         if (navAvatar) navAvatar.style.display = 'block';
         if (loginBtn) {
             loginBtn.classList.remove('login-btn');
-            loginBtn.classList.add('profile-toggle-btn');
+            loginBtn.classList.add('logged-in');
         }
     } else {
         if (navUsername) navUsername.textContent = 'Register / Login';
         if (navIcon) navIcon.style.display = 'inline-block';
         if (navAvatar) navAvatar.style.display = 'none';
         if (loginBtn) {
-            loginBtn.classList.remove('profile-toggle-btn');
+            loginBtn.classList.remove('logged-in');
             loginBtn.classList.add('login-btn');
         }
         

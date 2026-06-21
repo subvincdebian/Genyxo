@@ -1520,10 +1520,6 @@ html.auth-active .login-btn {
 
 html.auth-active .login-btn::before {
     content: "";
-    font-family: "Font Awesome 6 Free";
-    font-weight: 400;
-    font-size: 1rem;
-    color: var(--text-dark);
     position: absolute;
     left: 50%;
     top: 120%;
@@ -1533,9 +1529,39 @@ html.auth-active .login-btn::before {
 html.auth-active .login-btn span, 
 html.auth-active .login-btn img,
 html.auth-active .login-btn i {
-    font-size: 1rem !important;
-    color: var(--text-dark) !important;
     visibility: visible !important;
+}
+
+/* ========================================= */
+/* СТИЛИ ДЛЯ АВТОРИЗОВАННОГО СОСТОЯНИЯ       */
+/* ========================================= */
+.login-btn.logged-in {
+    background: transparent !important; /* Убираем черный фон */
+    padding: 0 !important;              /* Убираем отступы вокруг аватарки */
+    border: none !important;
+    box-shadow: none !important;        /* Убираем белую тень */
+}
+
+/* Убираем эффекты при наведении (ховере) для залогиненного состояния */
+.login-btn.logged-in:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: scale(1.05); /* Легкое увеличение аватарки при наведении (по желанию) */
+}
+
+/* Скрываем иконку и текст, если пользователь залогинен */
+.login-btn.logged-in #navIcon,
+.login-btn.logged-in #navUsername {
+    display: none !important;
+}
+
+/* Показываем аватарку */
+.login-btn.logged-in #navAvatar {
+    display: block !important;
+    width: 40px;            /* Укажи нужный размер */
+    height: 40px;
+    border-radius: 50%;     /* Делаем аватарку круглой */
+    object-fit: cover;      /* Чтобы картинка не искажалась */
 }
 
 .product-card {
