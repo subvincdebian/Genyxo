@@ -2323,14 +2323,18 @@ html.auth-active .login-btn i {
 
 @media (max-width: 768px) {
     .nav-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        position: relative;
     }
 
     .left-side {
-        width: 100%;
-        justify-content: space-between;
+        width: auto;
+        justify-content: flex-start;
+        flex: 1;
+        gap: 0.5rem;
     }
 
     .search-container {
@@ -2344,7 +2348,7 @@ html.auth-active .login-btn i {
 
     .right-side {
         position: absolute;
-        right: 0;
+        right: 10px;
         display: flex;
         justify-content: flex-end;
         align-items: center;
