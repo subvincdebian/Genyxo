@@ -119,7 +119,7 @@ function updateUIState(isLoggedIn, userData = null) {
 
         if (loginBtn) {
             loginBtn.classList.remove('login-btn');
-            loginBtn.classList.add('profile-toggle-btn');
+            loginBtn.classList.add('logged-in');
         }
 
     } else {
@@ -129,7 +129,7 @@ function updateUIState(isLoggedIn, userData = null) {
         if (navAvatar) navAvatar.style.display = 'none';
         
         if (loginBtn) {
-            loginBtn.classList.remove('profile-toggle-btn');
+            loginBtn.classList.remove('logged-in');
             loginBtn.classList.add('login-btn');
         }
         
@@ -1073,7 +1073,7 @@ function setupEventListeners() {
         loginBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             
-            if (loginBtn.classList.contains('profile-toggle-btn')) {
+            if (loginBtn.classList.contains('logged-in')) {
                 toggleProfilePanel(); 
             } else {
                 openLoginModal();
