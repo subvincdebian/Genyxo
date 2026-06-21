@@ -1331,8 +1331,8 @@ h1, h2, h3, .nav-logo {
     align-items: center;
     justify-content: center;
     border: none;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
     padding: 0;
     margin: 0;
@@ -1351,8 +1351,8 @@ h1, h2, h3, .nav-logo {
 
 /* Adjust avatar in profile-toggle-btn */
 .profile-toggle-btn .nav-avatar-small {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     margin: 0;
 }
 
