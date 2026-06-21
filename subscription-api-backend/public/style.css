@@ -694,8 +694,8 @@ h1, h2, h3, .nav-logo {
 }
 
 .nav-avatar-small {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     margin-right: 8px;
 }
@@ -2661,8 +2661,8 @@ html.auth-active .login-btn i {
     }
 
     .nav-avatar-small {
-        width: 30px;
-        height: 30px;
+        width: 40px;
+        height: 40px;
     }
 
     .search-container {
