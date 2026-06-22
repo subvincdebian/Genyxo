@@ -99,7 +99,7 @@ h1, h2, h3, .nav-logo {
 
 .nav-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
     margin: 0 auto;
@@ -234,11 +234,6 @@ h1, h2, h3, .nav-logo {
 
 .products {
     padding: 4rem 2rem;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
 .section-title {
@@ -2108,7 +2103,7 @@ html.auth-active .login-btn img {
     font-size: 0.95rem;
 }
 
-/* --- Новые стили для FAQ (Gemini Style) --- */
+/* --- Новые стили для FAQ --- */
 #faqWindow {
     /* Базовые стили окна */
     position: fixed;
@@ -2319,7 +2314,7 @@ html.auth-active .login-btn img {
 
     .footer-content {
         grid-template-columns: repeat(2, 1fr);
-        gap: 3rem 2rem; /* Увеличим отступ между рядами */
+        gap: 3rem 2rem;
     }
 }
 
@@ -2342,23 +2337,6 @@ html.auth-active .login-btn img {
 }
 
 @media (max-width: 768px) {
-    .nav-container {
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 0.5rem;
-        position: relative;
-        width: 100%;
-    }
-
-    .left-side {
-        width: auto;
-        justify-content: flex-start;
-        gap: 0.5rem;
-        display: flex;
-        align-items: center;
-        flex: 0 0 auto;
-    }
 
     .search-container {
         display: none;
@@ -2368,25 +2346,6 @@ html.auth-active .login-btn img {
 
     .search-box {
         width: 100%;
-    }
-
-    .right-side {
-        position: absolute;
-        right: 10px;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        width: auto;
-        gap: 8px;
-        z-index: 990;
-    }
-
-    .burger {
-        flex-direction: column;
-        gap: 5px;
-        cursor: pointer;
-        z-index: 1100;
-        display: flex;
     }
 
     .burger span {
@@ -2418,31 +2377,20 @@ html.auth-active .login-btn img {
         position: fixed;
         top: 0;
         right: -100%;
-        background: rgba(0,0,0,0.95);
-        width: 70%;
-        height: 100vh;
         padding-top: 80px;
-        transition: right 0.3s ease;
         z-index: 1500;
+        left: -100%;
+        width: 75%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        padding: 80px 30px;
+        backdrop-filter: blur(10px);
+        transition: left 0.3s ease, right 0.3s ease;
     }
 
     .mobile-menu.active {
-        right: 0;
-    }
-
-    .menu-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 1400;
-    }
-
-    .menu-overlay.active {
-        display: block;
+        right: 0;
     }
 }
 
@@ -2460,6 +2408,8 @@ html.auth-active .login-btn img {
         justify-content: space-between;
         cursor: pointer;
         z-index: 1100;
+        gap: 5px;
+        flex-shrink: 0;
     }
 
     .burger span {
@@ -2469,23 +2419,6 @@ html.auth-active .login-btn img {
         background: white;
         border-radius: 3px;
         transition: 0.3s ease;
-    }
-
-    .mobile-menu {
-        position: fixed;
-        top: 0;
-        left: -100%;
-        width: 75%;
-        height: 100%;
-        background: rgba(0,0,0,0.9);
-        padding: 80px 30px;
-        backdrop-filter: blur(10px);
-        transition: 0.3s ease;
-        z-index: 1500;
-    }
-
-    .mobile-menu.active {
-        left: 0;
     }
 
     .mobile-menu ul {
@@ -2638,7 +2571,7 @@ html.auth-active .login-btn img {
     }
 
     .navbar {
-        padding: 0.6rem 1.2rem;
+        padding: 0.6rem 1rem;
         height: 65px;
         display: flex;
         align-items: center;
@@ -2650,10 +2583,7 @@ html.auth-active .login-btn img {
         justify-content: flex-start;
         width: 100%;
         gap: 0.5rem;
-    }
-
-    .burger {
-        flex-shrink: 0;
+        position: relative;
     }
 
     .left-side {
@@ -2685,17 +2615,14 @@ html.auth-active .login-btn img {
 
     .login-btn, .profile-toggle-btn {
         position: relative !important;
-        left: auto !important;
-        margin: 0 6px 0 0;
         width: 40px;
         height: 40px;
         padding: 0;
-        min-width: auto;
-        max-width: none;
+        max-width: 150px;
         overflow: visible;
         text-overflow: clip;
         white-space: normal;
-        border-radius: 50%;
+        border-radius: 20px;
     }
 
     .nav-avatar-small {
@@ -3166,26 +3093,26 @@ html.auth-active .login-btn img {
 }
 
 .search-results-dropdown.glass {
-    background: rgba(15, 15, 15, 0.85); /* Затемнили фон */
-    backdrop-filter: blur(24px); /* Посилили розмиття */
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* 2. Вирішення проблеми зі скролом (як у Steam) */
+/* 2. Вирішення проблеми зі скролом */
 #searchDefaultState {
     display: flex;
     flex-direction: column;
-    max-height: 400px; /* Обмеження висоти всього вікна */
+    max-height: 400px;
 }
 
 #defaultSearchList {
-    overflow-y: auto; /* Скролиться ТІЛЬКИ список */
-    flex: 1; /* Займає вільний простір */
+    overflow-y: auto;
+    flex: 1;
     max-height: 250px;
     padding-bottom: 10px;
 }
 
-/* Кастомізація скролбару для краси */
+/* Кастомізація скролбару */
 #defaultSearchList::-webkit-scrollbar,
 .ai-comparison-container::-webkit-scrollbar,
 .category-modal-list::-webkit-scrollbar {
@@ -3201,9 +3128,7 @@ html.auth-active .login-btn img {
     border-radius: 10px;
 }
 
-/* ========================================= */
-/* СТИЛІ ДЛЯ ОНОВЛЕНОЇ AI МОДАЛКИ (Пункт 4)  */
-/* ========================================= */
+/* СТИЛІ ДЛЯ ОНОВЛЕНОЇ AI МОДАЛКИ  */
 .ai-modal-header {
     display: flex;
     align-items: center;
@@ -3273,9 +3198,7 @@ html.auth-active .login-btn img {
 .ai-comparison-table i.fa-check { color: #2ecc71; }
 .ai-comparison-table i.fa-times { color: #e74c3c; }
 
-/* ========================================= */
-/* СТИЛІ ДЛЯ КАТЕГОРІЙНОЇ МОДАЛКИ (Пункт 3)  */
-/* ========================================= */
+/* СТИЛІ ДЛЯ КАТЕГОРІЙНОЇ МОДАЛКИ */
 .category-modal-list {
     display: flex;
     flex-direction: column;

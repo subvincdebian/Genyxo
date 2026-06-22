@@ -371,7 +371,7 @@ function initGlobalSockets() {
 }
 
 async function loadProfileData() {
-    /*
+
     if (!token) {
         const protectedPages = ['profile.html', 'notifications.html', 'support.html'];
         if (protectedPages.some(page => window.location.pathname.includes(page))) {
@@ -379,7 +379,6 @@ async function loadProfileData() {
         }
         return;
     }
-        */
     
     try {
         const response = await fetch(`${API_BASE_URL}/profile`, {
@@ -412,9 +411,6 @@ async function loadProfileData() {
                 elements.navAvatar.style.display = 'inline-block';
                 elements.navAvatar.alt = "User Avatar";
             }
-
-            // Класи уже обновлены в updateUIState(), не дублируем
-            // Убеждаемся, что это не конфликтует с updateUIState()
 
             if (elements.menuName) elements.menuName.textContent = user.name ||  'User';
             if (elements.menuEmail) elements.menuEmail.textContent = user.email || '';
