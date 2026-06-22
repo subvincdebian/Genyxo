@@ -746,3 +746,273 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem('selectedAIModel'); 
     }
 });
+
+// Редактор та передперегляд зображень в інпуті
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('imageEditorModal');
+    const canvas = document.getElementById('editorCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const closeBtn = document.getElementById('editorCloseBtn');
+    const undoBtn = document.getElementById('editorUndoBtn');
+    const redoBtn = document.getElementById('editorRedoBtn');
+    const saveBtn = document.getElementById('editorSaveBtn');
+    
+    const toolBrush = document.getElementById('toolBrush');
+    const toolText = document.getElementById('toolText');
+    const colorPicker = document.getElementById('editorColorPicker');
+    const colorPresets = document.querySelectorAll('.color-preset');
+    const brushSizeInput = document.getElementById('brushSize');
+    const canvasContainer = document.querySelector('.canvas-container');
+
+    let currentTool = 'brush'; // 'brush' або 'text'
+    let currentColor = '#ff0000';
+    let brushSize = 6;
+    let isDrawing = false;
+    let originalImage = null;
+    let targetPreviewImg = null; // Зберігає посилання на DOM-елемент мініатюри в інпуті
+    let targetFileIndex = null;
+
+    // Стек історії (Undo/Redo)
+    let historyStack = [];
+    let undoIndex = -1;
+
+    // Обробка палітри кольорів
+    colorPresets.forEach(preset => {
+        preset.addEventListener('click', () => {
+            colorPresets.forEach(p => p.classList.remove('active'));
+            preset.classList.add('add', 'active');
+            currentColor = preset.getAttribute('data-color');
+            colorPicker.value = currentColor;
+            colorPicker.parentElement.style.borderColor = currentColor;
+        });
+    });
+
+    colorPicker.addEventListener('input', (e) => {
+        currentColor = e.target.value;
+        colorPicker.parentElement.style.borderColor = currentColor;
+        colorPresets.forEach(p => p.classList.remove('active'));
+    });
+
+    // Перемикання інструментів
+    toolBrush.addEventListener('click', () => {
+        currentTool = 'brush';
+        toolBrush.classList.add('active');
+        toolText.classList.remove('active');
+    });
+
+    toolText.addEventListener('click', () => {
+        currentTool = 'text';
+        toolText.classList.add('active');
+        toolBrush.classList.remove('active');
+    });
+
+    brushSizeInput.addEventListener('input', (e) => {
+        brushSize = parseInt(e.target.value);
+    });
+
+    // --- ГОЛОВНА ФУНКЦІЯ: ВІДКРИТТЯ РЕДАКТОРА ---
+    window.openImageEditor = function(imgSrc, sourceImgElement, index) {
+        targetPreviewImg = sourceImgElement;
+        targetFileIndex = index;
+        modal.style.display = 'flex';
+        
+        originalImage = new Image();
+        originalImage.crossOrigin = "anonymous"; // Запобігає проблемам з CORS
+        originalImage.src = imgSrc;
+        
+        originalImage.onload = () => {
+            // Встановлюємо внутрішню роздільну здатність полотна рівною реальному фото
+            canvas.width = originalImage.naturalWidth;
+            canvas.height = originalImage.naturalHeight;
+            
+            // Малюємо базове зображення
+            ctx.drawImage(originalImage, 0, 0);
+            
+            // Очищення стеку історії
+            historyStack = [];
+            undoIndex = -1;
+            saveState(); // Записуємо початковий нульовий крок
+        };
+    };
+
+    // Збереження знімка стану (Snapshot)
+    function saveState() {
+        if (undoIndex < historyStack.length - 1) {
+            historyStack = historyStack.slice(0, undoIndex + 1);
+        }
+        const state = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        historyStack.push(state);
+        undoIndex++;
+        updateHistoryControls();
+    }
+
+    function updateHistoryControls() {
+        undoBtn.disabled = undoIndex <= 0;
+        redoBtn.disabled = undoIndex >= historyStack.length - 1;
+        undoBtn.style.opacity = undoBtn.disabled ? "0.3" : "1";
+        redoBtn.style.opacity = redoBtn.disabled ? "0.3" : "1";
+    }
+
+    undoBtn.addEventListener('click', () => {
+        if (undoIndex > 0) {
+            undoIndex--;
+            ctx.putImageData(historyStack[undoIndex], 0, 0);
+            updateHistoryControls();
+        }
+    });
+
+    redoBtn.addEventListener('click', () => {
+        if (undoIndex < historyStack.length - 1) {
+            undoIndex++;
+            ctx.putImageData(historyStack[undoIndex], 0, 0);
+            updateHistoryControls();
+        }
+    });
+
+    // Корекція координат миші/тача відносно оригінального масштабу матриці canvas
+    function getCanvasCoordinates(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const x = ((clientX - rect.left) / rect.width) * canvas.width;
+        const y = ((clientY - rect.top) / rect.height) * canvas.height;
+        
+        return { x, y, relativeX: clientX - rect.left, relativeY: clientY - rect.top };
+    }
+
+    // --- МЕХАНІКА МАЛЮВАННЯ (ПЕНЗЕЛЬ) ---
+    function startDrawing(e) {
+        if (currentTool !== 'brush') return;
+        isDrawing = true;
+        
+        const coords = getCanvasCoordinates(e);
+        ctx.beginPath();
+        ctx.moveTo(coords.x, coords.y);
+        
+        ctx.lineTo(coords.x, coords.y);
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = brushSize * (canvas.width / canvas.getBoundingClientRect().width); // Адаптивна товщина лінії
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+    }
+
+    function draw(e) {
+        if (!isDrawing || currentTool !== 'brush') return;
+        e.preventDefault();
+        const coords = getCanvasCoordinates(e);
+        ctx.lineTo(coords.x, coords.y);
+        ctx.stroke();
+    }
+
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            ctx.closePath();
+            saveState();
+        }
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stopDrawing);
+
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    window.addEventListener('touchend', stopDrawing);
+
+    // --- МЕХАНІКА ТЕКСТУ (КЛІК ТА ВВЕДЕННЯ) ---
+    canvas.addEventListener('click', (e) => {
+        if (currentTool !== 'text') return;
+        if (document.querySelector('.canvas-text-input')) return; // Тільки один інпут одночасно
+
+        const coords = getCanvasCoordinates(e);
+        const rect = canvas.getBoundingClientRect();
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'canvas-text-input';
+        
+        // Розрахунок відображуваного розміру шрифту в редакторі
+        const scale = rect.width / canvas.width;
+        const calculatedSize = Math.max(14, (brushSize * 3.5) * scale);
+        
+        input.style.left = `${coords.relativeX + canvas.offsetLeft}px`;
+        input.style.top = `${coords.relativeY + canvas.offsetTop}px`;
+        input.style.fontSize = `${calculatedSize}px`;
+        input.style.color = currentColor;
+
+        canvasContainer.appendChild(input);
+        input.focus();
+
+        function commitText() {
+            const val = input.value.trim();
+            if (val) {
+                ctx.fillStyle = currentColor;
+                const realFontSize = brushSize * 3.5;
+                ctx.font = `bold ${realFontSize}px sans-serif`;
+                ctx.textBaseline = 'top';
+                ctx.fillText(val, coords.x, coords.y);
+                saveState();
+            }
+            input.remove();
+        }
+
+        input.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') commitText();
+            if (ev.key === 'Escape') input.remove();
+        });
+        input.addEventListener('blur', commitText);
+    });
+
+    // ЗАКРИТТЯ БЕЗ ЗБЕРЕЖЕННЯ
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        const activeInput = document.querySelector('.canvas-text-input');
+        if (activeInput) activeInput.remove();
+    });
+
+    // --- ФІКСАЦІЯ ЗМІН ТА ОНОВЛЕННЯ В ЧАТІ ---
+    saveBtn.addEventListener('click', () => {
+        const finalDataUrl = canvas.toDataURL('image/png');
+        
+        if (targetPreviewImg) {
+            // Змінюємо src у нашої маленької мініатюри в інпуті
+            targetPreviewImg.src = finalDataUrl;
+            
+            // Зберігаємо також у спеціальний кастомний дата-атрибут
+            if (typeof targetFileIndex !== 'undefined' && targetFileIndex !== null && window.attachedFiles) {
+                // Перетворюємо намальований canvas назад у справжній файл
+                fetch(finalDataUrl)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        // Беремо ім'я старого файлу
+                        const originalFile = window.attachedFiles[targetFileIndex];
+                        const fileName = originalFile ? originalFile.name : "edited_image.png";
+                        
+                        // Створюємо новий файл з малюнками і замінюємо його в масиві
+                        const editedFile = new File([blob], fileName, { type: "image/png" });
+                        window.attachedFiles[targetFileIndex] = editedFile;
+                    });
+            }
+        }
+        
+        modal.style.display = 'none';
+    });
+
+    // Додаємо підтримку гарячих клавіш Ctrl+Z / Ctrl+Y всередині модалки
+    window.addEventListener('keydown', (e) => {
+        if (modal.style.display === 'flex') {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                undoBtn.click();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                e.preventDefault();
+                redoBtn.click();
+            }
+        }
+    });
+});
