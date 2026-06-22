@@ -18,17 +18,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('demoChatInput');
     const sendBtn = document.getElementById('demoSendBtn');
 
+    if (!modal || !chatHistory || !chatInput || !sendBtn) return;
+
+
     const scrollToBottom = () => {
-        if (!chatHistory) return;
         requestAnimationFrame(() => {
             chatHistory.scrollTop = chatHistory.scrollHeight;
         });
     };
 
     const toggleSendButtonState = () => {
-        if (!chatInput || !sendBtn) return;
         const isEmpty = chatInput.value.trim() === "";
         sendBtn.classList.toggle(CHAT_CONFIG.classes.disabled, isEmpty);
+        sendBtn.disabled = isEmpty;
     };
 
     const closeModal = () => {
@@ -36,31 +38,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     document.addEventListener('click', (e) => {
-        const targetBtn = e.target.closest('.hero-btn, a[href="#demo"]');
-        if (targetBtn) {
+        if (e.target.closest('.hero-btn, a[href="#demo"]')) {
             e.preventDefault();
-            if (modal) {
-                modal.classList.add(CHAT_CONFIG.classes.active);
-                requestAnimationFrame(() => chatInput?.focus());
-            }
+            modal.classList.add(CHAT_CONFIG.classes.active);
+            requestAnimationFrame(() => chatInput.focus());
         }
     });
 
-    closeBtn?.addEventListener('click', closeModal);
-    modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal?.classList.contains(CHAT_CONFIG.classes.active)) {
+        if (e.key === 'Escape' && modal.classList.contains(CHAT_CONFIG.classes.active)) {
             closeModal();
         }
     });
-
-    chatInput?.addEventListener('input', toggleSendButtonState);
+    
+    chatInput.addEventListener('input', toggleSendButtonState);
+    sendBtn.addEventListener('click', sendMessage);
     toggleSendButtonState(); // state initialize
 
     const appendMessage = (text, className) => {
-        if (!chatHistory) return;
-
         const msgDiv = document.createElement('div');
         msgDiv.className = `demo-message ${className}`;
         
@@ -73,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const sendMessage = () => {
-        if (!chatInput) return;
         const text = chatInput.value.trim();
         if (!text) return;
 
@@ -99,16 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             typingIndicator.remove();
-
             const responses = CHAT_CONFIG.aiResponses;
             const randomResponse = responses[Math.floor(Math.random() * responses.length)];
             appendMessage(randomResponse, 'ai-message');
         }, CHAT_CONFIG.aiDelay);
     };
-
-    sendBtn?.addEventListener('click', sendMessage);
     
-    chatInput?.addEventListener('keydown', (e) => {
+    chatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();

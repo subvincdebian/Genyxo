@@ -14,14 +14,11 @@ const FLAGS = {
     'fr': '🇫🇷'
 };
 
-const langMenuBtn = document.querySelector('[data-i18n="menu.language"]')?.parentElement;
-const modal = document.getElementById('langModal');
-const closeLangBtn = document.getElementById('closeLangModal');
-
 class LanguageManager {
     constructor() {
         this.currentLang = localStorage.getItem('appLang') || this.detectBrowserLang() || 'en';
         this.translations = {};
+        this.isInitialized = false;
     }
 
     detectBrowserLang() {
@@ -33,23 +30,24 @@ class LanguageManager {
         await this.loadTranslations(this.currentLang);
         this.applyTranslations(); 
         this.updateUI();
+        this.initDOMEvents();
+        this.isInitialized = true;
         
         if (typeof loadProducts === 'function') {
             loadProducts();
-        }
-
-        if (typeof init === 'function') {
-             // init(); // Можна розкоментувати, якщо запускати init саме звідси
         }
     }
 
     async loadTranslations(lang) {
         try {
             const response = await fetch(`locales/${lang}.json`);
+            if (!response.ok) throw new Error('Network response error');
             this.translations = await response.json();
         } catch (e) {
             console.error(`Could not load translations for ${lang}`, e);
-            if (lang !== 'en') await this.loadTranslations('en');
+            if (lang !== 'en') {
+                await this.loadTranslations('en');
+            }
         }
     }
 
@@ -58,12 +56,7 @@ class LanguageManager {
         
         elements.forEach(el => {
             const key = el.getAttribute('data-i18n');
-            const keys = key.split('.');
-            
-            let text = this.translations;
-            keys.forEach(k => {
-                text = text ? text[k] : null;
-            });
+            const text = key.split('.').reduce((obj, i) => (obj ? obj[i] : null), this.translations);
 
             if (text) {
                 if (el.tagName === 'INPUT' && el.getAttribute('placeholder')) {
@@ -76,7 +69,7 @@ class LanguageManager {
     }
 
     async changeLanguage(lang) {
-        if (!SUPPORTED_LANGUAGES[lang]) return;
+        if (!SUPPORTED_LANGUAGES[lang] || lang === this.currentLang) return;
         
         this.currentLang = lang;
         localStorage.setItem('appLang', lang);
@@ -95,50 +88,64 @@ class LanguageManager {
         if (langDisplay) {
             langDisplay.textContent = `${SUPPORTED_LANGUAGES[this.currentLang]} >`;
         }
-    
         document.documentElement.lang = this.currentLang;
+    }
+
+    renderLangGrid(gridElement) {
+        if (!gridElement) return;
+        gridElement.innerHTML = ''; // clearing
+
+        const fragment = document.createDocumentFragment();
+
+        Object.entries(SUPPORTED_LANGUAGES).forEach(([code, name]) => {
+            const btn = document.createElement('button');
+            btn.className = `lang-btn ${code === this.currentLang ? 'active' : ''}`;
+            btn.dataset.langCode = code;
+
+            btn.innerHTML = `
+                <span class="lang-flag">${FLAGS[code]}</span>
+                <span>${name}</span>
+                ${code === this.currentLang ? '<i class="fas fa-check" style="margin-left:auto;"></i>' : ''}
+            `;
+            
+            fragment.appendChild(btn);
+        });
+
+        gridElement.appendChild(fragment);
+    }
+
+    initDOMEvents() {
+        const langMenuBtn = document.querySelector('[data-i18n="menu.language"]')?.parentElement;
+        const modal = document.getElementById('langModal');
+        const closeLangBtn = document.getElementById('closeLangModal');
+        const grid = document.getElementById('langGrid');
+
+        if (langMenuBtn && modal && grid) {
+            langMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.renderLangGrid(grid);
+                modal.style.display = 'flex';
+            });
+
+            grid.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.lang-btn');
+                if (btn && btn.dataset.langCode) {
+                    await this.changeLanguage(btn.dataset.langCode);
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        if (closeLangBtn && modal) {
+            closeLangBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
     }
 }
 
-window.i18n = new LanguageManager();
-
 document.addEventListener('DOMContentLoaded', () => {
-    window.i18n.init();
+    const i18n = new LanguageManager();
+    i18n.init();
+    window.AppI18n = i18n; 
 });
-
-
-if (langMenuBtn) {
-    langMenuBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openLangModal();
-    });
-}
-
-function openLangModal() {
-    const grid = document.getElementById('langGrid');
-            
-    const currentLang = (window.i18n && window.i18n.currentLang) 
-                        ? window.i18n.currentLang 
-                        : (localStorage.getItem('appLang') || 'en');
-
-    grid.innerHTML = Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => `
-        <button class="lang-btn ${code === currentLang ? 'active' : ''}" onclick="selectLanguage('${code}')">
-            <span class="lang-flag">${FLAGS[code]}</span>
-            <span>${name}</span>
-            ${code === currentLang ? '<i class="fas fa-check" style="margin-left:auto;"></i>' : ''}
-        </button>
-    `).join('');
-            
-    modal.style.display = 'flex';
-}
-
-window.selectLanguage = async (lang) => {
-    await window.i18n.changeLanguage(lang);
-    modal.style.display = 'none';
-}
-
-if(closeLangBtn) {
-    closeLangBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-}
