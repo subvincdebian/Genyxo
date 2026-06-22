@@ -630,7 +630,7 @@ body {
 }
 
 .sidebar-toggle-btn {
-    display: none; /* Скрыта на ПК */
+    display: none;
     background: transparent;
     border: none;
     color: var(--text-light);
@@ -643,7 +643,7 @@ body {
 }
 
 .sidebar-close-btn {
-    display: none; /* Скрыта на ПК */
+    display: none;
     position: absolute;
     top: 18px;
     right: 16px;
@@ -687,7 +687,7 @@ body {
 
 /* Медиа-запрос для мобильных устройств и планшетов */
 @media (max-width: 992px) {
-    /* --- ЖЕЛЕЗОБЕТОННЫЙ НАВБАР --- */
+    /* ---НАВБАР --- */
     .admin-navbar {
         display: flex !important;
         flex-direction: row !important;
@@ -701,7 +701,6 @@ body {
         width: 100%;
         z-index: 1000;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        /* Добавляем эффект стекла, чтобы контент красиво уходил под навбар */
         background: rgba(18, 18, 18, 0.85) !important; 
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
@@ -739,7 +738,7 @@ body {
         border: none;
         color: var(--text-light);
         cursor: pointer;
-        flex-shrink: 0; /* Запрещаем кнопке сжиматься */
+        flex-shrink: 0;
     }
 
     .sidebar-toggle-btn:active {
@@ -781,7 +780,6 @@ body {
     }
 
     /* --- КРАСИВЫЕ ЗАГОЛОВКИ И ПЛАШКИ (Overview и т.д.) --- */
-    /* Перестраиваем шапку в колонку, чтобы элементам не было тесно */
     .dashboard-header {
         display: flex !important;
         flex-direction: column !important; 
@@ -818,11 +816,10 @@ body {
 
     /* СТИЛЬНАЯ ПЛАШКА ONLINE */
     .live-status {
-        background: rgba(255, 71, 87, 0.08) !important; /* Легкая прозрачная заливка */
+        background: rgba(255, 71, 87, 0.08) !important;
         border: 1px solid rgba(255, 71, 87, 0.2) !important;
         padding: 6px 14px !important;
-        border-radius: 30px !important; /* Идеально круглые края-пилюли */
-        font-size: 0.85rem !important;
+        border-radius: 30px !important;
         font-weight: 500 !important;
         margin: 0 !important;
     }
@@ -830,7 +827,7 @@ body {
     .pulse-dot {
         width: 8px !important;
         height: 8px !important;
-        box-shadow: 0 0 8px rgba(255, 71, 87, 0.6) !important; /* Приятное неоновое свечение */
+        box-shadow: 0 0 8px rgba(255, 71, 87, 0.6) !important;
     }
 
     /* --- СЕТКИ И ТАБЛИЦЫ --- */

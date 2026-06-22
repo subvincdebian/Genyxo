@@ -1,20 +1,19 @@
-/* --- Обертка вкладок на всю ширину --- */
 .legal-nav-wrapper {
   width: 100%;
-  border-bottom: 1px solid #333333; /* Темная линия под вкладками */
+  border-bottom: 1px solid #333333;
   background-color: rgba(10, 10, 10, 0.9);
   backdrop-filter: blur(10px);
   position: fixed;
-    top: 70px; /* Сразу под основным навбаром */
+    top: 70px;
 }
 
 /* Контейнер для центрирования самих кнопок */
 .legal-tabs-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 0 20px; /* Отступы по бокам, чтобы текст не прилипал к краю экрана */
+  padding: 0 20px;
   display: flex;
-  overflow-x: auto; /* Для скролла на мобильных */
+  overflow-x: auto;
 }
 
 /* Стили вкладок (Темная тема) */
@@ -26,18 +25,18 @@
   padding: 16px 24px;
   font-size: 15px;
   font-weight: 500;
-  color: #9aa0a6; /* Светло-серый цвет неактивных вкладок */
+  color: #9aa0a6;
   border-bottom: 3px solid transparent;
   transition: 0.2s;
   white-space: nowrap;
 }
 
 .tab-link:hover {
-  color: #e8eaed; /* Белый цвет при наведении */
+  color: #e8eaed;
 }
 
 .tab-link.active {
-  color: #8ab4f8; /* Светло-синий (Google Dark Mode) для активной вкладки */
+  color: #8ab4f8;
   border-bottom: 3px solid #8ab4f8;
 }
 
@@ -46,7 +45,7 @@
   max-width: 1000px;
   margin: 50px auto;
   padding: 0 20px;
-  color: #e8eaed; /* Основной текст светлый */
+  color: #e8eaed;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -69,18 +68,18 @@ margin-top: 100px;
   font-weight: 400;
   margin-top: 0;
   margin-bottom: 16px;
-  color: #ffffff; /* Заголовки чисто белые */
+  color: #ffffff;
 }
 
 .legal-content-wrapper p {
   font-size: 15px;
   line-height: 1.6;
-  color: #b3b3b3; /* Описание чуть серее для контраста */
+  color: #b3b3b3;
   margin-bottom: 16px;
 }
 
 .legal-content-wrapper a {
-  color: #8ab4f8; /* Синие ссылки */
+  color: #8ab4f8;
   text-decoration: none;
   font-weight: 500;
   font-size: 15px;
@@ -93,7 +92,7 @@ margin-top: 100px;
 /* Карточка с иконкой */
 .legal-card.with-icon { display: flex; gap: 20px; }
 .card-icon { flex-shrink: 0; margin-top: 5px; }
-.card-icon svg { fill: #8ab4f8; } /* Иконки красим в синий */
+.card-icon svg { fill: #8ab4f8; }
 
 /* Общий макет */
 .privacy-layout {
@@ -102,14 +101,14 @@ margin-top: 100px;
     margin: 0 auto;
     padding: 40px 20px;
     gap: 60px;
-    min-height: 100vh; /* Убирает прыжки футера, резервируя место */
+    min-height: 100vh;
 }
 
 /* --- САЙДБАР --- */
 .privacy-sidebar {
     width: 250px;
-    position: sticky; /* "Прилипание" */
-    top: 200px; /* Отступ от твоего навбара */
+    position: sticky;
+    top: 200px;
     height: fit-content;
     max-height: calc(100vh - 120px);
     overflow-y: auto;
@@ -119,7 +118,7 @@ margin-top: 100px;
     list-style: none;
     padding: 0;
     margin: 0;
-    border-left: 1px solid #333; /* Тонкая линия слева */
+    border-left: 1px solid #333;
 }
 
 .privacy-sidebar li {
@@ -141,7 +140,7 @@ margin-top: 100px;
     color: #8ab4f8;
 }
 
-/* Эффект активной ссылки (можно добавить через JS) */
+/* Эффект активной ссылки */
 .privacy-sidebar a.active {
     color: #8ab4f8;
     border-left: 2px solid #8ab4f8;
@@ -157,7 +156,7 @@ margin-top: 100px;
 }
 
 .privacy-body section {
-    margin-bottom: 60px; /* Большие отступы между секциями как у Google */
+    margin-bottom: 60px;
 }
 
 .privacy-body h1 { font-size: 32px; margin-bottom: 30px; color: #fff; }
@@ -165,9 +164,9 @@ margin-top: 100px;
 
 /* --- МОБИЛЬНАЯ ВЕРСИЯ --- */
 .mobile-menu-bar {
-    display: none; /* Скрыто на ПК */
+    display: none;
     position: sticky;
-    top: 60px; /* Сразу под основным навбаром */
+    top: 60px;
     background: #0a0a0a;
     padding: 10px 20px;
     border-bottom: 1px solid #333;
@@ -183,10 +182,9 @@ margin-top: 100px;
     cursor: pointer;
 }
 
-/* Плавный скролл */
 html {
     scroll-behavior: smooth;
-    scroll-padding-top: 120px; /* Чтобы заголовок не заезжал под навбар при скролле */
+    scroll-padding-top: 120px;
 }
 
 .tos-container {
@@ -244,7 +242,7 @@ a:hover {
 
 /* Контейнер секции */
 .legal-section {
-    max-width: 800px; /* Текст в юридических документах лучше читается, когда он не слишком широкий */
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -265,7 +263,7 @@ a:hover {
 
 .relation-block h3 {
     font-size: 20px;
-    color: #8ab4f8; /* Синий акцент для подзаголовков */
+    color: #8ab4f8;
     margin-bottom: 15px;
 }
 
@@ -284,7 +282,7 @@ a:hover {
 
 /* Выделенный блок для кредитов (Highlight) */
 .highlight-box {
-    background: rgba(138, 180, 248, 0.1); /* Очень слабый синий фон */
+    background: rgba(138, 180, 248, 0.1);
     border-left: 4px solid #8ab4f8;
     padding: 24px;
     border-radius: 8px;
@@ -312,7 +310,7 @@ a:hover {
 }
 
 .warning-box {
-    border-left: 4px solid #f28b82; /* Красный акцент для запретов */
+    border-left: 4px solid #f28b82;
 }
 
 /* Стилизация шагов реферальной системы */
@@ -423,7 +421,7 @@ a:hover {
 
 /* ПРИНУДИТЕЛЬНО ИСПРАВЛЯЕМ БЕЛЫЙ ФОН */
 html, body {
-    background-color: #0a0a0a !important; /* Твой основной темный цвет */
+    background-color: #0a0a0a !important;
     color: #ffffff !important;
     margin: 0;
     padding: 0;
@@ -449,7 +447,7 @@ html, body {
         background: #111;
         border-bottom: 1px solid #333;
         position: sticky;
-        top: 60px; /* Сразу под основным навбаром */
+        top: 60px;
         z-index: 100;
     }
 
@@ -580,7 +578,7 @@ html, body {
         font-size: 14px;
         gap: 15px;
         margin-right: 12px;
-        border-radius: 0 25px 25px 0; /* Форма Google-пилюли */
+        border-radius: 0 25px 25px 0;
         transition: 0.2s;
     }
 
@@ -590,7 +588,7 @@ html, body {
         font-size: 16px;
     }
 
-    /* Активная страница (как в Google) */
+    /* Активная страница */
     .nav-item.active {
         background: rgba(138, 180, 248, 0.12) !important;
         color: #8ab4f8 !important;
@@ -600,7 +598,7 @@ html, body {
     /* Ссылки внутри документа */
     .anchor-item {
         display: block;
-        padding: 10px 24px 10px 58px; /* Сдвигаем вправо под иконки */
+        padding: 10px 24px 10px 58px;
         color: #9aa0a6;
         text-decoration: none;
         font-size: 13.5px;
@@ -667,7 +665,7 @@ html, body {
         transition: 0.2s;
     }
 
-    /* Активная кнопка (как у Google) */
+    /* Активная кнопка */
     .nav-btn.active {
         background: rgba(138, 180, 248, 0.1);
         color: #8ab4f8;
@@ -694,7 +692,7 @@ html, body {
     .anchors-list {
         display: flex;
         flex-direction: column;
-        padding-left: 52px; /* Сдвиг, чтобы было под текстом кнопки */
+        padding-left: 52px;
         margin-bottom: 10px;
     }
 
@@ -729,7 +727,7 @@ html, body {
         margin: 10px 0;
     }
 
-    /* Ссылки на страницы (выглядят жирнее) */
+    /* Ссылки на страницы */
     .nav-page-link {
         font-weight: 600 !important;
         color: #e8eaed !important;
@@ -742,7 +740,7 @@ html, body {
         color: #8ab4f8;
     }
 
-    /* Активная страница (подсветка как у Google) */
+    /* Активная страница */
     .nav-page-link.active {
         background: rgba(138, 180, 248, 0.15) !important;
         color: #8ab4f8 !important;

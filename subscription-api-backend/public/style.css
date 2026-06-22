@@ -82,8 +82,8 @@ h1, h2, h3, .nav-logo {
 
 .right-side {
     display: flex;
-    align-items: center;
-    gap: 2rem;
+    gap: 1rem;
+    margin-left: auto;
 }
 
 .navbar {
@@ -2791,7 +2791,7 @@ html.auth-active .login-btn img {
 
 .demo-status {
     font-size: 0.75rem;
-    color: #4ade80; /* Neon green indicator */
+    color: #4ade80;
 }
 
 .demo-close-btn {
