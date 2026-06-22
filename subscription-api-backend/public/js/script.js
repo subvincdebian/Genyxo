@@ -1740,7 +1740,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (match.type === 'product') {
                 item.innerHTML = `
-                    <img src="${match.image}" class="search-result-img">
+                    <img src="${match.image}" class="search-result-img" alt="search-image">
                     <div class="search-result-info">
                         <span class="search-result-name">${match.alt}</span>
                         <span class="search-result-price" style="color: #2ecc71;">${match.price}</span>
