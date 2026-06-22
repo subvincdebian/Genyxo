@@ -129,23 +129,42 @@ button:active {
 }
 
 .profile-toggle-btn {
-    background: var(--text-light);
+    background: none;
     border: none;
-    border-radius: 25px;
-    padding: 0.75rem 1.5rem;
+    border-radius: 50%;
+    padding: 0;
     color: var(--text-dark);
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 0;
     font-weight: 600;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
 }
 
 .profile-toggle-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
-    background: var(--text-gray);
+    transform: scale(1.1);
+    box-shadow: none;
+}
+
+/* Hide icon and username when showing avatar */
+.profile-toggle-btn #navIcon,
+.profile-toggle-btn #navUsername,
+.profile-toggle-btn i,
+.profile-toggle-btn span {
+    display: none;
+}
+
+/* Adjust avatar in profile-toggle-btn */
+.profile-toggle-btn .nav-avatar-small,
+.profile-toggle-btn img {
+    width: 40px;
+    height: 40px;
+    margin: 0;
 }
 
 .showcase-image {
@@ -810,11 +829,11 @@ button:active {
 }
 
 .nav-avatar-small {
-    width: 24px;
-    height: 24px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    margin-right: 8px;
-    border: 1px solid var(--text-light);
+    margin-right: 0;
+    border: none;
 }
 
 .profile-dropdown {
@@ -2484,7 +2503,7 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
         width: auto !important;
         gap: 8px;
         position: absolute;
-        right: 150px;
+        right: 0;
         z-index: 990;
     }
 
@@ -2699,12 +2718,14 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
 
     .profile-toggle-btn {
         margin-right: 6px;
-        min-width: 40px;
-        padding: 0.35rem 0.6rem;
-        max-width: 120px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        min-width: auto;
+        max-width: none;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
     }
 
     .profile-page {
@@ -2762,13 +2783,14 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
 
     .login-btn, .profile-toggle-btn {
         position: relative !important;
-        left: 150px !important;
+        left: auto !important;
         margin: 0 6px 0 0;
-        max-width: 140px;
+        width: 40px;
         height: 40px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        padding: 0;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
     }
 
     .right-side {
@@ -2776,8 +2798,8 @@ td { padding: 15px 0; border-top: 1px solid var(--border); font-size: 14px; }
     }
     
     .nav-avatar-small {
-        width: 22px;
-        height: 22px;
+        width: 40px;
+        height: 40px;
     }
 
     .search-container {

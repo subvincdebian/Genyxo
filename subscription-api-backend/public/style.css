@@ -694,10 +694,10 @@ h1, h2, h3, .nav-logo {
 }
 
 .nav-avatar-small {
-    width: 24px;
-    height: 24px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    margin-right: 8px;
+    margin-right: 0;
 }
 
 .profile-dropdown {
@@ -1324,27 +1324,36 @@ h1, h2, h3, .nav-logo {
 }
 
 .profile-toggle-btn {
-    background: var(--text-light);
-    color: var(--text-dark);
-    padding: 0;
+    background: none;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     border: none;
-    border-radius: 50%;
     width: 40px;
-    min-width: 40px;
     height: 40px;
     flex-shrink: 0;
-    overflow: hidden;
+    padding: 0;
+    margin: 0;
 }
 
 .profile-toggle-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+    box-shadow: none;
+}
+
+/* Hide icon and username when showing avatar */
+.profile-toggle-btn #navIcon,
+.profile-toggle-btn #navUsername {
+    display: none;
+}
+
+/* Adjust avatar in profile-toggle-btn */
+.profile-toggle-btn .nav-avatar-small {
+    width: 40px;
+    height: 40px;
+    margin: 0;
 }
 
 .profile-toggle-btn span,
@@ -1543,7 +1552,6 @@ html.auth-active .login-btn::before {
     font-family: "Font Awesome 6 Free";
     font-weight: 400;
     font-size: 1rem;
-    color: var(--text-dark);
     position: absolute;
     left: 50%;
     top: 120%;
@@ -1555,8 +1563,6 @@ html.auth-active .login-btn span {
 }
 
 html.auth-active .login-btn i {
-    font-size: 1rem !important;
-    color: var(--text-dark) !important;
     visibility: visible !important;
 }
 
@@ -2337,17 +2343,25 @@ html.auth-active .login-btn img {
 
 @media (max-width: 768px) {
     .nav-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        position: relative;
+        width: 100%;
     }
 
     .left-side {
-        width: 100%;
-        justify-content: space-between;
+        width: auto;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+        flex: 0 0 auto;
     }
 
     .search-container {
+        display: none;
         width: 100%;
         order: 3;
     }
@@ -2357,8 +2371,14 @@ html.auth-active .login-btn img {
     }
 
     .right-side {
-        width: 100%;
-        justify-content: space-between;
+        position: absolute;
+        right: 10px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        width: auto;
+        gap: 8px;
+        z-index: 990;
     }
 
     .burger {
@@ -2627,25 +2647,23 @@ html.auth-active .login-btn img {
     .nav-container {
         flex-direction: row !important;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-start;
         width: 100%;
-        gap: 0;
+        gap: 0.5rem;
     }
 
     .burger {
-        order: 1;
+        flex-shrink: 0;
     }
 
     .left-side {
-        flex: 1 1 auto;
-        min-width: 0;
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
         justify-content: flex-start;
         margin: 0;
         padding: 0;
         gap: 0.5rem;
-        order: 2;
     }
 
     .nav-logo {
@@ -2656,55 +2674,31 @@ html.auth-active .login-btn img {
     }
 
     .right-side {
-        order: 3;
+        position: absolute;
+        right: 10px;
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        flex: 0 0 auto;
-        min-width: 0;
-        margin-left: 0.5rem;
-    }
-
-    .login-btn {
-        padding: 0.4rem;
-        font-size: 0.8rem;
-        border-radius: 20px;
-        height: 40px;
-        width: 150px;
-        min-width: 0;
-        max-width: 150px;
-        flex-shrink: 0;
-    }
-
-    .login-btn span {
-        line-height: 1;
-    }
-
-    .profile-container {
         width: auto;
+        z-index: 990;
     }
 
-    .profile-toggle-btn {
+    .login-btn, .profile-toggle-btn {
+        position: relative !important;
+        left: auto !important;
+        margin: 0 6px 0 0;
         width: 40px;
-        min-width: 40px;
         height: 40px;
-        margin-left: auto;
         padding: 0;
+        min-width: auto;
+        max-width: none;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
         border-radius: 50%;
     }
 
-    .profile-toggle-btn span,
-    .profile-toggle-btn i {
-        display: none !important;
-    }
-
     .nav-avatar-small {
-        width: 24px;
-        height: 24px;
-    }
-
-    .profile-toggle-btn .nav-avatar-small,
-    html.auth-active .login-btn .nav-avatar-small {
         width: 40px;
         height: 40px;
         margin: 0;
