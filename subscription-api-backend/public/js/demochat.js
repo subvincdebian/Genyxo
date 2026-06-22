@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!modal || !chatHistory || !chatInput || !sendBtn) return;
 
-
     const scrollToBottom = () => {
         requestAnimationFrame(() => {
             chatHistory.scrollTop = chatHistory.scrollHeight;
@@ -34,29 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const closeModal = () => {
-        modal?.classList.remove(CHAT_CONFIG.classes.active);
+        modal.classList.remove(CHAT_CONFIG.classes.active);
     };
-
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('.hero-btn, a[href="#demo"]')) {
-            e.preventDefault();
-            modal.classList.add(CHAT_CONFIG.classes.active);
-            requestAnimationFrame(() => chatInput.focus());
-        }
-    });
-
-    closeBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains(CHAT_CONFIG.classes.active)) {
-            closeModal();
-        }
-    });
-    
-    chatInput.addEventListener('input', toggleSendButtonState);
-    sendBtn.addEventListener('click', sendMessage);
-    toggleSendButtonState(); // state initialize
 
     const appendMessage = (text, className) => {
         const msgDiv = document.createElement('div');
@@ -90,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         indicatorInner.appendChild(fragment);
         typingIndicator.appendChild(indicatorInner);
+        typingIndicator.appendChild(indicatorInner);
         
         chatHistory.appendChild(typingIndicator);
         scrollToBottom();
@@ -101,6 +80,26 @@ document.addEventListener('DOMContentLoaded', () => {
             appendMessage(randomResponse, 'ai-message');
         }, CHAT_CONFIG.aiDelay);
     };
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.hero-btn, a[href="#demo"]')) {
+            e.preventDefault();
+            modal.classList.add(CHAT_CONFIG.classes.active);
+            requestAnimationFrame(() => chatInput.focus());
+        }
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains(CHAT_CONFIG.classes.active)) {
+            closeModal();
+        }
+    });
+
+    chatInput.addEventListener('input', toggleSendButtonState);
+    sendBtn.addEventListener('click', sendMessage);
     
     chatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -108,4 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMessage();
         }
     });
+
+    toggleSendButtonState();
 });
