@@ -509,10 +509,16 @@ function showLoginForm() {
 }
 
 function openLoginModal() {
-    if (loginModal) {
-        loginModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+    const loginFormEl = document.getElementById('loginForm');
+    const signupFormEl = document.getElementById('signupForm');
+
+    if (!loginModal || !loginFormEl || !signupFormEl) {
+        window.location.href = 'index.html#login';
+        return;
     }
+
+    loginModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
     
     if (logoutContainer) {
         logoutContainer.style.display = 'none';
@@ -1588,6 +1594,10 @@ async function init() {
         fetchUserData();
         initGlobalSockets();
         updateNotificationsBadge();
+    }
+
+    if (!activeToken && window.location.hash === '#login') {
+        openLoginModal();
     }
 
     window.openFaqPage = (id) => FAQManager.openPage(id);

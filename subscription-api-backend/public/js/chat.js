@@ -9,7 +9,7 @@ const typingIndicator = document.getElementById('typingIndicator');
 const modelSelect = document.getElementById('modelSelect');
 const historyList = document.getElementById('historyList');
 
-const navAvatarImg = document.getElementById('navAvatarImg');
+const navAvatarImg = document.getElementById('navAvatar') || document.getElementById('navAvatarImg');
 
 const toggleBtn = document.getElementById('sidebarToggle');
 const sidebar = document.getElementById('sidebar');
@@ -512,6 +512,13 @@ function appendError(msg) {
 
 async function initChat() {
     try {
+        if (!token) {
+            if (typeof updateUIState === 'function') updateUIState(false);
+            updateBalanceUI(0);
+            toggleChatView(false);
+            return;
+        }
+
         const profileRes = await fetch(`${API_BASE_URL}/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -528,9 +535,12 @@ async function initChat() {
             if (menuName) menuName.textContent = user.name || 'User';
             if (menuEmail) menuEmail.textContent = user.email || '';
             if (menuCredits) menuCredits.textContent = user.credits || 0;
-        }
-
-        if (!token) {
+        } else {
+            localStorage.removeItem('authToken');
+            token = null;
+            window.token = null;
+            if (typeof updateUIState === 'function') updateUIState(false);
+            updateBalanceUI(0);
             toggleChatView(false);
             return;
         }

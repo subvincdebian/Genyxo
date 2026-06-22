@@ -1102,14 +1102,69 @@
             opacity: 1;
         }
 
-        .login-btn {
-            background: none;
-            border: none !important;
+        .chat-auth-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: auto;
+            min-width: max-content;
+            height: 40px;
+            padding: 0 16px;
+            border: 0;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #111111;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: none;
+            white-space: nowrap;
         }
 
-        .login-btn:hover {
-            background: none;
-            border: none !important;
+        .chat-auth-btn:hover {
+            background: #f4f4f4;
+        }
+
+        .chat-auth-btn .nav-avatar-small {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 0;
+            border-radius: 50%;
+            box-shadow: none;
+        }
+
+        html.auth-active .chat-auth-btn,
+        .chat-auth-btn.profile-toggle-btn {
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        html.auth-active .chat-auth-btn span,
+        html.auth-active .chat-auth-btn #navIcon,
+        .chat-auth-btn.profile-toggle-btn span,
+        .chat-auth-btn.profile-toggle-btn #navIcon {
+            display: none !important;
+        }
+
+        html.auth-active .chat-auth-btn .nav-avatar-small,
+        .chat-auth-btn.profile-toggle-btn .nav-avatar-small {
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        [data-theme="light"] .chat-auth-btn {
+            background: #111111;
+            color: #ffffff;
+        }
+
+        [data-theme="light"] .chat-auth-btn:hover {
+            background: #2a2a2a;
         }
 
         /* Применение переменных к элементам при смене темы */
@@ -1931,7 +1986,7 @@
 
             /* Аватарка */
             .profile-trigger {
-                width: 40px !important;
+                width: auto !important;
                 height: 40px !important;
                 flex-shrink: 0 !important;
                 padding: 0 !important;
@@ -1942,16 +1997,25 @@
                 box-shadow: none;
             }
 
-            .login-btn {
+            .chat-auth-btn {
+                width: auto !important;
+                min-width: max-content !important;
+                height: 36px !important;
+                padding: 0 12px !important;
+                margin-right: 0 !important;
+                background: #ffffff !important;
+                border: none !important;
+                box-shadow: none !important;
+                font-size: 13px !important;
+            }
+
+            html.auth-active .chat-auth-btn,
+            .chat-auth-btn.profile-toggle-btn {
                 width: 40px !important;
+                min-width: 40px !important;
                 height: 40px !important;
                 padding: 0 !important;
-                min-width: 30px !important;
-                margin-right: -2px !important;
-                background-color: none;
-                border: none !important;
                 background: transparent !important;
-                box-shadow: none !important;
             }
 
             .nav-avatar-small {
@@ -2159,13 +2223,12 @@
             }
 
             .profile-trigger {
-                width: 45px !important;
+                width: auto !important;
                 height: 45px !important;
             }
 
-            .login-btn {
-                width: 45px !important;
-                height: 45px !important;
+            .chat-auth-btn {
+                height: 40px !important;
             }
 
             .sidebar-mini {
@@ -2528,8 +2591,10 @@
 
                         <div class="profile-container profile-trigger" id="profile-trigger" style="display: flex; gap: 10px; align-items: center;">
 
-                            <button class="login-btn" id="profileToggleBtn" id="loginBtn" aria-label="Login / Signup" style="min-width: auto; padding: 5px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatarImg" style="margin: 0; width: 40px; height: 40px;" alt="Avatar">
+                            <button class="login-btn chat-auth-btn" id="loginBtn" aria-label="Register / Login">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" class="nav-avatar-small" id="navAvatar" alt="Avatar">
+                                <i class="fas fa-user" id="navIcon"></i>
+                                <span id="navUsername">Register / Login</span>
                             </button>
                             
                             <div class="profile-dropdown glass" id="profilePanel">
