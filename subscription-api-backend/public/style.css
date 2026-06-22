@@ -3238,3 +3238,8 @@ html.auth-active .login-btn img {
     object-fit: cover;
     border-radius: 8px;
 }
+
+#demoSendBtn.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
