@@ -2835,8 +2835,12 @@
                     div.className = 'unified-preview-item unified-preview-img';
                     reader.onload = (e) => {
                         div.innerHTML = `
-                            <img src="${e.target.result}" alt="preview" title="${file.name}">
-                            <button type="button" class="unified-remove-btn" onclick="removeFile(${index})" title="Remove">
+                            <img src="${e.target.result}" alt="preview" title="${file.name}" 
+                                style="cursor: pointer; transition: opacity 0.2s;" 
+                                onmouseover="this.style.opacity=0.8" 
+                                onmouseout="this.style.opacity=1"
+                                onclick="window.openImageEditor(this.src, this, ${index})">
+                            <button type="button" class="unified-remove-btn" onclick="event.stopPropagation(); removeFile(${index})" title="Remove">
                                 <i class="fas fa-times"></i>
                             </button>
                         `;
@@ -3351,5 +3355,59 @@
             </div>
         </div>
     </div>
+
+    <div id="imageEditorModal" class="editor-modal" style="display: none;">
+    <div class="editor-header">
+        <button id="editorCloseBtn" class="editor-btn text-btn">
+            <i class="fas fa-arrow-left"></i> Назад
+        </button>
+        <div class="editor-actions">
+            <button id="editorUndoBtn" class="editor-btn icon-btn" title="Відмінити (Ctrl+Z)">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button id="editorRedoBtn" class="editor-btn icon-btn" title="Повторити (Ctrl+Y)">
+                <i class="fas fa-redo"></i>
+            </button>
+            <button id="editorSaveBtn" class="editor-btn save-btn">
+                <i class="fas fa-check"></i> Зберегти
+            </button>
+        </div>
+    </div>
+    
+    <div class="editor-body">
+        <div class="canvas-container">
+            <canvas id="editorCanvas"></canvas>
+        </div>
+    </div>
+    
+    <div class="editor-toolbar">
+        <div class="tool-group">
+            <button id="toolBrush" class="tool-btn active" title="Малювати пензлем">
+                <i class="fas fa-paint-brush"></i>
+            </button>
+            <button id="toolText" class="tool-btn" title="Додати текст">
+                <i class="fas fa-font"></i>
+            </button>
+        </div>
+        
+        <div class="color-group">
+            <span class="color-picker-wrapper" title="Кастомний колір">
+                <input type="color" id="editorColorPicker" value="#ff0000">
+            </span>
+            <button class="color-preset active" data-color="#ff0000" style="background-color: #ff0000;"></button>
+            <button class="color-preset" data-color="#00ff00" style="background-color: #00ff00;"></button>
+            <button class="color-preset" data-color="#0000ff" style="background-color: #0000ff;"></button>
+            <button class="color-preset" data-color="#ffff00" style="background-color: #ffff00;"></button>
+            <button class="color-preset" data-color="#ffffff" style="background-color: #ffffff;"></button>
+            <button class="color-preset" data-color="#000000" style="background-color: #000000;"></button>
+        </div>
+        
+        <div class="brush-size-group">
+            <i class="fas fa-minus small-icon"></i>
+            <input type="range" id="brushSize" min="2" max="25" value="6">
+            <i class="fas fa-plus large-icon"></i>
+        </div>
+    </div>
+</div>
 </body>
 </html>
