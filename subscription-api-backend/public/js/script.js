@@ -218,15 +218,29 @@ async function updateNotificationsBadge() {
 }
 
 function handleLogout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userAvatar');
-    localStorage.removeItem('userRole');
-    authToken = null;
-    
+    if(socket && typeof socket.disconnect === 'function') {
+        socket.disconnect();
+    }
+
+    if(pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+
+    const userKeys = ['authToken', 'userName', 'userEmail', 'userAvatar', 'userRole', 'userCredits', 'userId'];
+    userKeys.forEach(key => localStorage.removeItem(key));
+
+    token = null;
+    window.token = null;
+
+    currentUserName = 'Username';
+    currentUserEmail = null;
+    currentUserAvatar = null;
+    currentUserRole = null;
+
     updateUIState(false);
-    window.location.reload();
+
+    window.location.href = 'index.html';
 }
 
 /**
