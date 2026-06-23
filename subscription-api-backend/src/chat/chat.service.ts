@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Subject } from 'rxjs';
 import { fal } from "@fal-ai/client"; 
 import { Message } from './message.entity';
@@ -16,6 +17,7 @@ import { FalService } from './fal.service';
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private openRouter: OpenAI;
+  private googleAI: GoogleGenerativeAI;
 
   constructor(
     private configService: ConfigService,
@@ -33,6 +35,8 @@ export class ChatService {
         'X-Title': 'Genyxo AI',
       },
     });
+
+    this.googleAI = new GoogleGenerativeAI(this.configService.get('GOOGLE_API_KEY') || '');
   }
 
   async saveMessage(conversation: Conversation, content: string, sender: 'user' | 'bot', model: string, userId: number, requestId?: string) {
@@ -143,21 +147,53 @@ export class ChatService {
 
       (async () => {
         try {
-          const response = await this.openRouter.chat.completions.create({
-            model: model,
-            messages: (await this.getHistory(conversation.id)) as any,
-            stream: true,
-            max_tokens: 2000,
-          });
-
           let fullReply = '';
-          for await (const chunk of response) {
-            const content = chunk.choices[0]?.delta?.content || '';
-            if (content) {
-              fullReply += content;
-              eventStream.next({ 
-                data: { token: content, conversationId: conversation.id } 
-              } as MessageEvent);
+
+          if (model.startsWith('google/gemini')) {
+            const geminiModelName = model.replace('google/', ''); // Вырезаем 'google/' -> получаем 'gemini-2.5-flash'
+            const generativeModel = this.googleAI.getGenerativeModel({ model: geminiModelName });
+            
+            const history = await this.getHistory(conversation.id);
+            
+            const geminiHistory = history.map(m => ({
+              role: m.role === 'assistant' ? 'model' : 'user',
+              parts: [{ text: m.content }]
+            }));
+
+            const chatSession = generativeModel.startChat({
+              history: geminiHistory.slice(0, -1)
+            });
+
+            const lastMessage = geminiHistory[geminiHistory.length - 1].parts[0].text || '';
+            
+            const resultStream = await chatSession.sendMessageStream(lastMessage);
+
+            for await (const chunk of resultStream.stream) {
+              const content = chunk.text() || '';
+              if (content) {
+                fullReply += content;
+                eventStream.next({ 
+                  data: { token: content, conversationId: conversation.id } 
+                } as MessageEvent);
+              }
+            }
+
+          } else {
+            const response = await this.openRouter.chat.completions.create({
+              model: model,
+              messages: (await this.getHistory(conversation.id)) as any,
+              stream: true,
+              max_tokens: 2000,
+            });
+
+            for await (const chunk of response) {
+              const content = chunk.choices[0]?.delta?.content || '';
+              if (content) {
+                fullReply += content;
+                eventStream.next({ 
+                  data: { token: content, conversationId: conversation.id } 
+                } as MessageEvent);
+              }
             }
           }
 
@@ -212,6 +248,29 @@ export class ChatService {
         };
       }
 
+      if (model.startsWith('google/gemini')) {
+        const geminiModelName = model.replace('google/', '');
+        const generativeModel = this.googleAI.getGenerativeModel({ model: geminiModelName });
+
+        const geminiHistory = messagesHistory.map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }]
+        }));
+
+        const chatSession = generativeModel.startChat({
+          history: geminiHistory.slice(0, -1)
+        });
+
+        const lastMessage = geminiHistory[geminiHistory.length - 1].parts[0].text || '';
+        const result = await chatSession.sendMessage(lastMessage);
+        const responseText = result.response.text();
+
+        return {
+          reply: responseText || "AI did not respond",
+          tokensUsed: result.response.usageMetadata?.totalTokenCount || 0
+        };
+      }
+
       const completion = await this.openRouter.chat.completions.create({
         model: model,
         messages: messagesHistory as any,
@@ -224,7 +283,7 @@ export class ChatService {
         tokensUsed: completion.usage?.total_tokens || 0
       };
     } catch (error: any) {
-      console.error('OpenRouter API Error:', error.message);
+      console.error('API Error:', error.message);
       throw error;
     }
   }

@@ -10,6 +10,18 @@ export enum ModelType {
 export class PricingService {
   private readonly MODELS_CONFIG = {
     'arcee-ai/trinity-large-preview:free': { cost: 0, type: ModelType.TEXT },
+    'openai/gpt-oss-120b:free': { cost: 0, type: ModelType.TEXT },
+    'google/gemini-3.5-flash': { cost: 0, type: ModelType.TEXT },
+    'google/gemini-3.5-live-translate-preview': { cost: 0, type: ModelType.TEXT },
+    'google/gemini-3.1-flash-lite': { cost: 0, type: ModelType.TEXT },
+    'google/gemini-2.5-pro': { cost: 0, type: ModelType.TEXT },
+    'google/gemini-2.5-flash': { cost: 0, type: ModelType.TEXT },
+    'google/gemini-2.5-flash-native-audio-preview-12-2025': { cost: 0, type: ModelType.TEXT },
+    'google/gemini-embedding-2': { cost: 0, type: ModelType.TEXT },
+    'google/gemini-robotics-er-1.6-preview': { cost: 0, type: ModelType.TEXT },
+    'meta-llama/llama-3.3-70b-instruct:free': { cost: 0, type: ModelType.TEXT },
+    'qwen/qwen3-next-80b-a3b-instruct:free': { cost: 0, type: ModelType.TEXT },
+    'google/gemma-4-31b-it:free': { cost: 0, type: ModelType.TEXT },
     'openai/gpt-5.1': { cost: 150, type: ModelType.TEXT },
     'openai/gpt-5-mini': { cost: 70, type: ModelType.TEXT },
     'openai/gpt-5-nano': { cost: 45, type: ModelType.TEXT },
