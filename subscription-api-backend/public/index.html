@@ -40,20 +40,14 @@
 
     <script defer src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
     <script>
         (function() {
             const token = localStorage.getItem('authToken');
             if (token) {
                 document.documentElement.classList.add('auth-active');
             }
-            document.documentElement.style.visibility = 'hidden';
-            window.addEventListener('DOMContentLoaded', () => {
-                document.documentElement.style.visibility = 'visible';
-            });
         })();
     </script>
-
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -118,12 +112,10 @@
     </script>
 </head>
 <body>
-
     <div id="toast-container"></div>
 
     <nav class="navbar">
         <div class="nav-container">
-
             <div class="burger" id="burger">
                 <span></span>
                 <span></span>
@@ -849,9 +841,8 @@
         </div>
     </div>
 
-<script src="js/demochat.js" defer></script>
-<script src="js/i18n.js" defer></script>
-<script src="js/script.js" defer></script>
-
+    <script src="js/demochat.js" defer></script>
+    <script src="js/i18n.js" defer></script>
+    <script src="js/script.js" defer></script>
 </body>
 </html>

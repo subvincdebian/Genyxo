@@ -77,6 +77,11 @@ const products = [
     { id: 6, price: "$219.99", image: "./images/aititan.jpg", alt: "AI Titan Pack" },
 ];
 
+const SVG_ICONS = {
+    check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+    bolt: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`
+};
+
 function updateBalanceUI(amount) {
     const creditBalanceEl = document.getElementById('creditBalance');
     if (creditBalanceEl) {
@@ -755,26 +760,41 @@ function getSvgIllustration(id) {
     return illustrations[id] || '<img src="https://via.placeholder.com/300x200?text=Product" alt="Product">';
 }
 
-function loadProducts() {
-    if (!productsGrid) {
-        return;
-    }
+function initProductsEventListeners() {
+    const productsGrid = document.getElementById('productsGrid');
+    if (!productsGrid) return;
 
-    productsGrid.innerHTML = '';
-    
-    if (!window.i18n || !window.i18n.translations || !window.i18n.translations.products_data) {
+    productsGrid.addEventListener('click', (e) => {
+        const btnElement = e.target.closest('.buy-btn');
+        if (!btnElement) return;
+
+        const productId = parseInt(btnElement.getAttribute('data-id'), 10);
+        if (isNaN(productId)) return;
+
+        const product = products.find(p => p.id === productId);
+        if (product && typeof openCheckout === 'function') {
+            openCheckout(product);
+        }
+    });
+}
+
+function loadProducts() {
+    const productsGrid = document.getElementById('productsGrid');
+    if (!productsGrid) return;
+
+    if (!window.AppI18n || !window.AppI18n.translations || !window.AppI18n.translations.products_data) {
         console.warn("Localization data not fully loaded yet.");
         return; 
     }
+    const translations = window.AppI18n.translations.products_data;
     
-    const translations = window.i18n.translations.products_data;
-
+    const fragment = document.createDocumentFragment();
     products.forEach(product => {
         const productTrans = translations[product.id.toString()]; 
         if (!productTrans) return;
         
         const featuresHtml = productTrans.features.map(feature => `
-            <li><span class="feature-icon"><i class="fas fa-check"></i></span>${feature}</li>
+            <li><span class="feature-icon">${SVG_ICONS.check}</span>${feature}</li>
         `).join('');
 
         const illustrationHtml = getSvgIllustration(product.id);
@@ -790,24 +810,19 @@ function loadProducts() {
                 <h3 class="product-name">${productTrans.name}</h3>
                 <div class="product-price">${product.price}</div>
                 <ul class="product-features">
-                    <li><span class="feature-icon icon-bolt"><i class="fas fa-bolt"></i></span>${productTrans.credits_label}</li>
+                    <li><span class="feature-icon icon-bolt">${SVG_ICONS.bolt}</span>${productTrans.credits_label}</li>
                     ${featuresHtml}
                 </ul>
                 <button class="buy-btn" data-id="${product.id}">
                     ${translations.buy_now} 
                 </button>
             </div>`;
-        productsGrid.appendChild(productCard);
+        
+        fragment.appendChild(productCard);
     });
 
-    document.querySelectorAll('.buy-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const btnElement = e.target.closest('.buy-btn');
-            const productId = parseInt(btnElement.getAttribute('data-id'));
-            const product = products.find(p => p.id === productId);
-            openCheckout(product);
-        });
-    });
+    productsGrid.innerHTML = '';
+    productsGrid.appendChild(fragment);
 }
 
 function updateUserUI(user) {
@@ -1664,10 +1679,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!searchInput || !dropdown) return;
 
-    // 1. Рендер дефолтних паків (3 найдешевші від меншого до більшого)
     const renderDefaultPacks = () => {
         defaultList.innerHTML = '';
-        // Беремо перші 3 паки з глобального масиву products
         if (typeof products !== 'undefined' && products.length > 0) {
             products.slice(0, 3).forEach(product => {
                 const item = document.createElement('div');
@@ -1689,7 +1702,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     renderDefaultPacks();
 
-    // 2. Логіка відкриття/закриття меню пошуку
     searchInput.addEventListener('focus', () => {
         dropdown.classList.add('show');
         if (searchInput.value.trim().length === 0) {
@@ -1698,18 +1710,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Ховаємо якщо клік поза пошуком
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-container')) {
             dropdown.classList.remove('show');
         }
     });
 
-    // 3. Супер-пошук при вводі тексту
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim().toLowerCase();
         
-        // Якщо стерли текст — повертаємо дефолтний вигляд
         if (!query) {
             defaultState.style.display = 'flex';
             resultsState.style.display = 'none';
@@ -1720,12 +1729,9 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsState.style.display = 'flex';
         resultsState.innerHTML = '';
 
-        // Шукаємо по всіх трьох базах даних
         const matchedProducts = (typeof products !== 'undefined' ? products : []).filter(p => p.alt.toLowerCase().includes(query)).map(p => ({...p, type: 'product'}));
         const matchedModels = aiModelsData.filter(m => m.name.toLowerCase().includes(query)).map(m => ({...m, type: 'model'}));
         const matchedActions = quickActionsData.filter(a => a.name.toLowerCase().includes(query)).map(a => ({...a, type: 'action'}));
-
-        // Об'єднуємо результати і беремо максимум 4 штуки
         const allMatches = [...matchedProducts, ...matchedModels, ...matchedActions].slice(0, 10);
 
         if (allMatches.length === 0) {
@@ -1733,7 +1739,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Рендеримо результати пошуку залежно від їхнього типу
         allMatches.forEach(match => {
             const item = document.createElement('div');
             item.className = 'search-result-item';
@@ -1774,11 +1779,10 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsState.appendChild(item);
         });
     });
+
+    initProductsEventListeners();
 });
 
-// =======================================================
-// Універсальне модальне вікно для 3-х категорій кнопок знизу
-// =======================================================
 function openCategoryModal(type) {
     const modal = document.getElementById('categoryModal');
     const title = document.getElementById('categoryModalTitle');
@@ -1840,15 +1844,11 @@ function openCategoryModal(type) {
     modal.style.display = 'flex';
 }
 
-// Допоміжна функція для відкриття вікна моделі по ID (використовується в списку категорій)
 function openAiModelModalById(id) {
     const model = aiModelsData.find(m => m.id === id);
     if (model) openAiModelModal(model);
 }
 
-// =======================================================
-// Оновлене інформаційне модальне вікно для окремої AI Моделі
-// =======================================================
 function openAiModelModal(modelData) {
     const modal = document.getElementById('aiModelModal');
     const iconEl = document.getElementById('aiModelIcon');

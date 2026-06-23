@@ -68,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         indicatorInner.appendChild(fragment);
         typingIndicator.appendChild(indicatorInner);
-        typingIndicator.appendChild(indicatorInner);
         
         chatHistory.appendChild(typingIndicator);
         scrollToBottom();
