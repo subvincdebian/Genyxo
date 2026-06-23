@@ -167,6 +167,27 @@ function updateUIState(isLoggedIn, userData = null) {
 }
 
 function renderBadge(count) {
+    if(!notificationBadge) return;
+
+    const numericCount = parseInt(count, 10) || 0;
+
+    if(numericCount > 0) {
+        const badgeText = numericCount > 99 ? '99+' : String(numericCount);
+
+        if(notificationBadge.innerText !== badgeText) {
+            notificationBadge.innerText = badgeText;
+        }
+
+        notificationBadge.style.display = 'flex';
+
+        notificationBadge.setAttribute('aria-label', `You have ${numericCount} new messages`);
+    } else {
+        notificationBadge.style.display = 'none';
+        notificationBadge.removeAttribute('aria-label');
+    }
+}
+
+function renderBadge(count) {
     const badge = document.getElementById('notificationBadge');
     if (!badge) return;
 
