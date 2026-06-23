@@ -240,7 +240,7 @@ function handleLogout() {
 
     updateUIState(false);
 
-    window.location.href = 'index.html';
+    window.location.reload();
 }
 
 /**
