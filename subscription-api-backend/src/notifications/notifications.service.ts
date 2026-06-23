@@ -1,8 +1,8 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Notification, NotificationType } from './notification.entity';
-import { NotificationsGateway } from './notifications.gateway';
+import { Injectable, Inject, forwardRef } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Notification, NotificationType } from "./notification.entity";
+import { NotificationsGateway } from "./notifications.gateway";
 
 @Injectable()
 export class NotificationsService {
@@ -13,7 +13,12 @@ export class NotificationsService {
     private readonly gateway: NotificationsGateway,
   ) {}
 
-  async create(userId: number, title: string, message: string, type: NotificationType) {
+  async create(
+    userId: number,
+    title: string,
+    message: string,
+    type: NotificationType,
+  ) {
     const notification = this.repo.create({ userId, title, message, type });
     const saved = await this.repo.save(notification);
 
@@ -34,22 +39,22 @@ export class NotificationsService {
   async getUserNotifications(userId: number) {
     return this.repo.find({
       where: { userId },
-      order: { createdAt: 'DESC' },
-      take: 50
+      order: { createdAt: "DESC" },
+      take: 50,
     });
   }
 
   async getUnreadCount(userId: number) {
     return this.repo.count({
-      where: { userId, isRead: false }
+      where: { userId, isRead: false },
     });
   }
 
   async markAsRead(id: number, userId: number) {
     await this.repo.update({ id, userId }, { isRead: true });
   }
-  
+
   async markAllAsRead(userId: number) {
-      await this.repo.update({ userId, isRead: false }, { isRead: true });
+    await this.repo.update({ userId, isRead: false }, { isRead: true });
   }
 }

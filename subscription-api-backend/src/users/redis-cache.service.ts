@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { RedisService } from '@liaoliaots/nestjs-redis';
-import Redis from 'ioredis';
+import { Injectable } from "@nestjs/common";
+import { RedisService } from "@liaoliaots/nestjs-redis";
+import Redis from "ioredis";
 
 @Injectable()
 export class RedisCacheService {
@@ -16,7 +16,12 @@ export class RedisCacheService {
   }
 
   async setBalance(userId: number, amount: number) {
-    await this.redis.set(`user:balance:${userId}`, amount.toString(), 'EX', 3600);
+    await this.redis.set(
+      `user:balance:${userId}`,
+      amount.toString(),
+      "EX",
+      3600,
+    );
   }
 
   async invalidate(userId: number) {

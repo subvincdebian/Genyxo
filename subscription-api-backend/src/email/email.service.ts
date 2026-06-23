@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+import { Injectable } from "@nestjs/common";
+import { MailerService } from "@nestjs-modules/mailer";
 
 @Injectable()
 export class EmailService {
@@ -11,7 +11,7 @@ export class EmailService {
     try {
       await this.mailerService.sendMail({
         to: email,
-        subject: 'Verify your Genyxo Email',
+        subject: "Verify your Genyxo Email",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
             <h2 style="color: #10e6cc; text-align: center;">Welcome to Genyxo!</h2>
@@ -26,11 +26,16 @@ export class EmailService {
       });
       console.log(`Verification email sent to ${email}`);
     } catch (error) {
-      console.error('Error sending verification email:', error);
+      console.error("Error sending verification email:", error);
     }
   }
 
-  async sendSupportReply(email: string, userName: string, ticketSubject: string, adminReply: string) {
+  async sendSupportReply(
+    email: string,
+    userName: string,
+    ticketSubject: string,
+    adminReply: string,
+  ) {
     try {
       await this.mailerService.sendMail({
         to: email,
@@ -52,7 +57,7 @@ export class EmailService {
       });
       console.log(`Email sent to ${email}`);
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error("Error sending email:", error);
     }
   }
 }
