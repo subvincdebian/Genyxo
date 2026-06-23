@@ -193,12 +193,12 @@ async function updateNotificationsBadge() {
     try {
         const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
             headers: {
-                'Authrization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json'
             }
         });
 
-        if(response.status === 401 || response.status === 403) {
+        if([401, 403].includes(response.status)) {
             console.warn("Session or token expired. Auto logout...");
             handleLogout();
             return;
@@ -231,7 +231,7 @@ function handleLogout() {
     userKeys.forEach(key => localStorage.removeItem(key));
 
     token = null;
-    window.token = null;
+    if(window.token) window.token = null;
 
     currentUserName = 'Username';
     currentUserEmail = null;
