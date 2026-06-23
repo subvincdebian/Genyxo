@@ -229,19 +229,45 @@ function startNewChat(e) {
     }
 }
 
-function appendMessage(sender, text, model = '') {
+function appendMessage(sender, text, model = '', files = []) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
 
+    // 1. Отрисовка прикрепленных файлов (если они есть и это сообщение пользователя)
+    if (files && files.length > 0 && sender === 'user') {
+        const filesContainer = document.createElement('div');
+        filesContainer.className = 'message-attachments';
+        
+        files.forEach(file => {
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.className = 'chat-image-preview';
+                filesContainer.appendChild(img);
+            } else {
+                const fileLink = document.createElement('div');
+                fileLink.innerHTML = `<i class="fas fa-file"></i> ${file.name}`;
+                fileLink.className = 'chat-file-preview';
+                filesContainer.appendChild(fileLink);
+            }
+        });
+        contentDiv.appendChild(filesContainer);
+    }
+
+    // 2. Отрисовка текста (чтобы он не затирал картинки)
+    const textContainer = document.createElement('div');
     if (sender === 'bot') {
         const rawHtml = text ? marked.parse(text) : '';
-        contentDiv.innerHTML = DOMPurify.sanitize(rawHtml);
+        textContainer.innerHTML = DOMPurify.sanitize(rawHtml);
     } else {
-        contentDiv.textContent = text;
+        if (text) {
+            textContainer.textContent = text;
+        }
     }
+    contentDiv.appendChild(textContainer);
 
     msgDiv.appendChild(contentDiv);
     
@@ -315,16 +341,27 @@ async function sendMessage() {
     const text = userInput.value.trim();
     const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
 
-    if (!text || !token || sendBtn.disabled) return;
+    // Забираем файлы из глобальной переменной, которая живет в твоем html
+    const files = window.attachedFiles ? [...window.attachedFiles] : [];
+
+    // Не отправляем, только если и текст пустой, и картинок нет
+    if ((!text && files.length === 0) || !token || sendBtn.disabled) return;
 
     sendBtn.disabled = true;
     userInput.disabled = true;
 
     if (!currentChatId) toggleChatView(true);
 
-    appendMessage('user', text);
+    // Отрисовываем сообщение с текстом и файлами
+    appendMessage('user', text, '', files);
+    
+    // Очищаем поле ввода и сбрасываем файлы в UI над инпутом
     userInput.value = '';
     userInput.style.height = 'auto';
+    window.attachedFiles = []; 
+    if (typeof renderAllPreviews === 'function') {
+        renderAllPreviews(); // Твоя функция из html для скрытия превьюшек
+    }
 
     const botBubble = appendMessage('bot', '<div class="typing-indicator"><span></span><span></span><span></span></div>');
     botBubble.classList.add('streaming');
@@ -335,14 +372,39 @@ async function sendMessage() {
     const controller = new AbortController();
 
     try {
-        const url = `${API_BASE_URL}/chat/stream?message=${encodeURIComponent(text)}&model=${selectedModel}${currentChatId ? `&conversationId=${currentChatId}` : ''}&token=${token}`;
+        // Конвертируем картинки для отправки на сервер
+        const base64Files = [];
+        for (const file of files) {
+            const base64Data = await fileToBase64(file);
+            base64Files.push({
+                mime_type: file.type,
+                data: base64Data,
+                name: file.name
+            });
+        }
+
+        // ВАЖНО: Мы меняем архитектуру с GET на POST.
+        // Сервер должен ожидать получение данных в body, а не в параметрах URL!
+        const url = `${API_BASE_URL}/chat/stream`;
         
+        const payload = {
+            message: text,
+            model: selectedModel,
+            files: base64Files
+        };
+        if (currentChatId) {
+            payload.conversationId = currentChatId;
+        }
+
         const response = await fetch(url, {
+            method: 'POST', // Меняем на POST
             signal: controller.signal,
             headers: { 
                 'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json', // Обязательно указываем JSON
                 'Accept': 'text/event-stream' 
-            }
+            },
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
@@ -370,7 +432,7 @@ async function sendMessage() {
                 if (line.startsWith('data: ')) {
                     const jsonStr = line.replace('data: ', '').trim();
                     if (jsonStr.startsWith('402')) {
-                        throw new Error("❌ Insufficient funds on OpenRouter. Please top up your balance.");
+                        throw new Error("❌ Insufficient funds. Please top up your balance.");
                     }
 
                     if (!jsonStr || jsonStr === '[DONE]') continue;
@@ -395,9 +457,11 @@ async function sendMessage() {
                         if (data.conversationId && !currentChatId) {
                             currentChatId = data.conversationId;
                             updateUrl(data.conversationId);
+                            // Если пользователь отправил только картинку без текста, используем 'Image' как название чата
+                            const chatTitle = text ? text.slice(0, 30) : 'Image description';
                             conversations.unshift({ 
                                 id: currentChatId, 
-                                title: text.slice(0, 30) + (text.length > 30 ? '...' : ''), 
+                                title: chatTitle + (text.length > 30 ? '...' : ''), 
                                 model: selectedModel 
                             });
                             renderHistoryList();
@@ -1026,3 +1090,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Конвертируем файл в Base64
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            // Отсекаем префикс "data:image/png;base64," и берем только саму строку
+            const base64String = reader.result.split(',')[1];
+            resolve(base64String);
+        };
+        reader.onerror = error => reject(error);
+    });
+}

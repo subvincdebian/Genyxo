@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsInt, MaxLength, IsArray } from 'class-validator';
 import { Transform } from 'class-transformer';
 import sanitizeHtml from 'sanitize-html';
 
@@ -16,4 +16,12 @@ export class SendMessageDto {
   @IsOptional()
   @IsInt()
   conversationId?: number;
+
+  @IsOptional()
+  @IsArray()
+  files?: Array<{
+    mime_type: string;
+    data: string; // Строка Base64
+    name?: string;
+  }>;
 }

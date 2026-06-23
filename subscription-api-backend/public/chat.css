@@ -486,6 +486,36 @@ display: block !important;
     background: #10e6cc;
     color: white;
     border-bottom-right-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.chat-image-preview {
+    max-width: 250px;
+    max-height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-file-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(37, 99, 235, 0.15);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.9rem;
+    border: 1px solid rgba(37, 99, 235, 0.3);
 }
 
 .bot-message {
