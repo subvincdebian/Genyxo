@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { randomBytes } from 'crypto';
-import { RedisCacheService } from '../common/redis-cache.service';
-import { User } from './user.entity';
-import { Transaction, TransactionStatus, TransactionType } from '../transactions/transaction.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { randomBytes } from "crypto";
+import { RedisCacheService } from "../common/redis-cache.service";
+import { User } from "./user.entity";
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from "../transactions/transaction.entity";
 
 const REFERRAL_REWARDS: Record<number, number> = {
   1: 1, // Start AI
@@ -12,7 +16,7 @@ const REFERRAL_REWARDS: Record<number, number> = {
   3: 2.5, // Pro Creator
   4: 5, // AI Master
   5: 10, // Unlimited Power
-  6: 22  // AI Titan
+  6: 22, // AI Titan
 };
 
 @Injectable()
@@ -30,51 +34,78 @@ export class UsersService {
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({ 
-        where: { email },
-        select: ['id', 'email', 'password', 'role', 'name', 'credits', 'avatar', 'referrerId', 'referralBalance', 'isEmailVerified', 'googleId', 'facebookId'] 
+    return this.usersRepository.findOne({
+      where: { email },
+      select: [
+        "id",
+        "email",
+        "password",
+        "role",
+        "name",
+        "credits",
+        "avatar",
+        "referrerId",
+        "referralBalance",
+        "isEmailVerified",
+        "googleId",
+        "facebookId",
+      ],
     });
   }
 
   async findOneById(id: number): Promise<User | null> {
-    return this.usersRepository.findOne({ 
-        where: { id },
-        select: ['id', 'email', 'role', 'credits', 'name', 'avatar', 'referrerId', 'referralBalance', 'isEmailVerified'] 
+    return this.usersRepository.findOne({
+      where: { id },
+      select: [
+        "id",
+        "email",
+        "role",
+        "credits",
+        "name",
+        "avatar",
+        "referrerId",
+        "referralBalance",
+        "isEmailVerified",
+      ],
     });
   }
 
   async findByVerificationToken(token: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { verificationToken: token } });
+    return this.usersRepository.findOne({
+      where: { verificationToken: token },
+    });
   }
 
   async generateUniqueReferralCode(): Promise<string> {
     // Алфавит: большие, маленькие буквы и цифры (убрали похожие символы для удобства юзера)
-    const alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const alphabet =
+      "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     const size = 10; // Длина 10 символов как в Grass
-    
-    let code = '';
+
+    let code = "";
     const bytes = randomBytes(size);
-    
+
     for (let i = 0; i < size; i++) {
       // Используем остаток от деления байта на длину алфавита
       code += alphabet[bytes[i] % alphabet.length];
     }
 
     // Проверка на уникальность в БД
-    const existing = await this.usersRepository.findOne({ 
+    const existing = await this.usersRepository.findOne({
       where: { referralCode: code },
-      select: ['id'] // Выбираем только id для скорости
+      select: ["id"], // Выбираем только id для скорости
     });
 
     if (existing) {
       return this.generateUniqueReferralCode(); // Рекурсия при коллизии
     }
-    
+
     return code;
   }
 
   async create(userData: Partial<User>): Promise<User> {
-    const referralCode = userData.referralCode || await this.generateUniqueReferralCode();
+    const referralCode =
+      userData.referralCode || (await this.generateUniqueReferralCode());
     const newUser = this.usersRepository.create({ ...userData, referralCode });
     return this.usersRepository.save(newUser);
   }
@@ -92,11 +123,15 @@ export class UsersService {
     const creditsToAdd = Number(amount);
     if (isNaN(creditsToAdd) || creditsToAdd <= 0) return;
 
-    await this.usersRepository.increment({ id: userId }, 'credits', creditsToAdd);
-    
+    await this.usersRepository.increment(
+      { id: userId },
+      "credits",
+      creditsToAdd,
+    );
+
     const updatedUser = await this.findOneById(userId);
     if (updatedUser) {
-        await this.redisCache.setBalance(userId, Number(updatedUser.credits));
+      await this.redisCache.setBalance(userId, Number(updatedUser.credits));
     }
   }
 
@@ -104,7 +139,11 @@ export class UsersService {
     const addAmount = Number(amountUsd);
     if (isNaN(addAmount) || addAmount <= 0) return;
 
-    await this.usersRepository.increment({ id: userId }, 'referralBalance', addAmount);
+    await this.usersRepository.increment(
+      { id: userId },
+      "referralBalance",
+      addAmount,
+    );
   }
 
   async deductCredits(userId: number, amount: number): Promise<boolean> {
@@ -118,9 +157,9 @@ export class UsersService {
       .execute();
 
     const success = (result.affected ?? 0) > 0;
-    
+
     if (success) {
-        await this.redisCache.invalidate(userId);
+      await this.redisCache.invalidate(userId);
     }
 
     return success;
@@ -128,91 +167,103 @@ export class UsersService {
 
   async getBalance(userId: number): Promise<number> {
     let balance = await this.redisCache.getBalance(userId);
-    
+
     if (balance === null) {
       const user = await this.findOneById(userId);
       balance = user ? Number(user.credits) : 0;
       await this.redisCache.setBalance(userId, balance);
     }
-    
+
     return balance;
   }
 
   async getAffiliateStats(userId: number) {
-    const user = await this.usersRepository.findOne({ 
-      where: { id: userId }, 
-      select: ['id', 'referralBalance', 'referralCode'] 
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: ["id", "referralBalance", "referralCode"],
     });
-    
-    if (!user) throw new NotFoundException('User not found');
-    
+
+    if (!user) throw new NotFoundException("User not found");
+
     let code = user.referralCode;
     if (!code) {
       code = await this.generateUniqueReferralCode();
       await this.usersRepository.update(userId, { referralCode: code });
     }
-    
-    const invitedCount = await this.usersRepository.count({ where: { referrerId: userId } });
-    
+
+    const invitedCount = await this.usersRepository.count({
+      where: { referrerId: userId },
+    });
+
     return {
       balance: Number(user.referralBalance || 0),
       invitedCount,
-      referralLink: `https://genyxo.com/?referralCode=${code}`
+      referralLink: `https://genyxo.com/?referralCode=${code}`,
     };
   }
 
   async findByReferralCode(code: string): Promise<User | null> {
     if (!code) return null;
-    return this.usersRepository.findOne({ 
+    return this.usersRepository.findOne({
       where: { referralCode: code },
-      select: ['id']
+      select: ["id"],
     });
   }
 
   async processReferralBonus(buyerId: number, packId: number): Promise<void> {
     const buyer = await this.usersRepository.findOne({
-        where: { id: buyerId },
-        select: ['id', 'referrerId', 'isReferralPaid']
+      where: { id: buyerId },
+      select: ["id", "referrerId", "isReferralPaid"],
     });
 
     if (!buyer || !buyer.referrerId || buyer.isReferralPaid) {
-        return;
+      return;
     }
 
     const rewardAmount = REFERRAL_REWARDS[packId] || 0;
     if (rewardAmount <= 0) return;
 
-    await this.usersRepository.manager.transaction(async (transactionalEntityManager) => {
+    await this.usersRepository.manager.transaction(
+      async (transactionalEntityManager) => {
         const lockedBuyer = await transactionalEntityManager.findOne(User, {
-            where: { id: buyerId },
-            lock: { mode: 'pessimistic_write' }
+          where: { id: buyerId },
+          lock: { mode: "pessimistic_write" },
         });
 
         if (!lockedBuyer || lockedBuyer.isReferralPaid) return;
 
-        await transactionalEntityManager.increment(User, 
-            { id: buyer.referrerId }, 
-            'referralBalance', 
-            rewardAmount
+        await transactionalEntityManager.increment(
+          User,
+          { id: buyer.referrerId },
+          "referralBalance",
+          rewardAmount,
         );
 
-        await transactionalEntityManager.update(User, buyerId, { 
-            isReferralPaid: true 
+        await transactionalEntityManager.update(User, buyerId, {
+          isReferralPaid: true,
         });
-        
-        console.log(`[Affiliate] Reward $${rewardAmount} paid to User ${buyer.referrerId} for User ${buyerId} (Pack ${packId})`);
-    });
+
+        console.log(
+          `[Affiliate] Reward $${rewardAmount} paid to User ${buyer.referrerId} for User ${buyerId} (Pack ${packId})`,
+        );
+      },
+    );
   }
 
-  async logTransaction(userId: number, amount: number, type: TransactionType, description: string) {
+  async logTransaction(
+    userId: number,
+    amount: number,
+    type: TransactionType,
+    description: string,
+  ) {
     const tx = this.transactionRepository.create({
-        userId,
-        creditsAmount: amount,
-        amount: 0,
-        status: TransactionStatus.APPROVED,
-        type,
-        description,
-        provider: 'INTERNAL'
+      userId,
+      creditsAmount: amount,
+      amount: 0,
+      status: TransactionStatus.APPROVED,
+      type,
+      description,
+      provider: "INTERNAL",
     });
     return this.transactionRepository.save(tx);
   }

@@ -1,41 +1,41 @@
-import { 
-  Entity, 
-  Column, 
-  PrimaryGeneratedColumn, 
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
   BeforeInsert,
   OneToMany,
   JoinColumn,
   ManyToOne,
-  Index
-} from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { Role } from './role.enum';
-import { Message } from '../chat/message.entity';
-import { Conversation } from '../chat/conversation.entity';
-import { Transaction } from '../transactions/transaction.entity';
-import { Notification } from '../notifications/notification.entity';
-import { SupportTicket } from '../support/support.entity';
+  Index,
+} from "typeorm";
+import * as bcrypt from "bcrypt";
+import { Role } from "./role.enum";
+import { Message } from "../chat/message.entity";
+import { Conversation } from "../chat/conversation.entity";
+import { Transaction } from "../transactions/transaction.entity";
+import { Notification } from "../notifications/notification.entity";
+import { SupportTicket } from "../support/support.entity";
 
-@Entity('users')
+@Entity("users")
 export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ unique: true, type: 'varchar', length: 255 })
+  @Column({ unique: true, type: "varchar", length: 255 })
   email!: string;
 
-  @Column({ nullable: true, select: false, type: 'varchar' })
+  @Column({ nullable: true, select: false, type: "varchar" })
   password?: string;
 
   @Index()
-  @Column({ nullable: true, type: 'varchar', length: 255 })
+  @Column({ nullable: true, type: "varchar", length: 255 })
   name?: string;
 
-  @Column({ type: 'longtext', nullable: true })
+  @Column({ type: "longtext", nullable: true })
   avatar?: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: Role,
     default: Role.USER,
   })
@@ -44,16 +44,16 @@ export class User {
   @Column({ default: false })
   isEmailVerified!: boolean;
 
-  @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
+  @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   verificationToken?: string | null;
 
-  @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
+  @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   googleId?: string;
 
-  @Column({ nullable: true, select: false, type: 'varchar', length: 255 })
+  @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   facebookId?: string;
 
-  @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
+  @Column({ default: 0, type: "decimal", precision: 10, scale: 2 })
   credits!: number;
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
@@ -62,14 +62,14 @@ export class User {
   @OneToMany(() => SupportTicket, (ticket) => ticket.user)
   tickets?: SupportTicket[];
 
-  @OneToMany(() => Message, (message) => message.user) 
+  @OneToMany(() => Message, (message) => message.user)
   messages?: Message[];
 
   @Column({ nullable: true })
   requestId?: string;
 
-  @Column({ default: 'text' })
-  type?: 'text' | 'video';
+  @Column({ default: "text" })
+  type?: "text" | "video";
 
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications?: Notification[];
@@ -77,20 +77,20 @@ export class User {
   @OneToMany(() => Conversation, (conversation) => conversation.user)
   conversations?: Conversation[];
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: "int", nullable: true })
   referrerId!: number | null;
 
-  @Column({ default: 0, type: 'decimal', precision: 10, scale: 2 })
+  @Column({ default: 0, type: "decimal", precision: 10, scale: 2 })
   referralBalance!: number;
 
-  @Column({ unique:true, nullable: true, type: 'varchar', length: 20 })
+  @Column({ unique: true, nullable: true, type: "varchar", length: 20 })
   referralCode!: string;
 
-  @ManyToOne(() => User, user => user.referrals)
-  @JoinColumn({ name: 'referrerId' })
+  @ManyToOne(() => User, (user) => user.referrals)
+  @JoinColumn({ name: "referrerId" })
   referrer?: User;
 
-  @OneToMany(() => User, user => user.referrer)
+  @OneToMany(() => User, (user) => user.referrer)
   referrals?: User[];
 
   @Column({ default: false })
@@ -99,8 +99,8 @@ export class User {
   @BeforeInsert()
   async hashPassword() {
     if (this.password) {
-        const salt = await bcrypt.genSalt();
-        this.password = await bcrypt.hash(this.password, salt);
+      const salt = await bcrypt.genSalt();
+      this.password = await bcrypt.hash(this.password, salt);
     }
   }
 }

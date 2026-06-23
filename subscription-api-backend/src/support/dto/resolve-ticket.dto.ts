@@ -1,6 +1,6 @@
-import { IsNotEmpty, IsString, IsInt, Min } from 'class-validator';
-import { Transform } from 'class-transformer';
-import sanitizeHtml from 'sanitize-html';
+import { IsNotEmpty, IsString, IsInt, Min } from "class-validator";
+import { Transform } from "class-transformer";
+import sanitizeHtml from "sanitize-html";
 
 export class ResolveTicketDto {
   @IsInt()

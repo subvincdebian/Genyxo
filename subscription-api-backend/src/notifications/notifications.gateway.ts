@@ -3,19 +3,21 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { forwardRef, Inject, Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { NotificationsService } from './notifications.service';
+} from "@nestjs/websockets";
+import { Server, Socket } from "socket.io";
+import { forwardRef, Inject, Logger } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { NotificationsService } from "./notifications.service";
 
 @WebSocketGateway({
-  cors: { origin: 'https://genyxo.com' },
-  namespace: 'notifications',
+  cors: { origin: "https://genyxo.com" },
+  namespace: "notifications",
 })
-export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server!: Server;
-  private logger = new Logger('NotificationsGateway');
+  private logger = new Logger("NotificationsGateway");
   private userSockets = new Map<number, string>();
 
   constructor(
@@ -26,7 +28,8 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
 
   async handleConnection(client: Socket) {
     try {
-      const token = client.handshake.auth?.token || client.handshake.query?.token;
+      const token =
+        client.handshake.auth?.token || client.handshake.query?.token;
       if (!token) return client.disconnect();
 
       const payload = await this.jwtService.verifyAsync(token as string, {
@@ -38,8 +41,10 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       if (userId) {
         this.userSockets.set(Number(userId), client.id);
 
-        const unreadCount = await this.notificationsService.getUnreadCount(Number(userId));
-        client.emit('unread_count_update', { count: unreadCount });
+        const unreadCount = await this.notificationsService.getUnreadCount(
+          Number(userId),
+        );
+        client.emit("unread_count_update", { count: unreadCount });
       }
     } catch (e) {
       client.disconnect();
@@ -59,14 +64,14 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   sendUnreadCount(userId: number, count: number) {
     const socketId = this.userSockets.get(userId);
     if (socketId) {
-      this.server.to(socketId).emit('unread_count_update', { count });
+      this.server.to(socketId).emit("unread_count_update", { count });
     }
   }
 
   sendNotificationToUser(userId: number, data: any) {
     const socketId = this.userSockets.get(userId);
     if (socketId) {
-      this.server.to(socketId).emit('new_notification', data);
+      this.server.to(socketId).emit("new_notification", data);
     }
   }
 }
