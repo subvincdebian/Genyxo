@@ -1,6 +1,9 @@
 var API_BASE_URL = 'https://genyxo.com';
 let socket;
 
+let pollingInterval = null;
+let currentProduct = null;
+
 const urlParams = new URLSearchParams(window.location.search);
 const tokenFromUrl = urlParams.get('token');
 const refCode = urlParams.get('referralCode') || urlParams.get('ref');
@@ -65,9 +68,6 @@ const searchInput = document.querySelector('.search-input');
 const exploreBtn = document.getElementById('exploreBtn');
 const navLinks = document.querySelectorAll('.nav-link');
 
-let pollingInterval = null;
-let currentProduct = null;
-
 const products = [
     { id: 1, price: "$3.99", image: "./images/startai.jpg", alt: "StartAI Pack" },
     { id: 2, price: "$9.99", image: "./images/aiexplorer.jpg", alt: "AI Explorer Pack" },
@@ -83,59 +83,83 @@ const SVG_ICONS = {
 };
 
 function updateBalanceUI(amount) {
-    const creditBalanceEl = document.getElementById('creditBalance');
+    const numericAmount = parseFloat(amount) || 0;
+    const formattedAmount = numericAmount.toLocaleString();
+
     if (creditBalanceEl) {
-        creditBalanceEl.textContent = amount;
+        if (creditBalanceEl.textContent !== formattedAmount) {
+            creditBalanceEl.textContent = formattedAmount;
+        }
+        creditBalanceEl.setAttribute('aria-label', `Your balance: ${formattedAmount} credits.`);
     }
 
-    const menuCredits = document.getElementById('menuCredits');
     if (menuCredits) {
-        menuCredits.textContent = amount;
+        if (menuCredits.textContent !== formattedAmount) {
+            menuCredits.textContent = formattedAmount;
+        }
+        menuCredits.setAttribute('aria-label', `Your balance in menu: ${formattedAmount} credits.`);
     }
 
-    localStorage.setItem('userCredits', amount);
+    localStorage.setItem('userCredits', numericAmount);
 }
 
 function updateUIState(isLoggedIn, userData = null) {
+    const userName = userData?.name || userData?.email || 'User';
+    const userAvatarUrl = userData?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userName)}`;
+
     if (isLoggedIn && userData) {
-        // Якщо користувач увійшов:
-        if (navUsername) navUsername.textContent = userData.name || userData.email || 'User';
+        if (navUsername && navUsername.textContent !== userName) {
+            navUsername.textContent = userName;
+        }
+        
         if (navIcon) navIcon.style.display = 'none';
         
         if (navAvatar) {
             navAvatar.style.display = 'block';
-            navAvatar.src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name || 'User'}`;
-            navAvatar.alt = "User Avatar";
+            if (navAvatar.src !== userAvatarUrl) navAvatar.src = userAvatarUrl;
+            navAvatar.alt = `User Avatar ${userName}`;
         }
 
-        if (menuName) menuName.textContent = userData.name || 'User';
-        if (menuEmail) menuEmail.textContent = userData.email || '';
+        if (menuName && menuName.textContent !== userName) menuName.textContent = userName;
+        if (menuEmail && menuEmail.textContent !== (userData.email || '')) menuEmail.textContent = userData.email || '';
         
         if (dropdownAvatars) {
             dropdownAvatars.forEach(img => {
-                img.src = userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.name || 'User'}`;
-                img.alt = "User Avatar";
+                if (img.src !== userAvatarUrl) img.src = userAvatarUrl;
+                img.alt = `User Avatar ${userName}`;
             });
         }
         
         if (userData.credits !== undefined && menuCredits) {
-             menuCredits.textContent = parseFloat(userData.credits).toLocaleString();
+             const formattedCredits = parseFloat(userData.credits).toLocaleString();
+             if (menuCredits.textContent !== formattedCredits) {
+                 menuCredits.textContent = formattedCredits;
+             }
         }
 
         if (loginBtn) {
             loginBtn.classList.remove('login-btn');
             loginBtn.classList.add('profile-toggle-btn');
+            loginBtn.setAttribute('role', 'button');
+            loginBtn.setAttribute('aria-haspopup', 'true');
+            loginBtn.setAttribute('aria-expanded', 'false'); // will be true while open panel
+            loginBtn.setAttribute('aria-label', 'Open profile panel');
         }
 
     } else {
-        // Якщо гість:
-        if (navUsername) navUsername.textContent = 'Register / Login';
+        // Guest
+        if (navUsername && navUsername.textContent !== 'Register / Login') {
+            navUsername.textContent = 'Register / Login';
+        }
         if (navIcon) navIcon.style.display = 'inline-block';
         if (navAvatar) navAvatar.style.display = 'none';
         
         if (loginBtn) {
             loginBtn.classList.remove('profile-toggle-btn');
             loginBtn.classList.add('login-btn');
+            loginBtn.removeAttribute('aria-haspopup');
+            loginBtn.removeAttribute('aria-expanded');
+            loginBtn.setAttribute('aria-label', 'Login or Register in system');
         }
         
         if (profilePanel) profilePanel.classList.remove('show');
