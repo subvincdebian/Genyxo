@@ -192,14 +192,28 @@ async function updateNotificationsBadge() {
 
     try {
         const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: {
+                'Authrization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
         });
-        if (response.ok) {
-            const data = await response.json();
-            renderBadge(data.count);
+
+        if(response.status === 401 || response.status === 403) {
+            console.warn("Session or token expired. Auto logout...");
+            handleLogout();
+            return;
         }
+
+        if(!response.ok) {
+            throw new Error(`HTTP Error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        const count = typeof data.count === 'number' ? data.count : parseInt(data.count, 10) || 0;
+        renderBadge(count);
     } catch (e) {
-        console.warn("Could not update badge:", e);
+        console.warn("Failed to update notification counter:", e.message);
     }
 }
 
