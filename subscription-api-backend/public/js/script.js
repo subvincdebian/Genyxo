@@ -243,10 +243,6 @@ function handleLogout() {
     window.location.reload();
 }
 
-/**
- * Управляє видимістю кнопки Admin Dashboard на основі ролі користувача
- * Кнопка видима тільки для адміністраторів
- */
 function updateAdminDashboardVisibility() {
     const userRole = localStorage.getItem('userRole');
     const dashboardBtn = document.querySelector('a[href="dashboard.html"]');
@@ -257,6 +253,24 @@ function updateAdminDashboardVisibility() {
         } else {
             dashboardBtn.style.display = 'none';
         }
+    }
+}
+
+function updateAdminDashboardVisibility() {
+    const role = currentUserRole || localStorage.getItem('userRole');
+    const dashboardBtn = document.querySelector('a[href="dashboard.html"]');
+
+    if(!dashboardBtn) return;
+
+    const isAdmin = role === 'admin';
+
+    if (isAdmin) {
+        dashboardBtn.removeAttribute('hidden');
+        if(dashboardBtn.style.display === 'none') {
+            dashboardBtn.style.display = '';
+        }
+    } else {
+        dashboardBtn.setAttribute('hidden', 'true');
     }
 }
 
