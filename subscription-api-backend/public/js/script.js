@@ -187,18 +187,6 @@ function renderBadge(count) {
     }
 }
 
-function renderBadge(count) {
-    const badge = document.getElementById('notificationBadge');
-    if (!badge) return;
-
-    if (count > 0) {
-        badge.style.display = 'flex';
-        badge.innerText = count > 99 ? '99+' : count;
-    } else {
-        badge.style.display = 'none';
-    }
-}
-
 async function updateNotificationsBadge() {
     if (!token) return;
 
