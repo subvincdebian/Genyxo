@@ -86,6 +86,9 @@ function updateBalanceUI(amount) {
     const numericAmount = parseFloat(amount) || 0;
     const formattedAmount = numericAmount.toLocaleString();
 
+    const creditBalanceEl = document.getElementById('creditBalance') || document.querySelector('.credit-balance');
+    const menuCreditsEl = document.getElementById('menuCredits');
+
     if (creditBalanceEl) {
         if (creditBalanceEl.textContent !== formattedAmount) {
             creditBalanceEl.textContent = formattedAmount;
@@ -93,11 +96,11 @@ function updateBalanceUI(amount) {
         creditBalanceEl.setAttribute('aria-label', `Your balance: ${formattedAmount} credits.`);
     }
 
-    if (menuCredits) {
-        if (menuCredits.textContent !== formattedAmount) {
-            menuCredits.textContent = formattedAmount;
+    if (menuCreditsEl) {
+        if (menuCreditsEl.textContent !== formattedAmount) {
+            menuCreditsEl.textContent = formattedAmount;
         }
-        menuCredits.setAttribute('aria-label', `Your balance in menu: ${formattedAmount} credits.`);
+        menuCreditsEl.setAttribute('aria-label', `Your balance in menu: ${formattedAmount} credits.`);
     }
 
     localStorage.setItem('userCredits', numericAmount);

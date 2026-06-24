@@ -339,12 +339,10 @@ function useSuggestion(text) {
 
 async function sendMessage() {
     const text = userInput.value.trim();
-    const selectedModel = modelSelect ? modelSelect.value : 'google/gemini-3.5-flash';
+    const selectedModel = modelSelect ? modelSelect.value : 'google/gemini-2.5-flash';
 
-    // Забираем файлы из глобальной переменной, которая живет в твоем html
     const files = window.attachedFiles ? [...window.attachedFiles] : [];
 
-    // Не отправляем, только если и текст пустой, и картинок нет
     if ((!text && files.length === 0) || !token || sendBtn.disabled) return;
 
     sendBtn.disabled = true;
@@ -352,15 +350,13 @@ async function sendMessage() {
 
     if (!currentChatId) toggleChatView(true);
 
-    // Отрисовываем сообщение с текстом и файлами
     appendMessage('user', text, '', files);
     
-    // Очищаем поле ввода и сбрасываем файлы в UI над инпутом
     userInput.value = '';
     userInput.style.height = 'auto';
     window.attachedFiles = []; 
     if (typeof renderAllPreviews === 'function') {
-        renderAllPreviews(); // Твоя функция из html для скрытия превьюшек
+        renderAllPreviews(); 
     }
 
     const botBubble = appendMessage('bot', '<div class="typing-indicator"><span></span><span></span><span></span></div>');
@@ -372,7 +368,6 @@ async function sendMessage() {
     const controller = new AbortController();
 
     try {
-        // Конвертируем картинки для отправки на сервер
         const base64Files = [];
         for (const file of files) {
             const base64Data = await fileToBase64(file);
@@ -383,8 +378,6 @@ async function sendMessage() {
             });
         }
 
-        // ВАЖНО: Мы меняем архитектуру с GET на POST.
-        // Сервер должен ожидать получение данных в body, а не в параметрах URL!
         const url = `${API_BASE_URL}/chat/stream`;
         
         const payload = {
@@ -397,11 +390,11 @@ async function sendMessage() {
         }
 
         const response = await fetch(url, {
-            method: 'POST', // Меняем на POST
+            method: 'POST', 
             signal: controller.signal,
             headers: { 
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json', // Обязательно указываем JSON
+                'Content-Type': 'application/json', 
                 'Accept': 'text/event-stream' 
             },
             body: JSON.stringify(payload)
@@ -412,8 +405,8 @@ async function sendMessage() {
                 window.location.href = '/index.html';
                 return;
             }
-            const errData = await response.json();
-            throw new Error(errData.message || 'Server error');
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || `Server error: ${response.status}`);
         }
 
         const reader = response.body.getReader();
@@ -440,6 +433,10 @@ async function sendMessage() {
                     try {
                         const data = JSON.parse(jsonStr);
 
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+
                         if (data.token) {
                             if (fullContent === "") contentDiv.innerHTML = "";
                             fullContent += data.token;
@@ -457,7 +454,6 @@ async function sendMessage() {
                         if (data.conversationId && !currentChatId) {
                             currentChatId = data.conversationId;
                             updateUrl(data.conversationId);
-                            // Если пользователь отправил только картинку без текста, используем 'Image' как название чата
                             const chatTitle = text ? text.slice(0, 30) : 'Image description';
                             conversations.unshift({ 
                                 id: currentChatId, 
@@ -478,7 +474,9 @@ async function sendMessage() {
                             updateBalanceUI(data.creditBalance);
                         }
                     } catch (e) { 
-                        console.error("JSON parse error in stream:", e, "Line was:", line); 
+                        if (e.message !== "Unexpected end of JSON input" && !e.message.includes('JSON')) {
+                            throw e;
+                        }
                     }
                 }
             }

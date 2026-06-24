@@ -164,20 +164,20 @@ export class ChatService {
     files: IAttachedFile[],
     res: Response
   ) {
-      const displayTitle = text || (files.length > 0 ? `Sent ${files.length} file(s)` : 'New Chat');
-      let conversation = await this.getOrCreateConversation(userId, conversationId, displayTitle);
-      
-      await this.saveMessage(conversation, text, 'user', model, userId, undefined, files);
-
-      let fullReply = '';
       const abortController = new AbortController();
 
-      // Отменяем генерацию у провайдера, если клиент оборвал соединение
       res.on('close', () => {
           abortController.abort();
       });
 
       try {
+        const displayTitle = text || (files.length > 0 ? `Sent ${files.length} file(s)` : 'New Chat');
+        let conversation = await this.getOrCreateConversation(userId, conversationId, displayTitle);
+        
+        await this.saveMessage(conversation, text, 'user', model, userId, undefined, files);
+
+        let fullReply = '';
+        
         const dbMessages = await this.messageRepository.find({
           where: { conversationId: conversation.id },
           order: { createdAt: 'ASC' },
@@ -199,17 +199,17 @@ export class ChatService {
             const parts: any[] = [textPart];
 
             if (isLastMessage && m.files && m.files.length > 0) {
-              for (const file of m.files) {
-                parts.push({ inlineData: { data: file.data, mimeType: file.mime_type } });
-              }
+                for (const file of m.files) {
+                    parts.push({ inlineData: { data: file.data, mimeType: file.mime_type } });
+                }
             } else if (m.files && m.files.length > 0) {
-              parts.push({ text: `[System: User attached ${m.files.length} file(s) earlier]` });
+                parts.push({ text: `[System: User attached ${m.files.length} file(s) earlier]` });
             }
 
             if (lastRole === role && contents.length > 0) {
-              contents[contents.length - 1].parts.push(...parts);
+                contents[contents.length - 1].parts.push(...parts);
             } else {
-              contents.push({ role, parts });
+                contents.push({ role, parts });
             }
             lastRole = role;
           }
@@ -236,6 +236,7 @@ export class ChatService {
             }
 
             const hasFiles = isLastMessage && m.files && m.files.length > 0;
+
             if (!hasFiles) {
                 return { role, content: m.content || ' ' };
             }
@@ -295,11 +296,11 @@ export class ChatService {
           }
 
           this.logger.error(`Stream Error: ${error.message}`);
-
+          
           await this.usersService.addCredits(userId, cost);
           await this.usersService.logTransaction(userId, cost, TransactionType.REFUND, `Stream Error Refund: ${model}`);
           
-          res.write(`data: ${JSON.stringify({ error: 'Connection lost or API error during processing' })}\n\n`);
+          res.write(`data: ${JSON.stringify({ error: error.message || 'Connection lost or payload too large' })}\n\n`);
           res.end();
       }
   }
