@@ -45,7 +45,7 @@ export class PricingService {
 
   getModelConfig(modelId: string) {
     const config = this.MODELS_CONFIG[modelId];
-    if (!config) return { cost: 100, type: ModelType.TEXT };
+    if (!config) return undefined;
     return config;
   }
 

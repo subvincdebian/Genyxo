@@ -11,20 +11,20 @@ import {
   Patch,
   NotFoundException,
   InternalServerErrorException,
-  Query,
-  Sse,
-  MessageEvent,
-  Headers
+  Headers,
+  Res
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
-import { Observable } from 'rxjs';
 import { TransactionType } from '../transactions/transaction.entity';
 import { UsersService } from '../users/users.service';
 import { ChatService } from './chat.service';
 import { FalService } from './fal.service';
 import { PricingService } from './pricing.service';
 import { SendMessageDto } from './dto/send-message.dto';
+import { StreamMessageDto } from './dto/stream-message.dto';
+import * as crypto from 'crypto';
 
 @Controller('chat')
 export class ChatController {
@@ -49,45 +49,59 @@ export class ChatController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Sse('stream')
+  @Post('stream')
   async streamMessage(
-    @Query('message') message: string,
-    @Query('model') model: string,
-    @Query('conversationId') conversationId: string,
-    @Request() req
-  ): Promise<Observable<MessageEvent>> {
+    @Body() dto: StreamMessageDto,
+    @Request() req,
+    @Res() res: Response
+  ) {
     const userId = req.user.id;
+    const { message, model, conversationId, files } = dto;
     const selectedModel = model || 'openai/gpt-4o-mini';
-    const convId = conversationId ? parseInt(conversationId) : 0;
+    const convId = conversationId ? Number(conversationId) : undefined;
 
     const modelConfig = this.pricingService.getModelConfig(selectedModel);
+    if (!modelConfig) throw new BadRequestException(`Model ${selectedModel} not supported`);
+    
     const cost = modelConfig.cost;
-
     const isDeducted = await this.usersService.deductCredits(userId, cost);
     if (!isDeducted) throw new ForbiddenException('Not enough credits');
 
-    return this.chatService.processStreamingMessage(userId, message, selectedModel, convId, cost);
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    await this.chatService.processStreamingMessage(
+      userId,
+      message || '',
+      selectedModel,
+      convId,
+      cost,
+      files || [],
+      res
+    );
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('message')
   async sendMessage(@Body() dto: SendMessageDto, @Request() req) {
       const userId = req.user.id;
-      const { message, conversationId, model } = dto;
+      const { message, conversationId, model, files } = dto;
 
       const modelConfig = this.pricingService.getModelConfig(model);
       if (!modelConfig) throw new BadRequestException(`Model ${model} not supported`);
 
       const cost = modelConfig.cost;
-
-      if (!message?.trim()) throw new BadRequestException("Message cannot be empty");
-      if (message.length > 750) throw new BadRequestException("Message too long");
+      if (!message?.trim() && (!files || files.length === 0)) {
+         throw new BadRequestException("Message or files must be provided");
+      }
 
       const isDeducted = await this.usersService.deductCredits(userId, cost);
       if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
 
       try {
-          const result = await this.chatService.processMessage(userId, message, model, conversationId);
+          const result = await this.chatService.processMessage(userId, message || '', model, conversationId, files || []);
           await this.usersService.logTransaction(
               userId, 
               -cost,
@@ -99,20 +113,15 @@ export class ChatController {
             ...result,
             creditsLeft: await this.usersService.getBalance(userId)
           };
-
       } catch (error) {
           await this.usersService.addCredits(userId, cost);
-
           await this.usersService.logTransaction(
             userId, 
             cost, 
             TransactionType.REFUND, 
             `Refund for failed ${model} request`
           );
-          
-          throw new InternalServerErrorException(
-              "The AI service is temporarily unavailable. Your credits have been refunded."
-          );
+          throw new InternalServerErrorException("The AI service is temporarily unavailable.");
       }
   }
 
@@ -123,19 +132,21 @@ export class ChatController {
   }
 
   @Post('webhook/video')
-  async handleFalWebhook(
-    @Body() data: any, 
-    @Headers('x-webhook-secret') secret: string
-  ) {
-    const configSecret = this.configService.get('WEBHOOK_SECRET');
-    if (secret !== configSecret) throw new ForbiddenException('Invalid webhook secret');
+  async handleFalWebhook(@Body() data: any, @Headers('x-webhook-secret') secret: string) {
+    const configSecret = this.configService.get<string>('WEBHOOK_SECRET');
+    
+    if (!secret || !configSecret || secret.length !== configSecret.length) {
+      throw new ForbiddenException('Invalid webhook secret');
+    }
+    
+    const isMatch = crypto.timingSafeEqual(Buffer.from(secret), Buffer.from(configSecret));
+    if (!isMatch) throw new ForbiddenException('Invalid webhook secret');
 
     const { request_id, status, payload } = data;
-
     if (status === 'COMPLETED' && payload?.video?.url) {
       await this.chatService.updateVideoUrl(request_id, payload.video.url);
     } else if (status === 'ERROR') {
-      await this.chatService.updateVideoUrl(request_id, "❌ Error Generating Video.");
+      await this.chatService.updateVideoUrl(request_id, "ERROR: Generation failed");
     }
     return { status: 'ok' };
   }
@@ -146,10 +157,14 @@ export class ChatController {
       const message = await this.chatService.getMessageById(id);
       if (!message) throw new NotFoundException('Message not found');
 
-      const isReady = message.content.startsWith('http');
-      return {
-          isReady: isReady,
-          videoUrl: isReady ? message.content : null
+      const isError = message.content.startsWith('ERROR:');
+      const isReady = message.content.startsWith('http') || isError;
+
+      return { 
+        isReady,
+        isError, 
+        videoUrl: message.content.startsWith('http') ? message.content : null,
+        errorDetails: isError ? message.content : null
       };
   }
 }

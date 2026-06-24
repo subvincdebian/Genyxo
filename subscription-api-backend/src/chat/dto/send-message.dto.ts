@@ -1,13 +1,27 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, MaxLength } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsString, IsNotEmpty, IsOptional, IsInt, MaxLength, IsArray, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import sanitizeHtml from 'sanitize-html';
+
+export class AttachedFileDto {
+  @IsString()
+  @IsNotEmpty()
+  mime_type!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  data!: string; // Base64
+
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+}
 
 export class SendMessageDto {
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(1000)
-  @Transform(({ value }) => sanitizeHtml(value))
-  message!: string;
+  @IsOptional()
+  @MaxLength(2000)
+  @Transform(({ value }) => value ? sanitizeHtml(value) : '')
+  message?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -15,5 +29,12 @@ export class SendMessageDto {
 
   @IsOptional()
   @IsInt()
+  @Type(() => Number)
   conversationId?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type (() => AttachedFileDto)
+  files?: AttachedFileDto[];
 }

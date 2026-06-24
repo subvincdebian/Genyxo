@@ -339,7 +339,7 @@ function useSuggestion(text) {
 
 async function sendMessage() {
     const text = userInput.value.trim();
-    const selectedModel = modelSelect ? modelSelect.value : 'openai/gpt-4o-mini';
+    const selectedModel = modelSelect ? modelSelect.value : 'google/gemini-3.5-flash';
 
     // Забираем файлы из глобальной переменной, которая живет в твоем html
     const files = window.attachedFiles ? [...window.attachedFiles] : [];

@@ -3,6 +3,12 @@ import { Index } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Conversation } from './conversation.entity';
 
+export interface IAttachedFile {
+  mime_type: string;
+  data: string; //Base64
+  name: string;
+}
+
 @Entity('messages')
 @Index(['conversationId', 'createdAt'])
 export class Message {
@@ -42,4 +48,8 @@ export class Message {
 
   @Column({ default: 'text' })
   type!: 'text' | 'video';
+
+  // meta + base64
+  @Column({ type: 'json', nullable: true })
+  files!: IAttachedFile[] | null;
 }
