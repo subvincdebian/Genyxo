@@ -4,7 +4,6 @@ import {
   Body,
   UseGuards,
   Request,
-  Res,
   ForbiddenException,
   BadRequestException,
   Get,
@@ -17,7 +16,6 @@ import {
   MessageEvent,
   Headers
 } from '@nestjs/common';
-import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
@@ -51,42 +49,24 @@ export class ChatController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('stream')
-  async stream(
-    @Body() sendMessageDto: SendMessageDto,
-    @Request() req,
-    @Res() res: Response
-  ): Promise<void> {
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
+  @Sse('stream')
+  async streamMessage(
+    @Query('message') message: string,
+    @Query('model') model: string,
+    @Query('conversationId') conversationId: string,
+    @Request() req
+  ): Promise<Observable<MessageEvent>> {
+    const userId = req.user.id;
+    const selectedModel = model || 'openai/gpt-4o-mini';
+    const convId = conversationId ? parseInt(conversationId) : 0;
 
-      try {
+    const modelConfig = this.pricingService.getModelConfig(selectedModel);
+    const cost = modelConfig.cost;
 
-          const streamSubject = await this.chatService.createChatStream(req.user.id, sendMessageDto);
-          
-          const subscription = streamSubject.subscribe({
-              next: (event: any) => {
-                  res.write(`data: ${JSON.stringify(event)}\n\n`);
-              },
-              error: (err: any) => {
-                  res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
-                  res.end();
-              },
-              complete: () => {
-                  res.write('data: [DONE]\n\n');
-                  res.end();
-              }
-          });
+    const isDeducted = await this.usersService.deductCredits(userId, cost);
+    if (!isDeducted) throw new ForbiddenException('Not enough credits');
 
-          req.on('close', () => {
-              subscription.unsubscribe();
-          });
-
-      } catch (error: any) {
-          res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
-          res.end();
-      }
+    return this.chatService.processStreamingMessage(userId, message, selectedModel, convId, cost);
   }
 
   @UseGuards(AuthGuard('jwt'))

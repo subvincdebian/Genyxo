@@ -261,28 +261,6 @@ export class ChatService {
           history: geminiHistory.slice(0, -1)
         });
 
-        const parts: any[] = [];
-
-        if (sendMessageDto.message) {
-          parts.push({ text: sendMessageDto.message });
-        }
-
-        if (sendMessageDto.files && sendMessageDto.files.length > 0) {
-          sendMessageDto.files.forEach(file => {
-              parts.push({
-                  inlineData: {
-                      data: file.data.includes(',') ? file.data.split(',')[1] : file.data,
-                      mimeType: file.mime_type
-                  }
-              });
-          });
-        }
-
-      const modelInstance = this.googleAI.getGenerativeModel({ model: sendMessageDto.model });
-      const result = await modelInstance.generateContentStream({
-          contents: [{ role: 'user', parts: parts }]
-      });
-
         const lastMessage = geminiHistory[geminiHistory.length - 1].parts[0].text || '';
         const result = await chatSession.sendMessage(lastMessage);
         const responseText = result.response.text();
