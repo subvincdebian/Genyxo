@@ -58,6 +58,22 @@ function toggleChatView(hasMessages) {
     }
 }
 
+function toggleChatView(hasMessages) {
+    if(!DOM.welcomeScreen || !DOM.chatBox) return;
+
+    DOM.welcomeScreen.classList.toggle('hidden', hasMessages);
+    DOM.chatBox.classList.toggle('hidden', !hasMessages);
+
+    if(hasMessages) {
+        DOM.chatBox.classList.add('flex-display');
+    } else {
+        DOM.chatBox.classList.remove('flex-display')
+    }
+
+    DOM.welcomeScreen.setAttribute('aria-hidden', hasMessages);
+    DOM.chatBox.setAttribute('aria-hidden', !hasMessages);
+}
+
 function scrollToBottom() {
     const threshold = 100;
     const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight <= threshold;
