@@ -1,5 +1,6 @@
 let currentChatId = null; 
 let conversations = [];
+let _scrollPending = false; // scrollToBottom()
 
 const DOM = {
     chatBox: document.getElementById('chatBox'),
@@ -27,12 +28,12 @@ const toggleBtn = DOM.toggleBtn;
 const sidebar = DOM.sidebar;
 const sidebarOverlay = DOM.sidebarOverlay;
 
-function updateUrl(id) {
+function updateUrl(id, push = false) {
     try {
         const url = new URL(window.location.href);
         const currentId = url.searchParams.get('id');
 
-        const normalizedId = id ? String(id) : null;
+        const normalizedId = (id && id !== 'null') ? String(id) : null;
 
         if(currentId === normalizedId) return;
 
@@ -42,44 +43,65 @@ function updateUrl(id) {
             url.searchParams.delete('id')
         }
 
-        window.history.pushState({ chatId: normalizedId }, '', url.pathname + url.search);
+        const state = { chatId: normalizedId };
+        const newUrl = url.pathname + url.search;
+
+        if (push) {
+            window.history.pushState(state, '', newUrl);
+        } else {
+            window.history.replaceState(state, '', newUrl);
+        }
     } catch (error) {
         console.error("Failed to update URL:", error);
     }
 }
 
 function toggleChatView(hasMessages) {
+    const { welcomeScreen, chatBox } = DOM;
     if (!DOM.welcomeScreen || !DOM.chatBox) return;
 
-    DOM.welcomeScreen.classList.toggle('hidden', hasMessages);
-    DOM.chatBox.classList.toggle('hidden', !hasMessages);
+    welcomeScreen.classList.toggle('hidden', hasMessages);
+    chatBox.classList.toggle('hidden', !hasMessages);
+
+    chatBox.classList.toggle('flex-display', hasMessages);
+
+    welcomeScreen.setAttribute('aria-hidden', hasMessages ? 'true' : 'false');
+    chatBox.setAttribute('aria-hidden', hasMessages ? 'false' : 'true');
 
     if (hasMessages) {
-        DOM.chatBox.classList.add('flex-display');
-    } else {
-        DOM.chatBox.classList.remove('flex-display');
+        chatBox.setAttribute('tabindex', '-1');
+        requestAnimationFrame(() => {
+            if (!chatBox.contains(document.activeElement)) {
+                chatBox.focus({ preventScroll: true });
+            }
+        });
     }
-
-    DOM.welcomeScreen.setAttribute('aria-hidden', hasMessages);
-    DOM.chatBox.setAttribute('aria-hidden', !hasMessages);
 }
 
 function scrollToBottom(force = false) {
-    if (!DOM.chatBox) return;
+    const box = DOM.chatBox;
+    if (!box) return;
 
-    const { scrollHeight, scrollTop, clientHeight } = DOM.chatBox;
-    
-    const threshold = 150; 
-    const isCloseToBottom = (scrollHeight - scrollTop - clientHeight) <= threshold;
+    if (_scrollPending && !force) return;
 
-    if (force || isCloseToBottom) {
-        requestAnimationFrame(() => {
-            DOM.chatBox.scrollTo({
-                top: DOM.chatBox.scrollHeight,
-                behavior: force ? 'auto' : 'smooth' 
+    _scrollPending = true;
+
+    requestAnimationFrame(() => {
+        _scrollPending = false;
+
+        const { scrollHeight, scrollTop, clientHeight } = box;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+        const THRESHOLD = 150;
+        const isNearBottom = distanceFromBottom <= THRESHOLD;
+
+        if (force || isNearBottom) {
+            box.scrollTo({
+                top: scrollHeight,
+                behavior: force ? 'auto' : 'smooth',
             });
-        });
-    }
+        }
+    });
 }
 
 function showModal(title, placeholder = null) {
