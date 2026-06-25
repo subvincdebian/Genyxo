@@ -49,39 +49,35 @@ function updateUrl(id) {
 }
 
 function toggleChatView(hasMessages) {
-    if (hasMessages) {
-        welcomeScreen.style.display = 'none';
-        chatBox.style.display = 'flex';
-    } else {
-        welcomeScreen.style.display = 'flex';
-        chatBox.style.display = 'none';
-    }
-}
-
-function toggleChatView(hasMessages) {
-    if(!DOM.welcomeScreen || !DOM.chatBox) return;
+    if (!DOM.welcomeScreen || !DOM.chatBox) return;
 
     DOM.welcomeScreen.classList.toggle('hidden', hasMessages);
     DOM.chatBox.classList.toggle('hidden', !hasMessages);
 
-    if(hasMessages) {
+    if (hasMessages) {
         DOM.chatBox.classList.add('flex-display');
     } else {
-        DOM.chatBox.classList.remove('flex-display')
+        DOM.chatBox.classList.remove('flex-display');
     }
 
     DOM.welcomeScreen.setAttribute('aria-hidden', hasMessages);
     DOM.chatBox.setAttribute('aria-hidden', !hasMessages);
 }
 
-function scrollToBottom() {
-    const threshold = 100;
-    const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight <= threshold;
+function scrollToBottom(force = false) {
+    if (!DOM.chatBox) return;
 
-    if (isAtBottom) {
-        chatBox.scrollTo({
-            top: chatBox.scrollHeight,
-            behavior: 'smooth'
+    const { scrollHeight, scrollTop, clientHeight } = DOM.chatBox;
+    
+    const threshold = 150; 
+    const isCloseToBottom = (scrollHeight - scrollTop - clientHeight) <= threshold;
+
+    if (force || isCloseToBottom) {
+        requestAnimationFrame(() => {
+            DOM.chatBox.scrollTo({
+                top: DOM.chatBox.scrollHeight,
+                behavior: force ? 'auto' : 'smooth' 
+            });
         });
     }
 }
