@@ -207,21 +207,36 @@ async function deleteChat(id) {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (res.ok) {
-            const element = document.getElementById(`chat-item-${id}`);
-            if (element) element.remove();
-
-            conversations = conversations.filter(c => c.id !== id);
-
-            if (currentChatId === id) {
-                currentChatId = null;
-                chatBox.innerHTML = '';
-                welcomeScreen.style.display = 'flex';
-                updateUrl(null);
-            }
+        if (!res.ok) {
+            throw new Error(`Server responded with status: ${res.status}`);
         }
+
+        const element = document.getElementById(`chat-item-${id}`);
+        if (element) {
+            element.remove();
+        }
+
+        conversations = conversations.filter(c => c.id !== id);
+
+        if (currentChatId === id) {
+            currentChatId = null;
+            
+            if (DOM.chatBox) {
+                DOM.chatBox.innerHTML = '';
+            }
+            
+            toggleChatView(false); 
+            updateUrl(null);
+        }
+        
+        if (typeof showToast === 'function') showToast('Chat deleted', 'success');
     } catch (err) {
         console.error('Error while deleting:', err);
+        if (typeof showToast === 'function') {
+            showToast('Failed to delete chat.', 'error');
+        } else {
+            alert('Error: Failed to delete chat.');
+        }
     }
 }
 
