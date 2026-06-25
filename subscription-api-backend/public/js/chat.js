@@ -1,23 +1,51 @@
 let currentChatId = null; 
 let conversations = [];
 
-const chatBox = document.getElementById('chatBox');
-const welcomeScreen = document.getElementById('welcomeScreen');
-const userInput = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
-const typingIndicator = document.getElementById('typingIndicator');
-const modelSelect = document.getElementById('modelSelect');
-const historyList = document.getElementById('historyList');
+const DOM = {
+    chatBox: document.getElementById('chatBox'),
+    welcomeScreen: document.getElementById('welcomeScreen'),
+    userInput: document.getElementById('userInput'),
+    sendBtn: document.getElementById('sendBtn'),
+    typingIndicator: document.getElementById('typingIndicator'),
+    modelSelect: document.getElementById('modelSelect'),
+    historyList: document.getElementById('historyList'),
+    navAvatarImg: document.getElementById('navAvatar') || document.getElementById('navAvatarImg'),
+    toggleBtn: document.getElementById('sidebarToggle'),
+    sidebar: document.getElementById('sidebar'),
+    sidebarOverlay: document.getElementById('sidebarOverlay'),
+    newChatBtn: document.querySelector('.new-chat-btn')
+};
 
-const navAvatarImg = document.getElementById('navAvatar') || document.getElementById('navAvatarImg');
-
-const toggleBtn = document.getElementById('sidebarToggle');
-const sidebar = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
+const chatBox = DOM.chatBox;
+const welcomeScreen = DOM.welcomeScreen;
+const userInput = DOM.userInput;
+const sendBtn = DOM.sendBtn;
+const modelSelect = DOM.modelSelect;
+const historyList = DOM.historyList;
+const navAvatarImg = DOM.navAvatarImg;
+const toggleBtn = DOM.toggleBtn;
+const sidebar = DOM.sidebar;
+const sidebarOverlay = DOM.sidebarOverlay;
 
 function updateUrl(id) {
-    const newUrl = `${window.location.pathname}?id=${id}`;
-    window.history.pushState({ path: newUrl }, '', newUrl);
+    try {
+        const url = new URL(window.location.href);
+        const currentId = url.searchParams.get('id');
+
+        const normalizedId = id ? String(id) : null;
+
+        if(currentId === normalizedId) return;
+
+        if(normalizedId) {
+            url.searchParams.set('id', normalizedId);
+        } else {
+            url.searchParams.delete('id')
+        }
+
+        window.history.pushState({ chatId: normalizedId }, '', url.pathname + url.search);
+    } catch (error) {
+        console.error("Failed to update URL:", error);
+    }
 }
 
 function toggleChatView(hasMessages) {
