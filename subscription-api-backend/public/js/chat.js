@@ -33,14 +33,16 @@ function updateUrl(id, push = false) {
         const url = new URL(window.location.href);
         const currentId = url.searchParams.get('id');
 
-        const normalizedId = (id && id !== 'null') ? String(id) : null;
+        const normalizedId = (id !== null && id !== undefined && String(id).trim() !== '' && String(id) !== 'null') 
+            ? String(id) 
+            : null;
 
-        if(currentId === normalizedId) return;
+        if (currentId === normalizedId) return;
 
-        if(normalizedId) {
+        if (normalizedId) {
             url.searchParams.set('id', normalizedId);
         } else {
-            url.searchParams.delete('id')
+            url.searchParams.delete('id');
         }
 
         const state = { chatId: normalizedId };
@@ -56,19 +58,21 @@ function updateUrl(id, push = false) {
     }
 }
 
-function toggleChatView(hasMessages) {
+function toggleChatView(isChatActive) {
     const { welcomeScreen, chatBox } = DOM;
-    if (!DOM.welcomeScreen || !DOM.chatBox) return;
+    if (!welcomeScreen || !chatBox) return;
 
-    welcomeScreen.classList.toggle('hidden', hasMessages);
-    chatBox.classList.toggle('hidden', !hasMessages);
+    welcomeScreen.style.display = '';
+    chatBox.style.display = '';
 
-    chatBox.classList.toggle('flex-display', hasMessages);
+    welcomeScreen.classList.toggle('hidden', isChatActive);
+    chatBox.classList.toggle('hidden', !isChatActive);
+    chatBox.classList.toggle('flex-display', isChatActive);
 
-    welcomeScreen.setAttribute('aria-hidden', hasMessages ? 'true' : 'false');
-    chatBox.setAttribute('aria-hidden', hasMessages ? 'false' : 'true');
+    welcomeScreen.setAttribute('aria-hidden', isChatActive ? 'true' : 'false');
+    chatBox.setAttribute('aria-hidden', isChatActive ? 'false' : 'true');
 
-    if (hasMessages) {
+    if (isChatActive) {
         chatBox.setAttribute('tabindex', '-1');
         requestAnimationFrame(() => {
             if (!chatBox.contains(document.activeElement)) {
@@ -80,7 +84,7 @@ function toggleChatView(hasMessages) {
 
 function scrollToBottom(force = false) {
     const box = DOM.chatBox;
-    if (!box) return;
+    if (!box || box.classList.contains('hidden')) return;
 
     if (_scrollPending && !force) return;
 
@@ -347,18 +351,20 @@ function startNewChat(e) {
     if (e) e.preventDefault();
     
     currentChatId = null;
-    chatBox.innerHTML = '';
-    welcomeScreen.style.display = 'flex';
+    
+    if (DOM.chatBox) {
+        DOM.chatBox.innerHTML = '';
+    }
+
+    toggleChatView(false); 
     
     document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
     
     updateUrl(null);
     
     if (window.innerWidth <= 768) {
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.querySelector('.sidebar-overlay');
-        if(sidebar) sidebar.classList.remove('mobile-open');
-        if(overlay) overlay.classList.remove('active');
+        DOM.sidebar?.classList.remove('mobile-open', 'active');
+        DOM.sidebarOverlay?.classList.remove('active', 'show');
     }
 }
 
@@ -426,23 +432,29 @@ async function selectChat(id) {
     
     currentChatId = id;
     renderHistoryList();
-    toggleChatView(true);
+    
+    toggleChatView(true); 
     updateUrl(id);
 
     try {
         const res = await fetch(`${API_BASE_URL}/chat/history/${id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        
         if (res.ok) {
             const messages = await res.json();
-            chatBox.innerHTML = ''; 
-            if (messages.length > 0) {
+            
+            if (DOM.chatBox) DOM.chatBox.innerHTML = ''; 
+            
+            if (messages && messages.length > 0) {
                 messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
-            } else {
-                toggleChatView(false);
             }
+            
+            scrollToBottom(true);
         }
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+        console.error("Failed to load chat history:", e); 
+    }
 }
 
 async function loadConversations() {
