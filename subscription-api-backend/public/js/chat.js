@@ -159,8 +159,11 @@ async function renameChat(id) {
     if (!chat) return;
 
     const newTitle = await showModal('Enter a new chat name', chat.title);
+
+    if (newTitle === null) return;
     
-    if (newTitle === null || newTitle.trim() === '') return;
+    const trimmedTitle = newTitle.trim();
+    if (trimmedTitle === '' || trimmedTitle === chat.title) return;
 
     try {
         const res = await fetch(`${API_BASE_URL}/chat/conversations/${id}`, {
@@ -169,17 +172,28 @@ async function renameChat(id) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ title: newTitle.trim() })
+            body: JSON.stringify({ title: trimmedTitle })
         });
 
-        if (res.ok) {
-            const titleElement = document.querySelector(`#chat-item-${id} .title-text`);
-            if (titleElement) titleElement.textContent = newTitle.trim();
-
-            chat.title = newTitle.trim();
+        if (!res.ok) {
+            throw new Error(`Server responded with status: ${res.status}`);
         }
+
+        const titleElement = document.querySelector(`#chat-item-${id} .title-text`);
+        if (titleElement) {
+            titleElement.textContent = trimmedTitle;
+        }
+
+        chat.title = trimmedTitle;
+        
+        if (typeof showToast === 'function') showToast('Chat renamed successfully', 'success');
     } catch (err) {
         console.error('Error while renaming:', err);
+        if (typeof showToast === 'function') {
+            showToast('Failed to rename chat. Try again.', 'error');
+        } else {
+            alert('Error: Failed to rename chat.');
+        }
     }
 }
 
