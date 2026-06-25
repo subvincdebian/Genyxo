@@ -1168,3 +1168,7 @@ display: block !important;
 .flex-display {
     display: flex;
 }
+
+.show { 
+    display: flex !important; 
+}

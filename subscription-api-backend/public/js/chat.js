@@ -88,24 +88,66 @@ function showModal(title, placeholder = null) {
         const input = document.getElementById('modalInput');
         const confirmBtn = document.getElementById('modalConfirm');
         const cancelBtn = document.getElementById('modalCancel');
+        const titleEl = document.getElementById('modalTitle');
         
-        document.getElementById('modalTitle').textContent = title;
-        modal.style.display = 'flex';
+        if (!modal || !confirmBtn || !cancelBtn || !titleEl) {
+            console.error('Критична помилка: Елементи модального вікна не знайдені в DOM.');
+            return resolve(null);
+        }
+
+        const previousActiveElement = document.activeElement;
+
+        titleEl.textContent = title;
+        
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
         
         if (placeholder !== null) {
-            input.style.display = 'block';
+            input.classList.remove('hidden');
             input.value = placeholder;
-            setTimeout(() => input.focus(), 50);
+            requestAnimationFrame(() => input.focus());
         } else {
-            input.style.display = 'none';
+            input.classList.add('hidden');
+            requestAnimationFrame(() => confirmBtn.focus());
         }
 
         const cleanup = (result) => {
+            window.removeEventListener('keydown', handleGlobalKeyDown);
+            if (placeholder !== null) {
+                input.removeEventListener('keydown', handleInputKeyDown);
+            }
+            
             confirmBtn.onclick = null;
             cancelBtn.onclick = null;
-            modal.style.display = 'none';
+            
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+
+            if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+                previousActiveElement.focus();
+            }
+            
             resolve(result);
         };
+
+        const handleGlobalKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                cleanup(null);
+            }
+        };
+
+        const handleInputKeyDown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirmBtn.click();
+            }
+        };
+
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        if (placeholder !== null) {
+            input.addEventListener('keydown', handleInputKeyDown);
+        }
 
         confirmBtn.onclick = () => cleanup(placeholder !== null ? input.value : true);
         cancelBtn.onclick = () => cleanup(null);
