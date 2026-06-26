@@ -759,6 +759,7 @@ function ensureFileInspector() {
                     <span class="file-inspect-title" id="fileInspectTitle"></span>
                     <span class="file-inspect-meta"></span>
                 </div>
+                <div class="file-inspect-actions"></div>
             </div>
             <div class="file-inspect-body"></div>
         </aside>
@@ -807,12 +808,14 @@ async function openFileInspector(file, fallbackImageSrc = '') {
     const meta = viewer.querySelector('.file-inspect-meta');
     const icon = viewer.querySelector('.file-inspect-file-icon');
     const body = viewer.querySelector('.file-inspect-body');
+    const actions = viewer.querySelector('.file-inspect-actions');
     const mimeType = getAttachmentMime(file);
     const fileName = getAttachmentName(file);
 
     title.textContent = fileName;
     meta.textContent = [getAttachmentKind(file), getAttachmentSize(file)].filter(Boolean).join(' • ');
     icon.className = `file-inspect-file-icon ${getAttachmentIcon(file)}`;
+    actions.replaceChildren();
     body.innerHTML = '<div class="file-inspect-loading"><i class="fas fa-circle-notch fa-spin"></i><span>Loading preview...</span></div>';
     viewer.classList.add('show');
 
@@ -845,6 +848,10 @@ async function openFileInspector(file, fallbackImageSrc = '') {
     const text = await getAttachmentPreviewText(file);
     if (text) {
         body.innerHTML = '';
+        actions.append(
+            createCodeActionButton('fas fa-download', 'Download file', () => downloadTextFile(text, fileName)),
+            createCodeActionButton('far fa-copy', 'Copy file', () => copyTextToClipboard(text))
+        );
         const wrapper = document.createElement('div');
         wrapper.className = 'file-code-preview';
         const pre = document.createElement('pre');
@@ -945,10 +952,16 @@ function highlightCode(code, language = '') {
     const html = escapeHtml(code);
     const keywords = /\b(const|let|var|function|return|if|else|for|while|class|new|async|await|try|catch|import|from|export|default|type|interface|extends|public|private|protected|static|void|int|float|double|char|bool|true|false|null|undefined|def|self|print|echo|SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|TABLE)\b/;
     const builtins = /\b(document|window|console|Math|Array|Object|String|Number|Promise|React|useState|useEffect)\b/;
-    const tokenPattern = /(&lt;\/?[\w:-]+|\s[\w:-]+(?==)|&quot;.*?&quot;|&#039;.*?&#039;|`[\s\S]*?`|\/\/.*|\/\*[\s\S]*?\*\/|#.*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b)/g;
+    const tokenPattern = /(#(?:[0-9a-fA-F]{3,8})\b|[.#][A-Za-z_-][\w-]*|(?<=\s)[A-Za-z-]+(?=\s*:)|&lt;\/?[\w:-]+|\s[\w:-]+(?==)|&quot;.*?&quot;|&#039;.*?&#039;|`[\s\S]*?`|\/\/.*|\/\*[\s\S]*?\*\/|(?<![&\w])#(?![0-9a-fA-F]{3,8}\b).*|\b\d+(?:\.\d+)?(?:px|rem|em|%|vh|vw|s|ms)?\b|\b[A-Za-z_$][\w$]*\b)/g;
 
-    return html.replace(tokenPattern, (token) => {
+    return html.replace(tokenPattern, (token, offset, source) => {
         const trimmed = token.trim();
+        const nextText = source.slice(offset + token.length).trimStart();
+        const isCss = language === 'css' || language === 'scss' || language === 'sass';
+        if (/^#[0-9a-fA-F]{3,8}$/.test(token)) return `<span class="tok-number">${token}</span>`;
+        if (isCss && /^[.#][A-Za-z_-][\w-]*$/.test(trimmed)) return `<span class="tok-selector">${token}</span>`;
+        if (isCss && /^[A-Za-z_-][\w-]*$/.test(trimmed) && (code.includes(`.${trimmed}`) || code.includes(`#${trimmed}`))) return `<span class="tok-selector">${token}</span>`;
+        if (isCss && /^[A-Za-z-]+$/.test(trimmed) && nextText.startsWith(':')) return `<span class="tok-property">${token}</span>`;
         if (token.startsWith('&lt;')) return token.replace(trimmed, `<span class="tok-tag">${trimmed}</span>`);
         if (/^\s[\w:-]+$/.test(token) && ['html', 'xml', 'jsx', 'tsx'].includes(language)) {
             return token.replace(trimmed, `<span class="tok-attr">${trimmed}</span>`);

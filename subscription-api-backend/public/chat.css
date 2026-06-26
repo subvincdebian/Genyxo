@@ -225,6 +225,8 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+::-webkit-scrollbar-corner { background: transparent; }
+*::-webkit-scrollbar-corner { background: transparent !important; }
 
 .chat-main {
     flex: 1;
@@ -509,6 +511,7 @@ display: block !important;
 #chatBox {
     flex-grow: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     padding: 20px;
@@ -1372,6 +1375,7 @@ display: block !important;
     max-width: 980px;
     padding: 24px clamp(14px, 4vw, 44px) 16px;
     gap: 26px;
+    overflow-x: hidden !important;
 }
 
 .message {
@@ -1630,6 +1634,23 @@ display: block !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.file-inspect-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.file-inspect-actions .code-action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f1f3f4;
+}
+
+.file-inspect-actions .code-action-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
 .file-inspect-close {
     width: 40px;
     height: 40px;
@@ -1875,14 +1896,18 @@ display: block !important;
 #chatBox .message.bot-message {
     width: 100% !important;
     max-width: 100% !important;
+    display: block !important;
     padding: 0 !important;
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
+    overflow: visible !important;
 }
 
 #chatBox .message.bot-message .message-content {
     max-width: 840px !important;
+    width: 100% !important;
+    display: block !important;
     padding: 0 !important;
     background: transparent !important;
     border: 0 !important;
@@ -1952,6 +1977,8 @@ display: block !important;
     background: #171717 !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     overflow-x: auto !important;
+    overflow-y: visible !important;
+    max-height: none !important;
 }
 
 #chatBox .message.bot-message pre code {
@@ -2052,6 +2079,7 @@ display: block !important;
     border-radius: 24px;
     background: #171717;
     border: 1px solid rgba(255, 255, 255, 0.06);
+    max-width: 100%;
 }
 
 .ai-code-header {
@@ -2103,6 +2131,9 @@ display: block !important;
     border-radius: 0 !important;
     background: transparent !important;
     overflow-x: auto !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 #chatBox .message.bot-message .ai-code-block code,
@@ -2113,6 +2144,25 @@ display: block !important;
     color: #f1f3f4 !important;
     font: 0.95rem/1.58 "SFMono-Regular", Consolas, "Liberation Mono", monospace !important;
     white-space: pre !important;
+}
+
+#chatBox .message.bot-message .ai-code-block pre::-webkit-scrollbar,
+.file-code-preview .ai-code-block pre::-webkit-scrollbar {
+    height: 8px;
+    width: 0;
+}
+
+#chatBox .message.bot-message .ai-code-block pre::-webkit-scrollbar-track,
+.file-code-preview .ai-code-block pre::-webkit-scrollbar-track,
+#chatBox .message.bot-message .ai-code-block pre::-webkit-scrollbar-corner,
+.file-code-preview .ai-code-block pre::-webkit-scrollbar-corner {
+    background: transparent !important;
+}
+
+#chatBox .message.bot-message .ai-code-block pre::-webkit-scrollbar-thumb,
+.file-code-preview .ai-code-block pre::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
 }
 
 .file-code-preview {
@@ -2132,16 +2182,21 @@ display: block !important;
 .tok-builtin { color: #ff6464; }
 .tok-tag { color: #62a8ff; }
 .tok-attr { color: #ff8bd1; }
+.tok-selector,
+.tok-property { color: #62a8ff; }
 
 .bot-message-actions {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 12px;
-    margin-top: 12px;
+    width: 100%;
+    max-width: 840px;
+    margin: 12px 0 0;
     min-height: 34px;
     opacity: 0;
     transform: translateY(-2px);
     transition: opacity 0.16s ease, transform 0.16s ease;
+    clear: both;
 }
 
 .latest-bot-message .bot-message-actions,
@@ -2152,7 +2207,7 @@ display: block !important;
 }
 
 .streaming .bot-message-actions {
-    display: none;
+    display: none !important;
 }
 
 .bot-action-btn {
