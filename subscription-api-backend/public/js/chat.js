@@ -364,6 +364,44 @@ function startNewChat(e) {
     }
 }
 
+function getAttachmentMime(file) {
+    return file?.type || file?.mime_type || 'application/octet-stream';
+}
+
+function getAttachmentName(file) {
+    return file?.name || 'Attached file';
+}
+
+function getAttachmentSize(file) {
+    if (typeof file?.size !== 'number') return '';
+    if (typeof formatFileSize === 'function') return formatFileSize(file.size);
+
+    const units = ['Bytes', 'KB', 'MB', 'GB'];
+    let size = file.size;
+    let unitIndex = 0;
+
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex += 1;
+    }
+
+    return `${Math.round(size * 100) / 100} ${units[unitIndex]}`;
+}
+
+function getAttachmentImageSrc(file) {
+    const mimeType = getAttachmentMime(file);
+
+    if (typeof Blob !== 'undefined' && file instanceof Blob) {
+        return URL.createObjectURL(file);
+    }
+
+    if (file?.data) {
+        return `data:${mimeType};base64,${file.data}`;
+    }
+
+    return '';
+}
+
 function appendMessage(sender, text, model = '', files = []) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
@@ -377,15 +415,36 @@ function appendMessage(sender, text, model = '', files = []) {
         filesContainer.className = 'message-attachments';
         
         files.forEach(file => {
-            if (file.type.startsWith('image/')) {
+            const mimeType = getAttachmentMime(file);
+            const fileName = getAttachmentName(file);
+
+            if (mimeType.startsWith('image/')) {
                 const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
+                img.src = getAttachmentImageSrc(file);
+                img.alt = fileName;
+                img.title = fileName;
                 img.className = 'chat-image-preview';
                 filesContainer.appendChild(img);
             } else {
                 const fileLink = document.createElement('div');
-                fileLink.innerHTML = `<i class="fas fa-file"></i> ${file.name}`;
                 fileLink.className = 'chat-file-preview';
+
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-file';
+
+                const name = document.createElement('span');
+                name.textContent = fileName;
+
+                fileLink.append(icon, name);
+
+                const size = getAttachmentSize(file);
+                if (size) {
+                    const sizeEl = document.createElement('span');
+                    sizeEl.className = 'chat-file-size';
+                    sizeEl.textContent = size;
+                    fileLink.appendChild(sizeEl);
+                }
+
                 filesContainer.appendChild(fileLink);
             }
         });
@@ -443,7 +502,7 @@ async function selectChat(id) {
             if (DOM.chatBox) DOM.chatBox.innerHTML = ''; 
             
             if (messages && messages.length > 0) {
-                messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model));
+                messages.forEach(msg => appendMessage(msg.sender, msg.content, msg.model, msg.files || []));
             }
             
             scrollToBottom(true);
@@ -495,7 +554,12 @@ async function sendMessage() {
     
     userInput.value = '';
     userInput.style.height = 'auto';
-    window.attachedFiles = []; 
+    if (typeof clearAttachedFiles === 'function') {
+        clearAttachedFiles();
+    } else if (window.attachedFiles) {
+        window.attachedFiles.length = 0;
+    }
+
     if (typeof renderAllPreviews === 'function') {
         renderAllPreviews(); 
     }
@@ -513,9 +577,10 @@ async function sendMessage() {
         for (const file of files) {
             const base64Data = await fileToBase64(file);
             base64Files.push({
-                mime_type: file.type,
+                mime_type: file.type || 'application/octet-stream',
                 data: base64Data,
-                name: file.name
+                name: file.name || 'attached-file',
+                size: file.size
             });
         }
 

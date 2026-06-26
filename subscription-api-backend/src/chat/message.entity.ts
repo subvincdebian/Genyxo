@@ -7,6 +7,7 @@ export interface IAttachedFile {
   mime_type: string;
   data: string; //Base64
   name: string;
+  size?: number;
 }
 
 @Entity('messages')

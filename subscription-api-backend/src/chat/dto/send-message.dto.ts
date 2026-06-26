@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, MaxLength, IsArray, ValidateNested } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsInt, MaxLength, IsArray, ValidateNested, IsNumber } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import sanitizeHtml from 'sanitize-html';
 
@@ -14,6 +14,10 @@ export class AttachedFileDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
+
+  @IsOptional()
+  @IsNumber()
+  size?: number;
 }
 
 export class SendMessageDto {

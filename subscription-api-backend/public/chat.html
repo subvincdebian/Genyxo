@@ -2560,14 +2560,14 @@
                         <select id="modelSelect" style="display:none;">
                             <option value="arcee-ai/trinity-large-preview:free" selected>Arcee (Free)</option>
                             <option value="openai/gpt-oss-120b:free">ChatGPT OSS</option>
-                            <option value="openai/gpt-oss-120b:free">Gemini 3.5 Flash</option>
-                            <option value="openai/gpt-oss-120b:free">Gemini 3.5 Live Translate</option>
-                            <option value="openai/gpt-oss-120b:free">Gemini 3.1 Flash</option>
-                            <option value="openai/gpt-oss-120b:free">Gemini 2.5 Pro</option>
-                            <option value="openai/gpt-oss-120b:free">Gemini 2.5 Flash</option>
-                            <option value="openai/gpt-oss-120b:free">Gemini 2.5 Flash Audio</option>
-                            <option value="openai/gpt-oss-120b:free">Gemini Embedding 2</option>
-                            <option value="openai/gpt-oss-120b:free">Gemini Robotics-ER 1.6</option>
+                            <option value="google/gemini-3.5-flash">Gemini 3.5 Flash</option>
+                            <option value="google/gemini-3.5-live-translate-preview">Gemini 3.5 Live Translate</option>
+                            <option value="google/gemini-3.1-flash-lite">Gemini 3.1 Flash</option>
+                            <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+                            <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+                            <option value="google/gemini-2.5-flash-native-audio-preview-12-2025">Gemini 2.5 Flash Audio</option>
+                            <option value="google/gemini-embedding-2">Gemini Embedding 2</option>
+                            <option value="google/gemini-robotics-er-1.6-preview">Gemini Robotics-ER 1.6</option>
                             <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3</option>
                             <option value="qwen/qwen3-next-80b-a3b-instruct:free">QWEN 3</option>
                             <option value="google/gemma-4-31b-it:free">Gemma 4</option>
@@ -2874,7 +2874,8 @@
     <script src="js/chat.js" defer></script>
 
     <script>
-        let attachedFiles = [];
+        let attachedFiles = window.attachedFiles || [];
+        window.attachedFiles = attachedFiles;
 
         function toggleSidebar() {
             document.getElementById('app').classList.toggle('sidebar-closed');
@@ -2962,6 +2963,13 @@
                 }
             }
         }
+
+        window.renderAllPreviews = renderAllPreviews;
+
+        window.clearAttachedFiles = function() {
+            attachedFiles.length = 0;
+            renderAllPreviews();
+        };
 
         function handleFileSelect(input) {
             if (input.files && input.files[0]) {

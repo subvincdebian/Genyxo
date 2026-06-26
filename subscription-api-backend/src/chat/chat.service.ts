@@ -72,6 +72,38 @@ export class ChatService {
     }));
   }
 
+  private canSendInlineToGemini(mimeType: string) {
+    return (
+      mimeType.startsWith('image/') ||
+      mimeType.startsWith('audio/') ||
+      mimeType.startsWith('video/') ||
+      mimeType.startsWith('text/') ||
+      mimeType === 'application/pdf'
+    );
+  }
+
+  private buildGeminiFileParts(files: IAttachedFile[]) {
+    const parts: any[] = [];
+
+    for (const file of files) {
+      const mimeType = file.mime_type || 'application/octet-stream';
+      const fileName = file.name || 'attached file';
+      const fileSize = typeof file.size === 'number' ? `, ${file.size} bytes` : '';
+
+      parts.push({ text: `[Attached file: ${fileName}, ${mimeType}${fileSize}]` });
+
+      if (file.data && this.canSendInlineToGemini(mimeType)) {
+        parts.push({ inlineData: { data: file.data, mimeType } });
+      } else {
+        parts.push({
+          text: `[The file content is not available inline because this file type is not supported for direct AI inspection.]`,
+        });
+      }
+    }
+
+    return parts;
+  }
+
   async getUserConversations(userId: number) {
     return this.conversationRepository.find({
       where: { userId },
@@ -199,11 +231,11 @@ export class ChatService {
             const parts: any[] = [textPart];
 
             if (isLastMessage && m.files && m.files.length > 0) {
-                for (const file of m.files) {
-                    parts.push({ inlineData: { data: file.data, mimeType: file.mime_type } });
-                }
+                parts.push(...this.buildGeminiFileParts(m.files));
             } else if (m.files && m.files.length > 0) {
-                parts.push({ text: `[System: User attached ${m.files.length} file(s) earlier]` });
+                parts.push({
+                  text: `[Earlier attached file(s): ${m.files.map((file) => file.name || 'attached file').join(', ')}]`,
+                });
             }
 
             if (lastRole === role && contents.length > 0) {
@@ -247,13 +279,16 @@ export class ChatService {
             }
 
             for (const file of m.files!) {
-              if (file.mime_type.startsWith('image/')) {
+              const mimeType = file.mime_type || 'application/octet-stream';
+              contentArray.push({ type: 'text', text: `[Attached file: ${file.name || 'attached file'} (${mimeType})]` });
+
+              if (mimeType.startsWith('image/')) {
                 contentArray.push({
                   type: 'image_url',
-                  image_url: { url: `data:${file.mime_type};base64,${file.data}` }
+                  image_url: { url: `data:${mimeType};base64,${file.data}` }
                 });
               } else {
-                contentArray.push({ type: 'text', text: `[User uploaded document: ${file.name}]` });
+                contentArray.push({ type: 'text', text: `[User uploaded document: ${file.name || 'attached file'}]` });
               }
             }
 
@@ -346,9 +381,7 @@ export class ChatService {
           if (m.content) parts.push({ text: m.content });
           
           if (m.files && m.files.length > 0) {
-            for (const file of m.files) {
-              parts.push({ inlineData: { data: file.data, mimeType: file.mime_type } });
-            }
+            parts.push(...this.buildGeminiFileParts(m.files));
           }
           
           if (parts.length === 0) parts.push({ text: ' ' });
@@ -376,10 +409,13 @@ export class ChatService {
         if (m.content) contentArray.push({ type: 'text', text: m.content });
         
         for (const file of m.files!) {
-          if (file.mime_type.startsWith('image/')) {
-            contentArray.push({ type: 'image_url', image_url: { url: `data:${file.mime_type};base64,${file.data}` } });
+          const mimeType = file.mime_type || 'application/octet-stream';
+          contentArray.push({ type: 'text', text: `[Attached file: ${file.name || 'attached file'} (${mimeType})]` });
+
+          if (mimeType.startsWith('image/')) {
+            contentArray.push({ type: 'image_url', image_url: { url: `data:${mimeType};base64,${file.data}` } });
           } else {
-            contentArray.push({ type: 'text', text: `[Attached file: ${file.name}]` });
+            contentArray.push({ type: 'text', text: `[Attached file: ${file.name || 'attached file'}]` });
           }
         }
         
