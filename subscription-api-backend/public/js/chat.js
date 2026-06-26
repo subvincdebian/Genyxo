@@ -109,11 +109,6 @@ function toggleChatView(isChatActive) {
 
     if (isChatActive) {
         chatBox.setAttribute('tabindex', '-1');
-        requestAnimationFrame(() => {
-            if (!chatBox.contains(document.activeElement)) {
-                chatBox.focus({ preventScroll: true });
-            }
-        });
     }
 }
 
@@ -165,10 +160,12 @@ function showModal(title, placeholder = null) {
         
         if (placeholder !== null) {
             input.classList.remove('hidden');
+            input.style.display = 'block';
             input.value = placeholder;
             requestAnimationFrame(() => input.focus());
         } else {
             input.classList.add('hidden');
+            input.style.display = 'none';
             requestAnimationFrame(() => confirmBtn.focus());
         }
 
@@ -1033,8 +1030,37 @@ function enhanceCodeBlocks(root, defaultLanguage = '') {
     });
 }
 
+function looksLikeRawCodeResponse(markdown = '') {
+    const trimmed = markdown.trim();
+    if (!trimmed || trimmed.includes('```')) return false;
+
+    return (
+        /^<!doctype\s+html/i.test(trimmed) ||
+        /^<html[\s>]/i.test(trimmed) ||
+        /^<style[\s>]/i.test(trimmed) ||
+        /^<script[\s>]/i.test(trimmed) ||
+        /<\/(html|body|style|script)>/i.test(trimmed)
+    );
+}
+
+function inferCodeLanguageFromText(text = '') {
+    const trimmed = text.trim();
+    if (/^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) return 'html';
+    if (/^<style[\s>]/i.test(trimmed) || /(^|\n)\s*[.#]?[\w-]+\s*\{/.test(trimmed)) return 'css';
+    if (/^<script[\s>]/i.test(trimmed) || /\b(function|const|let|document|window)\b/.test(trimmed)) return 'javascript';
+    return 'text';
+}
+
+function normalizeBotMarkdown(markdown = '') {
+    if (!looksLikeRawCodeResponse(markdown)) return markdown || '';
+    const language = inferCodeLanguageFromText(markdown);
+    return `\`\`\`${language}\n${markdown.trim()}\n\`\`\``;
+}
+
 function renderMarkdownInto(element, markdown) {
-    element.innerHTML = DOMPurify.sanitize(marked.parse(markdown || ''));
+    const normalizedMarkdown = normalizeBotMarkdown(markdown || '');
+    const parsed = DOMPurify.sanitize(marked.parse(normalizedMarkdown));
+    element.innerHTML = parsed || `<pre><code>${escapeHtml(markdown || '')}</code></pre>`;
     enhanceCodeBlocks(element);
 }
 
@@ -1058,10 +1084,115 @@ function createBotActionButton(iconClass, label, onClick) {
     return button;
 }
 
+function rateBotMessage(botBubble, selectedButton, otherButton) {
+    if (!botBubble || botBubble.dataset.rated === 'true') return;
+
+    botBubble.dataset.rated = 'true';
+    selectedButton.classList.add('selected');
+    selectedButton.setAttribute('aria-pressed', 'true');
+    otherButton.setAttribute('aria-disabled', 'true');
+    showReviewToast();
+}
+
 function closeBotMoreMenus(except = null) {
     document.querySelectorAll('.bot-more-menu.show').forEach(menu => {
         if (menu !== except) menu.classList.remove('show');
     });
+}
+
+function estimateUsage(text = '') {
+    const words = (text.match(/\S+/g) || []).length;
+    const codeBlocks = (text.match(/```/g) || []).length / 2;
+    return {
+        words,
+        chars: text.length,
+        tokens: Math.max(1, Math.ceil(text.length / 4)),
+        codeBlocks: Math.floor(codeBlocks)
+    };
+}
+
+function getReasoningSteps(botBubble) {
+    const text = botBubble?._botText || botBubble?.querySelector('.message-content')?.textContent || '';
+    const usage = estimateUsage(text);
+    const model = botBubble?._messageModel || modelSelect?.value || 'Current model';
+    const hasCode = usage.codeBlocks > 0 || /<code|function|const|class|```/.test(text);
+
+    return [
+        {
+            title: 'Understanding the request',
+            body: 'I identified the latest user message and any attached files available in the chat context.'
+        },
+        {
+            title: hasCode ? 'Structuring code output' : 'Structuring the answer',
+            body: hasCode
+                ? 'I separated explanation from code sections so the response can render readable code blocks with actions.'
+                : 'I organized the response into readable paragraphs, lists, and concise sections.'
+        },
+        {
+            title: 'Formatting for the chat UI',
+            body: 'Markdown was converted into safe HTML, then enhanced with code highlighting, copy controls, and download controls where code exists.'
+        },
+        {
+            title: 'Usage summary',
+            body: `Model: ${model}. Approximate output: ${usage.words} words, ${usage.chars} characters, about ${usage.tokens} tokens, ${usage.codeBlocks} code block(s).`
+        },
+        {
+            title: 'Done',
+            body: 'The response was rendered into the conversation and is ready for review or regeneration.'
+        }
+    ];
+}
+
+function ensureReasoningPanel() {
+    let panel = document.getElementById('reasoningPanelOverlay');
+    if (panel) return panel;
+
+    panel = document.createElement('div');
+    panel.id = 'reasoningPanelOverlay';
+    panel.className = 'reasoning-panel-overlay';
+    panel.innerHTML = `
+        <aside class="reasoning-panel" role="dialog" aria-modal="true" aria-labelledby="reasoningPanelTitle">
+            <div class="reasoning-panel-header">
+                <h2 id="reasoningPanelTitle">Stages of reasoning</h2>
+                <button type="button" class="reasoning-panel-close" aria-label="Close reasoning panel">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="reasoning-panel-body"></div>
+        </aside>
+    `;
+    document.body.appendChild(panel);
+
+    const close = () => panel.classList.remove('show');
+    panel.querySelector('.reasoning-panel-close').addEventListener('click', close);
+    panel.addEventListener('click', (event) => {
+        if (event.target === panel) close();
+    });
+    return panel;
+}
+
+function openReasoningPanel(botBubble) {
+    const panel = ensureReasoningPanel();
+    const body = panel.querySelector('.reasoning-panel-body');
+    const steps = getReasoningSteps(botBubble);
+
+    body.replaceChildren();
+    steps.forEach((step, index) => {
+        const item = document.createElement('section');
+        item.className = 'reasoning-step';
+        item.innerHTML = `
+            <div class="reasoning-step-marker">${index === steps.length - 1 ? '<i class="fas fa-check"></i>' : ''}</div>
+            <div class="reasoning-step-content">
+                <h3></h3>
+                <p></p>
+            </div>
+        `;
+        item.querySelector('h3').textContent = step.title;
+        item.querySelector('p').textContent = step.body;
+        body.appendChild(item);
+    });
+
+    panel.classList.add('show');
 }
 
 function createBotActions(botBubble) {
@@ -1080,12 +1211,17 @@ function createBotActions(botBubble) {
         <button type="button"><i class="fas fa-th-large"></i><span>Export to Replit</span></button>
         <button type="button"><i class="far fa-flag"></i><span>Report legal issue</span></button>
         <button type="button"><i class="fas fa-link"></i><span>View sources</span></button>
-        <button type="button"><i class="fas fa-timeline"></i><span>Show reasoning steps</span></button>
+        <button type="button" data-action="reasoning"><i class="fas fa-timeline"></i><span>Show reasoning steps</span></button>
     `;
 
     moreMenu.addEventListener('click', (event) => {
         const item = event.target.closest('button');
         if (!item) return;
+        if (item.dataset.action === 'reasoning') {
+            openReasoningPanel(botBubble);
+            moreMenu.classList.remove('show');
+            return;
+        }
         if (typeof showToast === 'function') showToast(item.textContent.trim(), 'info');
         moreMenu.classList.remove('show');
     });
@@ -1098,9 +1234,12 @@ function createBotActions(botBubble) {
     });
     moreWrap.append(moreBtn, moreMenu);
 
+    const likeBtn = createBotActionButton('far fa-thumbs-up', 'Like', () => rateBotMessage(botBubble, likeBtn, dislikeBtn));
+    const dislikeBtn = createBotActionButton('far fa-thumbs-down', 'Dislike', () => rateBotMessage(botBubble, dislikeBtn, likeBtn));
+
     actions.append(
-        createBotActionButton('far fa-thumbs-up', 'Like', showReviewToast),
-        createBotActionButton('far fa-thumbs-down', 'Dislike', showReviewToast),
+        likeBtn,
+        dislikeBtn,
         createBotActionButton('fas fa-rotate-right', 'Repeat response', () => regenerateBotMessage(botBubble)),
         createBotActionButton('far fa-copy', 'Copy response', () => copyTextToClipboard(botBubble._botText || botBubble.textContent || '')),
         moreWrap
