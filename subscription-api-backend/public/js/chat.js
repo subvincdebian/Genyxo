@@ -1003,7 +1003,9 @@ function appendMessage(sender, text, model = '', files = []) {
         const copyBtn = document.createElement('button');
         copyBtn.type = 'button';
         copyBtn.className = 'message-action-btn copy-message-btn';
-        copyBtn.innerHTML = '<i class="far fa-copy"></i><span>Copy</span>';
+        copyBtn.setAttribute('aria-label', 'Copy message');
+        copyBtn.title = 'Copy message';
+        copyBtn.innerHTML = '<i class="far fa-copy"></i>';
         copyBtn.addEventListener('click', () => copyTextToClipboard(buildCopyableUserMessage(text, files)));
         actions.appendChild(copyBtn);
 
@@ -1111,7 +1113,7 @@ async function sendMessage() {
         renderAllPreviews(); 
     }
 
-    const botBubble = appendMessage('bot', '<div class="typing-indicator"><span></span><span></span><span></span></div>');
+    const botBubble = appendMessage('bot', '<div class="chat-loader" aria-label="AI is thinking"></div>');
     botBubble.classList.add('streaming');
     const contentDiv = botBubble.querySelector('.message-content') || botBubble;
 
