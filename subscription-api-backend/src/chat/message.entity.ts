@@ -5,7 +5,7 @@ import { Conversation } from './conversation.entity';
 
 export interface IAttachedFile {
   mime_type: string;
-  data: string; //Base64
+  data?: string;
   name: string;
   size?: number;
 }

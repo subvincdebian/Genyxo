@@ -8,8 +8,8 @@ export class AttachedFileDto {
   mime_type!: string;
 
   @IsString()
-  @IsNotEmpty()
-  data!: string; // Base64
+  @IsOptional()
+  data?: string;
 
   @IsString()
   @IsNotEmpty()

@@ -16,6 +16,7 @@ import { FalService } from './fal.service';
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
+  private readonly maxInlineDataLength = 5_500_000;
   private openRouter: OpenAI;
   private googleAI: GoogleGenerativeAI;
 
@@ -104,6 +105,27 @@ export class ChatService {
     return parts;
   }
 
+  private normalizeAttachedFiles(files: IAttachedFile[] = []) {
+    return files.map((file) => {
+      const mimeType = file.mime_type || 'application/octet-stream';
+      const normalized: IAttachedFile = {
+        mime_type: mimeType,
+        name: file.name || 'attached file',
+        size: file.size,
+      };
+
+      if (
+        file.data &&
+        file.data.length <= this.maxInlineDataLength &&
+        this.canSendInlineToGemini(mimeType)
+      ) {
+        normalized.data = file.data;
+      }
+
+      return normalized;
+    });
+  }
+
   async getUserConversations(userId: number) {
     return this.conversationRepository.find({
       where: { userId },
@@ -142,11 +164,12 @@ export class ChatService {
   async processMessage(userId: number, text: string, model: string, conversationId?: number, files: IAttachedFile[] = []) {
     const modelConfig = this.pricingService.getModelConfig(model);
     if (!modelConfig) throw new BadRequestException('Unsupported model');
+    const normalizedFiles = this.normalizeAttachedFiles(files);
     
-    const displayTitle = text || (files.length > 0 ? `Sent ${files.length} file(s)` : 'New Chat');
+    const displayTitle = text || (normalizedFiles.length > 0 ? `Sent ${normalizedFiles.length} file(s)` : 'New Chat');
     let conversation = await this.getOrCreateConversation(userId, conversationId, displayTitle);
     
-    await this.saveMessage(conversation, text, 'user', model, userId, undefined, files);
+    await this.saveMessage(conversation, text, 'user', model, userId, undefined, normalizedFiles);
 
     if (modelConfig.type === ModelType.VIDEO) {
         const prompt = text || "Generate video based on provided source asset";
@@ -203,10 +226,16 @@ export class ChatService {
       });
 
       try {
-        const displayTitle = text || (files.length > 0 ? `Sent ${files.length} file(s)` : 'New Chat');
+        const normalizedFiles = this.normalizeAttachedFiles(files);
+        const displayTitle = text || (normalizedFiles.length > 0 ? `Sent ${normalizedFiles.length} file(s)` : 'New Chat');
         let conversation = await this.getOrCreateConversation(userId, conversationId, displayTitle);
         
-        await this.saveMessage(conversation, text, 'user', model, userId, undefined, files);
+        await this.saveMessage(conversation, text, 'user', model, userId, undefined, normalizedFiles);
+        res.write(`data: ${JSON.stringify({
+          status: 'conversation',
+          conversationId: conversation.id,
+          conversationTitle: conversation.title,
+        })}\n\n`);
 
         let fullReply = '';
         
@@ -282,7 +311,7 @@ export class ChatService {
               const mimeType = file.mime_type || 'application/octet-stream';
               contentArray.push({ type: 'text', text: `[Attached file: ${file.name || 'attached file'} (${mimeType})]` });
 
-              if (mimeType.startsWith('image/')) {
+              if (mimeType.startsWith('image/') && file.data) {
                 contentArray.push({
                   type: 'image_url',
                   image_url: { url: `data:${mimeType};base64,${file.data}` }
@@ -412,7 +441,7 @@ export class ChatService {
           const mimeType = file.mime_type || 'application/octet-stream';
           contentArray.push({ type: 'text', text: `[Attached file: ${file.name || 'attached file'} (${mimeType})]` });
 
-          if (mimeType.startsWith('image/')) {
+          if (mimeType.startsWith('image/') && file.data) {
             contentArray.push({ type: 'image_url', image_url: { url: `data:${mimeType};base64,${file.data}` } });
           } else {
             contentArray.push({ type: 'text', text: `[Attached file: ${file.name || 'attached file'}]` });

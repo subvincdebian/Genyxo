@@ -1,6 +1,7 @@
 let currentChatId = null; 
 let conversations = [];
 let _scrollPending = false; // scrollToBottom()
+const MAX_INLINE_BASE64_LENGTH = 5_500_000;
 
 const DOM = {
     chatBox: document.getElementById('chatBox'),
@@ -343,6 +344,24 @@ function renderHistoryList() {
     initHistoryListEvents(historyList);
 }
 
+function addConversationToHistory(chat) {
+    const id = Number(chat.id);
+    if (!id || conversations.some(c => Number(c.id) === id)) return;
+
+    conversations.unshift({
+        id,
+        title: chat.title || 'New Chat',
+        model: chat.model || ''
+    });
+    renderHistoryList();
+
+    const item = document.getElementById(`chat-item-${id}`);
+    if (item) {
+        item.classList.add('history-item-created');
+        setTimeout(() => item.classList.remove('history-item-created'), 700);
+    }
+}
+
 function startNewChat(e) {
     if (e) e.preventDefault();
     
@@ -402,6 +421,135 @@ function getAttachmentImageSrc(file) {
     return '';
 }
 
+function canSendInlineToAI(file) {
+    const mimeType = getAttachmentMime(file);
+    return (
+        mimeType.startsWith('image/') ||
+        mimeType.startsWith('text/') ||
+        mimeType === 'application/pdf'
+    );
+}
+
+function resizeImageForVision(file, maxDimension = 1600, quality = 0.82) {
+    return new Promise((resolve) => {
+        if (!getAttachmentMime(file).startsWith('image/')) {
+            resolve(file);
+            return;
+        }
+
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        image.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+
+            const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+            const width = Math.max(1, Math.round(image.width * scale));
+            const height = Math.max(1, Math.round(image.height * scale));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, width, height);
+
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    resolve(file);
+                    return;
+                }
+
+                const outputType = blob.type || 'image/jpeg';
+                const extension = outputType.split('/')[1] || 'jpg';
+                const baseName = getAttachmentName(file).replace(/\.[^.]+$/, '') || 'image';
+                resolve(new File([blob], `${baseName}.${extension}`, { type: outputType }));
+            }, 'image/jpeg', quality);
+        };
+
+        image.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(file);
+        };
+
+        image.src = objectUrl;
+    });
+}
+
+async function buildAttachmentPayload(file) {
+    const mimeType = getAttachmentMime(file);
+    const payload = {
+        mime_type: mimeType,
+        name: getAttachmentName(file),
+        size: file.size
+    };
+
+    if (!canSendInlineToAI(file)) {
+        return payload;
+    }
+
+    let sendableFile = mimeType.startsWith('image/')
+        ? await resizeImageForVision(file)
+        : file;
+
+    let base64Data = await fileToBase64(sendableFile);
+
+    if (base64Data.length > MAX_INLINE_BASE64_LENGTH && mimeType.startsWith('image/')) {
+        sendableFile = await resizeImageForVision(file, 1024, 0.7);
+        base64Data = await fileToBase64(sendableFile);
+    }
+
+    if (base64Data.length > MAX_INLINE_BASE64_LENGTH) {
+        return payload;
+    }
+
+    return {
+        ...payload,
+        data: base64Data,
+        mime_type: getAttachmentMime(sendableFile),
+        size: sendableFile.size
+    };
+}
+
+function openImageViewer(src, fileName = 'Image') {
+    if (!src) return;
+
+    let viewer = document.getElementById('imageInspectOverlay');
+    if (!viewer) {
+        viewer = document.createElement('div');
+        viewer.id = 'imageInspectOverlay';
+        viewer.className = 'image-inspect-overlay';
+        viewer.innerHTML = `
+            <div class="image-inspect-topbar">
+                <button type="button" class="image-inspect-back" aria-label="Close image preview">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <i class="far fa-image"></i>
+                <span class="image-inspect-title"></span>
+            </div>
+            <img class="image-inspect-img" alt="">
+        `;
+        document.body.appendChild(viewer);
+
+        viewer.querySelector('.image-inspect-back').addEventListener('click', () => {
+            viewer.classList.remove('show');
+        });
+        viewer.addEventListener('click', (event) => {
+            if (event.target === viewer) viewer.classList.remove('show');
+        });
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') viewer.classList.remove('show');
+        });
+    }
+
+    const image = viewer.querySelector('.image-inspect-img');
+    const title = viewer.querySelector('.image-inspect-title');
+    image.src = src;
+    image.alt = fileName;
+    title.textContent = fileName;
+    viewer.classList.add('show');
+}
+
 function appendMessage(sender, text, model = '', files = []) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
@@ -418,12 +566,22 @@ function appendMessage(sender, text, model = '', files = []) {
             const mimeType = getAttachmentMime(file);
             const fileName = getAttachmentName(file);
 
-            if (mimeType.startsWith('image/')) {
+            const imageSrc = mimeType.startsWith('image/') ? getAttachmentImageSrc(file) : '';
+
+            if (imageSrc) {
                 const img = document.createElement('img');
-                img.src = getAttachmentImageSrc(file);
+                img.src = imageSrc;
                 img.alt = fileName;
                 img.title = fileName;
                 img.className = 'chat-image-preview';
+                img.tabIndex = 0;
+                img.addEventListener('click', () => openImageViewer(img.src, fileName));
+                img.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openImageViewer(img.src, fileName);
+                    }
+                });
                 filesContainer.appendChild(img);
             } else {
                 const fileLink = document.createElement('div');
@@ -575,13 +733,7 @@ async function sendMessage() {
     try {
         const base64Files = [];
         for (const file of files) {
-            const base64Data = await fileToBase64(file);
-            base64Files.push({
-                mime_type: file.type || 'application/octet-stream',
-                data: base64Data,
-                name: file.name || 'attached-file',
-                size: file.size
-            });
+            base64Files.push(await buildAttachmentPayload(file));
         }
 
         const url = `${API_BASE_URL}/chat/stream`;
@@ -657,16 +809,25 @@ async function sendMessage() {
                             }
                         }
 
+                        if (data.status === 'conversation' && data.conversationId && !currentChatId) {
+                            currentChatId = data.conversationId;
+                            updateUrl(data.conversationId);
+                            addConversationToHistory({
+                                id: currentChatId,
+                                title: data.conversationTitle || (text ? text.slice(0, 30) + (text.length > 30 ? '...' : '') : 'New Chat'),
+                                model: selectedModel
+                            });
+                            continue;
+                        }
+
                         if (data.conversationId && !currentChatId) {
                             currentChatId = data.conversationId;
                             updateUrl(data.conversationId);
-                            const chatTitle = text ? text.slice(0, 30) : 'Image description';
-                            conversations.unshift({ 
-                                id: currentChatId, 
-                                title: chatTitle + (text.length > 30 ? '...' : ''), 
-                                model: selectedModel 
+                            addConversationToHistory({
+                                id: currentChatId,
+                                title: text ? text.slice(0, 30) + (text.length > 30 ? '...' : '') : 'New Chat',
+                                model: selectedModel
                             });
-                            renderHistoryList();
                         }
 
                         if (data.messageId && (selectedModel.includes('kling') || selectedModel.includes('luma'))) {
