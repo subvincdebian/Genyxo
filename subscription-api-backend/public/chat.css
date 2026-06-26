@@ -2181,15 +2181,24 @@ display: block !important;
     margin: 0;
 }
 
-.tok-comment { color: #7f858e; }
-.tok-keyword { color: #9da8ff; }
-.tok-string { color: #71e083; }
-.tok-number { color: #ff8bd1; }
-.tok-builtin { color: #ff6464; }
-.tok-tag { color: #62a8ff; }
-.tok-attr { color: #ff8bd1; }
-.tok-selector,
-.tok-property { color: #62a8ff; }
+#chatBox .message.bot-message .ai-code-block .tok-comment,
+.file-code-preview .ai-code-block .tok-comment { color: #7f858e !important; }
+#chatBox .message.bot-message .ai-code-block .tok-keyword,
+.file-code-preview .ai-code-block .tok-keyword { color: #9da8ff !important; }
+#chatBox .message.bot-message .ai-code-block .tok-string,
+.file-code-preview .ai-code-block .tok-string { color: #71e083 !important; }
+#chatBox .message.bot-message .ai-code-block .tok-number,
+.file-code-preview .ai-code-block .tok-number { color: #ff8bd1 !important; }
+#chatBox .message.bot-message .ai-code-block .tok-builtin,
+.file-code-preview .ai-code-block .tok-builtin { color: #ff6464 !important; }
+#chatBox .message.bot-message .ai-code-block .tok-tag,
+.file-code-preview .ai-code-block .tok-tag { color: #62a8ff !important; }
+#chatBox .message.bot-message .ai-code-block .tok-attr,
+.file-code-preview .ai-code-block .tok-attr { color: #ff8bd1 !important; }
+#chatBox .message.bot-message .ai-code-block .tok-selector,
+#chatBox .message.bot-message .ai-code-block .tok-property,
+.file-code-preview .ai-code-block .tok-selector,
+.file-code-preview .ai-code-block .tok-property { color: #62a8ff !important; }
 
 .bot-message-actions {
     display: flex !important;

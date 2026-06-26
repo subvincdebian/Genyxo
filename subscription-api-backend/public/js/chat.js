@@ -919,7 +919,7 @@ function escapeHtml(value) {
 
 function getCodeLanguageFromClass(codeEl) {
     const className = codeEl?.className || '';
-    const match = className.match(/language-([\w#+.-]+)/i);
+    const match = className.match(/(?:language|lang)-([\w#+.-]+)/i);
     return match ? match[1].toLowerCase() : '';
 }
 
@@ -995,38 +995,79 @@ function createCodeActionButton(iconClass, label, onClick) {
     return button;
 }
 
+function normalizeCodeLanguage(language = '') {
+    const normalized = String(language || '').toLowerCase().trim();
+    const aliases = {
+        htm: 'html',
+        markup: 'html',
+        xml: 'html',
+        mjs: 'javascript',
+        cjs: 'javascript',
+        sh: 'bash',
+        zsh: 'bash',
+        ps1: 'powershell',
+        text: 'text',
+        txt: 'text'
+    };
+    return aliases[normalized] || normalized || 'text';
+}
+
+function getCodeLanguageFromPre(preEl) {
+    const className = preEl?.className || '';
+    const match = className.match(/(?:language|lang)-([\w#+.-]+)/i);
+    return match ? match[1].toLowerCase() : '';
+}
+
+function createHighlightedCodeBlock(pre, codeEl, rawCode, language, index) {
+    const normalizedLanguage = normalizeCodeLanguage(language);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'ai-code-block';
+
+    const header = document.createElement('div');
+    header.className = 'ai-code-header';
+
+    const label = document.createElement('span');
+    label.className = 'ai-code-language';
+    label.textContent = normalizedLanguage.toUpperCase();
+
+    const actions = document.createElement('div');
+    actions.className = 'ai-code-actions';
+    actions.append(
+        createCodeActionButton('fas fa-download', 'Download code', () => {
+            downloadTextFile(rawCode, `genyxo-code-${Date.now()}-${index + 1}.${getCodeExtension(normalizedLanguage)}`);
+        }),
+        createCodeActionButton('far fa-copy', 'Copy code', () => copyTextToClipboard(rawCode))
+    );
+
+    header.append(label, actions);
+    codeEl.innerHTML = highlightCode(rawCode, normalizedLanguage);
+    pre.replaceWith(wrapper);
+    wrapper.append(header, pre);
+}
+
 function enhanceCodeBlocks(root, defaultLanguage = '') {
     if (!root) return;
 
-    root.querySelectorAll('pre > code').forEach((codeEl, index) => {
-        if (codeEl.closest('.ai-code-block')) return;
+    root.querySelectorAll('pre').forEach((pre, index) => {
+        if (pre.closest('.ai-code-block')) return;
 
-        const rawCode = codeEl.textContent || '';
-        const language = getCodeLanguageFromClass(codeEl) || defaultLanguage || 'text';
-        const wrapper = document.createElement('div');
-        wrapper.className = 'ai-code-block';
+        let codeEl = pre.querySelector(':scope > code');
+        const rawCode = codeEl ? (codeEl.textContent || '') : (pre.textContent || '');
+        if (!rawCode.trim()) return;
 
-        const header = document.createElement('div');
-        header.className = 'ai-code-header';
+        if (!codeEl) {
+            pre.textContent = '';
+            codeEl = document.createElement('code');
+            pre.appendChild(codeEl);
+        }
 
-        const label = document.createElement('span');
-        label.className = 'ai-code-language';
-        label.textContent = language.toUpperCase();
+        const normalizedDefaultLanguage = normalizeCodeLanguage(defaultLanguage);
+        const language = getCodeLanguageFromClass(codeEl)
+            || getCodeLanguageFromPre(pre)
+            || (normalizedDefaultLanguage !== 'text' ? normalizedDefaultLanguage : '')
+            || inferCodeLanguageFromText(rawCode);
 
-        const actions = document.createElement('div');
-        actions.className = 'ai-code-actions';
-        actions.append(
-            createCodeActionButton('fas fa-download', 'Download code', () => {
-                downloadTextFile(rawCode, `genyxo-code-${Date.now()}-${index + 1}.${getCodeExtension(language)}`);
-            }),
-            createCodeActionButton('far fa-copy', 'Copy code', () => copyTextToClipboard(rawCode))
-        );
-
-        header.append(label, actions);
-        const pre = codeEl.parentElement;
-        codeEl.innerHTML = highlightCode(rawCode, language);
-        pre.replaceWith(wrapper);
-        wrapper.append(header, pre);
+        createHighlightedCodeBlock(pre, codeEl, rawCode, language, index);
     });
 }
 
@@ -1045,9 +1086,10 @@ function looksLikeRawCodeResponse(markdown = '') {
 
 function inferCodeLanguageFromText(text = '') {
     const trimmed = text.trim();
-    if (/^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) return 'html';
+    if (/^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed) || /<\/(html|head|body|style|script)>/i.test(trimmed)) return 'html';
     if (/^<style[\s>]/i.test(trimmed) || /(^|\n)\s*[.#]?[\w-]+\s*\{/.test(trimmed)) return 'css';
     if (/^<script[\s>]/i.test(trimmed) || /\b(function|const|let|document|window)\b/.test(trimmed)) return 'javascript';
+    if (/^\s*[{[][\s\S]*[}\]]\s*$/.test(trimmed)) return 'json';
     return 'text';
 }
 
@@ -1061,7 +1103,7 @@ function renderMarkdownInto(element, markdown) {
     const normalizedMarkdown = normalizeBotMarkdown(markdown || '');
     const parsed = DOMPurify.sanitize(marked.parse(normalizedMarkdown));
     element.innerHTML = parsed || `<pre><code>${escapeHtml(markdown || '')}</code></pre>`;
-    enhanceCodeBlocks(element);
+    enhanceCodeBlocks(element, inferCodeLanguageFromText(markdown || ''));
 }
 
 function getPreviousUserMessage(botBubble) {
