@@ -2727,12 +2727,12 @@
                                     <label class="plus-menu-item">
                                         <i class="fas fa-image cyan-icon"></i>
                                         <span class="text-box">Add Photo</span>
-                                        <input type="file" accept="image/*" hidden id="photoInput" onchange="handleFileSelect(this)">
+                                        <input type="file" accept="image/*" multiple hidden id="photoInput">
                                     </label>
                                     <label class="plus-menu-item">
                                         <i class="fas fa-file-alt cyan-icon"></i>
                                         <span class="text-box">Add Files</span>
-                                        <input type="file" hidden id="fileInput" onchange="handleFileSelect(this)">
+                                        <input type="file" accept=".docx,.pdf,.txt,.html,.htm,.css,.js,.mjs,.cjs,.ts,.jsx,.tsx,.py,.cpp,.cxx,.cc,.c,.h,.hpp,.java,.cs,.go,.rs,.php,.rb,.swift,.kt,.dart,.json,.xml,.md,.csv,.sql,.sh,.ps1,.yaml,.yml,text/*,application/pdf,application/json" multiple hidden id="fileInput">
                                     </label>
                                 </div>  
 
@@ -3001,6 +3001,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const fileInput = document.getElementById('fileInput');
+            const photoInput = document.getElementById('photoInput');
             const plusBtn = document.getElementById('plusBtn');
             const attachMenu = document.getElementById('attachmentMenu');
             const userInput = document.getElementById('userInput');
@@ -3109,6 +3110,13 @@
                 fileInput.addEventListener('change', (e) => {
                     handleFiles(e.target.files);
                     fileInput.value = '';
+                });
+            }
+
+            if (photoInput) {
+                photoInput.addEventListener('change', (e) => {
+                    handleFiles(e.target.files);
+                    photoInput.value = '';
                 });
             }
 

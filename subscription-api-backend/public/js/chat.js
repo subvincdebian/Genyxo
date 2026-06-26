@@ -15,7 +15,8 @@ const DOM = {
     toggleBtn: document.getElementById('sidebarToggle'),
     sidebar: document.getElementById('sidebar'),
     sidebarOverlay: document.getElementById('sidebarOverlay'),
-    newChatBtn: document.querySelector('.new-chat-btn')
+    newChatBtn: document.querySelector('.new-chat-btn'),
+    chatForm: document.getElementById('chatForm')
 };
 
 const chatBox = DOM.chatBox;
@@ -28,6 +29,39 @@ const navAvatarImg = DOM.navAvatarImg;
 const toggleBtn = DOM.toggleBtn;
 const sidebar = DOM.sidebar;
 const sidebarOverlay = DOM.sidebarOverlay;
+
+const TEXT_FILE_EXTENSIONS = new Set([
+    'txt', 'md', 'markdown', 'csv', 'tsv', 'log', 'json', 'jsonl', 'xml', 'yaml', 'yml',
+    'html', 'htm', 'css', 'scss', 'sass', 'less', 'js', 'mjs', 'cjs', 'ts', 'tsx', 'jsx',
+    'py', 'java', 'c', 'h', 'cpp', 'cxx', 'cc', 'hpp', 'cs', 'go', 'rs', 'php', 'rb',
+    'swift', 'kt', 'kts', 'dart', 'lua', 'r', 'sql', 'sh', 'bash', 'zsh', 'ps1', 'bat',
+    'cmd', 'dockerfile', 'env', 'ini', 'toml', 'vue', 'svelte', 'astro'
+]);
+
+const EXTENSION_MIME_TYPES = {
+    txt: 'text/plain',
+    md: 'text/markdown',
+    markdown: 'text/markdown',
+    html: 'text/html',
+    htm: 'text/html',
+    css: 'text/css',
+    js: 'text/javascript',
+    mjs: 'text/javascript',
+    cjs: 'text/javascript',
+    jsx: 'text/javascript',
+    ts: 'text/plain',
+    tsx: 'text/plain',
+    py: 'text/x-python',
+    cpp: 'text/x-c++src',
+    cxx: 'text/x-c++src',
+    cc: 'text/x-c++src',
+    c: 'text/x-csrc',
+    h: 'text/x-chdr',
+    hpp: 'text/x-c++hdr',
+    json: 'application/json',
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+};
 
 function updateUrl(id, push = false) {
     try {
@@ -383,8 +417,20 @@ function startNewChat(e) {
     }
 }
 
+function getAttachmentExtension(file) {
+    const name = getAttachmentName(file).toLowerCase();
+    const extension = name.includes('.') ? name.split('.').pop() : name;
+    return extension || '';
+}
+
+function inferAttachmentMime(file) {
+    return EXTENSION_MIME_TYPES[getAttachmentExtension(file)] || '';
+}
+
 function getAttachmentMime(file) {
-    return file?.type || file?.mime_type || 'application/octet-stream';
+    const rawType = file?.type || file?.mime_type || '';
+    if (rawType && rawType !== 'application/octet-stream') return rawType;
+    return inferAttachmentMime(file) || rawType || 'application/octet-stream';
 }
 
 function getAttachmentName(file) {
@@ -421,12 +467,139 @@ function getAttachmentImageSrc(file) {
     return '';
 }
 
+function isDocxFile(file) {
+    return getAttachmentExtension(file) === 'docx' ||
+        getAttachmentMime(file) === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+}
+
+function isTextLikeFile(file) {
+    const mimeType = getAttachmentMime(file);
+    const extension = getAttachmentExtension(file);
+
+    return (
+        mimeType.startsWith('text/') ||
+        mimeType === 'application/json' ||
+        mimeType === 'application/xml' ||
+        mimeType === 'application/javascript' ||
+        mimeType === 'application/typescript' ||
+        mimeType === 'image/svg+xml' ||
+        TEXT_FILE_EXTENSIONS.has(extension)
+    );
+}
+
+function textToBase64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    bytes.forEach(byte => {
+        binary += String.fromCharCode(byte);
+    });
+    return btoa(binary);
+}
+
+function base64ToText(base64) {
+    try {
+        const binary = atob(base64);
+        const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+        return new TextDecoder().decode(bytes);
+    } catch (error) {
+        console.warn('Failed to decode attachment text:', error);
+        return '';
+    }
+}
+
+async function blobToText(blob) {
+    if (!blob || typeof blob.text !== 'function') return '';
+    return blob.text();
+}
+
+async function inflateRawZipEntry(bytes) {
+    if (typeof DecompressionStream === 'undefined') {
+        throw new Error('DOCX preview is not supported in this browser.');
+    }
+
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    const buffer = await new Response(stream).arrayBuffer();
+    return new Uint8Array(buffer);
+}
+
+function findZipEndOfCentralDirectory(view) {
+    for (let offset = view.byteLength - 22; offset >= 0; offset--) {
+        if (view.getUint32(offset, true) === 0x06054b50) return offset;
+    }
+    return -1;
+}
+
+async function readZipEntry(arrayBuffer, matcher) {
+    const view = new DataView(arrayBuffer);
+    const bytes = new Uint8Array(arrayBuffer);
+    const decoder = new TextDecoder();
+    const eocdOffset = findZipEndOfCentralDirectory(view);
+
+    if (eocdOffset < 0) return '';
+
+    const entryCount = view.getUint16(eocdOffset + 10, true);
+    let centralOffset = view.getUint32(eocdOffset + 16, true);
+
+    for (let i = 0; i < entryCount; i++) {
+        if (view.getUint32(centralOffset, true) !== 0x02014b50) break;
+
+        const method = view.getUint16(centralOffset + 10, true);
+        const compressedSize = view.getUint32(centralOffset + 20, true);
+        const fileNameLength = view.getUint16(centralOffset + 28, true);
+        const extraLength = view.getUint16(centralOffset + 30, true);
+        const commentLength = view.getUint16(centralOffset + 32, true);
+        const localHeaderOffset = view.getUint32(centralOffset + 42, true);
+        const fileNameStart = centralOffset + 46;
+        const fileName = decoder.decode(bytes.slice(fileNameStart, fileNameStart + fileNameLength));
+
+        if (matcher(fileName)) {
+            const localNameLength = view.getUint16(localHeaderOffset + 26, true);
+            const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
+            const dataStart = localHeaderOffset + 30 + localNameLength + localExtraLength;
+            const compressed = bytes.slice(dataStart, dataStart + compressedSize);
+            const output = method === 0 ? compressed : await inflateRawZipEntry(compressed);
+            return decoder.decode(output);
+        }
+
+        centralOffset += 46 + fileNameLength + extraLength + commentLength;
+    }
+
+    return '';
+}
+
+function docxXmlToText(xml) {
+    return xml
+        .replace(/<w:tab\/>/g, '\t')
+        .replace(/<w:br\/>/g, '\n')
+        .replace(/<\/w:p>/g, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
+async function extractDocxText(file) {
+    if (file?._extractedDocxText) return file._extractedDocxText;
+    if (!(file instanceof Blob)) return '';
+
+    const buffer = await file.arrayBuffer();
+    const xml = await readZipEntry(buffer, name => name === 'word/document.xml');
+    const text = xml ? docxXmlToText(xml) : '';
+    file._extractedDocxText = text;
+    return text;
+}
+
 function canSendInlineToAI(file) {
     const mimeType = getAttachmentMime(file);
     return (
         mimeType.startsWith('image/') ||
-        mimeType.startsWith('text/') ||
-        mimeType === 'application/pdf'
+        mimeType === 'application/pdf' ||
+        isTextLikeFile(file) ||
+        isDocxFile(file)
     );
 }
 
@@ -488,6 +661,32 @@ async function buildAttachmentPayload(file) {
         return payload;
     }
 
+    if (isDocxFile(file)) {
+        const extractedText = await extractDocxText(file).catch(() => '');
+        if (!extractedText) return payload;
+
+        const data = textToBase64(extractedText);
+        if (data.length > MAX_INLINE_BASE64_LENGTH) return payload;
+
+        return {
+            ...payload,
+            mime_type: 'text/plain',
+            data
+        };
+    }
+
+    if (isTextLikeFile(file) && file instanceof Blob) {
+        const text = await blobToText(file);
+        const data = textToBase64(text);
+        if (data.length > MAX_INLINE_BASE64_LENGTH) return payload;
+
+        return {
+            ...payload,
+            mime_type: mimeType.startsWith('text/') ? mimeType : 'text/plain',
+            data
+        };
+    }
+
     let sendableFile = mimeType.startsWith('image/')
         ? await resizeImageForVision(file)
         : file;
@@ -511,43 +710,186 @@ async function buildAttachmentPayload(file) {
     };
 }
 
-function openImageViewer(src, fileName = 'Image') {
-    if (!src) return;
+function getAttachmentIcon(file) {
+    const mimeType = getAttachmentMime(file);
+    const extension = getAttachmentExtension(file);
 
-    let viewer = document.getElementById('imageInspectOverlay');
-    if (!viewer) {
-        viewer = document.createElement('div');
-        viewer.id = 'imageInspectOverlay';
-        viewer.className = 'image-inspect-overlay';
-        viewer.innerHTML = `
-            <div class="image-inspect-topbar">
-                <button type="button" class="image-inspect-back" aria-label="Close image preview">
-                    <i class="fas fa-arrow-left"></i>
+    if (mimeType.startsWith('image/')) return 'far fa-image';
+    if (mimeType === 'application/pdf') return 'far fa-file-pdf';
+    if (isDocxFile(file)) return 'far fa-file-word';
+    if (['html', 'css', 'js', 'ts', 'jsx', 'tsx', 'py', 'cpp', 'c', 'java', 'php', 'rb', 'go', 'rs'].includes(extension)) {
+        return 'fas fa-code';
+    }
+    return 'far fa-file-lines';
+}
+
+function getAttachmentKind(file) {
+    const mimeType = getAttachmentMime(file);
+    const extension = getAttachmentExtension(file);
+
+    if (mimeType.startsWith('image/')) return 'Image';
+    if (mimeType === 'application/pdf') return 'PDF';
+    if (isDocxFile(file)) return 'DOCX';
+    if (TEXT_FILE_EXTENSIONS.has(extension) || isTextLikeFile(file)) return extension ? extension.toUpperCase() : 'Text';
+    return 'File';
+}
+
+function getAttachmentDataUrl(file) {
+    const mimeType = getAttachmentMime(file);
+    if (file?.data) return `data:${mimeType};base64,${file.data}`;
+    if (typeof Blob !== 'undefined' && file instanceof Blob) return URL.createObjectURL(file);
+    return '';
+}
+
+function ensureFileInspector() {
+    let viewer = document.getElementById('fileInspectOverlay');
+    if (viewer) return viewer;
+
+    viewer = document.createElement('div');
+    viewer.id = 'fileInspectOverlay';
+    viewer.className = 'file-inspect-overlay';
+    viewer.innerHTML = `
+        <aside class="file-inspect-panel" role="dialog" aria-modal="true" aria-labelledby="fileInspectTitle">
+            <div class="file-inspect-topbar">
+                <button type="button" class="file-inspect-close" aria-label="Close file preview">
+                    <i class="fas fa-xmark"></i>
                 </button>
-                <i class="far fa-image"></i>
-                <span class="image-inspect-title"></span>
+                <i class="file-inspect-file-icon far fa-file-lines"></i>
+                <div class="file-inspect-heading">
+                    <span class="file-inspect-title" id="fileInspectTitle"></span>
+                    <span class="file-inspect-meta"></span>
+                </div>
             </div>
-            <img class="image-inspect-img" alt="">
-        `;
-        document.body.appendChild(viewer);
+            <div class="file-inspect-body"></div>
+        </aside>
+    `;
+    document.body.appendChild(viewer);
 
-        viewer.querySelector('.image-inspect-back').addEventListener('click', () => {
-            viewer.classList.remove('show');
-        });
-        viewer.addEventListener('click', (event) => {
-            if (event.target === viewer) viewer.classList.remove('show');
-        });
-        window.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') viewer.classList.remove('show');
-        });
+    const close = () => viewer.classList.remove('show');
+    viewer.querySelector('.file-inspect-close').addEventListener('click', close);
+    viewer.addEventListener('click', (event) => {
+        if (event.target === viewer) close();
+    });
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') close();
+    });
+
+    return viewer;
+}
+
+async function getAttachmentPreviewText(file) {
+    if (file?._previewText) return file._previewText;
+
+    if (isDocxFile(file)) {
+        const text = await extractDocxText(file).catch(() => '');
+        file._previewText = text;
+        return text;
     }
 
-    const image = viewer.querySelector('.image-inspect-img');
-    const title = viewer.querySelector('.image-inspect-title');
-    image.src = src;
-    image.alt = fileName;
+    if (file instanceof Blob && isTextLikeFile(file)) {
+        const text = await blobToText(file);
+        file._previewText = text;
+        return text;
+    }
+
+    if (file?.data && isTextLikeFile(file)) {
+        return base64ToText(file.data);
+    }
+
+    return '';
+}
+
+async function openFileInspector(file, fallbackImageSrc = '') {
+    if (!file) return;
+
+    const viewer = ensureFileInspector();
+    const title = viewer.querySelector('.file-inspect-title');
+    const meta = viewer.querySelector('.file-inspect-meta');
+    const icon = viewer.querySelector('.file-inspect-file-icon');
+    const body = viewer.querySelector('.file-inspect-body');
+    const mimeType = getAttachmentMime(file);
+    const fileName = getAttachmentName(file);
+
     title.textContent = fileName;
+    meta.textContent = [getAttachmentKind(file), getAttachmentSize(file)].filter(Boolean).join(' • ');
+    icon.className = `file-inspect-file-icon ${getAttachmentIcon(file)}`;
+    body.innerHTML = '<div class="file-inspect-loading"><i class="fas fa-circle-notch fa-spin"></i><span>Loading preview...</span></div>';
     viewer.classList.add('show');
+
+    if (mimeType.startsWith('image/')) {
+        const src = fallbackImageSrc || getAttachmentImageSrc(file);
+        body.innerHTML = '';
+        const image = document.createElement('img');
+        image.className = 'file-inspect-image';
+        image.alt = fileName;
+        image.src = src;
+        body.appendChild(image);
+        return;
+    }
+
+    if (mimeType === 'application/pdf') {
+        const src = getAttachmentDataUrl(file);
+        body.innerHTML = '';
+        if (src) {
+            const frame = document.createElement('iframe');
+            frame.className = 'file-inspect-frame';
+            frame.src = src;
+            frame.title = fileName;
+            body.appendChild(frame);
+        } else {
+            body.innerHTML = '<div class="file-inspect-empty">PDF preview is available for newly attached files.</div>';
+        }
+        return;
+    }
+
+    const text = await getAttachmentPreviewText(file);
+    if (text) {
+        body.innerHTML = '';
+        const pre = document.createElement('pre');
+        pre.className = 'file-inspect-code';
+        pre.textContent = text;
+        body.appendChild(pre);
+        return;
+    }
+
+    body.innerHTML = `
+        <div class="file-inspect-empty">
+            <i class="${getAttachmentIcon(file)}"></i>
+            <span>Preview is not available for this saved file, but new text, code, PDF and DOCX uploads are sent to AI when possible.</span>
+        </div>
+    `;
+}
+
+function openImageViewer(src, fileName = 'Image') {
+    openFileInspector({ name: fileName, mime_type: 'image/*' }, src);
+}
+
+function buildCopyableUserMessage(text, files) {
+    const parts = [];
+    if (text) parts.push(text);
+    if (files && files.length > 0) {
+        parts.push(files.map(file => `[${getAttachmentKind(file)}: ${getAttachmentName(file)}]`).join('\n'));
+    }
+    return parts.join('\n\n');
+}
+
+async function copyTextToClipboard(text) {
+    if (!text) return;
+
+    try {
+        await navigator.clipboard.writeText(text);
+        if (typeof showToast === 'function') showToast('Message copied', 'success');
+    } catch (error) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+        if (typeof showToast === 'function') showToast('Message copied', 'success');
+    }
 }
 
 function appendMessage(sender, text, model = '', files = []) {
@@ -575,25 +917,36 @@ function appendMessage(sender, text, model = '', files = []) {
                 img.title = fileName;
                 img.className = 'chat-image-preview';
                 img.tabIndex = 0;
-                img.addEventListener('click', () => openImageViewer(img.src, fileName));
+                img.addEventListener('click', () => openFileInspector(file, img.src));
                 img.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        openImageViewer(img.src, fileName);
+                        openFileInspector(file, img.src);
                     }
                 });
                 filesContainer.appendChild(img);
             } else {
-                const fileLink = document.createElement('div');
+                const fileLink = document.createElement('button');
+                fileLink.type = 'button';
                 fileLink.className = 'chat-file-preview';
+                fileLink.title = `Open ${fileName}`;
 
                 const icon = document.createElement('i');
-                icon.className = 'fas fa-file';
+                icon.className = getAttachmentIcon(file);
+
+                const info = document.createElement('span');
+                info.className = 'chat-file-info';
 
                 const name = document.createElement('span');
+                name.className = 'chat-file-name';
                 name.textContent = fileName;
 
-                fileLink.append(icon, name);
+                const kind = document.createElement('span');
+                kind.className = 'chat-file-kind';
+                kind.textContent = getAttachmentKind(file);
+
+                info.append(name, kind);
+                fileLink.append(icon, info);
 
                 const size = getAttachmentSize(file);
                 if (size) {
@@ -603,6 +956,7 @@ function appendMessage(sender, text, model = '', files = []) {
                     fileLink.appendChild(sizeEl);
                 }
 
+                fileLink.addEventListener('click', () => openFileInspector(file));
                 filesContainer.appendChild(fileLink);
             }
         });
@@ -611,6 +965,7 @@ function appendMessage(sender, text, model = '', files = []) {
 
     // 2. Отрисовка текста (чтобы он не затирал картинки)
     const textContainer = document.createElement('div');
+    textContainer.className = `message-text ${sender === 'user' ? 'user-message-text' : 'bot-message-text'}`;
     if (sender === 'bot') {
         const rawHtml = text ? marked.parse(text) : '';
         textContainer.innerHTML = DOMPurify.sanitize(rawHtml);
@@ -619,7 +974,41 @@ function appendMessage(sender, text, model = '', files = []) {
             textContainer.textContent = text;
         }
     }
-    contentDiv.appendChild(textContainer);
+    if (text || sender === 'bot') {
+        contentDiv.appendChild(textContainer);
+    }
+
+    if (sender === 'user') {
+        const actions = document.createElement('div');
+        actions.className = 'user-message-actions';
+
+        const shouldCollapse = text && (text.length > 420 || text.split('\n').length > 8);
+        if (shouldCollapse) {
+            textContainer.classList.add('is-collapsed');
+
+            const expandBtn = document.createElement('button');
+            expandBtn.type = 'button';
+            expandBtn.className = 'message-action-btn expand-message-btn';
+            expandBtn.innerHTML = '<i class="fas fa-chevron-down"></i><span>Expand text</span>';
+            expandBtn.addEventListener('click', () => {
+                const collapsed = textContainer.classList.toggle('is-collapsed');
+                expandBtn.innerHTML = collapsed
+                    ? '<i class="fas fa-chevron-down"></i><span>Expand text</span>'
+                    : '<i class="fas fa-chevron-up"></i><span>Collapse text</span>';
+                scrollToBottom();
+            });
+            actions.appendChild(expandBtn);
+        }
+
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'message-action-btn copy-message-btn';
+        copyBtn.innerHTML = '<i class="far fa-copy"></i><span>Copy</span>';
+        copyBtn.addEventListener('click', () => copyTextToClipboard(buildCopyableUserMessage(text, files)));
+        actions.appendChild(copyBtn);
+
+        contentDiv.appendChild(actions);
+    }
 
     msgDiv.appendChild(contentDiv);
     
@@ -1001,7 +1390,12 @@ if (newChatBtn) {
     };
 }
 
-if (sendBtn) {
+if (DOM.chatForm) {
+    DOM.chatForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        sendMessage();
+    });
+} else if (sendBtn) {
     sendBtn.addEventListener('click', sendMessage);
 }
 

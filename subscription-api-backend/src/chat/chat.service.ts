@@ -83,6 +83,35 @@ export class ChatService {
     );
   }
 
+  private canReadInlineText(mimeType: string) {
+    return (
+      mimeType.startsWith('text/') ||
+      mimeType === 'application/json' ||
+      mimeType === 'application/xml' ||
+      mimeType === 'application/javascript' ||
+      mimeType === 'application/typescript'
+    );
+  }
+
+  private decodeInlineText(data: string) {
+    try {
+      return Buffer.from(data, 'base64').toString('utf8');
+    } catch {
+      return '';
+    }
+  }
+
+  private buildTextFilePrompt(file: IAttachedFile) {
+    const text = file.data && this.canReadInlineText(file.mime_type || '') ? this.decodeInlineText(file.data) : '';
+    if (!text) return '';
+
+    return [
+      `[Attached file content: ${file.name || 'attached file'} (${file.mime_type || 'text/plain'})]`,
+      text,
+      `[End attached file: ${file.name || 'attached file'}]`,
+    ].join('\n');
+  }
+
   private buildGeminiFileParts(files: IAttachedFile[]) {
     const parts: any[] = [];
 
@@ -316,6 +345,8 @@ export class ChatService {
                   type: 'image_url',
                   image_url: { url: `data:${mimeType};base64,${file.data}` }
                 });
+              } else if (file.data && this.canReadInlineText(mimeType)) {
+                contentArray.push({ type: 'text', text: this.buildTextFilePrompt(file) });
               } else {
                 contentArray.push({ type: 'text', text: `[User uploaded document: ${file.name || 'attached file'}]` });
               }
@@ -443,6 +474,8 @@ export class ChatService {
 
           if (mimeType.startsWith('image/') && file.data) {
             contentArray.push({ type: 'image_url', image_url: { url: `data:${mimeType};base64,${file.data}` } });
+          } else if (file.data && this.canReadInlineText(mimeType)) {
+            contentArray.push({ type: 'text', text: this.buildTextFilePrompt(file) });
           } else {
             contentArray.push({ type: 'text', text: `[Attached file: ${file.name || 'attached file'}]` });
           }
