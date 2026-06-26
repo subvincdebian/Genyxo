@@ -9,6 +9,7 @@ import {
   Get,
   Param,
   Patch,
+  Delete,
   NotFoundException,
   InternalServerErrorException,
   Headers,
@@ -126,9 +127,16 @@ export class ChatController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Patch('conversation/:id')
+  @Patch(['conversation/:id', 'conversations/:id'])
   async rename(@Param('id') id: number, @Body('title') title: string, @Request() req) {
       return this.chatService.renameConversation(req.user.id, id, title);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(['conversation/:id', 'conversations/:id'])
+  async delete(@Param('id') id: number, @Request() req) {
+      await this.chatService.deleteConversation(req.user.id, id);
+      return { success: true };
   }
 
   @Post('webhook/video')

@@ -237,14 +237,10 @@ async function deleteChat(id) {
             throw new Error(`Server responded with status: ${res.status}`);
         }
 
-        const element = document.getElementById(`chat-item-${id}`);
-        if (element) {
-            element.remove();
-        }
-
         conversations = conversations.filter(c => c.id !== id);
+        renderHistoryList();
 
-        if (currentChatId === id) {
+        if (String(currentChatId) === String(id)) {
             currentChatId = null;
             
             if (DOM.chatBox) {

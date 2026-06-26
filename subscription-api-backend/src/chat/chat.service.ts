@@ -437,6 +437,8 @@ export class ChatService {
   async deleteConversation(userId: number, id: number) {
     const chat = await this.conversationRepository.findOne({ where: { id, userId } });
     if (!chat) throw new NotFoundException();
-    return this.conversationRepository.remove(chat);
+    await this.messageRepository.delete({ conversationId: id, userId });
+    await this.conversationRepository.delete({ id, userId });
+    return { success: true };
   }
 }
