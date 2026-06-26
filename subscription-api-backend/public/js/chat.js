@@ -845,10 +845,17 @@ async function openFileInspector(file, fallbackImageSrc = '') {
     const text = await getAttachmentPreviewText(file);
     if (text) {
         body.innerHTML = '';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'file-code-preview';
         const pre = document.createElement('pre');
         pre.className = 'file-inspect-code';
-        pre.textContent = text;
-        body.appendChild(pre);
+        const code = document.createElement('code');
+        code.className = `language-${getAttachmentExtension(file) || 'text'}`;
+        code.textContent = text;
+        pre.appendChild(code);
+        wrapper.appendChild(pre);
+        body.appendChild(wrapper);
+        enhanceCodeBlocks(body, getAttachmentExtension(file));
         return;
     }
 
@@ -892,9 +899,228 @@ async function copyTextToClipboard(text) {
     }
 }
 
+function showReviewToast() {
+    const message = 'Thanks for your review, it helps to make our platform better';
+    if (typeof showToast === 'function') showToast(message, 'success');
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function getCodeLanguageFromClass(codeEl) {
+    const className = codeEl?.className || '';
+    const match = className.match(/language-([\w#+.-]+)/i);
+    return match ? match[1].toLowerCase() : '';
+}
+
+function getCodeExtension(language = 'txt') {
+    const map = {
+        javascript: 'js',
+        js: 'js',
+        typescript: 'ts',
+        ts: 'ts',
+        jsx: 'jsx',
+        tsx: 'tsx',
+        html: 'html',
+        css: 'css',
+        python: 'py',
+        py: 'py',
+        cpp: 'cpp',
+        c: 'c',
+        json: 'json',
+        bash: 'sh',
+        shell: 'sh',
+        sql: 'sql'
+    };
+    return map[language] || language || 'txt';
+}
+
+function highlightCode(code, language = '') {
+    const html = escapeHtml(code);
+    const keywords = /\b(const|let|var|function|return|if|else|for|while|class|new|async|await|try|catch|import|from|export|default|type|interface|extends|public|private|protected|static|void|int|float|double|char|bool|true|false|null|undefined|def|self|print|echo|SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|TABLE)\b/;
+    const builtins = /\b(document|window|console|Math|Array|Object|String|Number|Promise|React|useState|useEffect)\b/;
+    const tokenPattern = /(&lt;\/?[\w:-]+|\s[\w:-]+(?==)|&quot;.*?&quot;|&#039;.*?&#039;|`[\s\S]*?`|\/\/.*|\/\*[\s\S]*?\*\/|#.*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b)/g;
+
+    return html.replace(tokenPattern, (token) => {
+        const trimmed = token.trim();
+        if (token.startsWith('&lt;')) return token.replace(trimmed, `<span class="tok-tag">${trimmed}</span>`);
+        if (/^\s[\w:-]+$/.test(token) && ['html', 'xml', 'jsx', 'tsx'].includes(language)) {
+            return token.replace(trimmed, `<span class="tok-attr">${trimmed}</span>`);
+        }
+        if (token.startsWith('&quot;') || token.startsWith('&#039;') || token.startsWith('`')) return `<span class="tok-string">${token}</span>`;
+        if (token.startsWith('//') || token.startsWith('/*') || token.startsWith('#')) return `<span class="tok-comment">${token}</span>`;
+        if (/^\d/.test(token)) return `<span class="tok-number">${token}</span>`;
+        if (keywords.test(token)) return `<span class="tok-keyword">${token}</span>`;
+        if (builtins.test(token)) return `<span class="tok-builtin">${token}</span>`;
+        return token;
+    });
+}
+
+function downloadTextFile(text, fileName = 'code.txt') {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+function createCodeActionButton(iconClass, label, onClick) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'code-action-btn';
+    button.title = label;
+    button.setAttribute('aria-label', label);
+    button.innerHTML = `<i class="${iconClass}"></i>`;
+    button.addEventListener('click', onClick);
+    return button;
+}
+
+function enhanceCodeBlocks(root, defaultLanguage = '') {
+    if (!root) return;
+
+    root.querySelectorAll('pre > code').forEach((codeEl, index) => {
+        if (codeEl.closest('.ai-code-block')) return;
+
+        const rawCode = codeEl.textContent || '';
+        const language = getCodeLanguageFromClass(codeEl) || defaultLanguage || 'text';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'ai-code-block';
+
+        const header = document.createElement('div');
+        header.className = 'ai-code-header';
+
+        const label = document.createElement('span');
+        label.className = 'ai-code-language';
+        label.textContent = language.toUpperCase();
+
+        const actions = document.createElement('div');
+        actions.className = 'ai-code-actions';
+        actions.append(
+            createCodeActionButton('fas fa-download', 'Download code', () => {
+                downloadTextFile(rawCode, `genyxo-code-${Date.now()}-${index + 1}.${getCodeExtension(language)}`);
+            }),
+            createCodeActionButton('far fa-copy', 'Copy code', () => copyTextToClipboard(rawCode))
+        );
+
+        header.append(label, actions);
+        const pre = codeEl.parentElement;
+        codeEl.innerHTML = highlightCode(rawCode, language);
+        pre.replaceWith(wrapper);
+        wrapper.append(header, pre);
+    });
+}
+
+function renderMarkdownInto(element, markdown) {
+    element.innerHTML = DOMPurify.sanitize(marked.parse(markdown || ''));
+    enhanceCodeBlocks(element);
+}
+
+function getPreviousUserMessage(botBubble) {
+    let current = botBubble?.previousElementSibling;
+    while (current) {
+        if (current.classList?.contains('user-message')) return current;
+        current = current.previousElementSibling;
+    }
+    return null;
+}
+
+function createBotActionButton(iconClass, label, onClick) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'bot-action-btn';
+    button.title = label;
+    button.setAttribute('aria-label', label);
+    button.innerHTML = `<i class="${iconClass}"></i>`;
+    button.addEventListener('click', onClick);
+    return button;
+}
+
+function closeBotMoreMenus(except = null) {
+    document.querySelectorAll('.bot-more-menu.show').forEach(menu => {
+        if (menu !== except) menu.classList.remove('show');
+    });
+}
+
+function createBotActions(botBubble) {
+    const actions = document.createElement('div');
+    actions.className = 'bot-message-actions';
+
+    const moreWrap = document.createElement('div');
+    moreWrap.className = 'bot-more-wrap';
+    const moreMenu = document.createElement('div');
+    moreMenu.className = 'bot-more-menu';
+    moreMenu.innerHTML = `
+        <button type="button"><i class="fas fa-code-branch"></i><span>Create new branch in chat</span></button>
+        <button type="button"><i class="fas fa-volume-high"></i><span>Listen</span></button>
+        <button type="button"><i class="far fa-file-lines"></i><span>Export to Docs</span></button>
+        <button type="button"><i class="fas fa-envelope"></i><span>Draft in Gmail</span></button>
+        <button type="button"><i class="fas fa-th-large"></i><span>Export to Replit</span></button>
+        <button type="button"><i class="far fa-flag"></i><span>Report legal issue</span></button>
+        <button type="button"><i class="fas fa-link"></i><span>View sources</span></button>
+        <button type="button"><i class="fas fa-timeline"></i><span>Show reasoning steps</span></button>
+    `;
+
+    moreMenu.addEventListener('click', (event) => {
+        const item = event.target.closest('button');
+        if (!item) return;
+        if (typeof showToast === 'function') showToast(item.textContent.trim(), 'info');
+        moreMenu.classList.remove('show');
+    });
+
+    const moreBtn = createBotActionButton('fas fa-ellipsis', 'More', (event) => {
+        event.stopPropagation();
+        const willShow = !moreMenu.classList.contains('show');
+        closeBotMoreMenus(moreMenu);
+        moreMenu.classList.toggle('show', willShow);
+    });
+    moreWrap.append(moreBtn, moreMenu);
+
+    actions.append(
+        createBotActionButton('far fa-thumbs-up', 'Like', showReviewToast),
+        createBotActionButton('far fa-thumbs-down', 'Dislike', showReviewToast),
+        createBotActionButton('fas fa-rotate-right', 'Repeat response', () => regenerateBotMessage(botBubble)),
+        createBotActionButton('far fa-copy', 'Copy response', () => copyTextToClipboard(botBubble._botText || botBubble.textContent || '')),
+        moreWrap
+    );
+
+    return actions;
+}
+
+function getModelIconSrc(value = '') {
+    if (value.includes('google/gemini') || value.includes('gemma')) return './images/google-gemini.svg';
+    if (value.includes('openai') || value.includes('gpt')) return './images/chatgpt-icon.svg';
+    if (value.includes('anthropic') || value.includes('claude')) return './images/claude-ai.svg';
+    if (value.includes('arcee')) return './images/arcee-ai.svg';
+    if (value.includes('dall-e')) return './images/dalle-text.png';
+    if (value.includes('kling')) return './images/kling-video.svg';
+    return './images/logo.svg';
+}
+
+function getModelProviderName(value = '') {
+    if (value.includes('google/gemini') || value.includes('gemma')) return 'Gemini';
+    if (value.includes('openai') || value.includes('gpt')) return 'OpenAI';
+    if (value.includes('anthropic') || value.includes('claude')) return 'Claude';
+    if (value.includes('arcee')) return 'Arcee';
+    if (value.includes('kling')) return 'Kling';
+    return 'AI';
+}
+
 function appendMessage(sender, text, model = '', files = []) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}-message ${model ? 'model-' + model.replace('/', '-') : ''}`;
+    msgDiv._messageText = text || '';
+    msgDiv._messageFiles = files || [];
+    msgDiv._messageModel = model || '';
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
@@ -967,8 +1193,8 @@ function appendMessage(sender, text, model = '', files = []) {
     const textContainer = document.createElement('div');
     textContainer.className = `message-text ${sender === 'user' ? 'user-message-text' : 'bot-message-text'}`;
     if (sender === 'bot') {
-        const rawHtml = text ? marked.parse(text) : '';
-        textContainer.innerHTML = DOMPurify.sanitize(rawHtml);
+        msgDiv._botText = text || '';
+        renderMarkdownInto(textContainer, text || '');
     } else {
         if (text) {
             textContainer.textContent = text;
@@ -1013,6 +1239,14 @@ function appendMessage(sender, text, model = '', files = []) {
     }
 
     msgDiv.appendChild(contentDiv);
+
+    if (sender === 'bot') {
+        document.querySelectorAll('.latest-bot-message').forEach(message => {
+            message.classList.remove('latest-bot-message');
+        });
+        msgDiv.classList.add('latest-bot-message');
+        msgDiv.appendChild(createBotActions(msgDiv));
+    }
     
     if (model) {
         const meta = document.createElement('div');
@@ -1083,6 +1317,103 @@ function useSuggestion(text) {
         userInput.value = text;
         userInput.focus();
         adjustHeight();
+    }
+}
+
+async function regenerateBotMessage(botBubble) {
+    const previousUser = getPreviousUserMessage(botBubble);
+    if (!previousUser || !token || sendBtn.disabled) return;
+
+    const text = previousUser._messageText || '';
+    const files = previousUser._messageFiles || [];
+    const selectedModel = modelSelect ? modelSelect.value : 'google/gemini-2.5-flash';
+    const contentDiv = botBubble.querySelector('.message-content');
+
+    if (!contentDiv) return;
+
+    sendBtn.disabled = true;
+    userInput.disabled = true;
+    botBubble.classList.add('streaming', 'latest-bot-message');
+    contentDiv.innerHTML = '<div class="chat-loader" aria-label="AI is thinking"></div>';
+
+    let fullContent = '';
+    let isUpdating = false;
+
+    try {
+        const base64Files = [];
+        for (const file of files) {
+            base64Files.push(await buildAttachmentPayload(file));
+        }
+
+        const payload = {
+            message: text,
+            model: selectedModel,
+            files: base64Files
+        };
+        if (currentChatId) payload.conversationId = currentChatId;
+
+        const response = await fetch(`${API_BASE_URL}/chat/stream`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'text/event-stream'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || `Server error: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let leftover = '';
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            const chunk = leftover + decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            leftover = lines.pop();
+
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const jsonStr = line.replace('data: ', '').trim();
+                if (!jsonStr || jsonStr === '[DONE]') continue;
+
+                const data = JSON.parse(jsonStr);
+                if (data.error) throw new Error(data.error);
+
+                if (data.token) {
+                    fullContent += data.token;
+                    botBubble._botText = fullContent;
+                    if (!isUpdating) {
+                        isUpdating = true;
+                        requestAnimationFrame(() => {
+                            renderMarkdownInto(contentDiv, fullContent);
+                            scrollToBottom();
+                            isUpdating = false;
+                        });
+                    }
+                }
+
+                if (data.status === 'done' && data.creditBalance !== undefined) {
+                    updateBalanceUI(data.creditBalance);
+                }
+            }
+        }
+    } catch (err) {
+        showToast(err.message, 'error');
+        contentDiv.textContent = `Error: ${err.message}`;
+        contentDiv.style.color = 'var(--error-red)';
+    } finally {
+        botBubble.classList.remove('streaming');
+        sendBtn.disabled = false;
+        userInput.disabled = false;
+        userInput.focus();
     }
 }
 
@@ -1189,11 +1520,12 @@ async function sendMessage() {
                         if (data.token) {
                             if (fullContent === "") contentDiv.innerHTML = "";
                             fullContent += data.token;
+                            botBubble._botText = fullContent;
                             
                             if (!isUpdating) {
                                 isUpdating = true;
                                 requestAnimationFrame(() => {
-                                    contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(fullContent));
+                                    renderMarkdownInto(contentDiv, fullContent);
                                     scrollToBottom();
                                     isUpdating = false;
                                 });
@@ -1441,6 +1773,7 @@ window.toggleDropdown = function(e, id) {
 
 window.addEventListener('click', () => {
     document.querySelectorAll('.options-dropdown').forEach(d => d.classList.remove('show'));
+    closeBotMoreMenus();
 });
 
 (function() {
@@ -1477,16 +1810,29 @@ window.addEventListener('click', () => {
     const optionsList = custom.querySelector('.custom-options');
     const current = custom.querySelector('.current-model-name');
 
+    function renderModelLabel(container, option) {
+        container.replaceChildren();
+        const icon = document.createElement('img');
+        icon.className = 'model-option-icon';
+        icon.src = getModelIconSrc(option.value);
+        icon.alt = getModelProviderName(option.value);
+
+        const label = document.createElement('span');
+        label.className = 'model-option-label';
+        label.textContent = option.textContent;
+        container.append(icon, label);
+    }
+
     Array.from(native.options).forEach(opt => {
         const li = document.createElement('li');
-        li.textContent = opt.textContent;
         li.dataset.value = opt.value;
+        renderModelLabel(li, opt);
         if (opt.selected) li.classList.add('active');
         optionsList.appendChild(li);
     });
 
     const selected = native.options[native.selectedIndex];
-    if (selected && current) current.textContent = selected.textContent;
+    if (selected && current) renderModelLabel(current, selected);
 
     function closeOptions(){
         optionsList.classList.remove('show');
@@ -1507,7 +1853,8 @@ window.addEventListener('click', () => {
         const li = e.target.closest('li');
         if (!li) return;
         native.value = li.dataset.value;
-        if (current) current.textContent = li.textContent;
+        const selectedOption = Array.from(native.options).find(opt => opt.value === li.dataset.value);
+        if (current && selectedOption) renderModelLabel(current, selectedOption);
         optionsList.querySelectorAll('li').forEach(n=>n.classList.remove('active'));
         li.classList.add('active');
         closeOptions();

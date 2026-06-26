@@ -2021,6 +2021,208 @@ display: block !important;
     color: #1f1f1f !important;
 }
 
+.current-model-name,
+.custom-options li {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-width: 0;
+}
+
+.model-option-icon {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    border-radius: 7px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 3px;
+}
+
+.model-option-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ai-code-block {
+    margin: 1.2rem 0 1.45rem;
+    overflow: hidden;
+    border-radius: 24px;
+    background: #171717;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ai-code-header {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px 8px 22px;
+}
+
+.ai-code-language {
+    color: #f1f3f4;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.ai-code-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.code-action-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    color: #f1f3f4;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.code-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+#chatBox .message.bot-message .ai-code-block pre,
+.file-code-preview .ai-code-block pre {
+    margin: 0 !important;
+    padding: 12px 22px 28px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    overflow-x: auto !important;
+}
+
+#chatBox .message.bot-message .ai-code-block code,
+.file-code-preview .ai-code-block code {
+    display: block;
+    padding: 0 !important;
+    background: transparent !important;
+    color: #f1f3f4 !important;
+    font: 0.95rem/1.58 "SFMono-Regular", Consolas, "Liberation Mono", monospace !important;
+    white-space: pre !important;
+}
+
+.file-code-preview {
+    width: 100%;
+    padding: 26px clamp(14px, 4vw, 42px);
+}
+
+.file-code-preview .ai-code-block {
+    width: 100%;
+    margin: 0;
+}
+
+.tok-comment { color: #7f858e; }
+.tok-keyword { color: #9da8ff; }
+.tok-string { color: #71e083; }
+.tok-number { color: #ff8bd1; }
+.tok-builtin { color: #ff6464; }
+.tok-tag { color: #62a8ff; }
+.tok-attr { color: #ff8bd1; }
+
+.bot-message-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    min-height: 34px;
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.latest-bot-message .bot-message-actions,
+.bot-message:hover .bot-message-actions,
+.bot-message:focus-within .bot-message-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.streaming .bot-message-actions {
+    display: none;
+}
+
+.bot-action-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    color: #e8eaed;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.16s ease, color 0.16s ease;
+}
+
+.bot-action-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.bot-more-wrap {
+    position: relative;
+}
+
+.bot-more-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 12px);
+    width: min(360px, 90vw);
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border-radius: 18px;
+    background: #1f1f1f;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    z-index: 20;
+}
+
+.bot-more-menu.show {
+    display: flex;
+}
+
+.bot-more-menu button {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 10px;
+    color: #f1f3f4;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+}
+
+.bot-more-menu button:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.bot-more-menu i {
+    width: 20px;
+    color: #e8eaed;
+}
+
 .hidden {
     display: none !important;
 }
