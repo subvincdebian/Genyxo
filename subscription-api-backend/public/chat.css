@@ -84,6 +84,87 @@ body {
     background: black;
 }
 
+#profilePanel.profile-dropdown {
+    box-sizing: border-box;
+}
+
+#profilePanel.profile-dropdown:not(.show) {
+    display: none !important;
+}
+
+#profilePanel.profile-dropdown.show {
+    display: block !important;
+}
+
+#profilePanel .dropdown-header,
+#profilePanel .credits-card,
+#profilePanel .dropdown-menu,
+#profilePanel .dropdown-footer {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+}
+
+#profilePanel .dropdown-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 20px !important;
+}
+
+#profilePanel .user-details {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-width: 0;
+}
+
+#profilePanel .credits-card {
+    display: block !important;
+    padding: 16px !important;
+    margin: 0 0 20px !important;
+}
+
+#profilePanel .credits-top {
+    display: flex !important;
+    align-items: center !important;
+    margin-bottom: 8px !important;
+}
+
+#profilePanel .credits-amount {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: var(--text-light) !important;
+}
+
+#profilePanel .amount-number {
+    font-size: 1.8rem !important;
+    line-height: 1.2 !important;
+    color: var(--text-light) !important;
+}
+
+#profilePanel .upgrade-full-btn {
+    width: 100% !important;
+}
+
+#profilePanel .dropdown-menu {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    margin-bottom: 15px !important;
+}
+
+#profilePanel .menu-item {
+    display: flex !important;
+    align-items: center !important;
+}
+
+#profilePanel .lang-val {
+    margin-left: auto !important;
+}
+
 .chat-layout {
     display: flex;
     flex: 1;
