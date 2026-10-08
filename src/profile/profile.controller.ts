@@ -1,60 +1,77 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Query } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { Transaction } from '../transactions/transaction.entity';
-import { UsersService } from '../users/users.service';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Query,
+} from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
+import { Transaction } from "../transactions/transaction.entity";
+import { UsersService } from "../users/users.service";
+import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
 
-@Controller('profile')
+@Controller("profile")
 export class ProfileController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard("jwt"))
   @Get()
   async getProfile(@Request() req) {
     const userId = req.user.id;
     const user = await this.usersService.findOneById(userId);
-    
+
     if (!user) {
-        return { error: 'User not found' };
+      return { error: "User not found" };
     }
 
     return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        credits: user.credits,
-        avatar: user.avatar,
-        referralBalance: user.referralBalance || 0,
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      credits: user.credits,
+      avatar: user.avatar,
+      referralBalance: user.referralBalance || 0,
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Post('update')
-  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+  @UseGuards(AuthGuard("jwt"))
+  @Post("update")
+  async updateProfile(
+    @Request() req,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
     await this.usersService.updateUser(req.user.id, updateProfileDto);
-    return { status: 'success' };
+    return { status: "success" };
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get('affiliate')
+  @UseGuards(AuthGuard("jwt"))
+  @Get("affiliate")
   async getAffiliateStats(@Request() req) {
     return this.usersService.getAffiliateStats(req.user.id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get('transactions')
-  async getTransactions(@Request() req, @Query() paginationQuery: PaginationQueryDto) {
+  @UseGuards(AuthGuard("jwt"))
+  @Get("transactions")
+  async getTransactions(
+    @Request() req,
+    @Query() paginationQuery: PaginationQueryDto,
+  ) {
     const { page = 1, limit = 10 } = paginationQuery;
     const userId = req.user.id;
 
-    const [items, total] = await this.usersService.repo.manager.findAndCount(Transaction, {
-      where: { user: { id: userId } },
-      order: { createdAt: 'DESC' } as any,
-      take: limit,
-      skip: (page - 1) * limit,
-    });
+    const [items, total] = await this.usersService.repo.manager.findAndCount(
+      Transaction,
+      {
+        where: { user: { id: userId } },
+        order: { createdAt: "DESC" } as any,
+        take: limit,
+        skip: (page - 1) * limit,
+      },
+    );
 
     return {
       items,

@@ -3,19 +3,26 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { forwardRef, Inject, Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { NotificationsService } from './notifications.service';
+} from "@nestjs/websockets";
+import { Server, Socket } from "socket.io";
+import { forwardRef, Inject, Logger } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { NotificationsService } from "./notifications.service";
 
 @WebSocketGateway({
   cors: {
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       const allowedOrigins = process.env.ALLOWED_ORIGINS
-        ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-        : ['https://genyxo.com', 'http://localhost:3000'];
-      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+        : ["https://genyxo.com", "http://localhost:3000"];
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes("*")
+      ) {
         callback(null, true);
       } else {
         callback(null, false);
@@ -23,11 +30,13 @@ import { NotificationsService } from './notifications.service';
     },
     credentials: true,
   },
-  namespace: 'notifications',
+  namespace: "notifications",
 })
-export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server!: Server;
-  private logger = new Logger('NotificationsGateway');
+  private logger = new Logger("NotificationsGateway");
 
   constructor(
     private jwtService: JwtService,
@@ -37,7 +46,8 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
 
   async handleConnection(client: Socket) {
     try {
-      const token = client.handshake.auth?.token || client.handshake.query?.token;
+      const token =
+        client.handshake.auth?.token || client.handshake.query?.token;
       if (!token) return client.disconnect();
 
       const payload = await this.jwtService.verifyAsync(token as string, {
@@ -47,11 +57,13 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       const userId = payload.sub || payload.id;
 
       if (userId) {
-        client.join(`user_${userId}`);
-        const unreadCount = await this.notificationsService.getUnreadCount(Number(userId));
-        client.emit('unread_count_update', { count: unreadCount });
+        await client.join(`user_${userId}`);
+        const unreadCount = await this.notificationsService.getUnreadCount(
+          Number(userId),
+        );
+        client.emit("unread_count_update", { count: unreadCount });
       }
-    } catch (e) {
+    } catch (_error) {
       client.disconnect();
     }
   }
@@ -61,10 +73,10 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   }
 
   sendUnreadCount(userId: number, count: number) {
-    this.server.to(`user_${userId}`).emit('unread_count_update', { count });
+    this.server.to(`user_${userId}`).emit("unread_count_update", { count });
   }
 
   sendNotificationToUser(userId: number, data: any) {
-    this.server.to(`user_${userId}`).emit('new_notification', data);
+    this.server.to(`user_${userId}`).emit("new_notification", data);
   }
 }

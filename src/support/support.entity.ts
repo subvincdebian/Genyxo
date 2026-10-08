@@ -1,20 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, JoinColumn, Index } from 'typeorm';
-import { User } from '../users/user.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+  Index,
+} from "typeorm";
+import { User } from "../users/user.entity";
 
 export enum TicketStatus {
-  OPEN = 'OPEN',
-  IN_PROGRESS = 'IN_PROGRESS',
-  CLOSED = 'CLOSED',
+  OPEN = "OPEN",
+  IN_PROGRESS = "IN_PROGRESS",
+  CLOSED = "CLOSED",
 }
 
 export enum TicketPriority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
 }
 
-@Entity('support_tickets')
-@Index(['userId', 'createdAt'])
+@Entity("support_tickets")
+@Index(["userId", "createdAt"])
 export class SupportTicket {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -22,21 +31,21 @@ export class SupportTicket {
   @Column()
   subject!: string;
 
-  @Column('text')
+  @Column("text")
   message!: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   adminResponse?: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: TicketStatus,
     default: TicketStatus.OPEN,
   })
   status!: TicketStatus;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: TicketPriority,
     default: TicketPriority.MEDIUM,
   })
@@ -53,6 +62,6 @@ export class SupportTicket {
   userId!: number;
 
   @ManyToOne(() => User, (user) => user.tickets)
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: "userId" })
   user!: User;
 }

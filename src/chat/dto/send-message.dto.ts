@@ -1,6 +1,15 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, MaxLength, IsArray, ValidateNested, IsNumber } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
-import sanitizeHtml from 'sanitize-html';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsInt,
+  MaxLength,
+  IsArray,
+  ValidateNested,
+  IsNumber,
+} from "class-validator";
+import { Transform, Type } from "class-transformer";
+import sanitizeHtml from "sanitize-html";
 
 export class AttachedFileDto {
   @IsString()
@@ -24,7 +33,7 @@ export class SendMessageDto {
   @IsString()
   @IsOptional()
   @MaxLength(2000)
-  @Transform(({ value }) => value ? sanitizeHtml(value) : '')
+  @Transform(({ value }) => (value ? sanitizeHtml(value) : ""))
   message?: string;
 
   @IsString()
@@ -39,6 +48,6 @@ export class SendMessageDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type (() => AttachedFileDto)
+  @Type(() => AttachedFileDto)
   files?: AttachedFileDto[];
 }

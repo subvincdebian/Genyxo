@@ -1,7 +1,13 @@
-import { IsNotEmpty, IsString, Length, IsEnum, IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
-import sanitizeHtml from 'sanitize-html';
-import { TicketPriority } from '../support.entity';
+import {
+  IsNotEmpty,
+  IsString,
+  Length,
+  IsEnum,
+  IsOptional,
+} from "class-validator";
+import { Transform } from "class-transformer";
+import sanitizeHtml from "sanitize-html";
+import { TicketPriority } from "../support.entity";
 
 export class CreateTicketDto {
   @IsString()

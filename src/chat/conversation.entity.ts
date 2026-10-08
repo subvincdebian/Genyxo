@@ -1,14 +1,24 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn, JoinColumn, Index } from 'typeorm';
-import { User } from '../users/user.entity';
-import { Message } from './message.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+  Index,
+} from "typeorm";
+import { User } from "../users/user.entity";
+import { Message } from "./message.entity";
 
 @Entity()
-@Index(['userId', 'updatedAt'])
+@Index(["userId", "updatedAt"])
 export class Conversation {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ default: 'New Chat' })
+  @Column({ default: "New Chat" })
   title!: string;
 
   @Index()
@@ -16,7 +26,7 @@ export class Conversation {
   userId!: number;
 
   @ManyToOne(() => User, (user) => user.conversations)
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: "userId" })
   user!: User;
 
   @OneToMany(() => Message, (message) => message.conversation)

@@ -1,15 +1,23 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn, Index } from 'typeorm';
-import { User } from '../users/user.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  JoinColumn,
+  Index,
+} from "typeorm";
+import { User } from "../users/user.entity";
 
 export enum NotificationType {
-  SYSTEM = 'SYSTEM',
-  SUPPORT = 'SUPPORT',
-  INFO = 'INFO'
+  SYSTEM = "SYSTEM",
+  SUPPORT = "SUPPORT",
+  INFO = "INFO",
 }
 
-@Entity('notifications')
-@Index(['userId', 'isRead'])
-@Index(['userId', 'createdAt'])
+@Entity("notifications")
+@Index(["userId", "isRead"])
+@Index(["userId", "createdAt"])
 export class Notification {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -19,17 +27,17 @@ export class Notification {
   userId!: number;
 
   @ManyToOne(() => User, (user) => user.notifications)
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: "userId" })
   user?: User;
 
   @Column()
   title!: string;
 
-  @Column('text')
+  @Column("text")
   message!: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: NotificationType,
     default: NotificationType.SYSTEM,
   })

@@ -1,7 +1,12 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Role } from '../../users/role.enum';
-import { ROLES_KEY } from '../decorators/roles.decorator';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { Role } from "../../users/role.enum";
+import { ROLES_KEY } from "../decorators/roles.decorator";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -18,15 +23,17 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
-    
+
     if (!user) {
-        throw new ForbiddenException('Access denied: User authentication data is missing.');
+      throw new ForbiddenException(
+        "Access denied: User authentication data is missing.",
+      );
     }
 
     const hasRequiredRole = requiredRoles.some((role) => user.role === role);
 
     if (!hasRequiredRole) {
-         throw new ForbiddenException('Access denied: Insufficient privileges.');
+      throw new ForbiddenException("Access denied: Insufficient privileges.");
     }
 
     return true;
