@@ -77,6 +77,7 @@ export class User {
   @OneToMany(() => Conversation, (conversation) => conversation.user)
   conversations?: Conversation[];
 
+  @Index()
   @Column({ type: "int", nullable: true })
   referrerId!: number | null;
 

@@ -147,13 +147,17 @@ export class UsersService {
   }
 
   async deductCredits(userId: number, amount: number): Promise<boolean> {
-    if (amount <= 0) return true;
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) return true;
 
     const result = await this.usersRepository
       .createQueryBuilder()
       .update(User)
-      .set({ credits: () => `credits - ${amount}` })
-      .where("id = :id AND credits >= :amount", { id: userId, amount })
+      .set({ credits: () => `credits - ${numericAmount}` })
+      .where("id = :id AND credits >= :amount", {
+        id: userId,
+        amount: numericAmount,
+      })
       .execute();
 
     const success = (result.affected ?? 0) > 0;
