@@ -31,6 +31,7 @@ async function configureApp(app: NestFastifyApplication) {
   if (httpServer) {
     httpServer.headersTimeout = 66000;
     httpServer.keepAliveTimeout = 65000;
+    httpServer.requestTimeout = 65000;
   }
 
   await app.register(fastifyHelmet as any, {

@@ -223,6 +223,7 @@ export class ChatService {
         "files",
         "requestId",
       ],
+      take: 200,
     });
   }
 
@@ -511,13 +512,15 @@ export class ChatService {
       }
 
       if (!fullReply.trim()) {
-        await this.usersService.addCredits(userId, cost);
-        await this.usersService.logTransaction(
-          userId,
-          cost,
-          TransactionType.REFUND,
-          `Stream Error Refund: ${model}`,
-        );
+        await Promise.all([
+          this.usersService.addCredits(userId, cost),
+          this.usersService.logTransaction(
+            userId,
+            cost,
+            TransactionType.REFUND,
+            `Stream Error Refund: ${model}`,
+          ),
+        ]);
         res.write(
           `data: ${stringifyErrorEvent({ error: "Empty response received from AI model" })}\n\n`,
         );
@@ -559,13 +562,15 @@ export class ChatService {
 
       this.logger.error(`Stream Error: ${error.message}`);
 
-      await this.usersService.addCredits(userId, cost);
-      await this.usersService.logTransaction(
-        userId,
-        cost,
-        TransactionType.REFUND,
-        `Stream Error Refund: ${model}`,
-      );
+      await Promise.all([
+        this.usersService.addCredits(userId, cost),
+        this.usersService.logTransaction(
+          userId,
+          cost,
+          TransactionType.REFUND,
+          `Stream Error Refund: ${model}`,
+        ),
+      ]);
 
       res.write(
         `data: ${stringifyErrorEvent({ error: error.message || "Connection lost or payload too large" })}\n\n`,

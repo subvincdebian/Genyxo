@@ -287,10 +287,15 @@ export class UsersService {
     const cached = await this.redisCache.get(cacheKey);
     if (cached) return cached;
 
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
-      select: ["id", "referralBalance", "referralCode"],
-    });
+    const [user, invitedCount] = await Promise.all([
+      this.usersRepository.findOne({
+        where: { id: userId },
+        select: ["id", "referralBalance", "referralCode"],
+      }),
+      this.usersRepository.count({
+        where: { referrerId: userId },
+      }),
+    ]);
 
     if (!user) throw new NotFoundException("User not found");
 
@@ -299,10 +304,6 @@ export class UsersService {
       code = await this.generateUniqueReferralCode();
       await this.usersRepository.update(userId, { referralCode: code });
     }
-
-    const invitedCount = await this.usersRepository.count({
-      where: { referrerId: userId },
-    });
 
     const result = {
       balance: Number(user.referralBalance || 0),
