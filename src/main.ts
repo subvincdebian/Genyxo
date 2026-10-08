@@ -1,11 +1,23 @@
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from "@nestjs/platform-fastify";
+import fastifyHelmet from "@fastify/helmet";
+import fastifyCompress from "@fastify/compress";
 import { AppModule } from "./app.module";
-import { json, urlencoded } from "express";
 
-function configureApp(app: any) {
-  app.use(json({ limit: "10mb" }));
-  app.use(urlencoded({ extended: true, limit: "10mb" }));
+async function configureApp(app: NestFastifyApplication) {
+  await app.register(fastifyHelmet as any, {
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  });
+
+  await app.register(fastifyCompress as any, {
+    encodings: ["brotli", "gzip"],
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -20,30 +32,28 @@ function configureApp(app: any) {
     : ["https://genyxo.com", "http://localhost:3000"];
 
   app.enableCors({
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void,
-    ) => {
-      if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        allowedOrigins.includes("*")
-      ) {
-        callback(null, true);
-      } else {
-        callback(null, false);
-      }
-    },
+    origin: allowedOrigins.includes("*") ? true : allowedOrigins,
     credentials: true,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "Content-Type, Accept, Authorization",
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+    allowedHeaders: ["Content-Type", "Accept", "Authorization"],
   });
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  configureApp(app);
-  await app.listen(process.env.PORT || 3000, "0.0.0.0");
+  const adapter = new FastifyAdapter({
+    bodyLimit: 10 * 1024 * 1024,
+    trustProxy: true,
+  });
+
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    adapter,
+  );
+
+  await configureApp(app);
+
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  await app.listen(port, "0.0.0.0");
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 
@@ -52,14 +62,22 @@ if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
 }
 
 // Vercel Serverless
-let cachedServer: any;
+let cachedApp: NestFastifyApplication;
 
 export default async function handler(req: any, res: any) {
-  if (!cachedServer) {
-    const app = await NestFactory.create(AppModule);
-    configureApp(app);
-    await app.init();
-    cachedServer = app.getHttpAdapter().getInstance();
+  if (!cachedApp) {
+    const adapter = new FastifyAdapter({
+      bodyLimit: 10 * 1024 * 1024,
+      trustProxy: true,
+    });
+    cachedApp = await NestFactory.create<NestFastifyApplication>(
+      AppModule,
+      adapter,
+    );
+    await configureApp(cachedApp);
+    await cachedApp.init();
+    await cachedApp.getHttpAdapter().getInstance().ready();
   }
-  return cachedServer(req, res);
+  const fastifyInstance = cachedApp.getHttpAdapter().getInstance();
+  fastifyInstance.server.emit("request", req, res);
 }

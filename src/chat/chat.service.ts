@@ -9,8 +9,14 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import OpenAI from "openai";
 import { GoogleGenerativeAI, Content } from "@google/generative-ai";
-import { Response } from "express";
+import type { ServerResponse } from "http";
 import { fal } from "@fal-ai/client";
+import {
+  stringifyTokenEvent,
+  stringifyConversationEvent,
+  stringifyDoneEvent,
+  stringifyErrorEvent,
+} from "../common/serializers/chat-events.serializer";
 import { Message, IAttachedFile } from "./message.entity";
 import { Conversation } from "./conversation.entity";
 import { TransactionType } from "../transactions/transaction.entity";
@@ -293,7 +299,7 @@ export class ChatService {
     conversationId: number | undefined,
     cost: number,
     files: IAttachedFile[],
-    res: Response,
+    res: ServerResponse,
   ) {
     const abortController = new AbortController();
 
@@ -324,7 +330,7 @@ export class ChatService {
         normalizedFiles,
       );
       res.write(
-        `data: ${JSON.stringify({
+        `data: ${stringifyConversationEvent({
           status: "conversation",
           conversationId: conversation.id,
           conversationTitle: conversation.title,
@@ -383,7 +389,7 @@ export class ChatService {
           if (content) {
             fullReply += content;
             res.write(
-              `data: ${JSON.stringify({ token: content, conversationId: conversation.id })}\n\n`,
+              `data: ${stringifyTokenEvent({ token: content, conversationId: conversation.id })}\n\n`,
             );
           }
         }
@@ -450,7 +456,7 @@ export class ChatService {
           if (content) {
             fullReply += content;
             res.write(
-              `data: ${JSON.stringify({ token: content, conversationId: conversation.id })}\n\n`,
+              `data: ${stringifyTokenEvent({ token: content, conversationId: conversation.id })}\n\n`,
             );
           }
         }
@@ -465,7 +471,7 @@ export class ChatService {
           `Stream Error Refund: ${model}`,
         );
         res.write(
-          `data: ${JSON.stringify({ error: "Empty response received from AI model" })}\n\n`,
+          `data: ${stringifyErrorEvent({ error: "Empty response received from AI model" })}\n\n`,
         );
         res.end();
         return;
@@ -486,7 +492,7 @@ export class ChatService {
       );
 
       res.write(
-        `data: ${JSON.stringify({
+        `data: ${stringifyDoneEvent({
           status: "done",
           messageId: savedMsg.id,
           creditBalance: await this.usersService.getBalance(userId),
@@ -511,7 +517,7 @@ export class ChatService {
       );
 
       res.write(
-        `data: ${JSON.stringify({ error: error.message || "Connection lost or payload too large" })}\n\n`,
+        `data: ${stringifyErrorEvent({ error: error.message || "Connection lost or payload too large" })}\n\n`,
       );
       res.end();
     }

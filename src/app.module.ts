@@ -128,6 +128,9 @@ import { RedisCacheModule } from "./common/redis-cache.module";
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "public"),
+      serveStaticOptions: {
+        fallthrough: true,
+      },
     }),
     RedisCacheModule,
     AuthModule,

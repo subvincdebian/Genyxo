@@ -15,7 +15,7 @@ import {
   Headers,
   Res,
 } from "@nestjs/common";
-import type { Response } from "express";
+import type { FastifyReply } from "fastify";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import { TransactionType } from "../transactions/transaction.entity";
@@ -54,7 +54,7 @@ export class ChatController {
   async streamMessage(
     @Body() dto: StreamMessageDto,
     @Request() req,
-    @Res() res: Response,
+    @Res({ passthrough: false }) res: FastifyReply,
   ) {
     const userId = req.user.id;
     const { message, model, conversationId, files } = dto;
@@ -69,10 +69,11 @@ export class ChatController {
     const isDeducted = await this.usersService.deductCredits(userId, cost);
     if (!isDeducted) throw new ForbiddenException("Not enough credits");
 
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache, no-transform");
-    res.setHeader("Connection", "keep-alive");
-    res.setHeader("X-Accel-Buffering", "no");
+    const raw = res.raw;
+    raw.setHeader("Content-Type", "text/event-stream");
+    raw.setHeader("Cache-Control", "no-cache, no-transform");
+    raw.setHeader("Connection", "keep-alive");
+    raw.setHeader("X-Accel-Buffering", "no");
 
     await this.chatService.processStreamingMessage(
       userId,
@@ -81,7 +82,7 @@ export class ChatController {
       convId,
       cost,
       files || [],
-      res,
+      raw,
     );
   }
 
