@@ -312,6 +312,7 @@ export class ChatService {
     model: string,
     conversationId?: number,
     files: IAttachedFile[] = [],
+    cost: number = 0,
   ) {
     const modelConfig = this.pricingService.getModelConfig(model);
     if (!modelConfig) throw new BadRequestException("Unsupported model");
@@ -347,12 +348,24 @@ export class ChatService {
         userId,
         requestId,
       });
-      const savedBotMsg = await this.messageRepository.save(botMsg);
+      const [savedBotMsg, , creditsLeft] = await Promise.all([
+        this.messageRepository.save(botMsg),
+        cost > 0
+          ? this.usersService.logTransaction(
+              userId,
+              -cost,
+              TransactionType.SPEND,
+              `Used AI Model: ${model}`,
+            )
+          : Promise.resolve(null),
+        this.usersService.getBalance(userId),
+      ]);
 
       return {
         botReply: savedBotMsg.content,
         conversationId: conversation.id,
         messageId: savedBotMsg.id,
+        creditsLeft,
         status: "processing",
       };
     } else {
@@ -390,18 +403,30 @@ export class ChatService {
       }
 
       const aiResponse = await this.getAiResponse(dbMessages, model);
-      const botMsg = await this.saveMessage(
-        conversation,
-        aiResponse.reply,
-        "bot",
-        model,
-        userId,
-      );
+      const [botMsg, , creditsLeft] = await Promise.all([
+        this.saveMessage(
+          conversation,
+          aiResponse.reply,
+          "bot",
+          model,
+          userId,
+        ),
+        cost > 0
+          ? this.usersService.logTransaction(
+              userId,
+              -cost,
+              TransactionType.SPEND,
+              `Used AI Model: ${model}`,
+            )
+          : Promise.resolve(null),
+        this.usersService.getBalance(userId),
+      ]);
 
       return {
         botReply: botMsg.content,
         conversationId: conversation.id,
         messageId: botMsg.id,
+        creditsLeft,
         status: "done",
       };
     }

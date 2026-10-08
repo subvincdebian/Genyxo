@@ -115,21 +115,10 @@ export class ChatController {
         model,
         conversationId,
         files || [],
+        cost,
       );
-      const [, creditsLeft] = await Promise.all([
-        this.usersService.logTransaction(
-          userId,
-          -cost,
-          TransactionType.SPEND,
-          `Used AI Model: ${model}`,
-        ),
-        this.usersService.getBalance(userId),
-      ]);
 
-      return {
-        ...result,
-        creditsLeft,
-      };
+      return result;
     } catch (error) {
       await Promise.all([
         this.usersService.addCredits(userId, cost),
