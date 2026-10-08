@@ -55,7 +55,7 @@ import { RedisCacheModule } from "./common/redis-cache.module";
           throttlers: [
             {
               ttl: 60000,
-              limit: 20,
+              limit: 120,
             },
           ],
           storage: new ThrottlerStorageRedisService(redisInstance),

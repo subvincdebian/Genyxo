@@ -9,6 +9,7 @@ import {
   Headers,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
+import { SkipThrottle } from "@nestjs/throttler";
 import { PaymentService } from "./payment.service";
 import { BuyPackDto } from "./dto/payment.dto";
 
@@ -23,6 +24,7 @@ export class PaymentController {
     return this.paymentService.createPayment(req.user.id, buyPackDto.packId);
   }
 
+  @SkipThrottle()
   @Post("webhook")
   @HttpCode(HttpStatus.OK)
   async webhook(@Headers() headers, @Body() payload: any) {

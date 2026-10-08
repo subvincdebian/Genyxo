@@ -1,5 +1,8 @@
 process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || "64";
 
+import * as dns from "dns";
+dns.setDefaultResultOrder("ipv4first");
+
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe, Logger } from "@nestjs/common";
 import {

@@ -43,6 +43,8 @@ export class ChatService {
     this.openRouter = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: this.configService.get("OPENROUTER_API_KEY"),
+      timeout: 60000,
+      maxRetries: 2,
       defaultHeaders: {
         "HTTP-Referer":
           this.configService.get("SITE_URL") || "http://localhost:3000",

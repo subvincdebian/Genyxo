@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
+import { Throttle } from "@nestjs/throttler";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -18,11 +19,13 @@ import { LoginDto } from "./dto/login.dto";
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post("register")
   async register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post("login")
   async login(@Body() body: LoginDto) {
     const user = await this.authService.validateUser(body.email, body.password);

@@ -18,6 +18,7 @@ import {
 import type { FastifyReply } from "fastify";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
+import { SkipThrottle } from "@nestjs/throttler";
 import { TransactionType } from "../transactions/transaction.entity";
 import { UsersService } from "../users/users.service";
 import { ChatService } from "./chat.service";
@@ -154,6 +155,7 @@ export class ChatController {
     return { success: true };
   }
 
+  @SkipThrottle()
   @Post("webhook/video")
   async handleFalWebhook(
     @Body() data: any,
@@ -183,6 +185,7 @@ export class ChatController {
     return { status: "ok" };
   }
 
+  @SkipThrottle()
   @UseGuards(AuthGuard("jwt"))
   @Get("message-status/:id")
   async getMessageStatus(@Param("id") id: number, @Request() req) {
