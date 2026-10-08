@@ -31,6 +31,7 @@ import { NotificationsService } from "./notifications.service";
     credentials: true,
   },
   namespace: "notifications",
+  transports: ["websocket", "polling"],
 })
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect

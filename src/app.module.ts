@@ -139,6 +139,8 @@ import { RedisCacheModule } from "./common/redis-cache.module";
       rootPath: join(__dirname, "..", "public"),
       serveStaticOptions: {
         fallthrough: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        etag: true,
       },
     }),
     RedisCacheModule,

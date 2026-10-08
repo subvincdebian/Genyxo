@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { SupportTicket, TicketStatus, TicketPriority } from "./support.entity";
@@ -9,6 +9,8 @@ import { EmailService } from "../email/email.service";
 
 @Injectable()
 export class SupportService {
+  private readonly logger = new Logger(SupportService.name);
+
   constructor(
     @InjectRepository(SupportTicket)
     private ticketRepo: Repository<SupportTicket>,
@@ -120,12 +122,18 @@ export class SupportService {
     );
 
     if (ticket.user.email) {
-      await this.emailService.sendSupportReply(
-        ticket.user.email,
-        ticket.user.name || "User",
-        ticket.subject,
-        response,
-      );
+      this.emailService
+        .sendSupportReply(
+          ticket.user.email,
+          ticket.user.name || "User",
+          ticket.subject,
+          response,
+        )
+        .catch((err) =>
+          this.logger.error(
+            `Failed to send support reply email to ${ticket.user.email}: ${err.message}`,
+          ),
+        );
     }
 
     return ticket;

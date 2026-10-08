@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { randomBytes } from "crypto";
@@ -22,6 +22,8 @@ const REFERRAL_REWARDS: Record<number, number> = {
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -272,11 +274,11 @@ export class UsersService {
           `affiliate_stats:${buyer.referrerId}`,
           `user_profile:${buyer.referrerId}`,
         );
-
-        console.log(
-          `[Affiliate] Reward $${rewardAmount} paid to User ${buyer.referrerId} for User ${buyerId} (Pack ${packId})`,
-        );
       },
+    );
+
+    this.logger.log(
+      `[Affiliate] Reward $${rewardAmount} paid to User ${buyer.referrerId} for User ${buyerId} (Pack ${packId})`,
     );
   }
 

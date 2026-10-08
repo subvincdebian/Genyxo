@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
@@ -13,6 +14,8 @@ import { CreateUserDto } from "./dto/create-user.dto";
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -82,10 +85,13 @@ export class AuthService {
       verificationToken: verificationToken,
     });
 
-    await this.emailService.sendVerificationEmail(
-      newUser.email,
-      verificationToken,
-    );
+    this.emailService
+      .sendVerificationEmail(newUser.email, verificationToken)
+      .catch((err) =>
+        this.logger.error(
+          `Failed to send verification email to ${newUser.email}: ${err.message}`,
+        ),
+      );
 
     return {
       message: "Registration successful. Please check your email to verify.",

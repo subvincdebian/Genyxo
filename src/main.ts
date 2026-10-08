@@ -1,7 +1,7 @@
 process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || "64";
 
 import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
+import { ValidationPipe, Logger } from "@nestjs/common";
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -74,7 +74,10 @@ async function bootstrap() {
 
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   await app.listen(port, "0.0.0.0");
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  Logger.log(
+    `Application is running on: ${await app.getUrl()}`,
+    "Bootstrap",
+  );
 }
 
 if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {

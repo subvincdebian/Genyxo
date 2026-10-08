@@ -1,8 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 
 @Injectable()
 export class EmailService {
+  private readonly logger = new Logger(EmailService.name);
+
   constructor(private readonly mailerService: MailerService) {}
 
   async sendVerificationEmail(email: string, token: string) {
@@ -24,9 +26,9 @@ export class EmailService {
           </div>
         `,
       });
-      console.log(`Verification email sent to ${email}`);
+      this.logger.log(`Verification email sent to ${email}`);
     } catch (error) {
-      console.error("Error sending verification email:", error);
+      this.logger.error("Error sending verification email:", error);
     }
   }
 
@@ -69,9 +71,9 @@ export class EmailService {
           </div>
         `,
       });
-      console.log(`Email sent to ${email}`);
+      this.logger.log(`Support reply email sent to ${email}`);
     } catch (error) {
-      console.error("Error sending email:", error);
+      this.logger.error("Error sending support reply email:", error);
     }
   }
 }
