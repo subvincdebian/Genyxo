@@ -75,6 +75,9 @@ export class ChatController {
     raw.setHeader("Cache-Control", "no-cache, no-transform");
     raw.setHeader("Connection", "keep-alive");
     raw.setHeader("X-Accel-Buffering", "no");
+    if (typeof raw.flushHeaders === "function") {
+      raw.flushHeaders();
+    }
 
     await this.chatService.processStreamingMessage(
       userId,

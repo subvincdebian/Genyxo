@@ -123,17 +123,18 @@ export class SupportService {
     ticket.adminResponse = response;
     ticket.status = TicketStatus.CLOSED;
 
-    await this.ticketRepo.update(ticketId, {
-      adminResponse: response,
-      status: TicketStatus.CLOSED,
-    });
-
-    await this.notificationsService.create(
-      ticket.user.id,
-      "Support Reply 📩",
-      `Support team has replied to your ticket "${ticket.subject}".`,
-      NotificationType.SUPPORT,
-    );
+    await Promise.all([
+      this.ticketRepo.update(ticketId, {
+        adminResponse: response,
+        status: TicketStatus.CLOSED,
+      }),
+      this.notificationsService.create(
+        ticket.user.id,
+        "Support Reply 📩",
+        `Support team has replied to your ticket "${ticket.subject}".`,
+        NotificationType.SUPPORT,
+      ),
+    ]);
 
     if (ticket.user.email) {
       this.emailService

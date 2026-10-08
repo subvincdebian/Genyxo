@@ -237,20 +237,20 @@ export class PaymentService {
       return;
     }
 
-    await this.usersService.invalidateUserCache(finalizationData.userId);
-
-    if (finalizationData.packId) {
-      await this.usersService.processReferralBonus(
+    await Promise.all([
+      this.usersService.invalidateUserCache(finalizationData.userId),
+      finalizationData.packId
+        ? this.usersService.processReferralBonus(
+            finalizationData.userId,
+            finalizationData.packId,
+          )
+        : Promise.resolve(),
+      this.notificationsService.create(
         finalizationData.userId,
-        finalizationData.packId,
-      );
-    }
-
-    await this.notificationsService.create(
-      finalizationData.userId,
-      "Payment Successful! ✅",
-      `You have successfully purchased ${finalizationData.creditsAmount} credits.`,
-      NotificationType.SYSTEM,
-    );
+        "Payment Successful! ✅",
+        `You have successfully purchased ${finalizationData.creditsAmount} credits.`,
+        NotificationType.SYSTEM,
+      ),
+    ]);
   }
 }

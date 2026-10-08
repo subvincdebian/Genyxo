@@ -119,7 +119,16 @@ export class ChatService {
     const canContinue = res.write(data);
     if (!canContinue) {
       await new Promise<void>((resolve) => {
-        res.once("drain", resolve);
+        const onDrain = () => {
+          res.off("close", onClose);
+          resolve();
+        };
+        const onClose = () => {
+          res.off("drain", onDrain);
+          resolve();
+        };
+        res.once("drain", onDrain);
+        res.once("close", onClose);
       });
     }
     return !res.destroyed;
