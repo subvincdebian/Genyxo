@@ -104,7 +104,7 @@ import { RedisCacheModule } from './common/redis-cache.module';
           
           // for local
           synchronize: !isProduction,
-          logging: true,
+          logging: !isProduction && configService.get('DB_LOGGING') === 'true',
           
           extra: {
             connectionLimit: configService.get('VERCEL') ? 3 : 100, 

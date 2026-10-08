@@ -161,9 +161,9 @@ export class ChatController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('message-status/:id')
-  async getMessageStatus(@Param('id') id: number) {
+  async getMessageStatus(@Param('id') id: number, @Request() req) {
       const message = await this.chatService.getMessageById(id);
-      if (!message) throw new NotFoundException('Message not found');
+      if (!message || message.userId !== req.user.id) throw new NotFoundException('Message not found');
 
       const isError = message.content.startsWith('ERROR:');
       const isReady = message.content.startsWith('http') || isError;

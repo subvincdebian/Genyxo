@@ -221,11 +221,12 @@ export class ChatService {
             status: 'processing' 
         };
     } else {
-        const dbMessages = await this.messageRepository.find({
+        const recentMessages = await this.messageRepository.find({
             where: { conversationId: conversation.id },
-            order: { createdAt: 'ASC' },
+            order: { createdAt: 'DESC' },
             take: 10
         });
+        const dbMessages = recentMessages.reverse();
 
         const aiResponse = await this.getAiResponse(dbMessages, model);
         const botMsg = await this.saveMessage(conversation, aiResponse.reply, 'bot', model, userId);
@@ -268,11 +269,12 @@ export class ChatService {
 
         let fullReply = '';
         
-        const dbMessages = await this.messageRepository.find({
+        const recentMessages = await this.messageRepository.find({
           where: { conversationId: conversation.id },
-          order: { createdAt: 'ASC' },
+          order: { createdAt: 'DESC' },
           take: 10
         });
+        const dbMessages = recentMessages.reverse();
 
         if (model.startsWith('google/gemini')) {
           const geminiModelName = model.replace('google/', '');
@@ -371,7 +373,13 @@ export class ChatService {
           }
         }
 
-        if (!fullReply.trim()) return;
+        if (!fullReply.trim()) {
+          await this.usersService.addCredits(userId, cost);
+          await this.usersService.logTransaction(userId, cost, TransactionType.REFUND, `Stream Error Refund: ${model}`);
+          res.write(`data: ${JSON.stringify({ error: 'Empty response received from AI model' })}\n\n`);
+          res.end();
+          return;
+        }
 
         const savedMsg = await this.saveMessage(conversation, fullReply, 'bot', model, userId);
         await this.usersService.logTransaction(userId, -cost, TransactionType.SPEND, `AI: ${model}`);

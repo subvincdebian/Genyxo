@@ -30,7 +30,21 @@ export class EmailService {
     }
   }
 
+  private escapeHtml(str: string): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   async sendSupportReply(email: string, userName: string, ticketSubject: string, adminReply: string) {
+    const safeName = this.escapeHtml(userName);
+    const safeSubject = this.escapeHtml(ticketSubject);
+    const safeReply = this.escapeHtml(adminReply);
+
     try {
       await this.mailerService.sendMail({
         to: email,
@@ -38,12 +52,12 @@ export class EmailService {
         html: `
           <div style="font-family: Arial, sans-serif; color: #333;">
             <h2 style="color: #10e6cc;">Support Update</h2>
-            <p>Hi <strong>${userName}</strong>,</p>
-            <p>The support team has replied to your ticket "<strong>${ticketSubject}</strong>".</p>
+            <p>Hi <strong>${safeName}</strong>,</p>
+            <p>The support team has replied to your ticket "<strong>${safeSubject}</strong>".</p>
             <hr style="border: 0; border-top: 1px solid #eee;">
             <p><strong>Admin Reply:</strong></p>
-            <blockquote style="background: #f9f9f9; padding: 10px; border-left: 4px solid #10e6cc;">
-              ${adminReply}
+            <blockquote style="background: #f9f9f9; padding: 10px; border-left: 4px solid #10e6cc; white-space: pre-wrap;">
+              ${safeReply}
             </blockquote>
             <hr style="border: 0; border-top: 1px solid #eee;">
             <p style="font-size: 12px; color: #888;">Genyxo Team</p>

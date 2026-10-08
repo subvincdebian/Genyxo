@@ -13,7 +13,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     super({
       clientID: configService.get<string>('FACEBOOK_APP_ID')!,
       clientSecret: configService.get<string>('FACEBOOK_APP_SECRET')!,
-      callbackURL: 'https://genyxo.com/auth/facebook/callback',
+      callbackURL: configService.get<string>('FACEBOOK_CALLBACK_URL') || 'https://genyxo.com/auth/facebook/callback',
       scope: ['email', 'public_profile'],
       profileFields: ['id', 'emails', 'name', 'picture.type(large)'],
     });

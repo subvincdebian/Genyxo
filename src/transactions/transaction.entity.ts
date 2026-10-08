@@ -22,6 +22,7 @@ export class ColumnNumericTransformer {
 }
 
 @Entity('transactions')
+@Index(['userId', 'createdAt'])
 export class Transaction {
   @PrimaryGeneratedColumn()
   id!: number;

@@ -79,14 +79,21 @@ export class PaymentService {
 
   async handleWebhook(headers: any, body: any) {
     const signature = headers['x-nowpayments-sig'];
-    if (!signature) return; 
+    const ipnSecret = this.configService.get<string>('NOWPAYMENTS_IPN_SECRET') || process.env.NOWPAYMENTS_IPN_SECRET;
+    if (!signature || !ipnSecret) {
+      this.logger.error('Missing signature or IPN secret configuration');
+      throw new BadRequestException('Invalid signature configuration');
+    }
 
     const sortedKeys = Object.keys(body).sort();
     const jsonString = sortedKeys.map(key => `${key}=${body[key]}`).join('&');
-    const hmac = crypto.createHmac('sha512', process.env.NOWPAYMENTS_IPN_SECRET!);
+    const hmac = crypto.createHmac('sha512', ipnSecret);
     const calculatedSignature = hmac.update(jsonString).digest('hex');
 
-    if (signature !== calculatedSignature) {
+    const sigBuf = Buffer.from(signature, 'hex');
+    const calcBuf = Buffer.from(calculatedSignature, 'hex');
+
+    if (sigBuf.length !== calcBuf.length || !crypto.timingSafeEqual(sigBuf, calcBuf)) {
         this.logger.error('Invalid signature');
         throw new BadRequestException('Invalid signature');
     }
@@ -124,11 +131,11 @@ export class PaymentService {
 
     if (!transaction) throw new NotFoundException('Transaction not found.');
 
-    transaction.status = newStatus;
-    await this.transactionRepo.save(transaction);
-
     if (newStatus === TransactionStatus.APPROVED) {
         await this.finalizeTransaction(txId);
+    } else {
+        transaction.status = newStatus;
+        await this.transactionRepo.save(transaction);
     }
 
     return { status: 'success', newStatus };

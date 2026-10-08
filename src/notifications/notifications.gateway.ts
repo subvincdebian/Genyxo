@@ -10,13 +10,24 @@ import { JwtService } from '@nestjs/jwt';
 import { NotificationsService } from './notifications.service';
 
 @WebSocketGateway({
-  cors: { origin: 'https://genyxo.com' },
+  cors: {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      const allowedOrigins = process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+        : ['https://genyxo.com', 'http://localhost:3000'];
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    credentials: true,
+  },
   namespace: 'notifications',
 })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server!: Server;
   private logger = new Logger('NotificationsGateway');
-  private userSockets = new Map<number, string>();
 
   constructor(
     private jwtService: JwtService,
@@ -36,8 +47,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       const userId = payload.sub || payload.id;
 
       if (userId) {
-        this.userSockets.set(Number(userId), client.id);
-
+        client.join(`user_${userId}`);
         const unreadCount = await this.notificationsService.getUnreadCount(Number(userId));
         client.emit('unread_count_update', { count: unreadCount });
       }
@@ -47,26 +57,14 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   }
 
   handleDisconnect(client: Socket) {
-    for (const [userId, socketId] of this.userSockets.entries()) {
-      if (socketId === client.id) {
-        this.userSockets.delete(userId);
-        this.logger.log(`User ${userId} disconnected`);
-        break;
-      }
-    }
+    this.logger.debug?.(`Socket ${client.id} disconnected`);
   }
 
   sendUnreadCount(userId: number, count: number) {
-    const socketId = this.userSockets.get(userId);
-    if (socketId) {
-      this.server.to(socketId).emit('unread_count_update', { count });
-    }
+    this.server.to(`user_${userId}`).emit('unread_count_update', { count });
   }
 
   sendNotificationToUser(userId: number, data: any) {
-    const socketId = this.userSockets.get(userId);
-    if (socketId) {
-      this.server.to(socketId).emit('new_notification', data);
-    }
+    this.server.to(`user_${userId}`).emit('new_notification', data);
   }
 }

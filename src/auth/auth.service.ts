@@ -65,7 +65,9 @@ export class AuthService {
     const verificationToken = randomUUID();
 
     const newUser = await this.usersService.create({
-        ...createUserDto,
+        email: createUserDto.email,
+        password: createUserDto.password,
+        name: createUserDto.name,
         referrerId,
         isEmailVerified: false, 
         verificationToken: verificationToken

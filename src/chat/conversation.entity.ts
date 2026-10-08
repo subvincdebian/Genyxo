@@ -3,6 +3,7 @@ import { User } from '../users/user.entity';
 import { Message } from './message.entity';
 
 @Entity()
+@Index(['userId', 'updatedAt'])
 export class Conversation {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -10,6 +11,7 @@ export class Conversation {
   @Column({ default: 'New Chat' })
   title!: string;
 
+  @Index()
   @Column()
   userId!: number;
 

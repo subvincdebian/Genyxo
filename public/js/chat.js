@@ -1847,11 +1847,13 @@ async function startVideoPolling(messageId, element) {
 function appendError(msg) {
     const msgDiv = document.createElement('div');
     msgDiv.className = 'message bot-message error-message';
-    msgDiv.innerHTML = `
-        <div class="message-content">
-            <i class="fas fa-exclamation-circle"></i> ${msg}
-        </div>
-    `;
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-exclamation-circle';
+    content.appendChild(icon);
+    content.appendChild(document.createTextNode(' ' + String(msg || 'An error occurred')));
+    msgDiv.appendChild(content);
     chatBox.appendChild(msgDiv);
     scrollToBottom();
 }

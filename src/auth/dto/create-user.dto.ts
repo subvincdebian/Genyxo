@@ -15,12 +15,11 @@ export class CreateUserDto {
   })
   password!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(2)
-  @MaxLength(20)
-  @Transform(({ value }) => value.trim())
   @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(50)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   name?: string;
 
   @IsOptional()
