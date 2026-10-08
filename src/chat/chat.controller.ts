@@ -128,13 +128,15 @@ export class ChatController {
         creditsLeft,
       };
     } catch (error) {
-      await this.usersService.addCredits(userId, cost);
-      await this.usersService.logTransaction(
-        userId,
-        cost,
-        TransactionType.REFUND,
-        `Refund for failed ${model} request`,
-      );
+      await Promise.all([
+        this.usersService.addCredits(userId, cost),
+        this.usersService.logTransaction(
+          userId,
+          cost,
+          TransactionType.REFUND,
+          `Refund for failed ${model} request`,
+        ),
+      ]);
       throw new InternalServerErrorException(
         "The AI service is temporarily unavailable.",
       );

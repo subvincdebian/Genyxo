@@ -149,6 +149,16 @@ export class UsersService {
   async findByVerificationToken(token: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { verificationToken: token },
+      select: [
+        "id",
+        "email",
+        "name",
+        "role",
+        "credits",
+        "avatar",
+        "isEmailVerified",
+        "verificationToken",
+      ],
     });
   }
 

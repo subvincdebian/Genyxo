@@ -70,6 +70,7 @@ async function configureApp(app: NestFastifyApplication) {
     credentials: true,
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
     allowedHeaders: ["Content-Type", "Accept", "Authorization"],
+    maxAge: 86400,
   });
 }
 

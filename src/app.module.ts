@@ -67,6 +67,12 @@ import { RedisCacheModule } from "./common/redis-cache.module";
         host: "smtp.zoho.eu",
         port: 587,
         secure: false,
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
         auth: {
           user: "info@genyxo.com",
           pass: process.env.ZOHO_APP_PASSWORD,
