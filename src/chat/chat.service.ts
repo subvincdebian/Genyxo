@@ -276,17 +276,16 @@ export class ChatService {
         : "New Chat");
     const conversation = await this.getOrCreateConversation(userId, conversationId, displayTitle);
 
-    await this.saveMessage(
-      conversation,
-      text,
-      "user",
-      model,
-      userId,
-      undefined,
-      normalizedFiles,
-    );
-
     if (modelConfig.type === ModelType.VIDEO) {
+      await this.saveMessage(
+        conversation,
+        text,
+        "user",
+        model,
+        userId,
+        undefined,
+        normalizedFiles,
+      );
       const prompt = text || "Generate video based on provided source asset";
       const requestId = await this.falService.triggerVideoGeneration(
         prompt,
@@ -310,15 +309,37 @@ export class ChatService {
         status: "processing",
       };
     } else {
-      const recentMessages = await this.messageRepository.find({
-        where: { conversationId: conversation.id },
-        select: ["id", "content", "sender", "model", "createdAt", "files"],
-        order: { createdAt: "DESC" },
-        take: 10,
-      });
-      const dbMessages = recentMessages.reverse();
-      if (dbMessages.length > 0 && normalizedFiles.length > 0) {
-        dbMessages[dbMessages.length - 1].files = normalizedFiles;
+      let dbMessages: Message[];
+      if (!conversationId || conversationId === 0) {
+        const userMsg = await this.saveMessage(
+          conversation,
+          text,
+          "user",
+          model,
+          userId,
+          undefined,
+          normalizedFiles,
+        );
+        dbMessages = [userMsg];
+      } else {
+        const [userMsg, recentHistory] = await Promise.all([
+          this.saveMessage(
+            conversation,
+            text,
+            "user",
+            model,
+            userId,
+            undefined,
+            normalizedFiles,
+          ),
+          this.messageRepository.find({
+            where: { conversationId: conversation.id },
+            select: ["id", "content", "sender", "model", "createdAt", "files"],
+            order: { createdAt: "DESC" },
+            take: 9,
+          }),
+        ]);
+        dbMessages = [...recentHistory.reverse(), userMsg];
       }
 
       const aiResponse = await this.getAiResponse(dbMessages, model);
@@ -367,15 +388,6 @@ export class ChatService {
         displayTitle,
       );
 
-      await this.saveMessage(
-        conversation,
-        text,
-        "user",
-        model,
-        userId,
-        undefined,
-        normalizedFiles,
-      );
       res.write(
         `data: ${stringifyConversationEvent({
           status: "conversation",
@@ -386,15 +398,37 @@ export class ChatService {
 
       let fullReply = "";
 
-      const recentMessages = await this.messageRepository.find({
-        where: { conversationId: conversation.id },
-        select: ["id", "content", "sender", "model", "createdAt", "files"],
-        order: { createdAt: "DESC" },
-        take: 10,
-      });
-      const dbMessages = recentMessages.reverse();
-      if (dbMessages.length > 0 && normalizedFiles.length > 0) {
-        dbMessages[dbMessages.length - 1].files = normalizedFiles;
+      let dbMessages: Message[];
+      if (!conversationId || conversationId === 0) {
+        const userMsg = await this.saveMessage(
+          conversation,
+          text,
+          "user",
+          model,
+          userId,
+          undefined,
+          normalizedFiles,
+        );
+        dbMessages = [userMsg];
+      } else {
+        const [userMsg, recentHistory] = await Promise.all([
+          this.saveMessage(
+            conversation,
+            text,
+            "user",
+            model,
+            userId,
+            undefined,
+            normalizedFiles,
+          ),
+          this.messageRepository.find({
+            where: { conversationId: conversation.id },
+            select: ["id", "content", "sender", "model", "createdAt", "files"],
+            order: { createdAt: "DESC" },
+            take: 9,
+          }),
+        ]);
+        dbMessages = [...recentHistory.reverse(), userMsg];
       }
 
       if (model.startsWith("google/gemini")) {
