@@ -325,20 +325,19 @@ export class ChatService {
     const conversation = await this.getOrCreateConversation(userId, conversationId, displayTitle);
 
     if (modelConfig.type === ModelType.VIDEO) {
-      await this.saveMessage(
-        conversation,
-        text,
-        "user",
-        model,
-        userId,
-        undefined,
-        normalizedFiles,
-      );
       const prompt = text || "Generate video based on provided source asset";
-      const requestId = await this.falService.triggerVideoGeneration(
-        prompt,
-        model,
-      );
+      const [, requestId] = await Promise.all([
+        this.saveMessage(
+          conversation,
+          text,
+          "user",
+          model,
+          userId,
+          undefined,
+          normalizedFiles,
+        ),
+        this.falService.triggerVideoGeneration(prompt, model),
+      ]);
 
       const botMsg = this.messageRepository.create({
         content: "🎬 Video generating... Wait 1-2 minutes please.",

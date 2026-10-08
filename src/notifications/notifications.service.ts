@@ -22,10 +22,12 @@ export class NotificationsService {
     type: NotificationType,
   ) {
     const notification = this.repo.create({ userId, title, message, type });
-    const saved = await this.repo.save(notification);
-
     const cacheKey = `unread_count:${userId}`;
-    const cached = await this.redisCache.get<number>(cacheKey);
+    const [saved, cached] = await Promise.all([
+      this.repo.save(notification),
+      this.redisCache.get<number>(cacheKey),
+    ]);
+
     let newCount: number;
     if (cached !== null && typeof cached === "number") {
       newCount = cached + 1;

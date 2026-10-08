@@ -63,10 +63,10 @@ export class NotificationsGateway
       const userId = payload.sub || payload.id;
 
       if (userId) {
-        await client.join(`user_${userId}`);
-        const unreadCount = await this.notificationsService.getUnreadCount(
-          Number(userId),
-        );
+        const [, unreadCount] = await Promise.all([
+          client.join(`user_${userId}`),
+          this.notificationsService.getUnreadCount(Number(userId)),
+        ]);
         client.emit("unread_count_update", { count: unreadCount });
       }
     } catch (_error) {
