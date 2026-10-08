@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Notification, NotificationType } from "./notification.entity";
 import { NotificationsGateway } from "./notifications.gateway";
+import { RedisCacheService } from "../common/redis-cache.service";
 
 @Injectable()
 export class NotificationsService {
@@ -11,6 +12,7 @@ export class NotificationsService {
     private repo: Repository<Notification>,
     @Inject(forwardRef(() => NotificationsGateway))
     private readonly gateway: NotificationsGateway,
+    private readonly redisCache: RedisCacheService,
   ) {}
 
   async create(
@@ -21,6 +23,8 @@ export class NotificationsService {
   ) {
     const notification = this.repo.create({ userId, title, message, type });
     const saved = await this.repo.save(notification);
+
+    await this.redisCache.del(`unread_count:${userId}`);
 
     this.gateway.sendNotificationToUser(userId, {
       id: saved.id,
@@ -39,22 +43,34 @@ export class NotificationsService {
   async getUserNotifications(userId: number) {
     return this.repo.find({
       where: { userId },
+      select: ["id", "title", "message", "type", "isRead", "createdAt"],
       order: { createdAt: "DESC" },
       take: 50,
     });
   }
 
-  async getUnreadCount(userId: number) {
-    return this.repo.count({
+  async getUnreadCount(userId: number): Promise<number> {
+    const cacheKey = `unread_count:${userId}`;
+    const cached = await this.redisCache.get<number>(cacheKey);
+    if (cached !== null && typeof cached === "number") {
+      return cached;
+    }
+
+    const count = await this.repo.count({
       where: { userId, isRead: false },
     });
+
+    await this.redisCache.set(cacheKey, count, 60);
+    return count;
   }
 
   async markAsRead(id: number, userId: number) {
     await this.repo.update({ id, userId }, { isRead: true });
+    await this.redisCache.del(`unread_count:${userId}`);
   }
 
   async markAllAsRead(userId: number) {
     await this.repo.update({ userId, isRead: false }, { isRead: true });
+    await this.redisCache.del(`unread_count:${userId}`);
   }
 }

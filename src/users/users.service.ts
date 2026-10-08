@@ -51,7 +51,11 @@ export class UsersService {
   }
 
   async findOneById(id: number): Promise<User | null> {
-    return this.usersRepository.findOne({
+    const cacheKey = `user_profile:${id}`;
+    const cached = await this.redisCache.get<User>(cacheKey);
+    if (cached) return cached;
+
+    const user = await this.usersRepository.findOne({
       where: { id },
       select: [
         "id",
@@ -65,6 +69,12 @@ export class UsersService {
         "isEmailVerified",
       ],
     });
+
+    if (user) {
+      await this.redisCache.set(cacheKey, user, 300);
+    }
+
+    return user;
   }
 
   async findByVerificationToken(token: string): Promise<User | null> {
@@ -110,10 +120,15 @@ export class UsersService {
   async updateUser(id: number, updates: Partial<User>) {
     const { name, avatar } = updates;
     await this.usersRepository.update(id, { name, avatar });
+    await this.redisCache.del(`user_profile:${id}`);
   }
 
   async save(user: User): Promise<User> {
-    return this.usersRepository.save(user);
+    const saved = await this.usersRepository.save(user);
+    if (user.id) {
+      await this.redisCache.del(`user_profile:${user.id}`);
+    }
+    return saved;
   }
 
   async addCredits(userId: number, amount: number): Promise<void> {
@@ -126,10 +141,7 @@ export class UsersService {
       creditsToAdd,
     );
 
-    const updatedUser = await this.findOneById(userId);
-    if (updatedUser) {
-      await this.redisCache.setBalance(userId, Number(updatedUser.credits));
-    }
+    await this.redisCache.invalidate(userId);
   }
 
   async addReferralBalance(userId: number, amountUsd: number): Promise<void> {
@@ -140,6 +152,11 @@ export class UsersService {
       { id: userId },
       "referralBalance",
       addAmount,
+    );
+
+    await this.redisCache.del(
+      `affiliate_stats:${userId}`,
+      `user_profile:${userId}`,
     );
   }
 
@@ -179,6 +196,10 @@ export class UsersService {
   }
 
   async getAffiliateStats(userId: number) {
+    const cacheKey = `affiliate_stats:${userId}`;
+    const cached = await this.redisCache.get(cacheKey);
+    if (cached) return cached;
+
     const user = await this.usersRepository.findOne({
       where: { id: userId },
       select: ["id", "referralBalance", "referralCode"],
@@ -196,11 +217,14 @@ export class UsersService {
       where: { referrerId: userId },
     });
 
-    return {
+    const result = {
       balance: Number(user.referralBalance || 0),
       invitedCount,
       referralLink: `https://genyxo.com/?referralCode=${code}`,
     };
+
+    await this.redisCache.set(cacheKey, result, 60);
+    return result;
   }
 
   async findByReferralCode(code: string): Promise<User | null> {
@@ -243,6 +267,11 @@ export class UsersService {
         await transactionalEntityManager.update(User, buyerId, {
           isReferralPaid: true,
         });
+
+        await this.redisCache.del(
+          `affiliate_stats:${buyer.referrerId}`,
+          `user_profile:${buyer.referrerId}`,
+        );
 
         console.log(
           `[Affiliate] Reward $${rewardAmount} paid to User ${buyer.referrerId} for User ${buyerId} (Pack ${packId})`,

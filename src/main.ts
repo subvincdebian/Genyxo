@@ -8,7 +8,19 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyCompress from "@fastify/compress";
 import { AppModule } from "./app.module";
 
+function createFastifyAdapter(): FastifyAdapter {
+  return new FastifyAdapter({
+    bodyLimit: 10 * 1024 * 1024,
+    trustProxy: true,
+    keepAliveTimeout: 65000,
+    forceCloseConnections: true,
+    ignoreTrailingSlash: true,
+  });
+}
+
 async function configureApp(app: NestFastifyApplication) {
+  app.enableShutdownHooks();
+
   await app.register(fastifyHelmet as any, {
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
@@ -16,6 +28,7 @@ async function configureApp(app: NestFastifyApplication) {
 
   await app.register(fastifyCompress as any, {
     encodings: ["brotli", "gzip"],
+    threshold: 1024,
   });
 
   app.useGlobalPipes(
@@ -40,11 +53,7 @@ async function configureApp(app: NestFastifyApplication) {
 }
 
 async function bootstrap() {
-  const adapter = new FastifyAdapter({
-    bodyLimit: 10 * 1024 * 1024,
-    trustProxy: true,
-  });
-
+  const adapter = createFastifyAdapter();
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     adapter,
@@ -66,10 +75,7 @@ let cachedApp: NestFastifyApplication;
 
 export default async function handler(req: any, res: any) {
   if (!cachedApp) {
-    const adapter = new FastifyAdapter({
-      bodyLimit: 10 * 1024 * 1024,
-      trustProxy: true,
-    });
+    const adapter = createFastifyAdapter();
     cachedApp = await NestFactory.create<NestFastifyApplication>(
       AppModule,
       adapter,

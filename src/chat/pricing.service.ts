@@ -56,6 +56,6 @@ export class PricingService {
   }
 
   getCost(modelId: string): number {
-    return this.getModelConfig(modelId).cost;
+    return this.getModelConfig(modelId)?.cost ?? 0;
   }
 }

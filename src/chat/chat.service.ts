@@ -179,6 +179,7 @@ export class ChatService {
   async getUserConversations(userId: number) {
     return this.conversationRepository.find({
       where: { userId },
+      select: ["id", "title", "createdAt", "updatedAt"],
       order: { updatedAt: "DESC" },
     });
   }
@@ -186,12 +187,25 @@ export class ChatService {
   async getConversationMessages(userId: number, conversationId: number) {
     const conversation = await this.conversationRepository.findOne({
       where: { id: conversationId, userId },
-      relations: ["messages"],
-      order: { messages: { createdAt: "ASC" } } as any,
+      select: ["id"],
     });
 
     if (!conversation) throw new NotFoundException("Chat not found");
-    return conversation.messages;
+
+    return this.messageRepository.find({
+      where: { conversationId },
+      order: { createdAt: "ASC" },
+      select: [
+        "id",
+        "content",
+        "sender",
+        "model",
+        "createdAt",
+        "type",
+        "files",
+        "requestId",
+      ],
+    });
   }
 
   private async getOrCreateConversation(
@@ -269,6 +283,7 @@ export class ChatService {
     } else {
       const recentMessages = await this.messageRepository.find({
         where: { conversationId: conversation.id },
+        select: ["id", "content", "sender", "model", "createdAt", "files"],
         order: { createdAt: "DESC" },
         take: 10,
       });
@@ -341,6 +356,7 @@ export class ChatService {
 
       const recentMessages = await this.messageRepository.find({
         where: { conversationId: conversation.id },
+        select: ["id", "content", "sender", "model", "createdAt", "files"],
         order: { createdAt: "DESC" },
         take: 10,
       });
