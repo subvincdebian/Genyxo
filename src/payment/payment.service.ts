@@ -88,8 +88,10 @@ export class PaymentService {
         },
       );
 
-      savedTx.externalId = response.data.payment_id || response.data.id;
-      await this.transactionRepo.save(savedTx);
+      const externalId = response.data.payment_id || response.data.id;
+      if (externalId) {
+        await this.transactionRepo.update(savedTx.id, { externalId });
+      }
 
       return { url: response.data.invoice_url };
     } catch (error: any) {
@@ -132,7 +134,7 @@ export class PaymentService {
 
     const transaction = await this.transactionRepo.findOne({
       where: { id: txId },
-      relations: ["user"],
+      select: ["id", "status"],
     });
 
     if (!transaction) return;
@@ -146,11 +148,13 @@ export class PaymentService {
       status === "expired" ||
       status === "rejected"
     ) {
-      transaction.status = TransactionStatus.DECLINED;
-      await this.transactionRepo.save(transaction);
+      await this.transactionRepo.update(txId, {
+        status: TransactionStatus.DECLINED,
+      });
     } else {
-      transaction.status = TransactionStatus.WAITING;
-      await this.transactionRepo.save(transaction);
+      await this.transactionRepo.update(txId, {
+        status: TransactionStatus.WAITING,
+      });
     }
 
     return { status: "ok" };
@@ -163,7 +167,7 @@ export class PaymentService {
   ) {
     const transaction = await this.transactionRepo.findOne({
       where: { id: txId },
-      relations: ["user"],
+      select: ["id", "status"],
     });
 
     if (!transaction) throw new NotFoundException("Transaction not found.");
@@ -171,8 +175,7 @@ export class PaymentService {
     if (newStatus === TransactionStatus.APPROVED) {
       await this.finalizeTransaction(txId);
     } else {
-      transaction.status = newStatus;
-      await this.transactionRepo.save(transaction);
+      await this.transactionRepo.update(txId, { status: newStatus });
     }
 
     this.logger.log(
@@ -186,7 +189,19 @@ export class PaymentService {
     return await this.transactionRepo.manager.transaction(async (manager) => {
       const transaction = await manager.findOne(Transaction, {
         where: { id: txId },
-        relations: ["user"],
+        relations: {
+          user: true,
+        },
+        select: {
+          id: true,
+          status: true,
+          creditsAmount: true,
+          packId: true,
+          userId: true,
+          user: {
+            id: true,
+          },
+        },
         lock: { mode: "pessimistic_write" },
       });
 

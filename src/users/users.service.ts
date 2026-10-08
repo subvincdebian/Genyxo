@@ -292,6 +292,7 @@ export class UsersService {
       async (transactionalEntityManager) => {
         const lockedBuyer = await transactionalEntityManager.findOne(User, {
           where: { id: buyerId },
+          select: ["id", "isReferralPaid", "referrerId"],
           lock: { mode: "pessimistic_write" },
         });
 

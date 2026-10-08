@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         ExtractJwt.fromAuthHeaderAsBearerToken(),
         (req: any) => {
           const token = req?.query?.token;
-          return token && token.length > 0 ? token : null;
+          return typeof token === "string" && token.length > 0 ? token : null;
         },
       ]),
       ignoreExpiration: false,
