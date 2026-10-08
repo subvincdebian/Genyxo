@@ -1,3 +1,5 @@
+process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || "64";
+
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import {
@@ -6,6 +8,7 @@ import {
 } from "@nestjs/platform-fastify";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCompress from "@fastify/compress";
+import * as zlib from "zlib";
 import { AppModule } from "./app.module";
 
 function createFastifyAdapter(): FastifyAdapter {
@@ -29,6 +32,14 @@ async function configureApp(app: NestFastifyApplication) {
   await app.register(fastifyCompress as any, {
     encodings: ["brotli", "gzip"],
     threshold: 1024,
+    brotliOptions: {
+      params: {
+        [zlib.constants.BROTLI_PARAM_QUALITY]: 4,
+      },
+    },
+    zlibOptions: {
+      level: 6,
+    },
   });
 
   app.useGlobalPipes(

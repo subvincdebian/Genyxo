@@ -43,7 +43,25 @@ export class SupportService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.ticketRepo.findAndCount({
-      relations: ["user"],
+      relations: {
+        user: true,
+      },
+      select: {
+        id: true,
+        subject: true,
+        message: true,
+        status: true,
+        priority: true,
+        adminResponse: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        user: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
       order: {
         status: "ASC",
         priority: "DESC",
@@ -66,7 +84,23 @@ export class SupportService {
   async resolveTicket(ticketId: number, response: string) {
     const ticket = await this.ticketRepo.findOne({
       where: { id: ticketId },
-      relations: ["user"],
+      relations: {
+        user: true,
+      },
+      select: {
+        id: true,
+        subject: true,
+        message: true,
+        status: true,
+        priority: true,
+        adminResponse: true,
+        userId: true,
+        user: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
     });
 
     if (!ticket) {

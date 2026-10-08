@@ -8,7 +8,15 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import axios from "axios";
 import * as crypto from "crypto";
+import * as https from "https";
 import { ConfigService } from "@nestjs/config";
+
+const paymentHttpsAgent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 50,
+  maxFreeSockets: 20,
+  timeout: 30000,
+});
 import {
   Transaction,
   TransactionStatus,
@@ -75,6 +83,8 @@ export class PaymentService {
             "x-api-key": this.configService.get<string>("NOWPAYMENTS_API_KEY"),
             "Content-Type": "application/json",
           },
+          httpsAgent: paymentHttpsAgent,
+          timeout: 15000,
         },
       );
 

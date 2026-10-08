@@ -1,4 +1,4 @@
-import { IsString, IsOptional, Length } from "class-validator";
+import { IsString, IsOptional, Length, MaxLength } from "class-validator";
 import { Transform } from "class-transformer";
 import sanitizeHtml from "sanitize-html";
 
@@ -16,5 +16,6 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(300_000)
   avatar?: string;
 }

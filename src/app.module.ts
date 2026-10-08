@@ -30,6 +30,9 @@ import { RedisCacheModule } from "./common/redis-cache.module";
         ? {
             url: process.env.REDIS_URL,
             maxRetriesPerRequest: null,
+            commandTimeout: 1500,
+            connectTimeout: 3000,
+            enableReadyCheck: false,
             // ssl
             tls: { rejectUnauthorized: false },
           }
@@ -38,6 +41,9 @@ import { RedisCacheModule } from "./common/redis-cache.module";
             port: parseInt(process.env.REDISPORT!) || 6379,
             password: process.env.REDISPASSWORD,
             maxRetriesPerRequest: null,
+            commandTimeout: 1500,
+            connectTimeout: 3000,
+            enableReadyCheck: false,
           },
     }),
     ThrottlerModule.forRootAsync({
@@ -119,6 +125,9 @@ import { RedisCacheModule } from "./common/redis-cache.module";
             waitForConnections: true,
             queueLimit: 0,
             connectTimeout: 20000,
+            idleTimeout: 60000,
+            maxIdle: 20,
+            decimalNumbers: true,
           },
           retryAttempts: 10,
           retryDelay: 3000,

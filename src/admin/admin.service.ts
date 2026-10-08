@@ -46,8 +46,27 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.transactionRepo.findAndCount({
+      relations: {
+        user: true,
+      },
+      select: {
+        id: true,
+        amount: true,
+        creditsAmount: true,
+        status: true,
+        type: true,
+        provider: true,
+        createdAt: true,
+        userId: true,
+        description: true,
+        user: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        },
+      },
       order: { id: "DESC" },
-      relations: ["user"],
       take: limit,
       skip: skip,
     });
@@ -67,8 +86,27 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.ticketRepo.findAndCount({
+      relations: {
+        user: true,
+      },
+      select: {
+        id: true,
+        subject: true,
+        message: true,
+        status: true,
+        priority: true,
+        adminResponse: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        user: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        },
+      },
       order: { id: "DESC" },
-      relations: ["user"],
       take: limit,
       skip: skip,
     });
