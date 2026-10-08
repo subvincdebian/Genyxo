@@ -57,6 +57,44 @@ export class ChatService {
     );
   }
 
+  private readonly conversationMetaCache = new Map<
+    string,
+    { data: Conversation; expiresAt: number }
+  >();
+  private readonly CONVERSATION_CACHE_TTL_MS = 60_000;
+  private readonly MAX_CONVERSATION_CACHE_SIZE = 5_000;
+
+  private getCachedConversation(
+    conversationId: number,
+    userId: number,
+  ): Conversation | null {
+    const key = `${conversationId}:${userId}`;
+    const hit = this.conversationMetaCache.get(key);
+    if (hit && hit.expiresAt > Date.now()) {
+      return hit.data;
+    }
+    return null;
+  }
+
+  private setCachedConversation(
+    conversationId: number,
+    userId: number,
+    chat: Conversation,
+  ) {
+    if (this.conversationMetaCache.size >= this.MAX_CONVERSATION_CACHE_SIZE) {
+      const firstKey = this.conversationMetaCache.keys().next().value;
+      if (firstKey !== undefined) this.conversationMetaCache.delete(firstKey);
+    }
+    this.conversationMetaCache.set(`${conversationId}:${userId}`, {
+      data: chat,
+      expiresAt: Date.now() + this.CONVERSATION_CACHE_TTL_MS,
+    });
+  }
+
+  private invalidateCachedConversation(conversationId: number, userId: number) {
+    this.conversationMetaCache.delete(`${conversationId}:${userId}`);
+  }
+
   async saveMessage(
     conversation: Conversation,
     content: string,
@@ -212,12 +250,16 @@ export class ChatService {
   }
 
   async getConversationMessages(userId: number, conversationId: number) {
-    const conversation = await this.conversationRepository.findOne({
-      where: { id: conversationId, userId },
-      select: ["id"],
-    });
+    const cached = this.getCachedConversation(conversationId, userId);
+    if (!cached) {
+      const conversation = await this.conversationRepository.findOne({
+        where: { id: conversationId, userId },
+        select: ["id", "title"],
+      });
 
-    if (!conversation) throw new NotFoundException("Chat not found");
+      if (!conversation) throw new NotFoundException("Chat not found");
+      this.setCachedConversation(conversationId, userId, conversation);
+    }
 
     return this.messageRepository.find({
       where: { conversationId },
@@ -242,11 +284,15 @@ export class ChatService {
     firstMessage?: string,
   ): Promise<Conversation> {
     if (conversationId && conversationId !== 0) {
+      const cached = this.getCachedConversation(conversationId, userId);
+      if (cached) return cached;
+
       const chat = await this.conversationRepository.findOne({
         where: { id: conversationId, userId },
         select: ["id", "title"],
       });
       if (!chat) throw new NotFoundException("Chat not found");
+      this.setCachedConversation(conversationId, userId, chat);
       return chat;
     }
     const title = firstMessage ? firstMessage.substring(0, 30) : "New Chat";
@@ -255,7 +301,9 @@ export class ChatService {
       title: title,
     });
 
-    return this.conversationRepository.save(newChat);
+    const saved = await this.conversationRepository.save(newChat);
+    this.setCachedConversation(saved.id, userId, saved);
+    return saved;
   }
 
   async processMessage(
@@ -572,14 +620,14 @@ export class ChatService {
         return;
       }
 
-      const savedMsg = await this.saveMessage(
-        conversation,
-        fullReply,
-        "bot",
-        model,
-        userId,
-      );
-      const [, creditBalance] = await Promise.all([
+      const [savedMsg, , creditBalance] = await Promise.all([
+        this.saveMessage(
+          conversation,
+          fullReply,
+          "bot",
+          model,
+          userId,
+        ),
         this.usersService.logTransaction(
           userId,
           -cost,
@@ -783,12 +831,14 @@ export class ChatService {
       { title: newTitle },
     );
     if ((result.affected ?? 0) === 0) throw new NotFoundException();
+    this.invalidateCachedConversation(id, userId);
     return { id, title: newTitle };
   }
 
   async deleteConversation(userId: number, id: number) {
     const result = await this.conversationRepository.delete({ id, userId });
     if ((result.affected ?? 0) === 0) throw new NotFoundException();
+    this.invalidateCachedConversation(id, userId);
     return { success: true };
   }
 }

@@ -95,7 +95,7 @@ async function bootstrap() {
   );
 }
 
-if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+if (!process.env.VERCEL) {
   bootstrap();
 }
 

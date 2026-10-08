@@ -324,6 +324,9 @@ export class UsersService {
   }
 
   async processReferralBonus(buyerId: number, packId: number): Promise<void> {
+    const rewardAmount = REFERRAL_REWARDS[packId] || 0;
+    if (rewardAmount <= 0) return;
+
     const buyer = await this.usersRepository.findOne({
       where: { id: buyerId },
       select: ["id", "referrerId", "isReferralPaid"],
@@ -332,9 +335,6 @@ export class UsersService {
     if (!buyer || !buyer.referrerId || buyer.isReferralPaid) {
       return;
     }
-
-    const rewardAmount = REFERRAL_REWARDS[packId] || 0;
-    if (rewardAmount <= 0) return;
 
     let referrerToInvalidate: number | null = null;
 

@@ -135,17 +135,25 @@ export class AdminService {
 
     const creditsToAdd = Number(amount);
     if (!isNaN(creditsToAdd) && creditsToAdd > 0) {
-      await this.userRepo.increment({ id: userId }, "credits", creditsToAdd);
+      await Promise.all([
+        this.userRepo.increment({ id: userId }, "credits", creditsToAdd),
+        this.notificationsService.create(
+          userId,
+          "Credits Added",
+          `Administrator added ${amount} credits to your account.`,
+          NotificationType.SYSTEM,
+        ),
+      ]);
       user.credits = Number(user.credits) + creditsToAdd;
       await this.redisCache.invalidate(userId);
+    } else {
+      await this.notificationsService.create(
+        userId,
+        "Credits Added",
+        `Administrator added ${amount} credits to your account.`,
+        NotificationType.SYSTEM,
+      );
     }
-
-    await this.notificationsService.create(
-      userId,
-      "Credits Added",
-      `Administrator added ${amount} credits to your account.`,
-      NotificationType.SYSTEM,
-    );
 
     return user;
   }

@@ -55,9 +55,12 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto) {
     const { referralCode, ...userData } = createUserDto;
-    const existingUser = await this.usersService.findRegistrationConflict(
-      createUserDto.email,
-    );
+    const [existingUser, referrer] = await Promise.all([
+      this.usersService.findRegistrationConflict(createUserDto.email),
+      referralCode
+        ? this.usersService.findByReferralCode(referralCode)
+        : Promise.resolve(null),
+    ]);
 
     if (existingUser) {
       if (existingUser.googleId) {
@@ -68,11 +71,7 @@ export class AuthService {
       throw new ConflictException("User with this email already exists.");
     }
 
-    let referrerId: number | null = null;
-    if (referralCode) {
-      const referrer = await this.usersService.findByReferralCode(referralCode);
-      referrerId = referrer ? referrer.id : null;
-    }
+    const referrerId = referrer ? referrer.id : null;
 
     const verificationToken = randomUUID();
 
