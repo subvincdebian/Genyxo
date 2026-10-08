@@ -12,7 +12,9 @@ import { Transform } from "class-transformer";
 export class CreateUserDto {
   @IsNotEmpty({ message: "Email cannot be empty." })
   @IsEmail({}, { message: "Invalid email format." })
-  @Transform(({ value }) => value.toLowerCase().trim())
+  @Transform(({ value }) =>
+    typeof value === "string" ? value.toLowerCase().trim() : value,
+  )
   email!: string;
 
   @IsNotEmpty({ message: "Password cannot be empty." })

@@ -7,6 +7,7 @@ import {
   IsArray,
   ValidateNested,
   IsNumber,
+  ArrayMaxSize,
 } from "class-validator";
 import { Transform, Type } from "class-transformer";
 import sanitizeHtml from "sanitize-html";
@@ -14,6 +15,7 @@ import sanitizeHtml from "sanitize-html";
 export class AttachedFileDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   mime_type!: string;
 
   @IsString()
@@ -22,6 +24,7 @@ export class AttachedFileDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255)
   name!: string;
 
   @IsOptional()
@@ -52,6 +55,7 @@ export class SendMessageDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20)
   @ValidateNested({ each: true })
   @Type(() => AttachedFileDto)
   files?: AttachedFileDto[];
