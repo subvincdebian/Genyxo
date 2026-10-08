@@ -9,6 +9,7 @@ import {
   TransactionStatus,
   TransactionType,
 } from "../transactions/transaction.entity";
+import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 
 const REFERRAL_REWARDS: Record<number, number> = {
   1: 1, // Start AI
@@ -28,10 +29,6 @@ export class UsersService {
     private transactionRepository: Repository<Transaction>,
     private redisCache: RedisCacheService,
   ) {}
-
-  get repo(): Repository<User> {
-    return this.usersRepository;
-  }
 
   async findOneByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({
@@ -270,5 +267,30 @@ export class UsersService {
       provider: "INTERNAL",
     });
     return this.transactionRepository.save(tx);
+  }
+
+  async getUserTransactions(
+    userId: number,
+    paginationQuery: PaginationQueryDto,
+  ) {
+    const { page = 1, limit = 10 } = paginationQuery;
+
+    const [items, total] = await this.transactionRepository.findAndCount({
+      where: { userId },
+      order: { createdAt: "DESC" },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    return {
+      items,
+      meta: {
+        totalItems: total,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    };
   }
 }
