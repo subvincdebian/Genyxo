@@ -305,6 +305,9 @@ export class ChatService {
         take: 10,
       });
       const dbMessages = recentMessages.reverse();
+      if (dbMessages.length > 0 && normalizedFiles.length > 0) {
+        dbMessages[dbMessages.length - 1].files = normalizedFiles;
+      }
 
       const aiResponse = await this.getAiResponse(dbMessages, model);
       const botMsg = await this.saveMessage(
@@ -378,6 +381,9 @@ export class ChatService {
         take: 10,
       });
       const dbMessages = recentMessages.reverse();
+      if (dbMessages.length > 0 && normalizedFiles.length > 0) {
+        dbMessages[dbMessages.length - 1].files = normalizedFiles;
+      }
 
       if (model.startsWith("google/gemini")) {
         const geminiModelName = model.replace("google/", "");
@@ -524,18 +530,21 @@ export class ChatService {
         model,
         userId,
       );
-      await this.usersService.logTransaction(
-        userId,
-        -cost,
-        TransactionType.SPEND,
-        `AI: ${model}`,
-      );
+      const [, creditBalance] = await Promise.all([
+        this.usersService.logTransaction(
+          userId,
+          -cost,
+          TransactionType.SPEND,
+          `AI: ${model}`,
+        ),
+        this.usersService.getBalance(userId),
+      ]);
 
       res.write(
         `data: ${stringifyDoneEvent({
           status: "done",
           messageId: savedMsg.id,
-          creditBalance: await this.usersService.getBalance(userId),
+          creditBalance,
         })}\n\n`,
       );
       res.end();
@@ -604,14 +613,20 @@ export class ChatService {
           { timeout: 60000 },
         );
 
+        const lastMsgId = dbMessages[dbMessages.length - 1]?.id;
         const contents: Content[] = dbMessages.map((m) => {
           const role = m.sender === "bot" ? "model" : "user";
+          const isLastMessage = m.id === lastMsgId;
           const parts: any[] = [];
 
           if (m.content) parts.push({ text: m.content });
 
-          if (m.files && m.files.length > 0) {
+          if (isLastMessage && m.files && m.files.length > 0) {
             parts.push(...this.buildGeminiFileParts(m.files));
+          } else if (m.files && m.files.length > 0) {
+            parts.push({
+              text: `[Earlier attached file(s): ${m.files.map((file) => file.name || "attached file").join(", ")}]`,
+            });
           }
 
           if (parts.length === 0) parts.push({ text: " " });
@@ -625,11 +640,13 @@ export class ChatService {
         };
       }
 
+      const lastMsgId = dbMessages[dbMessages.length - 1]?.id;
       const openRouterMessages = dbMessages.map((m) => {
         const role = m.sender === "bot" ? "assistant" : "user";
         if (m.sender === "bot") return { role, content: m.content || " " };
 
-        const hasFiles = m.files && m.files.length > 0;
+        const isLastMessage = m.id === lastMsgId;
+        const hasFiles = isLastMessage && m.files && m.files.length > 0;
 
         if (!hasFiles) {
           return { role, content: m.content || " " };

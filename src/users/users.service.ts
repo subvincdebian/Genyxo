@@ -33,6 +33,28 @@ export class UsersService {
     private redisCache: RedisCacheService,
   ) {}
 
+  private readonly localAuthCache = new Map<
+    number,
+    { data: { id: number; email: string; role: Role }; expiresAt: number }
+  >();
+  private readonly LOCAL_AUTH_CACHE_TTL_MS = 10_000;
+  private readonly MAX_LOCAL_AUTH_CACHE_SIZE = 10_000;
+
+  private setLocalAuthCache(
+    id: number,
+    data: { id: number; email: string; role: Role },
+    now: number,
+  ) {
+    if (this.localAuthCache.size >= this.MAX_LOCAL_AUTH_CACHE_SIZE) {
+      const firstKey = this.localAuthCache.keys().next().value;
+      if (firstKey !== undefined) this.localAuthCache.delete(firstKey);
+    }
+    this.localAuthCache.set(id, {
+      data,
+      expiresAt: now + this.LOCAL_AUTH_CACHE_TTL_MS,
+    });
+  }
+
   async findOneByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { email },
@@ -92,13 +114,22 @@ export class UsersService {
   async findAuthUserById(
     id: number,
   ): Promise<{ id: number; email: string; role: Role } | null> {
+    const now = Date.now();
+    const localHit = this.localAuthCache.get(id);
+    if (localHit && localHit.expiresAt > now) {
+      return localHit.data;
+    }
+
     const cacheKey = `user_auth:${id}`;
     const cached = await this.redisCache.get<{
       id: number;
       email: string;
       role: Role;
     }>(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      this.setLocalAuthCache(id, cached, now);
+      return cached;
+    }
 
     const user = await this.usersRepository.findOne({
       where: { id },
@@ -108,6 +139,7 @@ export class UsersService {
     if (user) {
       const authData = { id: user.id, email: user.email, role: user.role };
       await this.redisCache.set(cacheKey, authData, 300);
+      this.setLocalAuthCache(id, authData, now);
       return authData;
     }
 
@@ -181,6 +213,7 @@ export class UsersService {
       creditsToAdd,
     );
 
+    this.localAuthCache.delete(userId);
     await this.redisCache.invalidate(userId);
   }
 
@@ -217,6 +250,7 @@ export class UsersService {
     const success = (result.affected ?? 0) > 0;
 
     if (success) {
+      this.localAuthCache.delete(userId);
       await this.redisCache.invalidate(userId);
     }
 
@@ -227,7 +261,10 @@ export class UsersService {
     let balance = await this.redisCache.getBalance(userId);
 
     if (balance === null) {
-      const user = await this.findOneById(userId);
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+        select: ["id", "credits"],
+      });
       balance = user ? Number(user.credits) : 0;
       await this.redisCache.setBalance(userId, balance);
     }
@@ -328,6 +365,7 @@ export class UsersService {
   }
 
   async invalidateUserCache(userId: number): Promise<void> {
+    this.localAuthCache.delete(userId);
     await this.redisCache.invalidate(userId);
   }
 

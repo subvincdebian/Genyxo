@@ -113,16 +113,19 @@ export class ChatController {
         conversationId,
         files || [],
       );
-      await this.usersService.logTransaction(
-        userId,
-        -cost,
-        TransactionType.SPEND,
-        `Used AI Model: ${model}`,
-      );
+      const [, creditsLeft] = await Promise.all([
+        this.usersService.logTransaction(
+          userId,
+          -cost,
+          TransactionType.SPEND,
+          `Used AI Model: ${model}`,
+        ),
+        this.usersService.getBalance(userId),
+      ]);
 
       return {
         ...result,
-        creditsLeft: await this.usersService.getBalance(userId),
+        creditsLeft,
       };
     } catch (error) {
       await this.usersService.addCredits(userId, cost);
