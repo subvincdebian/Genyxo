@@ -55,7 +55,7 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto) {
     const { referralCode, ...userData } = createUserDto;
-    const existingUser = await this.usersService.findOneByEmail(
+    const existingUser = await this.usersService.findRegistrationConflict(
       createUserDto.email,
     );
 

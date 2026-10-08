@@ -54,6 +54,7 @@ async function configureApp(app: NestFastifyApplication) {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
+      stopAtFirstError: true,
     }),
   );
 

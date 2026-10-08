@@ -36,7 +36,18 @@ export class SupportService {
   async getUserTickets(userId: number) {
     return this.ticketRepo.find({
       where: { userId },
+      select: [
+        "id",
+        "subject",
+        "message",
+        "adminResponse",
+        "status",
+        "priority",
+        "createdAt",
+        "updatedAt",
+      ],
       order: { createdAt: "DESC" },
+      take: 50,
     });
   }
 

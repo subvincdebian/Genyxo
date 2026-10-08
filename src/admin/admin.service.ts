@@ -7,6 +7,7 @@ import { SupportTicket } from "../support/support.entity";
 import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { NotificationsService } from "../notifications/notifications.service";
 import { NotificationType } from "../notifications/notification.entity";
+import { RedisCacheService } from "../common/redis-cache.service";
 
 @Injectable()
 export class AdminService {
@@ -18,6 +19,7 @@ export class AdminService {
     @InjectRepository(SupportTicket)
     private ticketRepo: Repository<SupportTicket>,
     private readonly notificationsService: NotificationsService,
+    private readonly redisCache: RedisCacheService,
   ) {}
 
   async getAllUsers(paginationQuery: PaginationQueryDto) {
@@ -122,14 +124,21 @@ export class AdminService {
   }
 
   async manualAddCredits(userId: number, amount: number) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      select: ["id", "credits"],
+    });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    user.credits = Number(user.credits) + Number(amount);
-    const savedUser = await this.userRepo.save(user);
+    const creditsToAdd = Number(amount);
+    if (!isNaN(creditsToAdd) && creditsToAdd > 0) {
+      await this.userRepo.increment({ id: userId }, "credits", creditsToAdd);
+      user.credits = Number(user.credits) + creditsToAdd;
+      await this.redisCache.invalidate(userId);
+    }
 
     await this.notificationsService.create(
       userId,
@@ -138,6 +147,6 @@ export class AdminService {
       NotificationType.SYSTEM,
     );
 
-    return savedUser;
+    return user;
   }
 }

@@ -6,6 +6,7 @@ import { User } from "../users/user.entity";
 import { Transaction } from "../transactions/transaction.entity";
 import { SupportTicket } from "../support/support.entity";
 import { NotificationsService } from "../notifications/notifications.service";
+import { RedisCacheService } from "../common/redis-cache.service";
 
 describe("AdminService", () => {
   let service: AdminService;
@@ -18,6 +19,7 @@ describe("AdminService", () => {
         { provide: getRepositoryToken(Transaction), useValue: {} },
         { provide: getRepositoryToken(SupportTicket), useValue: {} },
         { provide: NotificationsService, useValue: {} },
+        { provide: RedisCacheService, useValue: { invalidate: jest.fn() } },
       ],
     }).compile();
 

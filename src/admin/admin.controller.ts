@@ -13,7 +13,7 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import type { FastifyReply } from "fastify";
-import { createReadStream } from "fs";
+import { readFileSync } from "fs";
 import { join } from "path";
 import { Role } from "../users/role.enum";
 import { Roles } from "../auth/decorators/roles.decorator";
@@ -43,12 +43,16 @@ export class AdminController {
     }
   }
 
+  private cachedAdminHtml: Buffer | null = null;
+
   @Get("panel")
   async getAdminPanel(@Res({ passthrough: false }) res: FastifyReply) {
-    const filePath = join(process.cwd(), "secure_html", "admin.html");
-    const stream = createReadStream(filePath);
+    if (!this.cachedAdminHtml) {
+      const filePath = join(process.cwd(), "secure_html", "admin.html");
+      this.cachedAdminHtml = readFileSync(filePath);
+    }
     res.type("text/html");
-    return res.send(stream);
+    return res.send(this.cachedAdminHtml);
   }
 
   @Get("users")

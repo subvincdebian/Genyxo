@@ -53,6 +53,15 @@ export class UsersService {
     });
   }
 
+  async findRegistrationConflict(
+    email: string,
+  ): Promise<Pick<User, "id" | "googleId"> | null> {
+    return this.usersRepository.findOne({
+      where: { email },
+      select: ["id", "googleId"],
+    });
+  }
+
   async findOneById(id: number): Promise<User | null> {
     const cacheKey = `user_profile:${id}`;
     const cached = await this.redisCache.get<User>(cacheKey);

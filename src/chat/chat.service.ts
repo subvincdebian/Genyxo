@@ -79,6 +79,7 @@ export class ChatService {
   async getHistory(conversationId: number) {
     const messages = await this.messageRepository.find({
       where: { conversationId },
+      select: ["id", "content", "sender", "createdAt"],
       order: { createdAt: "ASC" },
       take: 50,
     });
@@ -558,17 +559,17 @@ export class ChatService {
   }
 
   async getMessageById(id: number) {
-    return this.messageRepository.findOne({ where: { id } });
+    return this.messageRepository.findOne({
+      where: { id },
+      select: ["id", "userId", "content"],
+    });
   }
 
   async updateVideoUrl(requestId: string, videoUrl: string) {
-    const message = await this.messageRepository.findOne({
-      where: { requestId },
-    });
-    if (message) {
-      message.content = videoUrl;
-      await this.messageRepository.save(message);
-    }
+    await this.messageRepository.update(
+      { requestId },
+      { content: videoUrl },
+    );
   }
 
   async getAiResponse(dbMessages: Message[], model: string) {
