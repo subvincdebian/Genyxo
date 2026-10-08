@@ -235,6 +235,7 @@ export class ChatService {
     if (conversationId && conversationId !== 0) {
       const chat = await this.conversationRepository.findOne({
         where: { id: conversationId, userId },
+        select: ["id", "title"],
       });
       if (!chat) throw new NotFoundException("Chat not found");
       return chat;

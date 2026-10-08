@@ -33,6 +33,8 @@ import { RedisCacheModule } from "./common/redis-cache.module";
             commandTimeout: 1500,
             connectTimeout: 3000,
             enableReadyCheck: false,
+            noDelay: true,
+            keepAlive: 10000,
             // ssl
             tls: { rejectUnauthorized: false },
           }
@@ -44,6 +46,8 @@ import { RedisCacheModule } from "./common/redis-cache.module";
             commandTimeout: 1500,
             connectTimeout: 3000,
             enableReadyCheck: false,
+            noDelay: true,
+            keepAlive: 10000,
           },
     }),
     ThrottlerModule.forRootAsync({

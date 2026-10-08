@@ -32,6 +32,9 @@ async function configureApp(app: NestFastifyApplication) {
     httpServer.headersTimeout = 66000;
     httpServer.keepAliveTimeout = 65000;
     httpServer.requestTimeout = 65000;
+    httpServer.on("connection", (socket: any) => {
+      socket.setNoDelay(true);
+    });
   }
 
   await app.register(fastifyHelmet as any, {
