@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { randomBytes } from "crypto";
 import { RedisCacheService } from "../common/redis-cache.service";
 import { User } from "./user.entity";
+import { Role } from "./role.enum";
 import {
   Transaction,
   TransactionStatus,
@@ -79,6 +80,31 @@ export class UsersService {
     return user;
   }
 
+  async findAuthUserById(
+    id: number,
+  ): Promise<{ id: number; email: string; role: Role } | null> {
+    const cacheKey = `user_auth:${id}`;
+    const cached = await this.redisCache.get<{
+      id: number;
+      email: string;
+      role: Role;
+    }>(cacheKey);
+    if (cached) return cached;
+
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      select: ["id", "email", "role"],
+    });
+
+    if (user) {
+      const authData = { id: user.id, email: user.email, role: user.role };
+      await this.redisCache.set(cacheKey, authData, 300);
+      return authData;
+    }
+
+    return null;
+  }
+
   async findByVerificationToken(token: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { verificationToken: token },
@@ -128,7 +154,10 @@ export class UsersService {
   async save(user: User): Promise<User> {
     const saved = await this.usersRepository.save(user);
     if (user.id) {
-      await this.redisCache.del(`user_profile:${user.id}`);
+      await this.redisCache.del(
+        `user_profile:${user.id}`,
+        `user_auth:${user.id}`,
+      );
     }
     return saved;
   }

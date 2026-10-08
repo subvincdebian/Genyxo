@@ -42,6 +42,7 @@ export class Transaction {
   @Column({ type: "int", nullable: true })
   packId?: number;
 
+  @Index()
   @Column({ nullable: true })
   externalId?: string;
 
@@ -65,6 +66,7 @@ export class Transaction {
   @Column()
   provider!: string;
 
+  @Index()
   @CreateDateColumn()
   createdAt!: Date;
 

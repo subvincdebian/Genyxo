@@ -24,6 +24,12 @@ function createFastifyAdapter(): FastifyAdapter {
 async function configureApp(app: NestFastifyApplication) {
   app.enableShutdownHooks();
 
+  const httpServer = app.getHttpServer();
+  if (httpServer) {
+    httpServer.headersTimeout = 66000;
+    httpServer.keepAliveTimeout = 65000;
+  }
+
   await app.register(fastifyHelmet as any, {
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,

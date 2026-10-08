@@ -24,6 +24,7 @@ export enum TicketPriority {
 
 @Entity("support_tickets")
 @Index(["userId", "createdAt"])
+@Index(["status", "priority", "createdAt"])
 export class SupportTicket {
   @PrimaryGeneratedColumn()
   id!: number;

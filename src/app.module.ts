@@ -126,7 +126,7 @@ import { RedisCacheModule } from "./common/redis-cache.module";
             queueLimit: 0,
             connectTimeout: 20000,
             idleTimeout: 60000,
-            maxIdle: 20,
+            maxIdle: 50,
             decimalNumbers: true,
           },
           retryAttempts: 10,

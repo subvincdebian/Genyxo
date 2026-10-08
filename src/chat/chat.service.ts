@@ -108,6 +108,20 @@ export class ChatService {
     );
   }
 
+  private async writeStreamChunk(
+    res: ServerResponse,
+    data: string,
+  ): Promise<boolean> {
+    if (!res.writable || res.destroyed) return false;
+    const canContinue = res.write(data);
+    if (!canContinue) {
+      await new Promise<void>((resolve) => {
+        res.once("drain", resolve);
+      });
+    }
+    return !res.destroyed;
+  }
+
   private decodeInlineText(data: string) {
     try {
       return Buffer.from(data, "base64").toString("utf8");
@@ -404,9 +418,11 @@ export class ChatService {
           const content = chunk.text() || "";
           if (content) {
             fullReply += content;
-            res.write(
+            const canContinue = await this.writeStreamChunk(
+              res,
               `data: ${stringifyTokenEvent({ token: content, conversationId: conversation.id })}\n\n`,
             );
+            if (!canContinue) break;
           }
         }
       } else {
@@ -471,9 +487,11 @@ export class ChatService {
           const content = chunk.choices[0]?.delta?.content || "";
           if (content) {
             fullReply += content;
-            res.write(
+            const canContinue = await this.writeStreamChunk(
+              res,
               `data: ${stringifyTokenEvent({ token: content, conversationId: conversation.id })}\n\n`,
             );
+            if (!canContinue) break;
           }
         }
       }

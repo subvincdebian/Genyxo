@@ -74,6 +74,7 @@ export class RedisCacheService {
       await this.redis.del(
         `user_balance:${userId}`,
         `user_profile:${userId}`,
+        `user_auth:${userId}`,
         `affiliate_stats:${userId}`,
       );
     } catch (err: any) {
