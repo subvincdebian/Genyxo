@@ -288,6 +288,8 @@ export class UsersService {
     const rewardAmount = REFERRAL_REWARDS[packId] || 0;
     if (rewardAmount <= 0) return;
 
+    let referrerToInvalidate: number | null = null;
+
     await this.usersRepository.manager.transaction(
       async (transactionalEntityManager) => {
         const lockedBuyer = await transactionalEntityManager.findOne(User, {
@@ -296,11 +298,11 @@ export class UsersService {
           lock: { mode: "pessimistic_write" },
         });
 
-        if (!lockedBuyer || lockedBuyer.isReferralPaid) return;
+        if (!lockedBuyer || lockedBuyer.isReferralPaid || !lockedBuyer.referrerId) return;
 
         await transactionalEntityManager.increment(
           User,
-          { id: buyer.referrerId },
+          { id: lockedBuyer.referrerId },
           "referralBalance",
           rewardAmount,
         );
@@ -309,16 +311,24 @@ export class UsersService {
           isReferralPaid: true,
         });
 
-        await this.redisCache.del(
-          `affiliate_stats:${buyer.referrerId}`,
-          `user_profile:${buyer.referrerId}`,
-        );
+        referrerToInvalidate = lockedBuyer.referrerId;
       },
     );
+
+    if (referrerToInvalidate) {
+      await this.redisCache.del(
+        `affiliate_stats:${referrerToInvalidate}`,
+        `user_profile:${referrerToInvalidate}`,
+      );
+    }
 
     this.logger.log(
       `[Affiliate] Reward $${rewardAmount} paid to User ${buyer.referrerId} for User ${buyerId} (Pack ${packId})`,
     );
+  }
+
+  async invalidateUserCache(userId: number): Promise<void> {
+    await this.redisCache.invalidate(userId);
   }
 
   async logTransaction(
@@ -347,6 +357,15 @@ export class UsersService {
 
     const [items, total] = await this.transactionRepository.findAndCount({
       where: { userId },
+      select: [
+        "id",
+        "amount",
+        "creditsAmount",
+        "status",
+        "type",
+        "description",
+        "createdAt",
+      ],
       order: { createdAt: "DESC" },
       take: limit,
       skip: (page - 1) * limit,

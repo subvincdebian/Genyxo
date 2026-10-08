@@ -21,6 +21,7 @@ import {
   Transaction,
   TransactionStatus,
 } from "../transactions/transaction.entity";
+import { User } from "../users/user.entity";
 import { NotificationType } from "../notifications/notification.entity";
 import { UsersService } from "../users/users.service";
 import { NotificationsService } from "../notifications/notifications.service";
@@ -186,50 +187,70 @@ export class PaymentService {
   }
 
   private async finalizeTransaction(txId: number) {
-    return await this.transactionRepo.manager.transaction(async (manager) => {
-      const transaction = await manager.findOne(Transaction, {
-        where: { id: txId },
-        relations: {
-          user: true,
-        },
-        select: {
-          id: true,
-          status: true,
-          creditsAmount: true,
-          packId: true,
-          userId: true,
-          user: {
-            id: true,
+    const finalizationData = await this.transactionRepo.manager.transaction(
+      async (manager) => {
+        const transaction = await manager.findOne(Transaction, {
+          where: { id: txId },
+          relations: {
+            user: true,
           },
-        },
-        lock: { mode: "pessimistic_write" },
-      });
+          select: {
+            id: true,
+            status: true,
+            creditsAmount: true,
+            packId: true,
+            userId: true,
+            user: {
+              id: true,
+            },
+          },
+          lock: { mode: "pessimistic_write" },
+        });
 
-      if (!transaction || transaction.status === TransactionStatus.APPROVED) {
-        return;
-      }
+        if (!transaction || transaction.status === TransactionStatus.APPROVED) {
+          return null;
+        }
 
-      const user = transaction.user;
-      if (!user) throw new Error("User not found for transaction");
+        const user = transaction.user;
+        if (!user) throw new Error("User not found for transaction");
 
-      transaction.status = TransactionStatus.APPROVED;
-      await manager.save(transaction);
+        await manager.update(Transaction, txId, {
+          status: TransactionStatus.APPROVED,
+        });
 
-      await this.usersService.addCredits(user.id, transaction.creditsAmount);
-
-      if (transaction.packId) {
-        await this.usersService.processReferralBonus(
-          user.id,
-          transaction.packId,
+        await manager.increment(
+          User,
+          { id: user.id },
+          "credits",
+          transaction.creditsAmount,
         );
-      }
 
-      await this.notificationsService.create(
-        user.id,
-        "Payment Successful! ✅",
-        `You have successfully purchased ${transaction.creditsAmount} credits.`,
-        NotificationType.SYSTEM,
+        return {
+          userId: user.id,
+          creditsAmount: transaction.creditsAmount,
+          packId: transaction.packId,
+        };
+      },
+    );
+
+    if (!finalizationData) {
+      return;
+    }
+
+    await this.usersService.invalidateUserCache(finalizationData.userId);
+
+    if (finalizationData.packId) {
+      await this.usersService.processReferralBonus(
+        finalizationData.userId,
+        finalizationData.packId,
       );
-    });
+    }
+
+    await this.notificationsService.create(
+      finalizationData.userId,
+      "Payment Successful! ✅",
+      `You have successfully purchased ${finalizationData.creditsAmount} credits.`,
+      NotificationType.SYSTEM,
+    );
   }
 }

@@ -13,13 +13,21 @@ export class CreateTicketDto {
   @IsString()
   @IsNotEmpty()
   @Length(5, 100)
-  @Transform(({ value }) => sanitizeHtml(value))
+  @Transform(({ value }) =>
+    typeof value === "string" && value.includes("<")
+      ? sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} })
+      : value,
+  )
   subject!: string;
 
   @IsString()
   @IsNotEmpty()
   @Length(10, 2000)
-  @Transform(({ value }) => sanitizeHtml(value))
+  @Transform(({ value }) =>
+    typeof value === "string" && value.includes("<")
+      ? sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} })
+      : value,
+  )
   message!: string;
 
   @IsOptional()

@@ -9,6 +9,10 @@ export class ResolveTicketDto {
 
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }) => sanitizeHtml(value))
+  @Transform(({ value }) =>
+    typeof value === "string" && value.includes("<")
+      ? sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} })
+      : value,
+  )
   response!: string;
 }

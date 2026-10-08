@@ -123,7 +123,10 @@ export class SupportService {
     ticket.adminResponse = response;
     ticket.status = TicketStatus.CLOSED;
 
-    await this.ticketRepo.save(ticket);
+    await this.ticketRepo.update(ticketId, {
+      adminResponse: response,
+      status: TicketStatus.CLOSED,
+    });
 
     await this.notificationsService.create(
       ticket.user.id,

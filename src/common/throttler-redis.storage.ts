@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ThrottlerStorage } from "@nestjs/throttler";
 import Redis from "ioredis";
+import * as crypto from "crypto";
 
 export interface ThrottlerStorageRecord {
   totalHits: number;
@@ -22,6 +23,11 @@ end
 return {current, pttl}
 `;
 
+const SCRIPT_SHA = crypto
+  .createHash("sha1")
+  .update(LUA_THROTTLER_SCRIPT)
+  .digest("hex");
+
 @Injectable()
 export class ThrottlerStorageRedisService implements ThrottlerStorage {
   constructor(private readonly redis: Redis) {}
@@ -33,12 +39,26 @@ export class ThrottlerStorageRedisService implements ThrottlerStorage {
     blockDuration: number,
     _throttlerName: string,
   ): Promise<ThrottlerStorageRecord> {
-    const results = (await this.redis.eval(
-      LUA_THROTTLER_SCRIPT,
-      1,
-      key,
-      ttl,
-    )) as [number, number];
+    let results: [number, number];
+    try {
+      results = (await this.redis.evalsha(
+        SCRIPT_SHA,
+        1,
+        key,
+        ttl,
+      )) as [number, number];
+    } catch (err: any) {
+      if (err?.message?.includes("NOSCRIPT")) {
+        results = (await this.redis.eval(
+          LUA_THROTTLER_SCRIPT,
+          1,
+          key,
+          ttl,
+        )) as [number, number];
+      } else {
+        throw err;
+      }
+    }
 
     const totalHits = Number(results[0]);
     const pttl = Number(results[1]);

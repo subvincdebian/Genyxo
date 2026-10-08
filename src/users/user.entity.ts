@@ -44,12 +44,15 @@ export class User {
   @Column({ default: false })
   isEmailVerified!: boolean;
 
+  @Index()
   @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   verificationToken?: string | null;
 
+  @Index()
   @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   googleId?: string;
 
+  @Index()
   @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   facebookId?: string;
 

@@ -7,10 +7,12 @@ export class UpdateProfileDto {
   @IsString()
   @Length(2, 50)
   @Transform(({ value }) =>
-    sanitizeHtml(value, {
-      allowedTags: [],
-      allowedAttributes: {},
-    }),
+    typeof value === "string" && value.includes("<")
+      ? sanitizeHtml(value, {
+          allowedTags: [],
+          allowedAttributes: {},
+        })
+      : value,
   )
   name?: string;
 

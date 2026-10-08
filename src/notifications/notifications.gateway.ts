@@ -9,15 +9,16 @@ import { forwardRef, Inject, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { NotificationsService } from "./notifications.service";
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : ["https://genyxo.com", "http://localhost:3000"];
+
 @WebSocketGateway({
   cors: {
     origin: (
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void,
     ) => {
-      const allowedOrigins = process.env.ALLOWED_ORIGINS
-        ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
-        : ["https://genyxo.com", "http://localhost:3000"];
       if (
         !origin ||
         allowedOrigins.includes(origin) ||
@@ -32,6 +33,9 @@ import { NotificationsService } from "./notifications.service";
   },
   namespace: "notifications",
   transports: ["websocket", "polling"],
+  pingInterval: 10000,
+  pingTimeout: 5000,
+  maxHttpBufferSize: 1e5,
 })
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -47,11 +51,12 @@ export class NotificationsGateway
 
   async handleConnection(client: Socket) {
     try {
-      const token =
+      const rawToken =
         client.handshake.auth?.token || client.handshake.query?.token;
-      if (!token) return client.disconnect();
+      const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
+      if (!token || typeof token !== "string") return client.disconnect();
 
-      const payload = await this.jwtService.verifyAsync(token as string, {
+      const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       });
 

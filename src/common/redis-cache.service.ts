@@ -15,10 +15,32 @@ export class RedisCacheService {
     try {
       const data = await this.redis.get(key);
       if (!data) return null;
-      return JSON.parse(data) as T;
+      try {
+        return JSON.parse(data) as T;
+      } catch {
+        return data as unknown as T;
+      }
     } catch (err: any) {
       this.logger.warn(`Redis GET error for key "${key}": ${err.message}`);
       return null;
+    }
+  }
+
+  async mget<T = any>(keys: string[]): Promise<(T | null)[]> {
+    if (!keys || keys.length === 0) return [];
+    try {
+      const results = await this.redis.mget(...keys);
+      return results.map((data) => {
+        if (!data) return null;
+        try {
+          return JSON.parse(data) as T;
+        } catch {
+          return data as unknown as T;
+        }
+      });
+    } catch (err: any) {
+      this.logger.warn(`Redis MGET error: ${err.message}`);
+      return keys.map(() => null);
     }
   }
 

@@ -33,7 +33,12 @@ export class SendMessageDto {
   @IsString()
   @IsOptional()
   @MaxLength(2000)
-  @Transform(({ value }) => (value ? sanitizeHtml(value) : ""))
+  @Transform(({ value }) => {
+    if (!value || typeof value !== "string") return "";
+    return value.includes("<")
+      ? sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} })
+      : value;
+  })
   message?: string;
 
   @IsString()

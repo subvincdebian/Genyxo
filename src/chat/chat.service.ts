@@ -381,9 +381,12 @@ export class ChatService {
 
       if (model.startsWith("google/gemini")) {
         const geminiModelName = model.replace("google/", "");
-        const generativeModel = this.googleAI.getGenerativeModel({
-          model: geminiModelName,
-        });
+        const generativeModel = this.googleAI.getGenerativeModel(
+          {
+            model: geminiModelName,
+          },
+          { timeout: 60000 },
+        );
 
         const contents: Content[] = [];
         let lastRole: string | null = null;
@@ -594,9 +597,12 @@ export class ChatService {
 
       if (model.startsWith("google/gemini")) {
         const geminiModelName = model.replace("google/", "");
-        const generativeModel = this.googleAI.getGenerativeModel({
-          model: geminiModelName,
-        });
+        const generativeModel = this.googleAI.getGenerativeModel(
+          {
+            model: geminiModelName,
+          },
+          { timeout: 60000 },
+        );
 
         const contents: Content[] = dbMessages.map((m) => {
           const role = m.sender === "bot" ? "model" : "user";
