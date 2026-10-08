@@ -198,6 +198,7 @@ export class ChatService {
       where: { userId },
       select: ["id", "title", "createdAt", "updatedAt"],
       order: { updatedAt: "DESC" },
+      take: 100,
     });
   }
 
@@ -420,9 +421,10 @@ export class ChatService {
           lastRole = role;
         }
 
-        const resultStream = await generativeModel.generateContentStream({
-          contents,
-        });
+        const resultStream = await generativeModel.generateContentStream(
+          { contents },
+          { signal: abortController.signal },
+        );
 
         for await (const chunk of resultStream.stream) {
           if (abortController.signal.aborted) break;
@@ -727,21 +729,17 @@ export class ChatService {
   }
 
   async renameConversation(userId: number, id: number, newTitle: string) {
-    const chat = await this.conversationRepository.findOne({
-      where: { id, userId },
-    });
-    if (!chat) throw new NotFoundException();
-    chat.title = newTitle;
-    return this.conversationRepository.save(chat);
+    const result = await this.conversationRepository.update(
+      { id, userId },
+      { title: newTitle },
+    );
+    if ((result.affected ?? 0) === 0) throw new NotFoundException();
+    return { id, title: newTitle };
   }
 
   async deleteConversation(userId: number, id: number) {
-    const chat = await this.conversationRepository.findOne({
-      where: { id, userId },
-    });
-    if (!chat) throw new NotFoundException();
-    await this.messageRepository.delete({ conversationId: id, userId });
-    await this.conversationRepository.delete({ id, userId });
+    const result = await this.conversationRepository.delete({ id, userId });
+    if ((result.affected ?? 0) === 0) throw new NotFoundException();
     return { success: true };
   }
 }

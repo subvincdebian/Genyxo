@@ -24,7 +24,15 @@ export class NotificationsService {
     const notification = this.repo.create({ userId, title, message, type });
     const saved = await this.repo.save(notification);
 
-    await this.redisCache.del(`unread_count:${userId}`);
+    const cacheKey = `unread_count:${userId}`;
+    const cached = await this.redisCache.get<number>(cacheKey);
+    let newCount: number;
+    if (cached !== null && typeof cached === "number") {
+      newCount = cached + 1;
+      await this.redisCache.set(cacheKey, newCount, 60);
+    } else {
+      newCount = await this.getUnreadCount(userId);
+    }
 
     this.gateway.sendNotificationToUser(userId, {
       id: saved.id,
@@ -34,7 +42,6 @@ export class NotificationsService {
       createdAt: saved.createdAt,
     });
 
-    const newCount = await this.getUnreadCount(userId);
     this.gateway.sendUnreadCount(userId, newCount);
 
     return saved;
@@ -65,12 +72,20 @@ export class NotificationsService {
   }
 
   async markAsRead(id: number, userId: number) {
-    await this.repo.update({ id, userId }, { isRead: true });
-    await this.redisCache.del(`unread_count:${userId}`);
+    const result = await this.repo.update({ id, userId, isRead: false }, { isRead: true });
+    const cacheKey = `unread_count:${userId}`;
+    if ((result.affected ?? 0) > 0) {
+      const cached = await this.redisCache.get<number>(cacheKey);
+      if (cached !== null && typeof cached === "number") {
+        await this.redisCache.set(cacheKey, Math.max(0, cached - 1), 60);
+      } else {
+        await this.redisCache.del(cacheKey);
+      }
+    }
   }
 
   async markAllAsRead(userId: number) {
     await this.repo.update({ userId, isRead: false }, { isRead: true });
-    await this.redisCache.del(`unread_count:${userId}`);
+    await this.redisCache.set(`unread_count:${userId}`, 0, 60);
   }
 }
