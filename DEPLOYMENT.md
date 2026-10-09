@@ -75,9 +75,15 @@ chmod +x ./scripts/*.sh
 ### Шаг 1: Конфигурация переменных окружения
 
 ```bash
-cp .env.example .env
-# Заполните в .env ваши боевые ключи (JWT_SECRET, API-ключи AI, пароли БД)
+cp apps/backend/.env.example apps/backend/.env
+# Заполните в apps/backend/.env ваши боевые ключи (JWT_SECRET, API-ключи AI, пароли БД)
 ```
+
+Для прямого вызова Compose передавайте `--env-file apps/backend/.env`,
+например `docker compose --env-file apps/backend/.env up --build -d`.
+Скрипты запуска уже передают этот путь. Контексты сборки находятся в
+`apps/backend` и `apps/web`; backend environment file подключается из
+`apps/backend/.env`.
 
 ### Шаг 2: Запуск production стека
 

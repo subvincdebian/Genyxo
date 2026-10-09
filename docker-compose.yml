@@ -9,7 +9,6 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     image: genyxo-nginx:latest
-    container_name: genyxo-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -40,12 +39,11 @@ services:
   # ==============================================================
   frontend:
     build:
-      context: ./frontend
+      context: ./apps/web
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_SOCKET_URL: /
     image: genyxo-frontend:latest
-    container_name: genyxo-frontend
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -77,24 +75,23 @@ services:
   # ==============================================================
   app:
     build:
-      context: .
+      context: ./apps/backend
       dockerfile: Dockerfile
     image: genyxo-backend:latest
-    container_name: genyxo-backend
     restart: unless-stopped
     env_file:
-      - .env
+      - ./apps/backend/.env
     environment:
       - NODE_ENV=production
       - PORT=3000
       - MYSQLHOST=mysql
       - MYSQLPORT=3306
       - MYSQLDATABASE=${MYSQLDATABASE:-genyxo}
-      - MYSQLUSER=${MYSQLUSER:-genyxo_user}
-      - MYSQLPASSWORD=${MYSQLPASSWORD:-genyxo_secure_pass}
+      - MYSQLUSER=${MYSQLUSER:?Set MYSQLUSER in apps/backend/.env}
+      - MYSQLPASSWORD=${MYSQLPASSWORD:?Set MYSQLPASSWORD in apps/backend/.env}
       - REDISHOST=redis
       - REDISPORT=6379
-      - REDISPASSWORD=${REDISPASSWORD:-redis_secure_pass}
+      - REDISPASSWORD=${REDISPASSWORD:?Set REDISPASSWORD in apps/backend/.env}
       - ALLOWED_ORIGINS=https://genyxo.com,http://localhost,http://localhost:3000,http://localhost:3001
     depends_on:
       mysql:
@@ -118,6 +115,16 @@ services:
         max-size: "20m"
         max-file: "5"
 
+  # Explicit migration gate, invoked by production launchers before rollout.
+  db-migrate:
+    extends:
+      service: app
+    profiles: [tools]
+    command: [node, dist/database/runner.js]
+    restart: "no"
+    deploy:
+      replicas: 1
+
   # ==============================================================
   # Relational Database (MySQL 8.4 LTS)
   # ==============================================================
@@ -126,10 +133,10 @@ services:
     container_name: genyxo-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_super_secure_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in apps/backend/.env}
       MYSQL_DATABASE: ${MYSQLDATABASE:-genyxo}
-      MYSQL_USER: ${MYSQLUSER:-genyxo_user}
-      MYSQL_PASSWORD: ${MYSQLPASSWORD:-genyxo_secure_pass}
+      MYSQL_USER: ${MYSQLUSER:?Set MYSQLUSER in apps/backend/.env}
+      MYSQL_PASSWORD: ${MYSQLPASSWORD:?Set MYSQLPASSWORD in apps/backend/.env}
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -170,12 +177,14 @@ services:
     image: redis:7-alpine
     container_name: genyxo-redis
     restart: unless-stopped
+    environment:
+      REDISPASSWORD: ${REDISPASSWORD:?Set REDISPASSWORD in apps/backend/.env}
     command: >
       sh -c 'redis-server
       --appendonly yes
-      --requirepass "$${REDISPASSWORD:-redis_secure_pass}"
+      --requirepass "$${REDISPASSWORD}"
       --maxmemory 256mb
-      --maxmemory-policy allkeys-lru'
+      --maxmemory-policy noeviction'
     volumes:
       - redis_data:/data
     networks:
@@ -184,7 +193,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          'redis-cli -a "$${REDISPASSWORD:-redis_secure_pass}" ping | grep PONG || exit 1',
+          'REDISCLI_AUTH="$${REDISPASSWORD}" redis-cli ping | grep PONG || exit 1',
         ]
       interval: 10s
       timeout: 5s

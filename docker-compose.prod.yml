@@ -1,40 +1,22 @@
-# ==============================================================
-# Production & Docker Swarm Stack Overrides for Genyxo
-# Usage: docker stack deploy -c docker-compose.yml -c docker-compose.prod.yml genyxo
-# ==============================================================
+# Single-host Docker Compose production settings.
+# Use scripts/prod.sh or scripts/prod.ps1 to run migrations before rollout.
+# Multiple hosts use Kubernetes/Helm; this file is not a Swarm stack.
 services:
   nginx:
+    environment:
+      NGINX_ALLOW_SELF_SIGNED: "false"
+    volumes:
+      - type: bind
+        source: ./nginx/ssl
+        target: /etc/nginx/ssl
+        read_only: true
     deploy:
-      mode: replicated
-      replicas: 2
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-        failure_action: rollback
-      rollback_config:
-        parallelism: 1
-        order: stop-first
+      # Fixed host ports permit one edge instance on a single Docker host.
+      replicas: 1
 
   frontend:
     deploy:
-      mode: replicated
       replicas: 2
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-        failure_action: rollback
       resources:
         limits:
           cpus: "2.0"
@@ -44,19 +26,10 @@ services:
           memory: 256M
 
   app:
+    environment:
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS in apps/backend/.env}
     deploy:
-      mode: replicated
       replicas: 3
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      update_config:
-        parallelism: 1
-        delay: 15s
-        order: start-first
-        failure_action: rollback
       resources:
         limits:
           cpus: "2.0"
@@ -64,23 +37,3 @@ services:
         reservations:
           cpus: "0.5"
           memory: 512M
-
-  mysql:
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: any
-
-  redis:
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: any

@@ -8,14 +8,9 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  security-events: write
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_BACKEND: ghcr.io/${{ github.repository }}/genyxo-backend
-  IMAGE_FRONTEND: ghcr.io/${{ github.repository }}/genyxo-frontend
-  IMAGE_NGINX: ghcr.io/${{ github.repository }}/genyxo-nginx
 
 jobs:
   # ==============================================================
@@ -33,23 +28,56 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
+          cache-dependency-path: |
+            package-lock.json
+            apps/backend/package-lock.json
+            apps/web/package-lock.json
+
+      - name: Install Repository Tooling
+        run: npm ci
+
+      - name: Setup Helm for Infrastructure Tests
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.19.0
+
+      - name: Verify Repository and Deployment Contracts
+        run: |
+          npm run check:repository
+          npm run check:compose
+          npm run test:tooling
 
       - name: Install Backend Dependencies
+        working-directory: ./apps/backend
         run: npm ci
 
       - name: Run Backend Unit Tests
-        run: npm test
+        run: npm run backend:test
 
       - name: Verify Backend Build
-        run: npm run build
+        run: npm run backend:build
 
       - name: Install Frontend Dependencies
-        working-directory: ./frontend
+        working-directory: ./apps/web
         run: npm ci
 
+      - name: Check Types and Lint
+        run: npm run check
+
       - name: Verify Frontend Build
-        working-directory: ./frontend
+        working-directory: ./apps/web
         run: npm run build
+
+      - name: Verify Generated API Contract
+        run: |
+          npm run contracts:sync
+          git diff --exit-code -- apps/web/types
+
+      - name: Browser Regression Tests
+        working-directory: ./apps/web
+        run: |
+          npx playwright install --with-deps chromium
+          npm test
 
       - name: Secret Scan with Gitleaks
         uses: gitleaks/gitleaks-action@v2
@@ -65,9 +93,25 @@ jobs:
     needs: quality-gate
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      backend: ${{ steps.images.outputs.backend }}
+      frontend: ${{ steps.images.outputs.frontend }}
+      nginx: ${{ steps.images.outputs.nginx }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Normalize Registry Image Names
+        id: images
+        shell: bash
+        run: |
+          repository="${GITHUB_REPOSITORY,,}"
+          printf 'backend=ghcr.io/%s/genyxo-backend\n' "$repository" >> "$GITHUB_OUTPUT"
+          printf 'frontend=ghcr.io/%s/genyxo-frontend\n' "$repository" >> "$GITHUB_OUTPUT"
+          printf 'nginx=ghcr.io/%s/genyxo-nginx\n' "$repository" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -83,12 +127,12 @@ jobs:
       - name: Build & Push Backend Image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./apps/backend
+          file: ./apps/backend/Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_BACKEND }}:${{ github.sha }}
-            ${{ env.IMAGE_BACKEND }}:latest
+            ${{ steps.images.outputs.backend }}:${{ github.sha }}
+            ${{ steps.images.outputs.backend }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -96,12 +140,12 @@ jobs:
       - name: Build & Push Frontend Image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_FRONTEND }}:${{ github.sha }}
-            ${{ env.IMAGE_FRONTEND }}:latest
+            ${{ steps.images.outputs.frontend }}:${{ github.sha }}
+            ${{ steps.images.outputs.frontend }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -113,8 +157,8 @@ jobs:
           file: ./nginx/Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_NGINX }}:${{ github.sha }}
-            ${{ env.IMAGE_NGINX }}:latest
+            ${{ steps.images.outputs.nginx }}:${{ github.sha }}
+            ${{ steps.images.outputs.nginx }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -125,38 +169,34 @@ jobs:
     name: Container Vulnerability Scan
     needs: build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    env:
+      TRIVY_USERNAME: ${{ github.actor }}
+      TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [backend, frontend, nginx]
     steps:
-      - name: Run Trivy Vulnerability Scanner (Backend)
-        uses: aquasecurity/trivy-action@master
+      - name: Scan Container Image
+        uses: aquasecurity/trivy-action@c03d123cb480c08c69b054af418ea5e69fe6e57e
         with:
-          image-ref: "${{ env.IMAGE_BACKEND }}:${{ github.sha }}"
+          image-ref: "${{ needs.build-and-push.outputs[matrix.component] }}:${{ github.sha }}"
           format: "sarif"
-          output: "trivy-backend-results.sarif"
+          output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
-        continue-on-error: true
+          limit-severities-for-sarif: "true"
+          exit-code: "1"
 
-      - name: Run Trivy Vulnerability Scanner (Frontend)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ env.IMAGE_FRONTEND }}:${{ github.sha }}"
-          format: "sarif"
-          output: "trivy-frontend-results.sarif"
-          severity: "CRITICAL,HIGH"
-        continue-on-error: true
-
-      - name: Upload Backend Trivy scan results to GitHub Security tab
+      - name: Upload Scan Results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('trivy-results.sarif') != ''
         with:
-          sarif_file: "trivy-backend-results.sarif"
-          category: "trivy-backend"
-
-      - name: Upload Frontend Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: "trivy-frontend-results.sarif"
-          category: "trivy-frontend"
+          sarif_file: "trivy-results.sarif"
+          category: "trivy-${{ matrix.component }}"
 
   # ==============================================================
   # Job 4: Continuous Deployment (Kubernetes / Helm)
@@ -166,30 +206,39 @@ jobs:
     needs: [build-and-push, security-scan]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: genyxo-production
+      cancel-in-progress: false
+    env:
+      KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+      IMAGE_BACKEND: ${{ needs.build-and-push.outputs.backend }}
+      IMAGE_FRONTEND: ${{ needs.build-and-push.outputs.frontend }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Setup Helm
         uses: azure/setup-helm@v4
+        with:
+          version: v3.19.0
 
-      # Configure kubeconfig if KUBECONFIG secret is provided
       - name: Authenticate to Kubernetes Cluster
-        if: env.KUBECONFIG_DATA != ''
-        env:
-          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
         run: |
+          test -n "$KUBECONFIG_DATA" || { echo 'Configure the KUBECONFIG production secret'; exit 1; }
+          umask 077
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          printf '%s' "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config
 
       # Deploy using Helm
       - name: Upgrade Helm Release
-        if: env.KUBECONFIG_DATA != ''
-        env:
-          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
         run: |
           helm upgrade --install genyxo ./helm/genyxo \
             --namespace genyxo --create-namespace \
-            --set backend.image.tag=${{ github.sha }} \
-            --set frontend.image.tag=${{ github.sha }} \
-            --wait --timeout 5m
+            -f ./helm/genyxo/values-production.yaml \
+            --set-string backend.image.repository="$IMAGE_BACKEND" \
+            --set-string frontend.image.repository="$IMAGE_FRONTEND" \
+            --set-string backend.image.tag="$GITHUB_SHA" \
+            --set-string frontend.image.tag="$GITHUB_SHA" \
+            --set-string secrets.existingSecret=genyxo-secrets \
+            --atomic --wait --timeout 10m

@@ -1,0 +1,5 @@
+ssl/
+*.log
+.env
+.env.*
+generate-dev-certs.*

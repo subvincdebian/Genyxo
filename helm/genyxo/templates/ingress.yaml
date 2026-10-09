@@ -5,7 +5,7 @@ metadata:
   name: {{ include "genyxo.fullname" . }}-ingress
   labels:
     {{- include "genyxo.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with omit .Values.ingress.annotations "nginx.ingress.kubernetes.io/affinity" "nginx.ingress.kubernetes.io/affinity-mode" "nginx.ingress.kubernetes.io/session-cookie-name" "nginx.ingress.kubernetes.io/session-cookie-path" "nginx.ingress.kubernetes.io/session-cookie-max-age" }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -27,6 +27,7 @@ spec:
       http:
         paths:
           {{- range .paths }}
+          {{- if ne .path "/socket.io" }}
           - path: {{ .path }}
             pathType: {{ .pathType }}
             backend:
@@ -34,6 +35,7 @@ spec:
                 name: {{ if eq .service "backend" }}{{ include "genyxo.fullname" $ }}-backend-svc{{ else }}{{ include "genyxo.fullname" $ }}-frontend-svc{{ end }}
                 port:
                   number: {{ if eq .service "backend" }}{{ $.Values.backend.service.port }}{{ else }}{{ $.Values.frontend.service.port }}{{ end }}
+          {{- end }}
           {{- end }}
     {{- end }}
 {{- end }}

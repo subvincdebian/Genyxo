@@ -1,13 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
-    ".": {
-      "entry": [
-        "src/main.ts!"
-      ],
-      "project": [
-        "src/**/*.ts!"
-      ],
+    "apps/backend": {
+      "entry": ["src/main.ts!"],
+      "project": ["src/**/*.ts!"],
       "ignoreDependencies": [
         "source-map-support",
         "ts-loader",
@@ -23,25 +19,20 @@
         "@types/express",
         "@types/supertest",
         "supertest",
-        "socket.io"
-      ]
+        "socket.io",
+      ],
     },
-    "frontend": {
-      "entry": [
-        "app/**/{page,layout,loading,error,not-found}.tsx!"
-      ],
-      "project": [
-        "src/**/*.{ts,tsx}!",
-        "app/**/*.{ts,tsx}!"
-      ],
+    "apps/web": {
+      "entry": ["app/**/{page,layout,loading,error,not-found}.tsx!"],
+      "project": ["src/**/*.{ts,tsx}!", "app/**/*.{ts,tsx}!"],
       "ignoreDependencies": [
         "canvas-confetti",
         "@types/canvas-confetti",
         "chart.js",
         "marked",
         "socket.io-client",
-        "tailwindcss"
-      ]
-    }
-  }
+        "tailwindcss",
+      ],
+    },
+  },
 }

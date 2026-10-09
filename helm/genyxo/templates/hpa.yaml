@@ -28,7 +28,7 @@ spec:
           averageUtilization: {{ .Values.backend.autoscaling.targetMemoryUtilizationPercentage }}
 {{- end }}
 ---
-{{- if .Values.frontend.autoscaling.enabled -}}
+{{- if .Values.frontend.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:

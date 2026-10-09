@@ -8,7 +8,7 @@ metadata:
 spec:
   secretTargetRef:
     - parameter: password
-      name: {{ include "genyxo.fullname" . }}-secrets
+      name: {{ include "genyxo.secretName" . }}
       key: REDISPASSWORD
 ---
 apiVersion: keda.sh/v1alpha1

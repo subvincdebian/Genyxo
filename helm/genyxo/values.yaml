@@ -78,6 +78,11 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
     nginx.ingress.kubernetes.io/websocket-services: "genyxo-backend-svc"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+    nginx.ingress.kubernetes.io/session-cookie-name: "GENYXO_SID"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/socket.io"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
     nginx.ingress.kubernetes.io/limit-rps: "30"
   hosts:
     - host: genyxo.com
@@ -144,14 +149,15 @@ config:
   REDISHOST: "genyxo-redis-svc"
   REDISPORT: "6379"
 
-# Sensitive secrets (Set in production via external Secret or --set secrets.XXX)
+# Set existingSecret to a provisioned Secret name, or supply secrets in a private values file.
 secrets:
-  JWT_SECRET: "change_me_jwt_secret"
-  WEBHOOK_SECRET: "change_me_webhook_secret"
+  existingSecret: ""
+  JWT_SECRET: ""
+  WEBHOOK_SECRET: ""
   MYSQLUSER: "genyxo_user"
-  MYSQLPASSWORD: "change_me_mysql_pass"
-  MYSQL_ROOT_PASSWORD: "change_me_root_pass"
-  REDISPASSWORD: "change_me_redis_pass"
+  MYSQLPASSWORD: ""
+  MYSQL_ROOT_PASSWORD: ""
+  REDISPASSWORD: ""
   OPENAI_API_KEY: ""
   FAL_KEY: ""
   OPENROUTER_API_KEY: ""

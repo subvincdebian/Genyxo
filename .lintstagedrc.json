@@ -1,7 +1,10 @@
 {
-  "src/**/*.{ts,js}": ["eslint --fix", "prettier --write"],
-  "test/**/*.{ts,js}": ["eslint --fix", "prettier --write"],
-  "frontend/src/**/*.{ts,tsx,js,jsx}": ["npm --prefix frontend run lint"],
-  "frontend/app/**/*.{ts,tsx,js,jsx}": ["npm --prefix frontend run lint"],
+  "apps/backend/{src,test,scripts}/**/*.{ts,js}": [
+    "npm --prefix apps/backend run lint:staged --",
+    "npm --prefix apps/backend run format:staged --"
+  ],
+  "apps/web/{src,app,tests}/**/*.{ts,tsx,js,jsx}": [
+    "npm --prefix apps/web run lint"
+  ],
   "*.{json,md,yml,yaml}": ["prettier --write"]
 }

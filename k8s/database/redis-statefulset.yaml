@@ -42,7 +42,7 @@ spec:
           command:
             - "sh"
             - "-c"
-            - "redis-server --appendonly yes --requirepass \"$REDISPASSWORD\" --maxmemory 384mb --maxmemory-policy allkeys-lru"
+            - 'redis-server --appendonly yes --requirepass "$REDISPASSWORD" --maxmemory 384mb --maxmemory-policy noeviction'
           env:
             - name: REDISPASSWORD
               valueFrom:
@@ -64,13 +64,23 @@ spec:
               memory: 512Mi
           readinessProbe:
             exec:
-              command: ["sh", "-c", "redis-cli -a \"$REDISPASSWORD\" ping | grep PONG"]
+              command:
+                [
+                  "sh",
+                  "-c",
+                  'REDISCLI_AUTH="$REDISPASSWORD" redis-cli ping | grep PONG',
+                ]
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 2
           livenessProbe:
             exec:
-              command: ["sh", "-c", "redis-cli -a \"$REDISPASSWORD\" ping | grep PONG"]
+              command:
+                [
+                  "sh",
+                  "-c",
+                  'REDISCLI_AUTH="$REDISPASSWORD" redis-cli ping | grep PONG',
+                ]
             initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 2

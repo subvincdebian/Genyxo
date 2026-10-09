@@ -1,6 +1,10 @@
 dist/
 node_modules/
 .next/
-frontend/.next/
+apps/web/.next/
 helm/
 *.tpl
+
+package-lock.json
+apps/*/package-lock.json
+apps/web/types/

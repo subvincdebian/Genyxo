@@ -1,8 +1,17 @@
 version: 2
 updates:
-  # Backend npm packages
+  # Repository tooling
   - package-ecosystem: "npm"
     directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "tooling"
+
+  # Backend npm packages
+  - package-ecosystem: "npm"
+    directory: "/apps/backend"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -30,7 +39,7 @@ updates:
 
   # Frontend npm packages
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/apps/web"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -53,7 +62,7 @@ updates:
 
   # Docker dependencies
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/apps/backend"
     schedule:
       interval: "weekly"
     labels:
@@ -61,7 +70,7 @@ updates:
       - "docker"
 
   - package-ecosystem: "docker"
-    directory: "/frontend"
+    directory: "/apps/web"
     schedule:
       interval: "weekly"
     labels:

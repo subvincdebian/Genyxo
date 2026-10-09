@@ -10,7 +10,7 @@ ACTION="${1:-up}"
 case "$ACTION" in
     up)
         echo "==> Starting Genyxo Local Development Stack..."
-        docker compose -f docker-compose.dev.yml up --build -d
+        docker compose --env-file apps/backend/.env -f docker-compose.dev.yml up --build -d
         echo "==> Dev stack started successfully!"
         echo "    - Backend:         http://localhost:3000"
         echo "    - Frontend:        http://localhost:3001"
@@ -19,10 +19,10 @@ case "$ACTION" in
         ;;
     down)
         echo "==> Stopping Dev Stack..."
-        docker compose -f docker-compose.dev.yml down
+        docker compose --env-file apps/backend/.env -f docker-compose.dev.yml down
         ;;
     logs)
-        docker compose -f docker-compose.dev.yml logs -f
+        docker compose --env-file apps/backend/.env -f docker-compose.dev.yml logs -f
         ;;
     *)
         echo "Usage: $0 [up|down|logs]"

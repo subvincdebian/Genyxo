@@ -57,6 +57,11 @@ ingress:
     cert-manager.io/cluster-issuer: "letsencrypt-staging"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: "15m"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+    nginx.ingress.kubernetes.io/session-cookie-name: "GENYXO_SID"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/socket.io"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
     nginx.ingress.kubernetes.io/limit-rps: "20"
   hosts:
     - host: staging.genyxo.com

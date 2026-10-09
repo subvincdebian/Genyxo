@@ -7,14 +7,14 @@ useDefault = true
 [allowlist]
 description = "Allowed mock secrets and configuration templates"
 paths = [
-  '''^\.env\.example$''',
-  '''^frontend/\.env\.example$''',
+  '''^apps/backend/\.env\.example$''',
+  '''^apps/web/\.env\.example$''',
   '''^k8s/02-secret\.example\.yaml$''',
   '''^helm/genyxo/values\.yaml$''',
   '''\.spec\.ts$''',
   '''test/''',
   '''package-lock\.json$''',
-  '''frontend/package-lock\.json$'''
+  '''apps/web/package-lock\.json$'''
 ]
 regexes = [
   '''replace_with_''',

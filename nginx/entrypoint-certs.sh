@@ -5,6 +5,10 @@ SSL_DIR="/etc/nginx/ssl"
 mkdir -p "$SSL_DIR"
 
 if [ ! -f "$SSL_DIR/cert.pem" ] || [ ! -f "$SSL_DIR/key.pem" ]; then
+    if [ "${NGINX_ALLOW_SELF_SIGNED:-true}" != "true" ]; then
+        echo "[Nginx] Production TLS requires cert.pem and key.pem in /etc/nginx/ssl." >&2
+        exit 1
+    fi
     echo "==> [Nginx Entrypoint] SSL certificates not found. Generating fallback self-signed certificates..."
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout "$SSL_DIR/key.pem" \

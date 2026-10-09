@@ -41,7 +41,7 @@ spec:
             - configMapRef:
                 name: {{ include "genyxo.fullname" . }}-config
             - secretRef:
-                name: {{ include "genyxo.fullname" . }}-secrets
+                name: {{ include "genyxo.secretName" . }}
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false

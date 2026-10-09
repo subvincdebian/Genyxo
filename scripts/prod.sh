@@ -5,32 +5,41 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$ROOT_DIR"
 
-if [ ! -f ".env" ]; then
-    echo "[WARNING] .env file not found! Copying from .env.example..."
-    cp .env.example .env
+if [ ! -f "apps/backend/.env" ]; then
+    echo "ERROR: apps/backend/.env with production credentials is required." >&2
+    exit 1
 fi
 
 ACTION="${1:-up}"
+COMPOSE=(docker compose --env-file apps/backend/.env -f docker-compose.yml -f docker-compose.prod.yml)
 
 case "$ACTION" in
     up)
+        if [ ! -f nginx/ssl/cert.pem ] || [ ! -f nginx/ssl/key.pem ]; then
+            echo "ERROR: nginx/ssl/cert.pem and nginx/ssl/key.pem are required for production TLS." >&2
+            exit 1
+        fi
         echo "==> Starting Genyxo Production Stack..."
-        docker compose up --build -d
+        "${COMPOSE[@]}" config --quiet
+        "${COMPOSE[@]}" build
+        "${COMPOSE[@]}" up -d mysql redis
+        "${COMPOSE[@]}" run --rm db-migrate
+        "${COMPOSE[@]}" up -d --wait
+        "${COMPOSE[@]}" ps
         echo "==> Production stack successfully deployed!"
-        docker compose ps
         ;;
     down)
         echo "==> Stopping Production Stack..."
-        docker compose down
+        "${COMPOSE[@]}" down
         ;;
     restart)
-        docker compose restart
+        "${COMPOSE[@]}" restart
         ;;
     status)
-        docker compose ps
+        "${COMPOSE[@]}" ps
         ;;
     logs)
-        docker compose logs -f
+        "${COMPOSE[@]}" logs -f
         ;;
     *)
         echo "Usage: $0 [up|down|restart|status|logs]"

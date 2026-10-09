@@ -13,7 +13,7 @@ spec:
       app.kubernetes.io/name: {{ include "genyxo.name" . }}-backend
 {{- end }}
 ---
-{{- if .Values.frontend.pdb.enabled -}}
+{{- if .Values.frontend.pdb.enabled }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
