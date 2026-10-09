@@ -23,6 +23,11 @@ export class MetricsService {
   public readonly dbConnectionsIdle: Gauge;
   public readonly redisStatus: Gauge;
   public readonly websocketActiveClients: Gauge;
+  public readonly circuitBreakerState: Gauge<"name">;
+  public readonly circuitBreakerCallsTotal: Counter<"name" | "status">;
+  public readonly queueJobsWaiting: Gauge<"queue">;
+  public readonly queueJobsActive: Gauge<"queue">;
+  public readonly queueJobsFailed: Gauge<"queue">;
 
   constructor(
     @Optional() private readonly dataSource?: DataSource,
@@ -72,6 +77,41 @@ export class MetricsService {
     this.websocketActiveClients = new Gauge({
       name: "genyxo_websocket_active_clients",
       help: "Current active WebSocket client connections",
+      registers: [this.registry],
+    });
+
+    this.circuitBreakerState = new Gauge({
+      name: "genyxo_circuit_breaker_state",
+      help: "Circuit breaker state: 0 = CLOSED, 1 = OPEN, 2 = HALF_OPEN",
+      labelNames: ["name"],
+      registers: [this.registry],
+    });
+
+    this.circuitBreakerCallsTotal = new Counter({
+      name: "genyxo_circuit_breaker_calls_total",
+      help: "Total calls through circuit breaker by status",
+      labelNames: ["name", "status"],
+      registers: [this.registry],
+    });
+
+    this.queueJobsWaiting = new Gauge({
+      name: "genyxo_queue_jobs_waiting",
+      help: "Number of waiting jobs in BullMQ queue",
+      labelNames: ["queue"],
+      registers: [this.registry],
+    });
+
+    this.queueJobsActive = new Gauge({
+      name: "genyxo_queue_jobs_active",
+      help: "Number of active jobs in BullMQ queue",
+      labelNames: ["queue"],
+      registers: [this.registry],
+    });
+
+    this.queueJobsFailed = new Gauge({
+      name: "genyxo_queue_jobs_failed",
+      help: "Number of failed jobs in BullMQ queue",
+      labelNames: ["queue"],
       registers: [this.registry],
     });
   }

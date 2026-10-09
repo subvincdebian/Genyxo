@@ -9,6 +9,9 @@ import {
 import { SkipThrottle } from "@nestjs/throttler";
 import { DataSource } from "typeorm";
 import { RedisService } from "@liaoliaots/nestjs-redis";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
+import { QUEUE_NAMES } from "../queues/queue.constants";
 
 @SkipThrottle()
 @Controller("health")
@@ -18,6 +21,9 @@ export class HealthController {
   constructor(
     @Optional() private readonly dataSource?: DataSource,
     @Optional() private readonly redisService?: RedisService,
+    @Optional()
+    @InjectQueue(QUEUE_NAMES.EMAIL)
+    private readonly emailQueue?: Queue,
   ) {}
 
   @Get()
@@ -74,6 +80,19 @@ export class HealthController {
       }
     } else {
       checks.redis = "skipped";
+    }
+
+    // BullMQ Queue check
+    if (this.emailQueue) {
+      try {
+        const isPaused = await this.emailQueue.isPaused();
+        checks.emailQueue = isPaused ? "paused" : "up";
+      } catch (err: any) {
+        checks.emailQueue = "down";
+        this.logger.error(`BullMQ queue check failed: ${err.message}`);
+      }
+    } else {
+      checks.emailQueue = "skipped";
     }
 
     const payload = {

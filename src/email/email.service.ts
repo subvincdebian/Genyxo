@@ -1,14 +1,51 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, Optional } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
 import { MailerService } from "@nestjs-modules/mailer";
 import { frontendUrl } from "../common/frontend-url";
+import { EMAIL_JOBS, QUEUE_NAMES } from "../queues/queue.constants";
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly mailerService: MailerService,
+    @Optional()
+    @InjectQueue(QUEUE_NAMES.EMAIL)
+    private readonly emailQueue?: Queue,
+  ) {}
 
-  async sendVerificationEmail(email: string, token: string) {
+  async sendVerificationEmail(email: string, token: string): Promise<void> {
+    if (this.emailQueue) {
+      try {
+        await this.emailQueue.add(
+          EMAIL_JOBS.VERIFICATION,
+          { email, token },
+          {
+            attempts: 3,
+            backoff: { type: "exponential", delay: 2000 },
+            removeOnComplete: 100,
+            removeOnFail: 500,
+          },
+        );
+        this.logger.log(`Verification email job enqueued for ${email}`);
+        return;
+      } catch (error: any) {
+        this.logger.warn(
+          `Failed to enqueue verification email to BullMQ, falling back to direct send: ${error?.message}`,
+        );
+      }
+    }
+
+    // Direct synchronous fallback (used in test mode or when Redis queue is offline)
+    await this.sendVerificationEmailDirect(email, token);
+  }
+
+  public async sendVerificationEmailDirect(
+    email: string,
+    token: string,
+  ): Promise<void> {
     const target = frontendUrl("/auth/verify");
     target.searchParams.set("token", token);
     const url = target.href;
@@ -29,20 +66,10 @@ export class EmailService {
           </div>
         `,
       });
-      this.logger.log(`Verification email sent to ${email}`);
+      this.logger.log(`Verification email sent directly to ${email}`);
     } catch (error) {
       this.logger.error("Error sending verification email:", error);
     }
-  }
-
-  private escapeHtml(str: string): string {
-    if (!str) return "";
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
   }
 
   async sendSupportReply(
@@ -50,7 +77,48 @@ export class EmailService {
     userName: string,
     ticketSubject: string,
     adminReply: string,
-  ) {
+  ): Promise<void> {
+    if (this.emailQueue) {
+      try {
+        await this.emailQueue.add(
+          EMAIL_JOBS.SUPPORT_REPLY,
+          {
+            email,
+            userName,
+            ticketSubject,
+            adminReply,
+          },
+          {
+            attempts: 3,
+            backoff: { type: "exponential", delay: 2000 },
+            removeOnComplete: 100,
+            removeOnFail: 500,
+          },
+        );
+        this.logger.log(`Support reply email job enqueued for ${email}`);
+        return;
+      } catch (error: any) {
+        this.logger.warn(
+          `Failed to enqueue support reply email to BullMQ, falling back to direct send: ${error?.message}`,
+        );
+      }
+    }
+
+    // Direct synchronous fallback
+    await this.sendSupportReplyDirect(
+      email,
+      userName,
+      ticketSubject,
+      adminReply,
+    );
+  }
+
+  public async sendSupportReplyDirect(
+    email: string,
+    userName: string,
+    ticketSubject: string,
+    adminReply: string,
+  ): Promise<void> {
     const safeName = this.escapeHtml(userName);
     const safeSubject = this.escapeHtml(ticketSubject);
     const safeReply = this.escapeHtml(adminReply);
@@ -74,9 +142,19 @@ export class EmailService {
           </div>
         `,
       });
-      this.logger.log(`Support reply email sent to ${email}`);
+      this.logger.log(`Support reply email sent directly to ${email}`);
     } catch (error) {
       this.logger.error("Error sending support reply email:", error);
     }
+  }
+
+  private escapeHtml(str: string): string {
+    if (!str) return "";
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 }

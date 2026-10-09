@@ -120,13 +120,15 @@ async function bootstrap() {
 
   await configureApp(app);
 
+  app.enableShutdownHooks();
+
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   await app.listen(port, "0.0.0.0");
   Logger.log(`Application is running on: ${await app.getUrl()}`, "Bootstrap");
 }
 
 if (!process.env.VERCEL) {
-  bootstrap();
+  void bootstrap();
 }
 
 // Vercel Serverless

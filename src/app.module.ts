@@ -22,6 +22,8 @@ import { HealthModule } from "./health/health.module";
 import { MetricsModule } from "./metrics/metrics.module";
 import { IdempotencyModule } from "./common/interceptors/idempotency.module";
 import { AuditModule } from "./audit/audit.module";
+import { ResilienceModule } from "./common/resilience/resilience.module";
+import { QueuesModule } from "./queues/queues.module";
 
 @Module({
   imports: [
@@ -208,6 +210,8 @@ import { AuditModule } from "./audit/audit.module";
     MetricsModule,
     IdempotencyModule,
     AuditModule,
+    ResilienceModule,
+    QueuesModule,
   ],
   controllers: [],
   providers: [

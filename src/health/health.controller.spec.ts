@@ -69,5 +69,17 @@ describe("HealthController", () => {
       mockRedisClient.ping.mockRejectedValueOnce(new Error("Redis offline"));
       await expect(controller.checkReadiness()).rejects.toThrow();
     });
+
+    it("should report queue status when emailQueue is provided", async () => {
+      const mockQueue = { isPaused: jest.fn().mockResolvedValue(false) };
+      const queueController = new HealthController(
+        mockDataSource as any,
+        mockRedisService as any,
+        mockQueue as any,
+      );
+
+      const res = await queueController.checkReadiness();
+      expect(res.checks.emailQueue).toBe("up");
+    });
   });
 });

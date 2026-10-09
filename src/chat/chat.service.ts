@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   Logger,
+  Optional,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -23,6 +24,8 @@ import { TransactionType } from "../transactions/transaction.entity";
 import { UsersService } from "../users/users.service";
 import { PricingService, ModelType } from "./pricing.service";
 import { FalService } from "./fal.service";
+import { CircuitBreakerService } from "../common/resilience/circuit-breaker.service";
+import { CIRCUIT_BREAKER_NAMES } from "../common/resilience/circuit-breaker.constants";
 
 @Injectable()
 export class ChatService {
@@ -39,6 +42,7 @@ export class ChatService {
     @InjectRepository(Message) private messageRepository: Repository<Message>,
     @InjectRepository(Conversation)
     private conversationRepository: Repository<Conversation>,
+    @Optional() private readonly circuitBreakerService?: CircuitBreakerService,
   ) {
     this.openRouter = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
@@ -440,8 +444,12 @@ export class ChatService {
     res: ServerResponse,
   ) {
     const abortController = new AbortController();
+    const streamTimeout = setTimeout(() => {
+      abortController.abort();
+    }, 45000);
 
     res.on("close", () => {
+      clearTimeout(streamTimeout);
       abortController.abort();
     });
 
@@ -602,15 +610,23 @@ export class ChatService {
           return { role, content: contentArray };
         });
 
-        const response = await this.openRouter.chat.completions.create(
-          {
-            model: model,
-            messages: openRouterMessages as any,
-            stream: true,
-            max_tokens: 2000,
-          },
-          { signal: abortController.signal },
-        );
+        const createStreamCall = () =>
+          this.openRouter.chat.completions.create(
+            {
+              model: model,
+              messages: openRouterMessages as any,
+              stream: true,
+              max_tokens: 2000,
+            },
+            { signal: abortController.signal },
+          );
+
+        const response = this.circuitBreakerService
+          ? await this.circuitBreakerService.execute(
+              CIRCUIT_BREAKER_NAMES.OPENROUTER_CHAT,
+              createStreamCall,
+            )
+          : await createStreamCall();
 
         for await (const chunk of response) {
           const content = chunk.choices[0]?.delta?.content || "";
@@ -684,6 +700,8 @@ export class ChatService {
         `data: ${stringifyErrorEvent({ error: error.message || "Connection lost or payload too large" })}\n\n`,
       );
       res.end();
+    } finally {
+      clearTimeout(streamTimeout);
     }
   }
 
@@ -702,11 +720,20 @@ export class ChatService {
     try {
       if (model.includes("dall-e")) {
         const lastMsg = dbMessages[dbMessages.length - 1];
-        const completion = await this.openRouter.images.generate({
-          model: "openai/dall-e-3",
-          prompt: lastMsg.content,
-          n: 1,
-        });
+        const generateImgCall = () =>
+          this.openRouter.images.generate({
+            model: "openai/dall-e-3",
+            prompt: lastMsg.content,
+            n: 1,
+          });
+
+        const completion = this.circuitBreakerService
+          ? await this.circuitBreakerService.execute(
+              CIRCUIT_BREAKER_NAMES.OPENROUTER_IMAGE,
+              generateImgCall,
+            )
+          : await generateImgCall();
+
         if (!completion.data || completion.data.length === 0) {
           throw new Error("No image generated");
         }
@@ -795,12 +822,20 @@ export class ChatService {
         return { role, content: contentArray };
       });
 
-      const completion = await this.openRouter.chat.completions.create({
-        model,
-        messages: openRouterMessages as any,
-        max_tokens: 2000,
-        temperature: 0.7,
-      });
+      const createChatCall = () =>
+        this.openRouter.chat.completions.create({
+          model,
+          messages: openRouterMessages as any,
+          max_tokens: 2000,
+          temperature: 0.7,
+        });
+
+      const completion = this.circuitBreakerService
+        ? await this.circuitBreakerService.execute(
+            CIRCUIT_BREAKER_NAMES.OPENROUTER_CHAT,
+            createChatCall,
+          )
+        : await createChatCall();
 
       return {
         reply: completion.choices[0].message.content || "AI did not respond",
@@ -820,13 +855,21 @@ export class ChatService {
         ? model
         : `fal-ai/${model}`;
 
-      const result: any = await fal.queue.submit(modelTarget, {
-        input: {
-          prompt: prompt,
-          video_size: "landscape",
-        },
-        webhookUrl: webhookUrl,
-      });
+      const submitFalCall = () =>
+        fal.queue.submit(modelTarget, {
+          input: {
+            prompt: prompt,
+            video_size: "landscape",
+          },
+          webhookUrl: webhookUrl,
+        });
+
+      const result: any = this.circuitBreakerService
+        ? await this.circuitBreakerService.execute(
+            CIRCUIT_BREAKER_NAMES.FAL_AI,
+            submitFalCall,
+          )
+        : await submitFalCall();
 
       return {
         videoUrl: result.video?.url,
