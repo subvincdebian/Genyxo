@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: genyxo-db-migration
+  namespace: genyxo
+  labels:
+    app.kubernetes.io/name: genyxo-db-migration
+    app.kubernetes.io/component: migration
+    app.kubernetes.io/part-of: genyxo-platform
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: genyxo-db-migration
+        app.kubernetes.io/component: migration
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: migration-runner
+          image: ghcr.io/ayateagh/genyxo-backend:latest
+          imagePullPolicy: IfNotPresent
+          command: ["node", "dist/database/runner.js"]
+          envFrom:
+            - configMapRef:
+                name: genyxo-config
+            - secretRef:
+                name: genyxo-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault

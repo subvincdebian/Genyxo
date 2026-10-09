@@ -96,34 +96,81 @@ import { AuditModule } from "./audit/audit.module";
           configService.get<string>("NODE_ENV") === "production" ||
           !!configService.get("VERCEL");
 
-        const connectionOptions = tidbHost
-          ? {
-              // TiDB CLOUD
-              host: tidbHost,
-              port:
-                parseInt(configService.get<string>("MYSQL_TIDB_PORT")!) || 4000,
-              username: configService.get<string>("MYSQL_TIDB_USERNAME"),
-              password: configService.get<string>("MYSQL_TIDB_PASSWORD"),
-              database:
-                configService.get<string>("MYSQL_TIDB_DATABASE") || "test",
-              ssl: {
-                rejectUnauthorized: true,
+        const replicaHost = configService.get<string>("MYSQL_REPLICA_HOST");
+        let connectionOptions: any;
+
+        if (tidbHost) {
+          connectionOptions = {
+            host: tidbHost,
+            port:
+              parseInt(configService.get<string>("MYSQL_TIDB_PORT")!) || 4000,
+            username: configService.get<string>("MYSQL_TIDB_USERNAME"),
+            password: configService.get<string>("MYSQL_TIDB_PASSWORD"),
+            database:
+              configService.get<string>("MYSQL_TIDB_DATABASE") || "test",
+            ssl: {
+              rejectUnauthorized: true,
+            },
+          };
+        } else if (replicaHost) {
+          const masterHost =
+            configService.get<string>("MYSQLHOST") || "localhost";
+          const masterPort =
+            parseInt(configService.get<string>("MYSQLPORT")!) || 3306;
+          const masterUser = configService.get<string>("MYSQLUSER") || "root";
+          const masterPassword =
+            configService.get<string>("MYSQLPASSWORD") || "";
+          const database =
+            configService.get<string>("MYSQLDATABASE") || "genyxo";
+
+          connectionOptions = {
+            replication: {
+              master: {
+                host: masterHost,
+                port: masterPort,
+                username: masterUser,
+                password: masterPassword,
+                database,
               },
-            }
-          : {
-              // RAILWAY / LOCAL MYSQL
-              host: configService.get<string>("MYSQLHOST") || "localhost",
-              port: parseInt(configService.get<string>("MYSQLPORT")!) || 3306,
-              username: configService.get<string>("MYSQLUSER"),
-              password: configService.get<string>("MYSQLPASSWORD"),
-              database: configService.get<string>("MYSQLDATABASE"),
-              // ssl: configService.get('MYSQL_SSL') ? { rejectUnauthorized: false } : undefined
-            };
+              slaves: [
+                {
+                  host: replicaHost,
+                  port:
+                    parseInt(
+                      configService.get<string>("MYSQL_REPLICA_PORT") ||
+                        String(masterPort),
+                      10,
+                    ) || masterPort,
+                  username:
+                    configService.get<string>("MYSQL_REPLICA_USER") ||
+                    masterUser,
+                  password:
+                    configService.get<string>("MYSQL_REPLICA_PASSWORD") ||
+                    masterPassword,
+                  database,
+                },
+              ],
+            },
+          };
+        } else {
+          connectionOptions = {
+            host: configService.get<string>("MYSQLHOST") || "localhost",
+            port: parseInt(configService.get<string>("MYSQLPORT")!) || 3306,
+            username: configService.get<string>("MYSQLUSER"),
+            password: configService.get<string>("MYSQLPASSWORD"),
+            database: configService.get<string>("MYSQLDATABASE"),
+            ssl: configService.get("MYSQL_SSL")
+              ? { rejectUnauthorized: false }
+              : undefined,
+          };
+        }
 
         return {
           type: "mysql",
           ...connectionOptions,
           entities: [__dirname + "/**/*.entity{.ts,.js}"],
+          migrations: [__dirname + "/database/migrations/*{.ts,.js}"],
+          migrationsTableName: "typeorm_migrations",
 
           // for local
           synchronize: !isProduction,

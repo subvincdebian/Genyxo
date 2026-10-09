@@ -45,6 +45,7 @@ export class Message {
   @JoinColumn({ name: "conversationId" })
   conversation!: Conversation;
 
+  @Index()
   @Column()
   userId!: number;
 

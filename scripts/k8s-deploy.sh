@@ -21,6 +21,10 @@ else
     kubectl apply -f "${K8S_DIR}/02-secret.example.yaml"
 fi
 
+echo "==> [Kubernetes] Running database migrations with advisory lock..."
+kubectl apply -f "${K8S_DIR}/database/migration-job.yaml" || true
+kubectl wait --for=condition=complete --timeout=120s job/genyxo-db-migration -n genyxo || true
+
 echo "==> [Kubernetes] Deploying Services & Workloads..."
 kubectl apply -f "${K8S_DIR}/04-services.yaml"
 kubectl apply -f "${K8S_DIR}/03-backend-deployment.yaml"
