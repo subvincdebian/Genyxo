@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: genyxo-config
+  namespace: genyxo
+  labels:
+    app.kubernetes.io/name: genyxo
+    app.kubernetes.io/component: configuration
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  SITE_URL: "https://genyxo.com"
+  ALLOWED_ORIGINS: "https://genyxo.com,http://localhost:3000,http://localhost:3001"
+  MYSQLHOST: "genyxo-mysql-svc"
+  MYSQLPORT: "3306"
+  MYSQLDATABASE: "genyxo"
+  REDISHOST: "genyxo-redis-svc"
+  REDISPORT: "6379"
+  DB_LOGGING: "false"
+  UV_THREADPOOL_SIZE: "64"

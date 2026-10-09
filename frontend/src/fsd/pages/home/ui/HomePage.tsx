@@ -1,0 +1,5 @@
+'use client';
+import { useController } from '@/shared/lib/use-controller';
+import { HomeToastContainer, HomeNavbar, HomeMobileMenu, HomeMenuOverlay, HomeHome, HomeProducts, HomeAbout, HomeFooter, HomeCheckoutModal, HomeLoginModal, HomeLangModal, HomeVerifyEmailModal, HomeFaqWindow, HomeDemoChatModal, HomeAiModelModal, HomeCategoryModal } from '@/widgets/home';
+const loadController=()=>import('../model/initialize').then(module=>module.default);
+export function HomePage(){const dispatch=useController(loadController);return <><HomeToastContainer dispatch={dispatch}/><HomeNavbar dispatch={dispatch}/><HomeMobileMenu dispatch={dispatch}/><HomeMenuOverlay dispatch={dispatch}/><HomeHome dispatch={dispatch}/><HomeProducts dispatch={dispatch}/><HomeAbout dispatch={dispatch}/><HomeFooter dispatch={dispatch}/><HomeCheckoutModal dispatch={dispatch}/><HomeLoginModal dispatch={dispatch}/><HomeLangModal dispatch={dispatch}/><HomeVerifyEmailModal dispatch={dispatch}/><HomeFaqWindow dispatch={dispatch}/><HomeDemoChatModal dispatch={dispatch}/><HomeAiModelModal dispatch={dispatch}/><HomeCategoryModal dispatch={dispatch}/></>;}

@@ -1,0 +1,65 @@
+{
+  "pages": [
+    {
+      "name": "home",
+      "file": "public/index.html",
+      "url": "/"
+    },
+    {
+      "name": "chat",
+      "file": "public/chat.html",
+      "url": "/chat.html"
+    },
+    {
+      "name": "profile",
+      "file": "public/profile.html",
+      "url": "/profile.html"
+    },
+    {
+      "name": "notifications",
+      "file": "public/notifications.html",
+      "url": "/notifications.html"
+    },
+    {
+      "name": "support",
+      "file": "public/support.html",
+      "url": "/support.html"
+    },
+    {
+      "name": "admin",
+      "file": "secure_html/admin.html",
+      "url": "/gate.html"
+    },
+    {
+      "name": "dashboard",
+      "file": "secure_html/dashboard.html",
+      "url": "/dashboard.html"
+    },
+    {
+      "name": "policies",
+      "file": "public/policies/policies.html",
+      "url": "/policies/policies.html"
+    },
+    {
+      "name": "privacy-policy",
+      "file": "public/policies/privacy-policy.html",
+      "url": "/policies/privacy-policy.html"
+    },
+    {
+      "name": "terms-of-service",
+      "file": "public/policies/terms-of-service.html",
+      "url": "/policies/terms-of-service.html"
+    },
+    {
+      "name": "faq",
+      "file": "public/policies/faq.html",
+      "url": "/policies/faq.html"
+    }
+  ],
+  "unresolvedOriginalHandlers": [
+    "location",
+    "openLangModal",
+    "openTab",
+    "closeSidebarOnMobile"
+  ]
+}

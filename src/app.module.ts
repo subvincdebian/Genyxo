@@ -21,6 +21,7 @@ import { AdminModule } from "./admin/admin.module";
 import { SupportModule } from "./support/support.module";
 import { EmailModule } from "./email/email.module";
 import { RedisCacheModule } from "./common/redis-cache.module";
+import { HealthModule } from "./health/health.module";
 
 @Module({
   imports: [
@@ -164,6 +165,7 @@ import { RedisCacheModule } from "./common/redis-cache.module";
     AdminModule,
     SupportModule,
     EmailModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [

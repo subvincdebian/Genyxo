@@ -1,0 +1,166 @@
+name: Production CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BACKEND: ghcr.io/${{ github.repository }}/genyxo-backend
+  IMAGE_FRONTEND: ghcr.io/${{ github.repository }}/genyxo-frontend
+  IMAGE_NGINX: ghcr.io/${{ github.repository }}/genyxo-nginx
+
+jobs:
+  # ==============================================================
+  # Job 1: Test & Quality Gate
+  # ==============================================================
+  quality-gate:
+    name: Lint & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Backend Dependencies
+        run: npm ci
+
+      - name: Run Backend Unit Tests
+        run: npm test
+
+      - name: Verify Backend Build
+        run: npm run build
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Verify Frontend Build
+        working-directory: ./frontend
+        run: npm run build
+
+  # ==============================================================
+  # Job 2: Build & Push Container Images
+  # ==============================================================
+  build-and-push:
+    name: Build & Push Docker Images
+    needs: quality-gate
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build Backend Image
+      - name: Build & Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_BACKEND }}:${{ github.sha }}
+            ${{ env.IMAGE_BACKEND }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build Frontend Image
+      - name: Build & Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_FRONTEND }}:${{ github.sha }}
+            ${{ env.IMAGE_FRONTEND }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build Nginx Image
+      - name: Build & Push Nginx Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nginx
+          file: ./nginx/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NGINX }}:${{ github.sha }}
+            ${{ env.IMAGE_NGINX }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==============================================================
+  # Job 3: Security & Vulnerability Scanning
+  # ==============================================================
+  security-scan:
+    name: Container Vulnerability Scan
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Trivy Vulnerability Scanner (Backend)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.IMAGE_BACKEND }}:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+  # ==============================================================
+  # Job 4: Continuous Deployment (Kubernetes / Helm)
+  # ==============================================================
+  deploy:
+    name: Deploy to Kubernetes Cluster
+    needs: [build-and-push, security-scan]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      # Configure kubeconfig if KUBECONFIG secret is provided
+      - name: Authenticate to Kubernetes Cluster
+        if: env.KUBECONFIG_DATA != ''
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+      # Deploy using Helm
+      - name: Upgrade Helm Release
+        if: env.KUBECONFIG_DATA != ''
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        run: |
+          helm upgrade --install genyxo ./helm/genyxo \
+            --namespace genyxo --create-namespace \
+            --set backend.image.tag=${{ github.sha }} \
+            --set frontend.image.tag=${{ github.sha }} \
+            --wait --timeout 5m

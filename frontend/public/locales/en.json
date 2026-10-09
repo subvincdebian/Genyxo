@@ -1,0 +1,341 @@
+{
+    "nav": {
+        "home": "Home",
+        "products": "Products",
+        "chat": "Chat",
+        "about": "About Us",
+        "login": "Register / Login",
+        "profile": "Profile",
+        "userload": "Loading...",
+        "emailload": "loading@gmail.com",
+        "profileupgrade": "Upgrade",
+        "back_home": "Back To Home",
+        "search_placeholder": "Search products...",
+        "help_center": "Help Center",
+        "notifications": "Notifications",
+        "language": "Language",
+        "contact": "Contact us",
+        "logout": "Log out"
+    },
+    "hero": {
+        "title": "Genyxo",
+        "main_title": "Prepare for Future With - Genyxo",
+        "meta_description": "Get premium access to AI tools, neural networks, and social media services. Automate your workflow and unlock limitless opportunities with Genyxo AI.",
+        "subtitle": "Discover a new level with our service - subscriptions to AI, social networks, and more.",
+        "view_packages": "View packages",
+        "happy_customers": "Happy Customers",
+        "ai_models": "Different AI Models",
+        "always_working": "Always working"
+    },
+    "menu": {
+        "profile": "Profile",
+        "notifications": "Notifications",
+        "help": "Help Center",
+        "language": "Language",
+        "contact": "Contact us",
+        "logout": "Log out",
+        "plan_free": "Free",
+        "details_title": "Details",
+        "meta_info": "Free | 0 Credits | $0.0/mo"
+    },
+    "products_data": {
+        "1": {
+            "name": "Start AI",
+            "credits_label": "750 credits",
+            "features": [
+                "Access to basic AI models",
+                "Standard support",
+                "Lifetime validity"
+            ]
+        },
+        "2": {
+            "name": "AI Explorer",
+            "credits_label": "2,000 credits",
+            "features": [
+                "Access to advanced AI models",
+                "Priority support",
+                "Lifetime validity"
+            ]
+        },
+        "3": {
+            "name": "Pro Creator",
+            "credits_label": "5,000 credits",
+            "features": [
+                "All AI models included",
+                "VIP support",
+                "Lifetime validity"
+            ]
+        },
+        "4": {
+            "name": "AI Master",
+            "credits_label": "10,000 credits",
+            "features": [
+                "All AI models",
+                "24/7 Premium support",
+                "Lifetime validity"
+            ]
+        },
+        "5": {
+            "name": "Unlimited Power",
+            "credits_label": "20,000 credits",
+            "features": [
+                "All features",
+                "Dedicated support manager",
+                "Lifetime validity"
+            ]
+        },
+        "6": {
+            "name": "AI Titan",
+            "credits_label": "45,000 credits",
+            "features": [
+                "Unlimited everything",
+                "White-label options",
+                "Lifetime validity"
+            ]
+        },
+        "products_title": "Subscription packages",
+        "buy_now": "Buy Now"
+    },
+    "about_section": {
+        "title": "About Us",
+        "text_1": "We provide seamless access to today’s most important digital tools – from cutting-edge AI services to creative platforms, premium social features and productivity apps.",
+        "text_2": "Our mission is to empower creators, entrepreneurs and everyday users by giving them smarter, faster and more cost-effective access to the digital services they rely on.",
+        "text_3": "With us, you save time and money, reduce hassle and unlock more possibilities with every subscription.",
+        "feat_1_title": "Custom Designs",
+        "feat_1_desc": "You can create custom images",
+        "feat_2_title": "Fast Accrual",
+        "feat_2_desc": "Instant Response",
+        "feat_3_title": "Premium quality",
+        "feat_3_desc": "Only from official sources"
+    },
+    "footer": {
+        "desc_1": "Manual access to the latest AI models in one place.",
+        "desc_2": "Fast, transparent, no overpayments.",
+        "links_title": "Links",
+        "shipping": "Shipping Information",
+        "contact_title": "Contact Information",
+        "rights": "© 2025 Genyxo. All rights reserved."
+    },
+    "auth": {
+        "login_title": "Login / Sign Up",
+        "email_placeholder": "Email Address",
+        "password_placeholder": "Password",
+        "confirm_password_placeholder": "Confirm Password",
+        "name_placeholder": "Full Name",
+        "remember_me": "Remember me",
+        "forgot_pass": "Forgot password?",
+        "login_btn": "Login",
+        "signup_btn": "Create Account",
+        "no_account": "Don't have an account?",
+        "has_account": "Already have an account?",
+        "link_signup": "Sign up",
+        "link_login": "Login",
+        "logout_msg": "Log out of account"
+    },
+    "toasts": {
+        "payment_success": "Payment successful! Credits added.",
+        "payment_cancel": "Payment cancelled.",
+        "welcome": "Welcome back!",
+        "login_error": "Incorrect credentials",
+        "server_error": "Server connection failed.",
+        "account_created": "Account created successfully!",
+        "reg_failed": "Registration failed",
+        "pass_mismatch": "Error: Passwords do not match!",
+        "marked_all_success": "All notifications marked as read.",
+        "mark_all_fail": "Failed to mark notifications."
+    },
+    "order": {
+        "title": "Secure Checkout",
+        "badge": "Encrypted",
+        "packname": "AI Pack",
+        "packdesc": "Instant delivery • Lifetime validity",
+        "price": "Price",
+        "fee_title": "Processing Fee",
+        "fee_desc": "Covered by us",
+        "total": "Total due",
+        "method": "We accept:",
+        "button": "Proceed to Payment",
+        "footer": "Powered by  . You will be redirected to complete the secure payment."
+    },
+    "language": {
+        "select": "Select Language"
+    },
+    "admin": {
+        "meta_title": "Admin Panel - Genyxo",
+        "nav_title": "Admin Panel",
+        "system_mgmt": "System Management",
+        "users_title": "Users",
+        "transactions_title": "Transactions",
+        "tickets_title": "Support Tickets",
+        "refresh": "Refresh",
+        "table": {
+            "id": "ID",
+            "email": "Email",
+            "name": "Name",
+            "role": "Role",
+            "credits": "Credits",
+            "action": "Action",
+            "user": "User",
+            "amount": "Amount ($)",
+            "status": "Status",
+            "method": "Method",
+            "date": "Date",
+            "subject": "Subject"
+        },
+        "modal": {
+            "reply_title": "Reply to Ticket #",
+            "user_msg": "User Message:",
+            "your_reply": "Your Reply:",
+            "placeholder": "Enter your response here...",
+            "cancel": "Cancel",
+            "send": "Send Reply",
+            "select_lang": "Select Language"
+        },
+        "js": {
+            "add_credits_btn": "+ Credits",
+            "no_users": "No users found",
+            "no_transactions": "No transactions found",
+            "no_tickets": "No tickets found",
+            "confirm_approve": "Are you sure you want to APPROVE this transaction?",
+            "confirm_decline": "Are you sure you want to DECLINE this transaction?",
+            "prompt_credits": "How many credits to add?",
+            "done": "Done",
+            "view_reply": "View & Reply",
+            "empty_reply": "Please enter a reply before sending.",
+            "error_server": "Error connecting to server.",
+            "error_failed": "Failed",
+            "access_denied": "Access Denied or Server Error",
+            "unknown_user": "Unknown User",
+            "no_subject": "No Subject"
+        }
+    },
+    "chat": {
+        "meta_title": "Chat Room - Genyxo",
+        "meta_description": "Interact with multiple AIs using Genyxo AI. Get help with coding, writing, and data analysis in real time.",
+        "chat_title": "AI Chat",
+        "balance": "Balance:",
+        "credits": "Credits",
+        "model_select_label": "Select AI Model:",
+        "input_placeholder": "Ask me anything...",
+        "send_button": "Send",
+        "system_msg_placeholder": "Hi! I'm your AI assistant. Choose a model or just write me something and we'll get started! 🚀",
+        "system_msg_no_history": "No history found. Start a new conversation!",
+        "system_msg_error": "Error loading chat history or user data.",
+        "model_default": "Default Model (GPT-3.5/Llama)",
+        "model_advanced": "Advanced Model (GPT-4/Claude)",
+        "model_fast": "Fast Model (Mistral/Gemini Flash)",
+        "model_creative": "Creative Model (DALL-E/Midjourney Text)"
+    },
+    "notifications": {
+        "meta_title": "Notifications - Genyxo",
+        "meta_description": "Stay updated with Genyxo. Track your support tickets, subscription changes, and AI service notifications in one place.",
+        "center_title": "Notifications Center",
+        "header_title": "Your Notifications",
+        "mark_all_btn": "Mark all read",
+        "loading": "Loading notifications...",
+        "empty_state": "No notifications yet.",
+        "error_loading": "Error loading data",
+        "confirm_read_all": "Mark all as read?",
+        "plan_free": "Free",
+        "plan_meta": "Free | 0 Credits | $0.0/mo",
+        "time_format": "en-US"
+    },
+    "profile": {
+        "title": "Account Settings & Profile - Genyxo",
+        "description": "Manage your Genyxo account settings, security, and payment information all in one place.",
+        "change_avatar": "Change avatar",
+        "view_profile": "View profile",
+        "sidebar": {
+            "home": "Home",
+            "security": "Password and security",
+            "payment": "Payment settings",
+            "transactions": "Transactions",
+            "subscriptions": "Subscriptions",
+            "groups": "Group sessions"
+        },
+        "main_title": "Manage Account",
+        "tabs": {
+            "general": "General",
+            "notification": "Notification",
+            "availability": "Availability",
+            "security": "Security",
+            "connected": "Connected accounts",
+            "billing": "Billing"
+        },
+        "general": {
+            "title": "Basic info",
+            "subtitle": "Edit your profile information",
+            "label_name": "Full name",
+            "label_email": "Email",
+            "label_location": "Location",
+            "placeholder_name": "John Doe",
+            "placeholder_email": "your@email.com",
+            "placeholder_location": "City, Country",
+            "save_btn": "Save changes"
+        },
+        "security": {
+            "title": "Password and Security",
+            "change_pwd_title": "Change Password",
+            "change_pwd_desc": "For your security, we recommend creating a unique password that you don't use with any other account on the network.",
+            "change_pwd_btn": "Change Password",
+            "logout_all_title": "Log out of all devices",
+            "logout_all_desc": "Sign out of anywhere you use your account, including all browsers, phones, consoles, and other devices, except this page.",
+            "logout_all_btn": "Log out from all devices",
+            "modal": {
+                "title": "Change Password",
+                "subtitle": "Enter your current password and choose a new secure password.",
+                "label_current": "Current password",
+                "label_new": "New password",
+                "label_confirm": "Confirm new password",
+                "placeholder_new": "New password",
+                "placeholder_confirm": "Confirm password",
+                "btn_save": "Save",
+                "btn_cancel": "Cancel",
+                "success": "Password changed successfully.",
+                "network_error": "Network error. Try again."
+            }
+        },
+        "payment": {
+            "title": "Payment Settings",
+            "desc": "Manage your account balance, transactions, and payment methods.",
+            "privacy_link": "View privacy policy.",
+            "balance_title": "Account balance",
+            "balance_desc": "Use your account balance to purchase AI packs, use any AI Subscription versions etc. Balance is non-refundable.",
+            "terms_link": "View terms",
+            "balance_label": "Balance",
+            "view_transactions_link": "View Transactions"
+        },
+        "transactions": {
+            "title": "Transactions",
+            "desc": "Your account's payment information, transactions."
+        },
+        "subscriptions": {
+            "title": "Subscriptions"
+        }
+    },
+    "support": {
+        "page_title": "Support Center - Genyxo",
+        "title": "Support Requests",
+        "create_title": "Create new ticket",
+        "form_subject": "Subject",
+        "form_subject_placeholder": "e.g., Payment issue",
+        "form_message": "Message",
+        "form_message_placeholder": "Describe your problem...",
+        "submit_btn": "Submit Ticket",
+        "history_title": "Your History",
+        "loading": "Loading tickets...",
+        "no_tickets": "No tickets found.",
+        "created_at": "Created:",
+        "admin_reply": "Support Team Replied:",
+        "alert_created": "Ticket created!",
+        "alert_error": "Error creating ticket",
+        "alert_server": "Server error",
+        "label_priority": "Priority",
+        "priority_low": "Low",
+        "priority_medium": "Medium (Default)",
+        "priority_high": "High (Urgent)",
+        "toast_success": "Ticket created successfully!",
+        "toast_error": "Error creating ticket.",
+        "toast_server_error": "Server error. Please try again later."
+    }
+}

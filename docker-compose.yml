@@ -1,0 +1,221 @@
+name: genyxo-stack
+
+services:
+  # ==============================================================
+  # Nginx Reverse Proxy (SSL, HTTP/2, WebSockets, Rate Limiting)
+  # ==============================================================
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: genyxo-nginx:latest
+    container_name: genyxo-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - nginx_ssl:/etc/nginx/ssl
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      app:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - frontend_net
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # ==============================================================
+  # Frontend Service (Next.js 16 Standalone, React 19, Tailwind)
+  # ==============================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BACKEND_URL: http://app:3000
+        NEXT_PUBLIC_SOCKET_URL: /
+    image: genyxo-frontend:latest
+    container_name: genyxo-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+      - BACKEND_URL=http://app:3000
+      - NEXT_PUBLIC_SOCKET_URL=/
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend_net
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 512M
+        reservations:
+          cpus: "0.2"
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # ==============================================================
+  # Backend API Service (NestJS 11 Fastify + WebSockets + TypeORM)
+  # ==============================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: genyxo-backend:latest
+    container_name: genyxo-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MYSQLHOST=mysql
+      - MYSQLPORT=3306
+      - MYSQLDATABASE=${MYSQLDATABASE:-genyxo}
+      - MYSQLUSER=${MYSQLUSER:-genyxo_user}
+      - MYSQLPASSWORD=${MYSQLPASSWORD:-genyxo_secure_pass}
+      - REDISHOST=redis
+      - REDISPORT=6379
+      - REDISPASSWORD=${REDISPASSWORD:-redis_secure_pass}
+      - ALLOWED_ORIGINS=https://genyxo.com,http://localhost,http://localhost:3000,http://localhost:3001
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - frontend_net
+      - backend_net
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # ==============================================================
+  # Relational Database (MySQL 8.4 LTS)
+  # ==============================================================
+  mysql:
+    image: mysql:8.4
+    container_name: genyxo-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_super_secure_password}
+      MYSQL_DATABASE: ${MYSQLDATABASE:-genyxo}
+      MYSQL_USER: ${MYSQLUSER:-genyxo_user}
+      MYSQL_PASSWORD: ${MYSQLPASSWORD:-genyxo_secure_pass}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_connections=300
+      - --innodb_buffer_pool_size=512M
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend_net
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # ==============================================================
+  # In-Memory Cache & Session Store (Redis 7 Alpine)
+  # ==============================================================
+  redis:
+    image: redis:7-alpine
+    container_name: genyxo-redis
+    restart: unless-stopped
+    command: >
+      sh -c 'redis-server
+      --appendonly yes
+      --requirepass "$${REDISPASSWORD:-redis_secure_pass}"
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru'
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend_net
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDISPASSWORD:-redis_secure_pass}\" ping | grep PONG || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+# ==============================================================
+# Isolated Networks (Zero-Trust Architectural Boundary)
+# ==============================================================
+networks:
+  frontend_net:
+    driver: bridge
+  backend_net:
+    driver: bridge
+    internal: true
+
+# ==============================================================
+# Persistent Volumes
+# ==============================================================
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_ssl:
+    driver: local
+  nginx_logs:
+    driver: local

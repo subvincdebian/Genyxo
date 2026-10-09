@@ -1,0 +1,123 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: genyxo-ingress
+  namespace: genyxo
+  labels:
+    app.kubernetes.io/name: genyxo-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/websocket-services: "genyxo-backend-svc"
+    nginx.ingress.kubernetes.io/limit-rps: "30"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: SAMEORIGIN";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - genyxo.com
+        - www.genyxo.com
+      secretName: genyxo-tls-secret
+  rules:
+    - host: genyxo.com
+      http:
+        paths:
+          # Real-time WebSocket connection to NestJS
+          - path: /socket.io
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Backend APIs and Auth
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /chat
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /payment
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /profile
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /support
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /notifications
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Frontend UI and Pages
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-frontend-svc
+                port:
+                  number: 3001
+    - host: www.genyxo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-frontend-svc
+                port:
+                  number: 3001

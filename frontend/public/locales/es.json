@@ -1,0 +1,341 @@
+{
+    "nav": {
+        "home": "Inicio",
+        "products": "Productos",
+        "chat": "Chat",
+        "about": "Nosotros",
+        "login": "Registro / Iniciar sesión",
+        "profile": "Perfil",
+        "userload": "Cargando...",
+        "emailload": "cargando@gmail.com",
+        "profileupgrade": "Mejorar",
+        "back_home": "Volver al inicio",
+        "search_placeholder": "Buscar productos...",
+        "help_center": "Centro de ayuda",
+        "notifications": "Notificaciones",
+        "language": "Idioma",
+        "contact": "Contacto",
+        "logout": "Cerrar sesión"
+    },
+    "hero": {
+        "title": "Genyxo",
+        "main_title": "Prepárate para el futuro con - Genyxo",
+        "meta_description": "Obtén acceso premium a herramientas de IA, redes neuronales y servicios de redes sociales. Automatiza tu flujo de trabajo y desbloquea oportunidades ilimitadas con Genyxo IA.",
+        "subtitle": "Descubre un nuevo nivel con nuestro servicio: suscripciones a IA, redes sociales y más.",
+        "view_packages": "Ver paquetes",
+        "happy_customers": "Clientes felices",
+        "ai_models": "Diferentes modelos de IA",
+        "always_working": "Siempre activo"
+    },
+    "menu": {
+        "profile": "Perfil",
+        "notifications": "Notificaciones",
+        "help": "Centro de ayuda",
+        "language": "Idioma",
+        "contact": "Contacto",
+        "logout": "Cerrar sesión",
+        "plan_free": "Gratis",
+        "details_title": "Detalles",
+        "meta_info": "Gratis | 0 Créditos | $0.0/mes"
+    },
+    "products_data": {
+        "1": {
+            "name": "Start AI",
+            "credits_label": "500 créditos",
+            "features": [
+                "Acceso a modelos básicos de IA",
+                "Soporte estándar",
+                "Validez de por vida"
+            ]
+        },
+        "2": {
+            "name": "AI Explorer",
+            "credits_label": "1,000 créditos",
+            "features": [
+                "Acceso a modelos avanzados de IA",
+                "Soporte prioritario",
+                "Validez de por vida"
+            ]
+        },
+        "3": {
+            "name": "Pro Creator",
+            "credits_label": "2,000 créditos",
+            "features": [
+                "Todos los modelos de IA incluidos",
+                "Soporte VIP",
+                "Validez de por vida"
+            ]
+        },
+        "4": {
+            "name": "AI Master",
+            "credits_label": "5,000 créditos",
+            "features": [
+                "Todos los modelos de IA",
+                "Soporte Premium 24/7",
+                "Validez de por vida"
+            ]
+        },
+        "5": {
+            "name": "Unlimited Power",
+            "credits_label": "10,000 créditos",
+            "features": [
+                "Todas las características",
+                "Gerente de soporte dedicado",
+                "Validez de por vida"
+            ]
+        },
+        "6": {
+            "name": "AI Titan",
+            "credits": "25,000 créditos",
+            "features": [
+                "Todo ilimitado",
+                "Opciones de marca blanca",
+                "Validez de por vida"
+            ]
+        },
+        "products_title": "Paquetes de suscripción",
+        "buy_now": "Comprar ahora"
+    },
+    "about_section": {
+        "title": "Sobre nosotros",
+        "text_1": "Ofrecemos acceso fluido a las herramientas digitales más importantes de hoy, desde servicios de IA de vanguardia hasta plataformas creativas, funciones sociales premium y aplicaciones de productividad.",
+        "text_2": "Nuestra misión es empoderar a creadores, emprendedores y usuarios cotidianos dándoles un acceso más inteligente, rápido y rentable a los servicios digitales de los que dependen.",
+        "text_3": "Con nosotros, ahorras tiempo y dinero, reduces complicaciones y desbloqueas más posibilidades con cada suscripción.",
+        "feat_1_title": "Diseños personalizados",
+        "feat_1_desc": "Puedes crear imágenes personalizadas",
+        "feat_2_title": "Acreditación rápida",
+        "feat_2_desc": "Respuesta instantánea",
+        "feat_3_title": "Calidad premium",
+        "feat_3_desc": "Solo de fuentes oficiales"
+    },
+    "footer": {
+        "desc_1": "Acceso manual a los últimos modelos de IA en un solo lugar.",
+        "desc_2": "Rápido, transparente, sin pagos excesivos.",
+        "links_title": "Enlaces",
+        "shipping": "Información de envío",
+        "contact_title": "Información de contacto",
+        "rights": "© 2025 Genyxo. Todos los derechos reservados."
+    },
+    "auth": {
+        "login_title": "Iniciar sesión / Registrarse",
+        "email_placeholder": "Dirección de correo electrónico",
+        "password_placeholder": "Contraseña",
+        "confirm_password_placeholder": "Confirmar contraseña",
+        "name_placeholder": "Nombre completo",
+        "remember_me": "Recuérdame",
+        "forgot_pass": "¿Olvidaste tu contraseña?",
+        "login_btn": "Iniciar sesión",
+        "signup_btn": "Crear cuenta",
+        "no_account": "¿No tienes una cuenta?",
+        "has_account": "¿Ya tienes una cuenta?",
+        "link_signup": "Registrarse",
+        "link_login": "Iniciar sesión",
+        "logout_msg": "Cerrar sesión de la cuenta"
+    },
+    "toasts": {
+        "payment_success": "¡Pago exitoso! Créditos añadidos.",
+        "payment_cancel": "Pago cancelado.",
+        "welcome": "¡Bienvenido de nuevo!",
+        "login_error": "Credenciales incorrectas",
+        "server_error": "Conexión con el servidor fallida.",
+        "account_created": "¡Cuenta creada exitosamente!",
+        "reg_failed": "Registro fallido",
+        "pass_mismatch": "Error: ¡Las contraseñas no coinciden!",
+        "marked_all_success": "Todas las notificaciones marcadas como leídas.",
+        "mark_all_fail": "Error al marcar las notificaciones."
+    },
+    "order": {
+        "title": "Pago seguro",
+        "badge": "Cifrado",
+        "packname": "Paquete IA",
+        "packdesc": "Entrega instantánea • Validez de por vida",
+        "price": "Precio",
+        "fee_title": "Tarifa de procesamiento",
+        "fee_desc": "Cubierta por nosotros",
+        "total": "Total a pagar",
+        "method": "Aceptamos:",
+        "button": "Proceder al pago",
+        "footer": "Impulsado por . Serás redirigido para completar el pago seguro."
+    },
+    "language": {
+        "select": "Seleccionar idioma"
+    },
+    "admin": {
+        "meta_title": "Panel de Administración - Genyxo",
+        "nav_title": "Panel de Admin",
+        "system_mgmt": "Gestión del sistema",
+        "users_title": "Usuarios",
+        "transactions_title": "Transacciones",
+        "tickets_title": "Tickets de soporte",
+        "refresh": "Actualizar",
+        "table": {
+            "id": "ID",
+            "email": "Correo",
+            "name": "Nombre",
+            "role": "Rol",
+            "credits": "Créditos",
+            "action": "Acción",
+            "user": "Usuario",
+            "amount": "Monto ($)",
+            "status": "Estado",
+            "method": "Método",
+            "date": "Fecha",
+            "subject": "Asunto"
+        },
+        "modal": {
+            "reply_title": "Responder al Ticket #",
+            "user_msg": "Mensaje del usuario:",
+            "your_reply": "Tu respuesta:",
+            "placeholder": "Ingresa tu respuesta aquí...",
+            "cancel": "Cancelar",
+            "send": "Enviar respuesta",
+            "select_lang": "Seleccionar idioma"
+        },
+        "js": {
+            "add_credits_btn": "+ Créditos",
+            "no_users": "No se encontraron usuarios",
+            "no_transactions": "No se encontraron transacciones",
+            "no_tickets": "No se encontraron tickets",
+            "confirm_approve": "¿Estás seguro de que quieres APROBAR esta transacción?",
+            "confirm_decline": "¿Estás seguro de que quieres RECHAZAR esta transacción?",
+            "prompt_credits": "¿Cuántos créditos agregar?",
+            "done": "Hecho",
+            "view_reply": "Ver y Responder",
+            "empty_reply": "Por favor ingresa una respuesta antes de enviar.",
+            "error_server": "Error al conectar con el servidor.",
+            "error_failed": "Fallido",
+            "access_denied": "Acceso denegado o error del servidor",
+            "unknown_user": "Usuario desconocido",
+            "no_subject": "Sin asunto"
+        }
+    },
+    "chat": {
+        "meta_title": "Sala de chat - Genyxo",
+        "meta_description": "Interactúa con múltiples IAs usando Genyxo AI. Obtén ayuda con codificación, escritura y análisis de datos en tiempo real.",
+        "chat_title": "Chat IA",
+        "balance": "Saldo:",
+        "credits": "Créditos",
+        "model_select_label": "Seleccionar modelo de IA:",
+        "input_placeholder": "Pregúntame lo que sea...",
+        "send_button": "Enviar",
+        "system_msg_placeholder": "¡Hola! Soy tu asistente de IA. Elige un modelo o simplemente escríbeme algo y ¡empecemos! 🚀",
+        "system_msg_no_history": "No se encontró historial. ¡Inicia una nueva conversación!",
+        "system_msg_error": "Error al cargar el historial de chat o datos del usuario.",
+        "model_default": "Modelo Predeterminado (GPT-3.5/Llama)",
+        "model_advanced": "Modelo Avanzado (GPT-4/Claude)",
+        "model_fast": "Modelo Rápido (Mistral/Gemini Flash)",
+        "model_creative": "Modelo Creativo (DALL-E/Midjourney Texto)"
+    },
+    "notifications": {
+        "meta_title": "Notificaciones - Genyxo",
+        "meta_description": "Mantente actualizado con Genyxo. Rastrea tus tickets de soporte, cambios de suscripción y notificaciones de servicios de IA en un solo lugar.",
+        "center_title": "Centro de Notificaciones",
+        "header_title": "Tus Notificaciones",
+        "mark_all_btn": "Marcar todo como leído",
+        "loading": "Cargando notificaciones...",
+        "empty_state": "Aún no hay notificaciones.",
+        "error_loading": "Error al cargar datos",
+        "confirm_read_all": "¿Marcar todo como leído?",
+        "plan_free": "Gratis",
+        "plan_meta": "Gratis | 0 Créditos | $0.0/mes",
+        "time_format": "es-ES"
+    },
+    "profile": {
+        "title": "Configuración de la cuenta y perfil - Genyxo",
+        "description": "Gestiona la configuración de tu cuenta Genyxo, seguridad e información de pago en un solo lugar.",
+        "change_avatar": "Cambiar avatar",
+        "view_profile": "Ver perfil",
+        "sidebar": {
+            "home": "Inicio",
+            "security": "Contraseña y seguridad",
+            "payment": "Configuración de pagos",
+            "transactions": "Transacciones",
+            "subscriptions": "Suscripciones",
+            "groups": "Sesiones grupales"
+        },
+        "main_title": "Gestionar cuenta",
+        "tabs": {
+            "general": "General",
+            "notification": "Notificación",
+            "availability": "Disponibilidad",
+            "security": "Seguridad",
+            "connected": "Cuentas conectadas",
+            "billing": "Facturación"
+        },
+        "general": {
+            "title": "Información básica",
+            "subtitle": "Edita tu información de perfil",
+            "label_name": "Nombre completo",
+            "label_email": "Correo electrónico",
+            "label_location": "Ubicación",
+            "placeholder_name": "Juan Pérez",
+            "placeholder_email": "tu@email.com",
+            "placeholder_location": "Ciudad, País",
+            "save_btn": "Guardar cambios"
+        },
+        "security": {
+            "title": "Contraseña y Seguridad",
+            "change_pwd_title": "Cambiar contraseña",
+            "change_pwd_desc": "Para tu seguridad, recomendamos crear una contraseña única que no uses en ninguna otra cuenta.",
+            "change_pwd_btn": "Cambiar contraseña",
+            "logout_all_title": "Cerrar sesión en todos los dispositivos",
+            "logout_all_desc": "Cierra sesión en cualquier lugar donde uses tu cuenta, incluidos navegadores, teléfonos, consolas y otros dispositivos, excepto esta página.",
+            "logout_all_btn": "Cerrar sesión en todos los dispositivos",
+            "modal": {
+                "title": "Cambiar contraseña",
+                "subtitle": "Ingresa tu contraseña actual y elige una nueva contraseña segura.",
+                "label_current": "Contraseña actual",
+                "label_new": "Nueva contraseña",
+                "label_confirm": "Confirmar nueva contraseña",
+                "placeholder_new": "Nueva contraseña",
+                "placeholder_confirm": "Confirmar contraseña",
+                "btn_save": "Guardar",
+                "btn_cancel": "Cancelar",
+                "success": "Contraseña cambiada exitosamente.",
+                "network_error": "Error de red. Inténtalo de nuevo."
+            }
+        },
+        "payment": {
+            "title": "Configuración de Pagos",
+            "desc": "Administra el saldo de tu cuenta, transacciones y métodos de pago.",
+            "privacy_link": "Ver política de privacidad.",
+            "balance_title": "Saldo de cuenta",
+            "balance_desc": "Usa el saldo de tu cuenta para comprar paquetes de IA o usar suscripciones. El saldo no es reembolsable.",
+            "terms_link": "Ver términos",
+            "balance_label": "Saldo",
+            "view_transactions_link": "Ver Transacciones"
+        },
+        "transactions": {
+            "title": "Transacciones",
+            "desc": "Información de pago y transacciones de tu cuenta."
+        },
+        "subscriptions": {
+            "title": "Suscripciones"
+        }
+    },
+    "support": {
+        "page_title": "Centro de Soporte - Genyxo",
+        "title": "Solicitudes de Soporte",
+        "create_title": "Crear nuevo ticket",
+        "form_subject": "Asunto",
+        "form_subject_placeholder": "ej., Problema de pago",
+        "form_message": "Mensaje",
+        "form_message_placeholder": "Describe tu problema...",
+        "submit_btn": "Enviar Ticket",
+        "history_title": "Tu Historial",
+        "loading": "Cargando tickets...",
+        "no_tickets": "No se encontraron tickets.",
+        "created_at": "Creado:",
+        "admin_reply": "El equipo de soporte respondió:",
+        "alert_created": "¡Ticket creado!",
+        "alert_error": "Error al crear el ticket",
+        "alert_server": "Error del servidor",
+        "label_priority": "Prioridad",
+        "priority_low": "Baja",
+        "priority_medium": "Media (Predeterminada)",
+        "priority_high": "Alta (Urgente)",
+        "toast_success": "¡Ticket creado exitosamente!",
+        "toast_error": "Error al crear el ticket.",
+        "toast_server_error": "Error del servidor. Inténtalo más tarde."
+    }
+}

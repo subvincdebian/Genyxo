@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "genyxo.fullname" . }}-config
+  labels:
+    {{- include "genyxo.labels" . | nindent 4 }}
+data:
+  NODE_ENV: "production"
+  PORT: "{{ .Values.backend.service.port }}"
+  SITE_URL: "{{ .Values.config.SITE_URL }}"
+  ALLOWED_ORIGINS: "{{ .Values.config.ALLOWED_ORIGINS }}"
+  MYSQLHOST: "{{ .Values.config.MYSQLHOST }}"
+  MYSQLPORT: "{{ .Values.config.MYSQLPORT }}"
+  MYSQLDATABASE: "{{ .Values.config.MYSQLDATABASE }}"
+  REDISHOST: "{{ .Values.config.REDISHOST }}"
+  REDISPORT: "{{ .Values.config.REDISPORT }}"
+  DB_LOGGING: "false"
+  UV_THREADPOOL_SIZE: "64"

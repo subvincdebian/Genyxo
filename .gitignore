@@ -1,7 +1,7 @@
 # compiled output
-/dist
-/node_modules
-/build
+dist/
+node_modules/
+build/
 
 # Logs
 logs
@@ -55,3 +55,21 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+/frontend/.next/
+/frontend/test-results/
+/frontend/playwright-report/
+/frontend/*.tsbuildinfo
+
+# SSL certificates and secrets
+nginx/ssl/*.pem
+nginx/ssl/*.crt
+nginx/ssl/*.key
+!nginx/ssl/.gitkeep
+
+# Environment files
+.env.*
+!.env.example
+frontend/.env*
+!frontend/.env.example
+

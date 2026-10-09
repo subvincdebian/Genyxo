@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json --forceExit"
+    "test:e2e": "jest --config ./test/jest-e2e.json --forceExit",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:check": "npm --prefix frontend run typecheck && npm --prefix frontend run lint"
   },
   "overrides": {
     "fast-xml-parser": "5.3.4",

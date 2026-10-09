@@ -1,0 +1,123 @@
+name: genyxo-dev-stack
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: genyxo-backend-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/dist
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MYSQLHOST=mysql
+      - MYSQLPORT=3306
+      - MYSQLDATABASE=genyxo
+      - MYSQLUSER=root
+      - MYSQLPASSWORD=root_password
+      - REDISHOST=redis
+      - REDISPORT=6379
+      - REDISPASSWORD=redis_password
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dev_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: genyxo-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+      - BACKEND_URL=http://app:3000
+      - NEXT_PUBLIC_SOCKET_URL=http://localhost:3000
+    depends_on:
+      - app
+    networks:
+      - dev_net
+
+  mysql:
+    image: mysql:8.4
+    container_name: genyxo-mysql-dev
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: genyxo
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    networks:
+      - dev_net
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -proot_password || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  redis:
+    image: redis:7-alpine
+    container_name: genyxo-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass redis_password
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - dev_net
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a redis_password ping | grep PONG || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # Visual Redis Browser for Developers
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: genyxo-redis-commander
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:redis_password
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - dev_net
+
+networks:
+  dev_net:
+    driver: bridge
+
+volumes:
+  mysql_dev_data:
+  redis_dev_data:

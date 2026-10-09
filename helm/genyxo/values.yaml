@@ -1,0 +1,146 @@
+# ==============================================================
+# Default Values for Genyxo Helm Chart
+# ==============================================================
+
+global:
+  environment: production
+  domain: genyxo.com
+
+# Backend (NestJS Fastify) Configuration
+backend:
+  replicaCount: 3
+  image:
+    repository: ghcr.io/ayateagh/genyxo-backend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 768Mi
+    requests:
+      cpu: 150m
+      memory: 256Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+# Frontend (Next.js 16) Configuration
+frontend:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/ayateagh/genyxo-frontend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 3001
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 80
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/websocket-services: "genyxo-backend-svc"
+    nginx.ingress.kubernetes.io/limit-rps: "30"
+  hosts:
+    - host: genyxo.com
+      paths:
+        - path: /socket.io
+          pathType: Prefix
+          service: backend
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /auth
+          pathType: Prefix
+          service: backend
+        - path: /chat
+          pathType: Prefix
+          service: backend
+        - path: /payment
+          pathType: Prefix
+          service: backend
+        - path: /profile
+          pathType: Prefix
+          service: backend
+        - path: /admin
+          pathType: Prefix
+          service: backend
+        - path: /support
+          pathType: Prefix
+          service: backend
+        - path: /notifications
+          pathType: Prefix
+          service: backend
+        - path: /health
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+    - host: www.genyxo.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls:
+    - secretName: genyxo-tls-secret
+      hosts:
+        - genyxo.com
+        - www.genyxo.com
+
+# Non-sensitive configuration
+config:
+  SITE_URL: "https://genyxo.com"
+  ALLOWED_ORIGINS: "https://genyxo.com,http://localhost:3000,http://localhost:3001"
+  MYSQLHOST: "genyxo-mysql-svc"
+  MYSQLPORT: "3306"
+  MYSQLDATABASE: "genyxo"
+  REDISHOST: "genyxo-redis-svc"
+  REDISPORT: "6379"
+
+# Sensitive secrets (Set in production via external Secret or --set secrets.XXX)
+secrets:
+  JWT_SECRET: "change_me_jwt_secret"
+  WEBHOOK_SECRET: "change_me_webhook_secret"
+  MYSQLUSER: "genyxo_user"
+  MYSQLPASSWORD: "change_me_mysql_pass"
+  MYSQL_ROOT_PASSWORD: "change_me_root_pass"
+  REDISPASSWORD: "change_me_redis_pass"
+  OPENAI_API_KEY: ""
+  FAL_KEY: ""
+  OPENROUTER_API_KEY: ""
+  GOOGLE_API_KEY: ""
+  ZOHO_APP_PASSWORD: ""
+  NOWPAYMENTS_API_KEY: ""
+  NOWPAYMENTS_IPN_SECRET: ""

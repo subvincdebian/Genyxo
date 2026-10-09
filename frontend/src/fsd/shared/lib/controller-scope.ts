@@ -1,0 +1,124 @@
+/** Owns the lifetime of imperative browser integrations mounted by React. */
+export type PageAction = (this: Element, event: Event) => unknown;
+
+export class ControllerScope {
+  private cleanups: Array<() => void> = [];
+  private callbacks: Array<() => unknown> = [];
+  private actions = new Map<string, PageAction>();
+  private disposed = false;
+  private isReady = false;
+  private abort = new AbortController();
+  readonly context: Record<string, unknown> = {};
+  readonly document: Document;
+  readonly window: Window & typeof globalThis;
+
+  constructor() {
+    this.document = new Proxy(document, {
+      get: (target, key) => {
+        if (key === 'addEventListener') return (type: string, callback: EventListener, options?: AddEventListenerOptions) => {
+          if (type === 'DOMContentLoaded') this.onReady(() => callback.call(document, new Event(type)));
+          else this.listen(target, type, callback, options);
+        };
+        const value = Reflect.get(target, key, target);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    this.window = new Proxy(window, {
+      get: (target, key) => {
+        if (key === 'addEventListener') return (type: string, callback: EventListener, options?: AddEventListenerOptions) => {
+          if (type === 'load' || type === 'DOMContentLoaded') this.onReady(() => callback.call(window, new Event(type)));
+          else this.listen(target, type, callback, options);
+        };
+        const value = Reflect.get(target, key, target);
+        return typeof value === 'function' && !String(key).match(/^[A-Z]/) ? value.bind(target) : value;
+      },
+      set: (_target, key, value) => {
+        if (key === 'onload') this.onReady(() => value.call(window, new Event('load')));
+        else this.expose(String(key), value);
+        return true;
+      },
+    });
+    const bodyStyle = document.body.getAttribute('style');
+    const htmlStyle = document.documentElement.getAttribute('style');
+    this.cleanup(() => {
+      if (bodyStyle === null) document.body.removeAttribute('style');
+      else document.body.setAttribute('style', bodyStyle);
+      if (htmlStyle === null) document.documentElement.removeAttribute('style');
+      else document.documentElement.setAttribute('style', htmlStyle);
+    });
+  }
+
+  cleanup(callback: () => void) { this.cleanups.push(callback); }
+  onReady(callback: () => unknown) {
+    if (this.isReady && !this.disposed) callback();
+    else this.callbacks.push(callback);
+  }
+  ready() {
+    if (this.disposed || this.isReady) return;
+    this.isReady = true;
+    for (const callback of this.callbacks.splice(0)) callback();
+  }
+  listen(target: EventTarget, type: string, callback: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) {
+    target.addEventListener(type, callback, options);
+    this.cleanup(() => target.removeEventListener(type, callback, options));
+  }
+  register(name: string, handler: PageAction) { this.actions.set(name, handler); }
+  invoke(name: string, event: Event, element: Element) {
+    if (this.disposed) return;
+    const result = this.actions.get(name)?.call(element, event);
+    if (result === false) event.preventDefault();
+    return result;
+  }
+  expose(name: string, value: unknown) {
+    const previous = Object.getOwnPropertyDescriptor(window, name);
+    if (previous && !previous.configurable) {
+      if (previous.writable) Reflect.set(window, name, value);
+      return;
+    }
+    Object.defineProperty(window, name, { configurable: true, writable: true, value });
+    this.cleanup(() => {
+      if (Reflect.get(window, name) !== value) return;
+      if (previous) Object.defineProperty(window, name, previous);
+      else Reflect.deleteProperty(window, name);
+    });
+  }
+  fetch = (input: RequestInfo | URL, init?: RequestInit) => fetch(input, {
+    ...init,
+    signal: init?.signal ? AbortSignal.any([init.signal, this.abort.signal]) : this.abort.signal,
+  });
+  setTimeout = (callback: () => void, delay?: number) => {
+    const id = window.setTimeout(() => { if (!this.disposed) callback(); }, delay);
+    this.cleanup(() => window.clearTimeout(id));
+    return id;
+  };
+  setInterval = (callback: () => void, delay?: number) => {
+    const id = window.setInterval(() => { if (!this.disposed) callback(); }, delay);
+    this.cleanup(() => window.clearInterval(id));
+    return id;
+  };
+  requestAnimationFrame = (callback: FrameRequestCallback) => {
+    const id = window.requestAnimationFrame(time => { if (!this.disposed) callback(time); });
+    this.cleanup(() => window.cancelAnimationFrame(id));
+    return id;
+  };
+  createIntersectionObserver(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    const observer = new IntersectionObserver(callback, options);
+    this.cleanup(() => observer.disconnect());
+    return observer;
+  }
+  createResizeObserver(callback: ResizeObserverCallback) {
+    const observer = new ResizeObserver(callback);
+    this.cleanup(() => observer.disconnect());
+    return observer;
+  }  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.abort.abort();
+    for (const callback of this.cleanups.reverse()) callback();
+    this.cleanups = [];
+    this.callbacks = [];
+    this.actions.clear();
+  }
+}
+
+

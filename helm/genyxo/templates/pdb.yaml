@@ -1,0 +1,29 @@
+{{- if .Values.backend.pdb.enabled -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "genyxo.fullname" . }}-backend-pdb
+  labels:
+    {{- include "genyxo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  minAvailable: {{ .Values.backend.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "genyxo.name" . }}-backend
+{{- end }}
+---
+{{- if .Values.frontend.pdb.enabled -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "genyxo.fullname" . }}-frontend-pdb
+  labels:
+    {{- include "genyxo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  minAvailable: {{ .Values.frontend.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "genyxo.name" . }}-frontend
+{{- end }}

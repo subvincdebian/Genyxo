@@ -1,0 +1,257 @@
+
+        body {
+            padding-top: 0;
+            display: block;
+            background-color: #0a0a0a;
+        }
+        
+        .admin-container { max-width: 1400px; margin: 100px auto; padding: 20px; }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: rgba(0,0,0,0.3);
+            table-layout: fixed;
+        }
+        .data-table th, .data-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+            color: var(--text-gray);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .data-table th { color: var(--text-light); background: rgba(255,255,255,0.1); font-weight: 600; }
+        
+        .col-id { width: 60px; }
+        .col-email { width: 220px; }
+        .col-name { width: 180px; }
+        .col-status { width: 110px; }
+        .col-date { width: 160px; }
+        .col-action { width: 140px; text-align: right; }
+        .col-credits { width: 100px; }
+        .col-subject { width: auto; }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .badge-success { background: #2ecc71; color: black; }
+        .badge-pending { background: #f1c40f; color: black; }
+        .badge-admin { background: #e74c3c; color: white; }
+
+        .admin-section {
+            margin-bottom: 20px;
+        }
+
+        .admin-section h2 {
+            margin-bottom: 20px;
+            border-left: 4px solid #1dd1a1;
+            padding-left: 15px;
+        }
+
+        code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            background: var(--text-light);
+            color: black;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+            min-width: 70px;
+            text-align: center;
+        }
+        .status-open { background-color: #f39c12; color: #fff; }
+        .status-in_progress { background-color: #3498db; color: #fff; }
+        .status-closed { background-color: #2ecc71; color: #fff; }
+
+        .status-spent { color: #ff9f43; font-weight: bold; }
+        .status-refund { color: #48dbfb; font-weight: bold; }
+        .status-approved { color: #1dd1a1; font-weight: bold; }
+
+        .priority-low { background-color: #34495e; color: #fff; }
+        .priority-medium { background-color: #f1c40f; color: #111; }
+        .priority-high { background-color: #e74c3c; color: #fff; }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .pagination-controls button {
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .pagination-controls button:disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .spin { animation: genyxo-spin 1s linear infinite; }
+        @keyframes genyxo-spin { 100% { transform: rotate(360deg); } }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        .user-message-box {
+            background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;
+            max-height: 200px; overflow-y: auto; white-space: pre-wrap;
+            border: 1px solid rgba(255, 255, 255, 0.1); color: #ddd; font-size: 0.95rem;
+        }
+        .primary-btn { background: #10e6cc; color: black; border: none; }
+        
+        .navbar {
+            padding: 0.8rem 2rem;
+            height: 80px;
+        }
+        
+        .nav-link { margin-right: 0; }
+
+        @media (max-width: 900px) {
+            .admin-container {
+                padding: 15px;
+                margin-top: 80px;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .section-header button {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+            }
+
+            .data-table, 
+            .data-table thead, 
+            .data-table tbody, 
+            .data-table th, 
+            .data-table td, 
+            .data-table tr { 
+                display: block; 
+            }
+
+            .data-table thead tr { 
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            .data-table tr { 
+                margin-bottom: 20px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                padding: 15px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+
+            .data-table td { 
+                border: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+                position: relative;
+                padding-left: 0;
+                padding-right: 0;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right;
+                color: var(--text-light);
+                font-size: 0.95rem;
+                white-space: normal;
+                overflow: visible;
+            }
+
+            .data-table td:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-top: 10px;
+                display: block;
+            }
+
+            .data-table td::before { 
+                content: attr(data-label);
+                font-weight: 700;
+                color: var(--text-gray);
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                margin-right: 20px;
+                text-align: left;
+                min-width: 80px;
+            }
+
+            .data-table td:first-child {
+                background: rgba(255,255,255,0.02);
+                margin: -15px -15px 10px -15px;
+                padding: 10px 15px;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                border-radius: 12px 12px 0 0;
+                font-family: 'Inter Tight', sans-serif;
+                font-weight: bold;
+                color: #10e6cc;
+            }
+
+            .col-action button {
+                width: 100%;
+                margin-top: 5px;
+                padding: 12px;
+                font-size: 1rem;
+            }
+            
+            .col-action div {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .pagination-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .pagination-controls button {
+                width: 100%;
+                padding: 12px;
+            }
+        }
+    
