@@ -64,7 +64,9 @@ export class RedisCacheService {
         await this.redis.del(...keys);
       }
     } catch (err: any) {
-      this.logger.warn(`Redis DEL error for keys "${keys.join(", ")}": ${err.message}`);
+      this.logger.warn(
+        `Redis DEL error for keys "${keys.join(", ")}": ${err.message}`,
+      );
     }
   }
 
@@ -73,7 +75,9 @@ export class RedisCacheService {
       const res = await this.redis.get(`user_balance:${userId}`);
       return res ? parseFloat(res) : null;
     } catch (err: any) {
-      this.logger.warn(`Redis getBalance error for user ${userId}: ${err.message}`);
+      this.logger.warn(
+        `Redis getBalance error for user ${userId}: ${err.message}`,
+      );
       return null;
     }
   }
@@ -87,7 +91,9 @@ export class RedisCacheService {
         3600,
       );
     } catch (err: any) {
-      this.logger.warn(`Redis setBalance error for user ${userId}: ${err.message}`);
+      this.logger.warn(
+        `Redis setBalance error for user ${userId}: ${err.message}`,
+      );
     }
   }
 
@@ -100,7 +106,9 @@ export class RedisCacheService {
         `affiliate_stats:${userId}`,
       );
     } catch (err: any) {
-      this.logger.warn(`Redis invalidate error for user ${userId}: ${err.message}`);
+      this.logger.warn(
+        `Redis invalidate error for user ${userId}: ${err.message}`,
+      );
     }
   }
 }

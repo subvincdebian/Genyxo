@@ -59,7 +59,9 @@ describe("HealthController", () => {
     });
 
     it("should throw 503 when database fails", async () => {
-      mockDataSource.query.mockRejectedValueOnce(new Error("DB Connection lost"));
+      mockDataSource.query.mockRejectedValueOnce(
+        new Error("DB Connection lost"),
+      );
       await expect(controller.checkReadiness()).rejects.toThrow();
     });
 

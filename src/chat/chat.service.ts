@@ -323,7 +323,11 @@ export class ChatService {
       (normalizedFiles.length > 0
         ? `Sent ${normalizedFiles.length} file(s)`
         : "New Chat");
-    const conversation = await this.getOrCreateConversation(userId, conversationId, displayTitle);
+    const conversation = await this.getOrCreateConversation(
+      userId,
+      conversationId,
+      displayTitle,
+    );
 
     if (modelConfig.type === ModelType.VIDEO) {
       const prompt = text || "Generate video based on provided source asset";
@@ -404,13 +408,7 @@ export class ChatService {
 
       const aiResponse = await this.getAiResponse(dbMessages, model);
       const [botMsg, , creditsLeft] = await Promise.all([
-        this.saveMessage(
-          conversation,
-          aiResponse.reply,
-          "bot",
-          model,
-          userId,
-        ),
+        this.saveMessage(conversation, aiResponse.reply, "bot", model, userId),
         cost > 0
           ? this.usersService.logTransaction(
               userId,
@@ -454,7 +452,7 @@ export class ChatService {
         (normalizedFiles.length > 0
           ? `Sent ${normalizedFiles.length} file(s)`
           : "New Chat");
-      let conversation = await this.getOrCreateConversation(
+      const conversation = await this.getOrCreateConversation(
         userId,
         conversationId,
         displayTitle,
@@ -519,7 +517,7 @@ export class ChatService {
           const role = m.sender === "bot" ? "model" : "user";
           const isLastMessage = m.id === dbMessages[dbMessages.length - 1].id;
 
-          let textPart = m.content ? { text: m.content } : { text: " " };
+          const textPart = m.content ? { text: m.content } : { text: " " };
           const parts: any[] = [textPart];
 
           if (isLastMessage && m.files && m.files.length > 0) {
@@ -645,13 +643,7 @@ export class ChatService {
       }
 
       const [savedMsg, , creditBalance] = await Promise.all([
-        this.saveMessage(
-          conversation,
-          fullReply,
-          "bot",
-          model,
-          userId,
-        ),
+        this.saveMessage(conversation, fullReply, "bot", model, userId),
         this.usersService.logTransaction(
           userId,
           -cost,
@@ -703,10 +695,7 @@ export class ChatService {
   }
 
   async updateVideoUrl(requestId: string, videoUrl: string) {
-    await this.messageRepository.update(
-      { requestId },
-      { content: videoUrl },
-    );
+    await this.messageRepository.update({ requestId }, { content: videoUrl });
   }
 
   async getAiResponse(dbMessages: Message[], model: string) {

@@ -41,12 +41,10 @@ export class ThrottlerStorageRedisService implements ThrottlerStorage {
   ): Promise<ThrottlerStorageRecord> {
     let results: [number, number];
     try {
-      results = (await this.redis.evalsha(
-        SCRIPT_SHA,
-        1,
-        key,
-        ttl,
-      )) as [number, number];
+      results = (await this.redis.evalsha(SCRIPT_SHA, 1, key, ttl)) as [
+        number,
+        number,
+      ];
     } catch (err: any) {
       if (err?.message?.includes("NOSCRIPT")) {
         results = (await this.redis.eval(

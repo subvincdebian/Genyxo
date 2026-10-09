@@ -17,7 +17,10 @@ describe("PaymentService", () => {
         { provide: getRepositoryToken(Transaction), useValue: {} },
         { provide: UsersService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
-        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue("test-val") } },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn().mockReturnValue("test-val") },
+        },
       ],
     }).compile();
 

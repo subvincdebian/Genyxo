@@ -1,8 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NestFastifyApplication, FastifyAdapter } from '@nestjs/platform-fastify';
-import { AppModule } from '../src/app.module';
+import { Test, TestingModule } from "@nestjs/testing";
+import {
+  NestFastifyApplication,
+  FastifyAdapter,
+} from "@nestjs/platform-fastify";
+import { AppModule } from "../src/app.module";
 
-describe('AppController (e2e)', () => {
+describe("AppController (e2e)", () => {
   let app: NestFastifyApplication;
 
   beforeAll(async () => {
@@ -11,7 +14,9 @@ describe('AppController (e2e)', () => {
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    app = moduleFixture.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter(),
+    );
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
   });
@@ -22,7 +27,7 @@ describe('AppController (e2e)', () => {
     }
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(app).toBeDefined();
   });
 });

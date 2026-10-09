@@ -74,7 +74,10 @@ export class NotificationsService {
   }
 
   async markAsRead(id: number, userId: number) {
-    const result = await this.repo.update({ id, userId, isRead: false }, { isRead: true });
+    const result = await this.repo.update(
+      { id, userId, isRead: false },
+      { isRead: true },
+    );
     const cacheKey = `unread_count:${userId}`;
     if ((result.affected ?? 0) > 0) {
       const cached = await this.redisCache.get<number>(cacheKey);

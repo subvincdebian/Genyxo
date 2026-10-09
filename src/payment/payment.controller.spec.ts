@@ -9,9 +9,7 @@ describe("PaymentController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PaymentController],
-      providers: [
-        { provide: PaymentService, useValue: {} },
-      ],
+      providers: [{ provide: PaymentService, useValue: {} }],
     }).compile();
 
     controller = module.get<PaymentController>(PaymentController);
