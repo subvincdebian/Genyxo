@@ -5,11 +5,6 @@ const bundleAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-const backend = (
-  process.env.BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "http://127.0.0.1:3000"
-).replace(/\/$/, "");
 const legacyPages = [
   "chat",
   "profile",
@@ -23,7 +18,6 @@ const config: NextConfig = {
   outputFileTracingRoot: import.meta.dirname,
   poweredByHeader: false,
   compress: false,
-  experimental: { proxyTimeout: 120_000 },
   async headers() {
     return [
       {
@@ -59,9 +53,9 @@ const config: NextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
               "img-src 'self' data: blob: https:",
-              "font-src 'self' data: https://fonts.gstatic.com",
+              "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
               "connect-src 'self' ws: wss: http: https:",
               "frame-ancestors 'none'",
               "base-uri 'self'",
@@ -93,8 +87,6 @@ const config: NextConfig = {
           source: "/are-you-sure-you-want-to-admin/panel",
           destination: "/admin",
         },
-        { source: "/api/:path*", destination: `${backend}/:path*` },
-        { source: "/auth/:path*", destination: `${backend}/auth/:path*` },
       ],
       afterFiles: [],
       fallback: [],

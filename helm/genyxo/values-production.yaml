@@ -107,34 +107,22 @@ ingress:
   hosts:
     - host: genyxo.com
       paths:
-        - path: /socket.io
-          pathType: Prefix
+        - path: /chat/webhook/video
+          pathType: Exact
           service: backend
-        - path: /api
+        - path: /docs-json
+          pathType: Exact
+          service: backend
+        - path: /docs-yaml
+          pathType: Exact
+          service: backend
+        - path: /socket.io
           pathType: Prefix
           service: backend
         - path: /v1
           pathType: Prefix
           service: backend
-        - path: /auth
-          pathType: Prefix
-          service: backend
-        - path: /chat
-          pathType: Prefix
-          service: backend
         - path: /payment
-          pathType: Prefix
-          service: backend
-        - path: /profile
-          pathType: Prefix
-          service: backend
-        - path: /admin
-          pathType: Prefix
-          service: backend
-        - path: /support
-          pathType: Prefix
-          service: backend
-        - path: /notifications
           pathType: Prefix
           service: backend
         - path: /health
@@ -151,9 +139,37 @@ ingress:
           service: frontend
     - host: www.genyxo.com
       paths:
+        - path: /chat/webhook/video
+          pathType: Exact
+          service: backend
+        - path: /docs-json
+          pathType: Exact
+          service: backend
+        - path: /docs-yaml
+          pathType: Exact
+          service: backend
+        - path: /socket.io
+          pathType: Prefix
+          service: backend
+        - path: /v1
+          pathType: Prefix
+          service: backend
+        - path: /payment
+          pathType: Prefix
+          service: backend
+        - path: /health
+          pathType: Prefix
+          service: backend
+        - path: /docs
+          pathType: Prefix
+          service: backend
+        - path: /metrics
+          pathType: Prefix
+          service: backend
         - path: /
           pathType: Prefix
           service: frontend
+
   tls:
     - secretName: genyxo-tls-prod
       hosts:
@@ -162,6 +178,7 @@ ingress:
 
 config:
   SITE_URL: "https://genyxo.com"
+  FRONTEND_URL: "https://genyxo.com"
   ALLOWED_ORIGINS: "https://genyxo.com,https://www.genyxo.com"
   MYSQLHOST: "genyxo-mysql-svc"
   MYSQLPORT: "3306"

@@ -143,8 +143,11 @@ export class ControllerScope {
     // HTML parsers discard standalone rows outside a table. Preserve their
     // parsing context while sanitizing every cell, attribute and handler.
     if (/^\s*<tr(?:\s|>)/i.test(value)) {
-      const fragment = DOMPurify.sanitize('<table><tbody>' + value + '</tbody></table>', { RETURN_DOM: true });
-      return (fragment as ParentNode).querySelector('tbody')?.innerHTML || '';
+      const fragment = DOMPurify.sanitize(
+        "<table><tbody>" + value + "</tbody></table>",
+        { RETURN_DOM_FRAGMENT: true },
+      );
+      return fragment.querySelector("tbody")?.innerHTML || "";
     }
     return DOMPurify.sanitize(value);
   }

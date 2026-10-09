@@ -851,8 +851,8 @@ body {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
   z-index: 1999;
   opacity: 0;
   @apply gx:invisible;
@@ -883,8 +883,8 @@ body {
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     background: rgba(18, 18, 18, 0.85) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
   }
 
   /* Логотип и бургер строго в один ряд */

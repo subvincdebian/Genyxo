@@ -113,7 +113,7 @@ async function configureApp(app: NestFastifyApplication) {
 
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
-    : ["https://genyxo.com", "http://localhost:3000"];
+    : ["https://genyxo.com", "http://localhost:3000", "http://localhost:3001"];
 
   app.enableCors({
     origin: allowedOrigins.includes("*") ? true : allowedOrigins,

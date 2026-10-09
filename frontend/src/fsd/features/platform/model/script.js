@@ -591,10 +591,8 @@ export default function initialize(scope, context) {
   function openCheckout(product) {
     currentProduct = product;
     const productTrans =
-      scope.window.i18n &&
-      i18n.translations.products_data &&
-      i18n.translations.products_data[product.id]
-        ? i18n.translations.products_data[product.id]
+      scope.window.AppI18n?.translations?.products_data?.[product.id]
+        ? scope.window.AppI18n.translations.products_data[product.id]
         : {
             name: "AI Pack",
             credits_label: "Credits",
@@ -604,7 +602,7 @@ export default function initialize(scope, context) {
     scope.document.getElementById("checkoutName").textContent =
       productTrans.name;
     scope.document.getElementById("checkoutCredits").textContent =
-      productTrans.credits_label.replace(/\D/g, "");
+      (productTrans.credits_label || productTrans.credits || "").replace(/\D/g, "");
     scope.document.getElementById("checkoutPrice").textContent = product.price;
     scope.document.getElementById("checkoutTotal").textContent = product.price;
     checkoutModal.style.display = "flex";
@@ -895,7 +893,7 @@ export default function initialize(scope, context) {
                 <h3 class="product-name">${productTrans.name}</h3>
                 <div class="product-price">${product.price}</div>
                 <ul class="product-features">
-                    <li><span class="feature-icon icon-bolt">${SVG_ICONS.bolt}</span>${productTrans.credits_label}</li>
+                    <li><span class="feature-icon icon-bolt">${SVG_ICONS.bolt}</span>${productTrans.credits_label || productTrans.credits || ""}</li>
                     ${featuresHtml}
                 </ul>
                 <button class="buy-btn" data-id="${product.id}">

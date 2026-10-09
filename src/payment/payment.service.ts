@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import axios from "axios";
 import * as crypto from "crypto";
 import * as https from "https";
@@ -17,6 +17,16 @@ const paymentHttpsAgent = new https.Agent({
   maxFreeSockets: 20,
   timeout: 30000,
 });
+
+function sortNowPaymentsPayload(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortNowPaymentsPayload);
+  if (value === null || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([key, entry]) => [key, sortNowPaymentsPayload(entry)]),
+  );
+}
 import {
   Transaction,
   TransactionStatus,
@@ -108,18 +118,28 @@ export class PaymentService {
     }
   }
 
-  async handleWebhook(headers: any, body: any) {
+  async handleWebhook(
+    headers: Record<string, string | string[] | undefined>,
+    body: Record<string, unknown>,
+  ) {
     const signature = headers["x-nowpayments-sig"];
     const ipnSecret =
       this.configService.get<string>("NOWPAYMENTS_IPN_SECRET") ||
       process.env.NOWPAYMENTS_IPN_SECRET;
-    if (!signature || !ipnSecret) {
+    if (
+      typeof signature !== "string" ||
+      !/^[a-f\d]{128}$/i.test(signature) ||
+      !ipnSecret
+    ) {
       this.logger.error("Missing signature or IPN secret configuration");
       throw new BadRequestException("Invalid signature configuration");
     }
 
-    const sortedKeys = Object.keys(body).sort();
-    const jsonString = sortedKeys.map((key) => `${key}=${body[key]}`).join("&");
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      throw new BadRequestException("Invalid payment notification");
+    }
+    // NOWPayments signs recursively sorted JSON, not form/query parameters.
+    const jsonString = JSON.stringify(sortNowPaymentsPayload(body));
     const hmac = crypto.createHmac("sha512", ipnSecret);
     const calculatedSignature = hmac.update(jsonString).digest("hex");
 
@@ -136,6 +156,13 @@ export class PaymentService {
 
     const txId = Number(body.order_id);
     const status = body.payment_status;
+    if (
+      !Number.isSafeInteger(txId) ||
+      txId <= 0 ||
+      typeof status !== "string"
+    ) {
+      throw new BadRequestException("Invalid payment notification");
+    }
 
     const transaction = await this.transactionRepo.findOne({
       where: { id: txId },
@@ -143,23 +170,30 @@ export class PaymentService {
     });
 
     if (!transaction) return;
+    // A delayed or repeated IPN must never reopen an already credited payment.
+    if (transaction.status === TransactionStatus.APPROVED)
+      return { status: "ok" };
 
     if (status === "finished" || status === "confirmed") {
-      if (transaction.status !== TransactionStatus.APPROVED) {
-        await this.finalizeTransaction(txId);
-      }
+      await this.finalizeTransaction(txId);
     } else if (
       status === "failed" ||
       status === "expired" ||
       status === "rejected"
     ) {
-      await this.transactionRepo.update(txId, {
-        status: TransactionStatus.DECLINED,
-      });
+      await this.transactionRepo.update(
+        { id: txId, status: Not(TransactionStatus.APPROVED) },
+        {
+          status: TransactionStatus.DECLINED,
+        },
+      );
     } else {
-      await this.transactionRepo.update(txId, {
-        status: TransactionStatus.WAITING,
-      });
+      await this.transactionRepo.update(
+        { id: txId, status: Not(TransactionStatus.APPROVED) },
+        {
+          status: TransactionStatus.WAITING,
+        },
+      );
     }
 
     return { status: "ok" };

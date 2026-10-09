@@ -28,9 +28,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Define build arguments that might be baked into client bundles
-ARG BACKEND_URL=http://app:3000
 ARG NEXT_PUBLIC_SOCKET_URL=/
-ENV BACKEND_URL=${BACKEND_URL}
 ENV NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
 
 RUN npm run build
@@ -45,6 +43,7 @@ RUN apk add --no-cache tini curl
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV BACKEND_URL=http://app:3000
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 

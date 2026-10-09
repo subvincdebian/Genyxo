@@ -9,7 +9,7 @@
 ```mermaid
 flowchart TD
     Client["🌐 HTTPS Clients (Browsers, Mobile, API)"]
-    
+
     subgraph Edge["Шлюз безопасности & Edge (Nginx)"]
         Nginx["🛡️ Nginx Reverse Proxy (HTTP/2, SSL, Rate Limit)"]
     end
@@ -25,10 +25,10 @@ flowchart TD
     end
 
     Client -->|HTTPS :443| Nginx
-    Nginx -->|/_next/*, Pages| Frontend
-    Nginx -->|/api/*, /auth/*, /chat/*| Backend
+    Nginx -->|Pages, /_next/*, /api/*, /auth/*| Frontend
+    Nginx -->|Provider webhooks, /v1/*, health, docs, metrics| Backend
     Nginx -->|WebSocket /socket.io/*| Backend
-    Frontend -->|Internal Rewrites /api| Backend
+    Frontend -->|Runtime HTTP proxy, BACKEND_URL| Backend
     Backend -->|TypeORM Connection Pool| MySQL
     Backend -->|IORedis Cache & Rate Limits| Redis
 ```
@@ -38,43 +38,49 @@ flowchart TD
 ## ⚡ 1. Быстрый старт (Local Development)
 
 ### Требования
+
 - Docker Engine 24+ & Docker Compose v2+
 - Node.js 22 LTS (опционально для запуска вне Docker)
 
 ### Запуск стека разработки (с Hot-Reload и отладчиком)
 
 **Windows (PowerShell):**
+
 ```powershell
 .\scripts\dev.ps1 -Action up
 ```
 
 **Linux / macOS (Bash):**
+
 ```bash
 chmod +x ./scripts/*.sh
 ./scripts/dev.sh up
 ```
 
 ### Доступные эндпоинты в Dev-режиме:
-| Сервис | Адрес | Описание |
-|---|---|---|
-| **Frontend UI** | [http://localhost:3001](http://localhost:3001) | Next.js 16 с быстрым обновлением (HMR) |
-| **Backend API** | [http://localhost:3000](http://localhost:3000) | NestJS с nodemon/watch |
-| **Backend Debugger** | `localhost:9229` | Node Inspector для отладки в VS Code / Chrome DevTools |
-| **Health Check** | [http://localhost:3000/health/readiness](http://localhost:3000/health/readiness) | Проверка MySQL и Redis |
-| **Redis Commander** | [http://localhost:8081](http://localhost:8081) | Веб-интерфейс просмотра ключей Redis |
-| **MySQL Database** | `localhost:3306` | Доступ для DataGrip / DBeaver (`user: root`, `pass: root_password`) |
+
+| Сервис               | Адрес                                                                            | Описание                                                            |
+| -------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **Frontend UI**      | [http://localhost:3001](http://localhost:3001)                                   | Next.js 16 с быстрым обновлением (HMR)                              |
+| **Backend API**      | [http://localhost:3000](http://localhost:3000)                                   | NestJS с nodemon/watch                                              |
+| **Backend Debugger** | `localhost:9229`                                                                 | Node Inspector для отладки в VS Code / Chrome DevTools              |
+| **Health Check**     | [http://localhost:3000/health/readiness](http://localhost:3000/health/readiness) | Проверка MySQL и Redis                                              |
+| **Redis Commander**  | [http://localhost:8081](http://localhost:8081)                                   | Веб-интерфейс просмотра ключей Redis                                |
+| **MySQL Database**   | `localhost:3306`                                                                 | Доступ для DataGrip / DBeaver (`user: root`, `pass: root_password`) |
 
 ---
 
 ## 🚀 2. Развертывание в Production (Docker Compose)
 
 ### Шаг 1: Конфигурация переменных окружения
+
 ```bash
 cp .env.example .env
 # Заполните в .env ваши боевые ключи (JWT_SECRET, API-ключи AI, пароли БД)
 ```
 
 ### Шаг 2: Запуск production стека
+
 ```bash
 # Windows
 .\scripts\prod.ps1 -Action up
@@ -84,6 +90,7 @@ cp .env.example .env
 ```
 
 ### Что делает Production стек:
+
 1. Собирает минимальные образы на базе `node:22-alpine` без лишних dev-зависимостей.
 2. Запускает контейнеры под непривилегированными системными пользователями (`nestjs`, `nextjs`).
 3. Включает `tini` для корректной передачи сигналов SIGTERM и отсутствия процессов-зомби.
@@ -112,6 +119,7 @@ docker stack services genyxo
 ## ☸️ 4. Развертывание в Kubernetes (K8s)
 
 Все манифесты находятся в директории `k8s/`:
+
 - `00-namespace.yaml` — изолированное пространство `genyxo`
 - `01-configmap.yaml` — параметры конфигурации
 - `02-secret.example.yaml` — шаблон защищенных секретов
@@ -125,6 +133,7 @@ docker stack services genyxo
 - `database/` — StatefulSets для MySQL и Redis (если базы хостятся внутри K8s)
 
 ### Применение манифестов в кластер:
+
 ```bash
 chmod +x ./scripts/k8s-deploy.sh
 ./scripts/k8s-deploy.sh
@@ -153,6 +162,7 @@ helm upgrade --install genyxo ./helm/genyxo \
 ## 🛡️ 6. Nginx & Безопасность
 
 Конфигурация Nginx в `nginx/`:
+
 - **SSL / TLS**: Поддержка TLS 1.2 и TLS 1.3 с современными шифрами Mozilla Modern.
 - **WebSocket**: Директива `map $http_upgrade $connection_upgrade` и проксирование заголовков для бесперебойной работы сокетов уведомлений и чата.
 - **Rate Limiting**:
@@ -180,6 +190,7 @@ zcat /var/backups/genyxo/genyxo_backup_YYYYMMDD_HHMMSS.sql.gz | docker exec -i g
 ## 🔄 8. CI/CD Pipeline (GitHub Actions)
 
 Workflow-файл `.github/workflows/ci-cd.yml` автоматически выполняет:
+
 1. **Quality Gate**: Тестирование TypeScript, Jest тесты бэкенда, проверка сборки Next.js.
 2. **Build & Push**: Сборка образов Backend, Frontend и Nginx с кэшированием слоев в GitHub Container Registry (`ghcr.io`).
 3. **Security Scan**: Анализ образов сканером уязвимостей Trivy.

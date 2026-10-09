@@ -39,6 +39,7 @@ describe("AuthController", () => {
       const result = new URL(redirect.mock.calls[0][0]);
       expect(result.origin).toBe("http://localhost:3001");
       expect(result.searchParams.get("token")).toBe(req.user.access_token);
+      expect(redirect.mock.calls[0][1]).toBe(302);
       expect(auth.login).not.toHaveBeenCalled();
     },
   );

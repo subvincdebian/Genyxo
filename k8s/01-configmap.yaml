@@ -10,6 +10,7 @@ data:
   NODE_ENV: "production"
   PORT: "3000"
   SITE_URL: "https://genyxo.com"
+  FRONTEND_URL: "https://genyxo.com"
   ALLOWED_ORIGINS: "https://genyxo.com,http://localhost:3000,http://localhost:3001"
   MYSQLHOST: "genyxo-mysql-svc"
   MYSQLPORT: "3306"

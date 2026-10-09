@@ -19,6 +19,8 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
+      - FRONTEND_URL=http://localhost:3001
+      - ALLOWED_ORIGINS=http://localhost:3001,http://localhost:3000
       - MYSQLHOST=mysql
       - MYSQLPORT=3306
       - MYSQLDATABASE=genyxo
@@ -75,7 +77,11 @@ services:
     networks:
       - dev_net
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -proot_password || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u root -proot_password || exit 1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -93,7 +99,8 @@ services:
     networks:
       - dev_net
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a redis_password ping | grep PONG || exit 1"]
+      test:
+        ["CMD-SHELL", "redis-cli -a redis_password ping | grep PONG || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 5

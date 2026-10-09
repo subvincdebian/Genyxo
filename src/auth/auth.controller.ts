@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
   HttpStatus,
 } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
+import { FacebookOAuthGuard, GoogleOAuthGuard } from "./guards/oauth.guard";
 import { Throttle } from "@nestjs/throttler";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -55,11 +55,11 @@ export class AuthController {
   }
 
   @Get("google")
-  @UseGuards(AuthGuard("google"))
+  @UseGuards(GoogleOAuthGuard)
   async googleAuth(@Req() req) {}
 
   @Get("google/callback")
-  @UseGuards(AuthGuard("google"))
+  @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res) {
     const token = req.user.access_token;
     const target = frontendUrl();
@@ -68,11 +68,11 @@ export class AuthController {
   }
 
   @Get("facebook")
-  @UseGuards(AuthGuard("facebook"))
+  @UseGuards(FacebookOAuthGuard)
   async facebookLogin(@Req() req) {}
 
   @Get("facebook/callback")
-  @UseGuards(AuthGuard("facebook"))
+  @UseGuards(FacebookOAuthGuard)
   async facebookLoginCallback(@Req() req, @Res() res) {
     // Both OAuth strategies return AuthService.login's token + user result.
     const target = frontendUrl();

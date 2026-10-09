@@ -1,6 +1,69 @@
 import { test, expect } from "@playwright/test";
 import { authenticate, mockApi, user, token } from "./fixtures";
 
+test("admin preserves populated table cells, pagination and sanitized user content", async ({
+  page,
+}) => {
+  await authenticate(page, "admin");
+  await mockApi(page, async (route, path) => {
+    if (path === "/profile") {
+      await route.fulfill({ json: { ...user, role: "admin" } });
+      return true;
+    }
+    if (path.endsWith("/users")) {
+      const currentPage = Number(
+        new URL(route.request().url()).searchParams.get("page"),
+      );
+      await route.fulfill({
+        json: {
+          data: [
+            {
+              ...user,
+              id: currentPage,
+              name: 'Table user <img src=x onerror="window.__unsafe=true">',
+            },
+          ],
+          meta: { page: currentPage, lastPage: 2, total: 2 },
+        },
+      });
+      return true;
+    }
+    if (path.endsWith("/transactions")) {
+      await route.fulfill({
+        json: {
+          data: [
+            {
+              id: 21,
+              user,
+              amount: 9.99,
+              creditsAmount: 2000,
+              status: "APPROVED",
+              provider: "NOWPAYMENTS",
+              type: "PURCHASE",
+              createdAt: "2026-10-09T09:00:00Z",
+            },
+          ],
+          meta: { page: 1, lastPage: 1, total: 1 },
+        },
+      });
+      return true;
+    }
+    return false;
+  });
+  await page.goto("/admin");
+  await expect(page.locator("#usersTable tr")).toHaveCount(1);
+  await expect(page.locator("#usersTable td")).toHaveCount(6);
+  await expect(page.locator("#usersTable")).toContainText("Table user");
+  await expect(page.locator("#transactionsTable td")).toHaveCount(7);
+  await expect(page.locator("#usersTable [onerror]")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => Reflect.get(window, "__unsafe")),
+  ).toBeUndefined();
+  await page.locator("#nextUserBtn").click();
+  await expect(page.locator("#usersTable td").first()).toHaveText("#2");
+  await expect(page.locator("#nextUserBtn")).toBeDisabled();
+});
+
 test("catalogue, checkout, guest authentication forms and search actions", async ({
   page,
 }) => {
@@ -9,6 +72,8 @@ test("catalogue, checkout, guest authentication forms and search actions", async
   await expect(page.locator(".product-card")).toHaveCount(6);
   await page.locator(".buy-btn").first().click();
   await expect(page.locator("#checkoutModal")).toBeVisible();
+  await expect(page.locator("#checkoutName")).toHaveText("Start AI");
+  await expect(page.locator("#checkoutCredits")).toHaveText("750");
   await page.locator("#closeCheckout").click();
   await page.locator("#loginBtn").click();
   await expect(page.locator("#loginForm")).toBeVisible();
@@ -19,6 +84,17 @@ test("catalogue, checkout, guest authentication forms and search actions", async
   await page.locator("#closeLogin").click();
   await page.locator(".search-input").fill("Gemini");
   await expect(page.locator("#searchResultsDropdown")).toBeVisible();
+});
+
+test("checkout uses the language dictionary and supports older translated credit labels", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("appLang", "uk"));
+  await mockApi(page);
+  await page.goto("/");
+  await expect(page.locator(".product-card")).toHaveCount(6);
+  await expect(page.locator("#productsGrid")).not.toContainText("undefined");
+  await page.locator('.buy-btn[data-id="6"]').click();
+  await expect(page.locator("#checkoutName")).toHaveText("AI Titan");
+  await expect(page.locator("#checkoutCredits")).toHaveText(/^\d+$/);
 });
 
 test("chat preserves SSE contract, Markdown sanitization, history and balance", async ({
@@ -322,6 +398,6 @@ test("policy mobile menu opens and closes without missing DOM references", async
   await page.goto("/policies/privacy-policy.html");
   await page.locator("#toggleMobileMenu").click();
   await expect(page.locator("#mobileSidebar")).toHaveClass(/active/);
-  await page.locator("#sidebar-overlay").click({ force: true });
+  await page.locator("#sidebar-overlay").click({ position: { x: 380, y: 400 } });
   await expect(page.locator("#mobileSidebar")).not.toHaveClass(/active/);
 });

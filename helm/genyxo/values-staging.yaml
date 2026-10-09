@@ -61,13 +61,22 @@ ingress:
   hosts:
     - host: staging.genyxo.com
       paths:
-        - path: /api
+        - path: /chat/webhook/video
+          pathType: Exact
+          service: backend
+        - path: /docs-json
+          pathType: Exact
+          service: backend
+        - path: /docs-yaml
+          pathType: Exact
+          service: backend
+        - path: /socket.io
+          pathType: Prefix
+          service: backend
+        - path: /payment
           pathType: Prefix
           service: backend
         - path: /v1
-          pathType: Prefix
-          service: backend
-        - path: /auth
           pathType: Prefix
           service: backend
         - path: /health
@@ -89,6 +98,7 @@ ingress:
 
 config:
   SITE_URL: "https://staging.genyxo.com"
+  FRONTEND_URL: "https://staging.genyxo.com"
   ALLOWED_ORIGINS: "https://staging.genyxo.com"
   MYSQLHOST: "genyxo-mysql-svc"
   MYSQLPORT: "3306"

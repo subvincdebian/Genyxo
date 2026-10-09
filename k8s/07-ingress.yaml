@@ -31,6 +31,27 @@ spec:
     - host: genyxo.com
       http:
         paths:
+          - path: /chat/webhook/video
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs-json
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs-yaml
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
           # Real-time WebSocket connection to NestJS
           - path: /socket.io
             pathType: Prefix
@@ -39,57 +60,8 @@ spec:
                 name: genyxo-backend-svc
                 port:
                   number: 3000
-          # Backend APIs and Auth
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: genyxo-backend-svc
-                port:
-                  number: 3000
-          - path: /auth
-            pathType: Prefix
-            backend:
-              service:
-                name: genyxo-backend-svc
-                port:
-                  number: 3000
-          - path: /chat
-            pathType: Prefix
-            backend:
-              service:
-                name: genyxo-backend-svc
-                port:
-                  number: 3000
+          # Provider webhooks and operational endpoints
           - path: /payment
-            pathType: Prefix
-            backend:
-              service:
-                name: genyxo-backend-svc
-                port:
-                  number: 3000
-          - path: /profile
-            pathType: Prefix
-            backend:
-              service:
-                name: genyxo-backend-svc
-                port:
-                  number: 3000
-          - path: /admin
-            pathType: Prefix
-            backend:
-              service:
-                name: genyxo-backend-svc
-                port:
-                  number: 3000
-          - path: /support
-            pathType: Prefix
-            backend:
-              service:
-                name: genyxo-backend-svc
-                port:
-                  number: 3000
-          - path: /notifications
             pathType: Prefix
             backend:
               service:
@@ -135,6 +107,72 @@ spec:
     - host: www.genyxo.com
       http:
         paths:
+          - path: /chat/webhook/video
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs-json
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs-yaml
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Real-time WebSocket connection to NestJS
+          - path: /socket.io
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Provider webhooks and operational endpoints
+          - path: /payment
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Frontend UI and Pages
           - path: /
             pathType: Prefix
             backend:

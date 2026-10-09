@@ -43,7 +43,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        BACKEND_URL: http://app:3000
         NEXT_PUBLIC_SOCKET_URL: /
     image: genyxo-frontend:latest
     container_name: genyxo-frontend
@@ -141,7 +140,11 @@ services:
     networks:
       - backend_net
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -178,7 +181,11 @@ services:
     networks:
       - backend_net
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$${REDISPASSWORD:-redis_secure_pass}\" ping | grep PONG || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          'redis-cli -a "$${REDISPASSWORD:-redis_secure_pass}" ping | grep PONG || exit 1',
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
