@@ -1,4 +1,5 @@
 // Behavior migrated from policies.js; resources are owned by the React mount.
+
 import { API_BASE_URL as API_ORIGIN, SOCKET_URL as SOCKET_ORIGIN } from '@/shared/config';
 export default function initialize(scope, context) {
 scope.window.onload = function () {
@@ -35,5 +36,6 @@ Object.defineProperty(context, "toggleMobileMenu", { configurable: true, get: ()
 Object.defineProperty(context, "closeMenu", { configurable: true, get: () => closeMenu });
 scope.expose("toggleMobileMenu", toggleMobileMenu);
 scope.expose("closeMenu", closeMenu);
+
 
 }

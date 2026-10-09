@@ -1,34 +1,90 @@
-'use client';
-import type { SyntheticEvent } from 'react';
-import { Localized } from '@/features/language';
-export function HomeDemoChatModal({}: {dispatch:(name:string,event:SyntheticEvent<Element>)=>unknown}) { return (<div id="demoChatModal" className="demo-modal-overlay">
-        <div className="demo-modal-content">
-            <div className="demo-modal-header">
-                <div className="demo-header-info">
-                    <div className="demo-ai-avatar">
-                        <i className="fas fa-bolt"></i>
-                    </div>
-                    <div className="demo-header-text">
-                        <Localized as="h3" translationKey="demo.title" data-i18n="demo.title">{"Genyxo Flash (Free)"}</Localized>
-                        <span className="demo-status">{"Online"}</span>
-                    </div>
-                </div>
-                <button id="closeDemoBtn" className="demo-close-btn">
-                    <i className="fas fa-times"></i>
-                </button>
-            </div>
+"use client";
+import type { SyntheticEvent } from "react";
 
-            <div id="demoChatHistory" className="demo-chat-history">
-                <div className="demo-message ai-message">
-                    <p>{"Hello! I am a free Genyxo demo model. Send me a message to test how fast and smart I am before you get your credits! 🚀"}</p>
-                </div>
+import { Localized } from "@/shared/i18n";
+export function HomeDemoChatModal({
+  ready,
+}: {
+  dispatch: (name: string, event: SyntheticEvent<Element>) => unknown;
+  ready: boolean;
+}) {
+  return (
+    <div id="demoChatModal" className="demo-modal-overlay">
+      {"\n        "}
+      <div className="demo-modal-content">
+        {"\n            "}
+        <div className="demo-modal-header">
+          {"\n                "}
+          <div className="demo-header-info">
+            {"\n                    "}
+            <div className="demo-ai-avatar">
+              {"\n                        "}
+              <i className="fas fa-bolt"></i>
+              {"\n                    "}
             </div>
-
-            <div className="demo-chat-input-area">
-                <input type="text" id="demoChatInput" placeholder="Type your message..." autoComplete="off" />
-                <button id="demoSendBtn" className="demo-send-btn">
-                    <i className="fas fa-paper-plane"></i>
-                </button>
+            {"\n                    "}
+            <div className="demo-header-text">
+              {"\n                        "}
+              <Localized
+                as="h3"
+                translationKey="demo.title"
+                data-i18n="demo.title"
+              >
+                {"Genyxo Flash (Free)"}
+              </Localized>
+              {"\n                        "}
+              <span className="demo-status">{"Online"}</span>
+              {"\n                    "}
             </div>
+            {"\n                "}
+          </div>
+          {"\n                "}
+          <button
+            disabled={!ready}
+            id="closeDemoBtn"
+            className="demo-close-btn"
+          >
+            {"\n                    "}
+            <i className="fas fa-times"></i>
+            {"\n                "}
+          </button>
+          {"\n            "}
         </div>
-    </div>); }
+        {"\n\n            "}
+        <div id="demoChatHistory" className="demo-chat-history">
+          {"\n                "}
+          <div className="demo-message ai-message">
+            {"\n                    "}
+            <p>
+              {
+                "Hello! I am a free Genyxo demo model. Send me a message to test how fast and smart I am before you get your credits! 🚀"
+              }
+            </p>
+            {"\n                "}
+          </div>
+          {"\n            "}
+        </div>
+        {"\n\n            "}
+        <div className="demo-chat-input-area">
+          {"\n                "}
+          <input
+            disabled={!ready}
+            type="text"
+            id="demoChatInput"
+            placeholder="Type your message..."
+            autoComplete="off"
+          />
+          {"\n                "}
+          <button disabled={!ready} id="demoSendBtn" className="demo-send-btn">
+            {"\n                    "}
+            <i className="fas fa-paper-plane"></i>
+            {"\n                "}
+          </button>
+          {"\n            "}
+        </div>
+        {"\n        "}
+      </div>
+      {"\n    "}
+    </div>
+  );
+}

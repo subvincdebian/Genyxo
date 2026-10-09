@@ -1,0 +1,86 @@
+version: 2
+updates:
+  # Backend npm packages
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    groups:
+      nestjs-dependencies:
+        patterns:
+          - "@nestjs/*"
+      typeorm-dependencies:
+        patterns:
+          - "typeorm"
+          - "mysql2"
+      dev-tooling:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "jest*"
+          - "typescript*"
+          - "@types/*"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  # Frontend npm packages
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:30"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    groups:
+      react-next-dependencies:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+      styling-dependencies:
+        patterns:
+          - "tailwindcss*"
+          - "postcss*"
+    labels:
+      - "dependencies"
+      - "frontend"
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: "docker"
+    directory: "/nginx"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # GitHub Actions workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci-cd"

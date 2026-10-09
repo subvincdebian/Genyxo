@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "next dev --port 3001",
     "build": "next build --webpack",
-    "start": "next start --port 3001",
+    "start": "node scripts/start.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint app src tests && node scripts/check-architecture.mjs",
+    "analyze": "cross-env ANALYZE=true next build",
     "test": "playwright test"
   },
   "dependencies": {
@@ -21,19 +22,16 @@
     "socket.io-client": "4.8.4"
   },
   "devDependencies": {
-    "@babel/generator": "8.0.6",
-    "@babel/parser": "8.0.7",
-    "@babel/traverse": "8.0.7",
-    "@babel/types": "8.0.6",
+    "@next/bundle-analyzer": "^16.4.0",
     "@playwright/test": "1.64.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/canvas-confetti": "1.9.0",
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "cross-env": "^10.1.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.0",
-    "parse5": "8.0.1",
     "postcss": "8.5.29",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3"

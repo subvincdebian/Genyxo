@@ -13,8 +13,7 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import type { FastifyReply } from "fastify";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { frontendUrl } from "../common/frontend-url";
 import { Role } from "../users/role.enum";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { TransactionStatus } from "../transactions/transaction.entity";
@@ -43,16 +42,9 @@ export class AdminController {
     }
   }
 
-  private cachedAdminHtml: Buffer | null = null;
-
   @Get("panel")
   async getAdminPanel(@Res({ passthrough: false }) res: FastifyReply) {
-    if (!this.cachedAdminHtml) {
-      const filePath = join(process.cwd(), "secure_html", "admin.html");
-      this.cachedAdminHtml = readFileSync(filePath);
-    }
-    res.type("text/html");
-    return res.send(this.cachedAdminHtml);
+    return res.redirect(frontendUrl("/admin").href, HttpStatus.FOUND);
   }
 
   @Get("users")
@@ -71,17 +63,17 @@ export class AdminController {
   }
 
   @Post("add-credits")
-  async addCredits(
-    @Request() req,
-    @Body() dto: AdminAddCreditsDto,
-  ) {
+  async addCredits(@Request() req, @Body() dto: AdminAddCreditsDto) {
     this.checkAdmin(req.user);
     return this.adminService.manualAddCredits(dto.userId, dto.amount);
   }
 
   @Post("approve-transaction")
   @HttpCode(HttpStatus.OK)
-  async approveTransaction(@Request() req, @Body() dto: AdminTransactionActionDto) {
+  async approveTransaction(
+    @Request() req,
+    @Body() dto: AdminTransactionActionDto,
+  ) {
     return this.paymentService.updateTransactionStatus(
       dto.txId,
       TransactionStatus.APPROVED,
@@ -91,7 +83,10 @@ export class AdminController {
 
   @Post("decline-transaction")
   @HttpCode(HttpStatus.OK)
-  async declineTransaction(@Request() req, @Body() dto: AdminTransactionActionDto) {
+  async declineTransaction(
+    @Request() req,
+    @Body() dto: AdminTransactionActionDto,
+  ) {
     return this.paymentService.updateTransactionStatus(
       dto.txId,
       TransactionStatus.DECLINED,

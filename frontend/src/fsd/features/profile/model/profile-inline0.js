@@ -1,4 +1,5 @@
 // Behavior migrated from profile-inline0; resources are owned by the React mount.
+
 import { API_BASE_URL as API_ORIGIN, SOCKET_URL as SOCKET_ORIGIN } from '@/shared/config';
 export default function initialize(scope, context) {
 scope.listen(scope.document.getElementById("avatarInput"), "change", function (event) {
@@ -71,6 +72,7 @@ scope.document.querySelectorAll(".menu-item").forEach(btn => {
   });
 });
 Object.defineProperty(context, "saveBtn", { configurable: true, get: () => saveBtn });
+
 
 
 }

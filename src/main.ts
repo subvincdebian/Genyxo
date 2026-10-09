@@ -1,3 +1,4 @@
+import "./tracer";
 process.env.UV_THREADPOOL_SIZE = process.env.UV_THREADPOOL_SIZE || "64";
 
 import * as dns from "dns";
@@ -12,10 +13,16 @@ import {
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCompress from "@fastify/compress";
 import * as zlib from "zlib";
+import * as Sentry from "@sentry/node";
 import { AppModule } from "./app.module";
+import { pinoConfig } from "./common/logger/pino.logger";
+import { MetricsInterceptor } from "./metrics/metrics.interceptor";
+import { SentryExceptionFilter } from "./common/filters/sentry-exception.filter";
 
 function createFastifyAdapter(): FastifyAdapter {
   return new FastifyAdapter({
+    logger: process.env.NODE_ENV === "production" ? pinoConfig : true,
+    requestIdHeader: "x-request-id",
     bodyLimit: 10 * 1024 * 1024,
     trustProxy: true,
     keepAliveTimeout: 65000,
@@ -26,6 +33,19 @@ function createFastifyAdapter(): FastifyAdapter {
 
 async function configureApp(app: NestFastifyApplication) {
   app.enableShutdownHooks();
+
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV || "development",
+      tracesSampleRate: 0.1,
+    });
+  }
+
+  app.useGlobalFilters(new SentryExceptionFilter());
+
+  const metricsInterceptor = app.get(MetricsInterceptor);
+  app.useGlobalInterceptors(metricsInterceptor);
 
   const httpServer = app.getHttpServer();
   if (httpServer) {
@@ -89,10 +109,7 @@ async function bootstrap() {
 
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   await app.listen(port, "0.0.0.0");
-  Logger.log(
-    `Application is running on: ${await app.getUrl()}`,
-    "Bootstrap",
-  );
+  Logger.log(`Application is running on: ${await app.getUrl()}`, "Bootstrap");
 }
 
 if (!process.env.VERCEL) {

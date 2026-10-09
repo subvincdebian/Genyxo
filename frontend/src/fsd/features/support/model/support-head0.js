@@ -1,4 +1,5 @@
 // Behavior migrated from support-head0; resources are owned by the React mount.
+
 import { API_BASE_URL as API_ORIGIN, SOCKET_URL as SOCKET_ORIGIN } from '@/shared/config';
 export default function initialize(scope, context) {
 (function () {
@@ -7,6 +8,7 @@ export default function initialize(scope, context) {
     scope.document.documentElement.classList.add('auth-active');
   }
 })();
+
 
 
 

@@ -8,12 +8,14 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  HttpStatus,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Throttle } from "@nestjs/throttler";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { LoginDto } from "./dto/login.dto";
+import { frontendUrl } from "../common/frontend-url";
 
 @Controller("auth")
 export class AuthController {
@@ -38,9 +40,9 @@ export class AuthController {
   @Get("verify")
   async verify(@Query("token") token: string, @Res() res) {
     const result = await this.authService.verifyEmail(token);
-    return res.redirect(
-      `https://genyxo.com?token=${result.access_token}&hash=#success`,
-    );
+    const target = frontendUrl();
+    target.searchParams.set("token", result.access_token);
+    return res.redirect(target.href, HttpStatus.FOUND);
   }
 
   @Get("google")
@@ -51,7 +53,9 @@ export class AuthController {
   @UseGuards(AuthGuard("google"))
   async googleAuthRedirect(@Req() req, @Res() res) {
     const token = req.user.access_token;
-    res.redirect(`https://genyxo.com?token=${token}`);
+    const target = frontendUrl();
+    target.searchParams.set("token", token);
+    return res.redirect(target.href, HttpStatus.FOUND);
   }
 
   @Get("facebook")
@@ -61,7 +65,9 @@ export class AuthController {
   @Get("facebook/callback")
   @UseGuards(AuthGuard("facebook"))
   async facebookLoginCallback(@Req() req, @Res() res) {
-    const result = await this.authService.login(req.user);
-    res.redirect(`https://genyxo.com?token=${result.access_token}`);
+    // Both OAuth strategies return AuthService.login's token + user result.
+    const target = frontendUrl();
+    target.searchParams.set("token", req.user.access_token);
+    return res.redirect(target.href, HttpStatus.FOUND);
   }
 }

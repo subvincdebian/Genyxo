@@ -1,83 +1,121 @@
+.notif-container {
+  max-width: 800px;
+  margin: 100px auto;
+  padding: 20px;
+}
 
+.header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.header-flex h1 {
+  color: white;
+  font-size: 2rem;
+}
 
-        .notif-container { max-width: 800px; margin: 100px auto; padding: 20px; }
-        
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header-flex h1 { color: white; font-size: 2rem; }
+.notif-card {
+  background: #121212;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  position: relative;
+  transition: 0.2s;
+  display: flex;
+  gap: 15px;
+  cursor: pointer;
+}
+.notif-card:hover {
+  border-color: #555;
+  transform: translateX(5px);
+}
 
-        .notif-card {
-            background: #121212;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            position: relative;
-            transition: 0.2s;
-            display: flex;
-            gap: 15px;
-            cursor: pointer;
-        }
-        .notif-card:hover { border-color: #555; transform: translateX(5px); }
-        
-        .notif-card.unread {
-            border-left: 4px solid #10e6cc;
-            background: rgba(16, 230, 204, 0.05);
-        }
-        
-        .notif-icon {
-            font-size: 24px;
-            color: #10e6cc;
-            padding-top: 5px;
-            min-width: 40px;
-            text-align: center;
-        }
-        
-        .notif-content h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: white; }
-        .notif-content p { margin: 0; color: #aaa; font-size: 0.95rem; line-height: 1.5; }
-        .notif-time { font-size: 0.8rem; color: #666; margin-top: 10px; display: block; }
-        
-        .mark-all-btn { 
-            background: transparent; 
-            border: 1px solid #555; 
-            color: #ccc; 
-            padding: 8px 15px; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            transition: 0.2s;
-        }
-        .mark-all-btn:hover { background: #222; color: white; border-color: white; }
-        
-        .empty-state { text-align: center; color: #666; margin-top: 50px; }
-        .empty-state i { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
+.notif-card.unread {
+  border-left: 4px solid #10e6cc;
+  background: rgba(16, 230, 204, 0.05);
+}
 
-        .profile-dropdown {
-            display: none;
-            position: absolute;
-            top: 120%;
-            right: 0;
-            width: 320px;
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            z-index: 10000;
-            color: var(--text-light);
-            overflow: hidden;
-            animation: dropdownFade 0.2s ease;
-        }
+.notif-icon {
+  font-size: 24px;
+  color: #10e6cc;
+  padding-top: 5px;
+  min-width: 40px;
+  text-align: center;
+}
 
-        .profile-dropdown.show {
-            display: block;
-        }
+.notif-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  color: white;
+}
+.notif-content p {
+  margin: 0;
+  color: #aaa;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.notif-time {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 10px;
+  display: block;
+}
 
-        @media (max-width: 768px) {
-           .login-btn, .profile-toggle-btn {
-               position: relative !important;
-               left: auto !important;
-            }
-        }
+.mark-all-btn {
+  background: transparent;
+  border: 1px solid #555;
+  color: #ccc;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.mark-all-btn:hover {
+  background: #222;
+  color: white;
+  border-color: white;
+}
 
-    
+.empty-state {
+  text-align: center;
+  color: #666;
+  margin-top: 50px;
+}
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  top: 120%;
+  right: 0;
+  width: 320px;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  z-index: 10000;
+  color: var(--text-light);
+  overflow: hidden;
+  animation: dropdownFade 0.2s ease;
+}
+
+.profile-dropdown.show {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .login-btn,
+  .profile-toggle-btn {
+    position: relative !important;
+    left: auto !important;
+  }
+}

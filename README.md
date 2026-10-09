@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Production-success?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/Frontend-HTML5_/_CSS3_/_JS-orange?style=for-the-badge" alt="Frontend" />
+  <img src="https://img.shields.io/badge/Frontend-Next.js_/_React_/_Tailwind-black?style=for-the-badge" alt="Frontend" />
   <img src="https://img.shields.io/badge/Backend-NestJS-E0234E?style=for-the-badge&logo=nestjs" alt="Backend" />
 </p>
 
@@ -17,7 +17,7 @@
 - **Multi-Model AI Integration:** Unified interface to interact with diverse AI APIs efficiently.
 - **High-Performance Caching:** Integrated **Redis** layer for session management and quick API response caching to minimize latency.
 - **Robust Database Management:** Structured and safe data persistence handling user records, history, and analytics using **MySQL** and **TypeORM**.
-- **Lightweight Frontend:** Built using pure HTML5, CSS3, and JavaScript ensuring zero framework overhead, fast initial load times, and excellent Core Web Vitals.
+- **Frontend:** Next.js App Router and React with Tailwind CSS, organized by FSD layers. See [frontend setup and migration notes](frontend/README.md).
 - **Secure Architecture:** Implemented secure REST API endpoints, input validation, and protected environment configuration.
 
 ---
@@ -26,8 +26,9 @@
 
 ### Frontend
 
-- **HTML5 & CSS3:** Semantic structure and modern responsive styling.
-- **Vanilla JavaScript:** Dynamic UI components, asynchronous API communication (`fetch`), and state handling.
+- **Next.js & React:** App Router pages and React components with FSD layers.
+- **Tailwind CSS:** Utilities alongside the original responsive styles to preserve the design.
+- **TypeScript:** Shared state, APIs and React components; compatibility controllers retain existing complex interactions.
 
 ### Backend
 

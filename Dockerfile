@@ -51,8 +51,6 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY --from=dependencies --chown=nestjs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/public ./public
-COPY --from=builder --chown=nestjs:nodejs /app/secure_html ./secure_html
 
 # Switch to non-root user
 USER nestjs

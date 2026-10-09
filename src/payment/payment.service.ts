@@ -25,6 +25,7 @@ import { User } from "../users/user.entity";
 import { NotificationType } from "../notifications/notification.entity";
 import { UsersService } from "../users/users.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { frontendUrl } from "../common/frontend-url";
 
 export const PACKS: Record<
   number,
@@ -76,8 +77,8 @@ export class PaymentService {
           ipn_callback_url: this.configService.get<string>(
             "NOWPAYMENTS_IPN_URL",
           ),
-          success_url: "https://genyxo.com/#success",
-          cancel_url: "https://genyxo.com/#cancel",
+          success_url: frontendUrl("/#success").href,
+          cancel_url: frontendUrl("/#cancel").href,
         },
         {
           headers: {

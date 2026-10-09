@@ -3,13 +3,10 @@ import { APP_GUARD } from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MailerModule } from "@nestjs-modules/mailer";
-import { ServeStaticModule } from "@nestjs/serve-static";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { RedisModule } from "@liaoliaots/nestjs-redis";
 import { ThrottlerStorageRedisService } from "./common/throttler-redis.storage";
 import { RedisService } from "@liaoliaots/nestjs-redis";
-
-import { join } from "path";
 
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
@@ -22,6 +19,7 @@ import { SupportModule } from "./support/support.module";
 import { EmailModule } from "./email/email.module";
 import { RedisCacheModule } from "./common/redis-cache.module";
 import { HealthModule } from "./health/health.module";
+import { MetricsModule } from "./metrics/metrics.module";
 
 @Module({
   imports: [
@@ -147,14 +145,6 @@ import { HealthModule } from "./health/health.module";
         };
       },
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, "..", "public"),
-      serveStaticOptions: {
-        fallthrough: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        etag: true,
-      },
-    }),
     RedisCacheModule,
     AuthModule,
     UsersModule,
@@ -166,6 +156,7 @@ import { HealthModule } from "./health/health.module";
     SupportModule,
     EmailModule,
     HealthModule,
+    MetricsModule,
   ],
   controllers: [],
   providers: [

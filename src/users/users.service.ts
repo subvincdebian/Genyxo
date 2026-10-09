@@ -11,6 +11,7 @@ import {
   TransactionType,
 } from "../transactions/transaction.entity";
 import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
+import { frontendUrl } from "../common/frontend-url";
 
 const REFERRAL_REWARDS: Record<number, number> = {
   1: 1, // Start AI
@@ -305,10 +306,12 @@ export class UsersService {
       await this.usersRepository.update(userId, { referralCode: code });
     }
 
+    const referralTarget = frontendUrl();
+    referralTarget.searchParams.set("referralCode", code);
     const result = {
       balance: Number(user.referralBalance || 0),
       invitedCount,
-      referralLink: `https://genyxo.com/?referralCode=${code}`,
+      referralLink: referralTarget.href,
     };
 
     await this.redisCache.set(cacheKey, result, 60);
@@ -346,7 +349,12 @@ export class UsersService {
           lock: { mode: "pessimistic_write" },
         });
 
-        if (!lockedBuyer || lockedBuyer.isReferralPaid || !lockedBuyer.referrerId) return;
+        if (
+          !lockedBuyer ||
+          lockedBuyer.isReferralPaid ||
+          !lockedBuyer.referrerId
+        )
+          return;
 
         await transactionalEntityManager.increment(
           User,

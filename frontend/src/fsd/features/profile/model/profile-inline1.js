@@ -1,4 +1,5 @@
 // Behavior migrated from profile-inline1; resources are owned by the React mount.
+
 import { API_BASE_URL as API_ORIGIN, SOCKET_URL as SOCKET_ORIGIN } from '@/shared/config';
 export default function initialize(scope, context) {
 // Ждем полной загрузки документа
@@ -69,6 +70,7 @@ scope.document.addEventListener('DOMContentLoaded', function () {
     }, 300);
   });
 });
+
 
 
 

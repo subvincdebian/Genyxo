@@ -13,3 +13,8 @@ npm-debug.log*
 .vscode
 .DS_Store
 Dockerfile*
+
+.tmp
+test-results
+playwright-report
+*.tsbuildinfo

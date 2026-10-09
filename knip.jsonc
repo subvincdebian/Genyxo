@@ -1,0 +1,47 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "src/main.ts!"
+      ],
+      "project": [
+        "src/**/*.ts!"
+      ],
+      "ignoreDependencies": [
+        "source-map-support",
+        "ts-loader",
+        "@anthropic-ai/sdk",
+        "@nestjs/axios",
+        "@openrouter/sdk",
+        "stripe",
+        "uuid",
+        "@types/uuid",
+        "cookie-parser",
+        "marked",
+        "@eslint/eslintrc",
+        "@types/express",
+        "@types/supertest",
+        "supertest",
+        "socket.io"
+      ]
+    },
+    "frontend": {
+      "entry": [
+        "app/**/{page,layout,loading,error,not-found}.tsx!"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}!",
+        "app/**/*.{ts,tsx}!"
+      ],
+      "ignoreDependencies": [
+        "canvas-confetti",
+        "@types/canvas-confetti",
+        "chart.js",
+        "marked",
+        "socket.io-client",
+        "tailwindcss"
+      ]
+    }
+  }
+}

@@ -1,77 +1,114 @@
+.support-container {
+  max-width: 900px;
+  margin: 100px auto;
+  padding: 20px;
+}
+.ticket-form {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 25px;
+  border-radius: 16px;
+  margin-bottom: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
 
+.ticket-card {
+  background: #121212;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  transition: transform 0.2s;
+}
+.ticket-card:hover {
+  border-color: #555;
+}
 
-        .support-container { max-width: 900px; margin: 100px auto; padding: 20px; }
-        .ticket-form { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 16px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.1); }
-        .ticket-list { display: flex; flex-direction: column; gap: 15px; }
-        
-        .ticket-card { 
-            background: #121212; 
-            padding: 20px; 
-            border-radius: 12px; 
-            border: 1px solid #333;
-            transition: transform 0.2s;
-        }
-        .ticket-card:hover { border-color: #555; }
-        
-        .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .ticket-status { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-        .status-OPEN { background: #f1c40f; color: black; }
-        .status-CLOSED { background: #2ecc71; color: black; }
-        
-        .admin-reply { 
-            margin-top: 15px; 
-            padding: 15px; 
-            background: rgba(16, 230, 204, 0.1); 
-            border-left: 3px solid #10e6cc; 
-            border-radius: 4px;
-        }
-        .reply-label { color: #10e6cc; font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 5px; }
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.ticket-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+.status-OPEN {
+  background: #f1c40f;
+  color: black;
+}
+.status-CLOSED {
+  background: #2ecc71;
+  color: black;
+}
 
-        .support-container .title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-left: 10px;
-            position: relative;
-            z-index: 2;
-        }
+.admin-reply {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(16, 230, 204, 0.1);
+  border-left: 3px solid #10e6cc;
+  border-radius: 4px;
+}
+.reply-label {
+  color: #10e6cc;
+  font-weight: bold;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 5px;
+}
 
-        .support-container .title i {
-            display: inline-block !important;
-            opacity: 1 !important;
-            color: var(--text-light) !important;
-            font-size: 1.05em;
-        }
+.support-container .title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+  position: relative;
+  z-index: 2;
+}
 
-        .profile-dropdown {
-            display: none;
-            position: absolute;
-            top: 120%;
-            right: 0;
-            width: 320px;
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            z-index: 10000;
-            color: var(--text-light);
-            overflow: hidden;
-            animation: dropdownFade 0.2s ease;
-        }
+.support-container .title i {
+  display: inline-block !important;
+  opacity: 1 !important;
+  color: var(--text-light) !important;
+  font-size: 1.05em;
+}
 
-        .profile-dropdown.show {
-            display: block;
-        }
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  top: 120%;
+  right: 0;
+  width: 320px;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  z-index: 10000;
+  color: var(--text-light);
+  overflow: hidden;
+  animation: dropdownFade 0.2s ease;
+}
 
-        @media (max-width: 768px) {
-           .login-btn, .profile-toggle-btn {
-               position: relative !important;
-               left: auto !important;
-            }
-            .support-container .title { margin-left: 16px; }
-        }
+.profile-dropdown.show {
+  display: block;
+}
 
-    
+@media (max-width: 768px) {
+  .login-btn,
+  .profile-toggle-btn {
+    position: relative !important;
+    left: auto !important;
+  }
+  .support-container .title {
+    margin-left: 16px;
+  }
+}

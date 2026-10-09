@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
+import { frontendUrl } from "../common/frontend-url";
 
 @Injectable()
 export class EmailService {
@@ -8,7 +9,9 @@ export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
 
   async sendVerificationEmail(email: string, token: string) {
-    const url = `https://genyxo.com/auth/verify?token=${token}`;
+    const target = frontendUrl("/auth/verify");
+    target.searchParams.set("token", token);
+    const url = target.href;
 
     try {
       await this.mailerService.sendMail({

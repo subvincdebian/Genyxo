@@ -1,0 +1,7 @@
+{
+  "src/**/*.{ts,js}": ["eslint --fix", "prettier --write"],
+  "test/**/*.{ts,js}": ["eslint --fix", "prettier --write"],
+  "frontend/src/**/*.{ts,tsx,js,jsx}": ["npm --prefix frontend run lint"],
+  "frontend/app/**/*.{ts,tsx,js,jsx}": ["npm --prefix frontend run lint"],
+  "*.{json,md,yml,yaml}": ["prettier --write"]
+}

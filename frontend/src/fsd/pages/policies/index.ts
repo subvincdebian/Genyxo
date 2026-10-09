@@ -1,1 +1,1 @@
-export { PoliciesPage } from './ui/PoliciesPage';
+export { PoliciesPage } from "./ui/PoliciesPage";

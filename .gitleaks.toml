@@ -1,0 +1,26 @@
+# Gitleaks Configuration for Genyxo Platform
+title = "Genyxo Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowed mock secrets and configuration templates"
+paths = [
+  '''^\.env\.example$''',
+  '''^frontend/\.env\.example$''',
+  '''^k8s/02-secret\.example\.yaml$''',
+  '''^helm/genyxo/values\.yaml$''',
+  '''\.spec\.ts$''',
+  '''test/''',
+  '''package-lock\.json$''',
+  '''frontend/package-lock\.json$'''
+]
+regexes = [
+  '''replace_with_''',
+  '''replace-with-''',
+  '''change_me_''',
+  '''root_super_secure_password''',
+  '''genyxo_super_secure_db_password''',
+  '''redis_super_secure_password'''
+]
