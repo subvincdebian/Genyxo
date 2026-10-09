@@ -41,7 +41,7 @@
     }
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.70.1",
+    "@anthropic-ai/sdk": "^0.131.0",
     "@fal-ai/client": "^1.8.4",
     "@fastify/compress": "^9.2.0",
     "@fastify/helmet": "^13.1.1",
