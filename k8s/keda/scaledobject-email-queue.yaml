@@ -1,0 +1,58 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: genyxo-backend-queue-scaler
+  namespace: genyxo
+  labels:
+    app.kubernetes.io/name: genyxo-backend-queue-scaler
+    app.kubernetes.io/part-of: genyxo-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: genyxo-backend
+  pollingInterval: 15
+  cooldownPeriod: 300
+  minReplicaCount: 2
+  maxReplicaCount: 10
+  advanced:
+    restoreToOriginalReplicaCount: false
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 15
+            - type: Pods
+              value: 4
+              periodSeconds: 15
+          selectPolicy: Max
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          policies:
+            - type: Percent
+              value: 20
+              periodSeconds: 60
+            - type: Pods
+              value: 1
+              periodSeconds: 60
+          selectPolicy: Min
+  triggers:
+    - type: redis
+      metadata:
+        address: genyxo-redis-svc.genyxo.svc.cluster.local:6379
+        listName: bull:email-queue:wait
+        listLength: "10"
+        enableTLS: "false"
+      authenticationRef:
+        name: keda-redis-auth
+    - type: redis
+      metadata:
+        address: genyxo-redis-svc.genyxo.svc.cluster.local:6379
+        listName: bull:email-queue:active
+        listLength: "25"
+        enableTLS: "false"
+      authenticationRef:
+        name: keda-redis-auth

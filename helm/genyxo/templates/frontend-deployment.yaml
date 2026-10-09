@@ -48,6 +48,14 @@ spec:
               value: "http://{{ include "genyxo.fullname" . }}-backend-svc:{{ .Values.backend.service.port }}"
             - name: NEXT_PUBLIC_SOCKET_URL
               value: "/"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
           livenessProbe:
@@ -68,3 +76,19 @@ spec:
             preStop:
               exec:
                 command: ["/bin/sleep", "3"]
+      {{- with .Values.frontend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.frontend.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.frontend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.frontend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

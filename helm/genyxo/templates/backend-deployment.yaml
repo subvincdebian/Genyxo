@@ -42,6 +42,14 @@ spec:
                 name: {{ include "genyxo.fullname" . }}-config
             - secretRef:
                 name: {{ include "genyxo.fullname" . }}-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
           startupProbe:
@@ -69,3 +77,19 @@ spec:
             preStop:
               exec:
                 command: ["/bin/sleep", "5"]
+      {{- with .Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

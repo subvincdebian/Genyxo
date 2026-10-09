@@ -1,0 +1,69 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: genyxo-project
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: genyxo-project
+    app.kubernetes.io/part-of: genyxo-platform
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Enterprise Production & Staging project for Genyxo Platform"
+  sourceRepos:
+    - "https://github.com/AyateAgh/WebSiteNaZakaz.git"
+    - "https://github.com/subvincdebian/Genyxo.git"
+    - "https://github.com/subvincdebian/HostAISite.git"
+  destinations:
+    - namespace: "genyxo"
+      server: "https://kubernetes.default.svc"
+    - namespace: "genyxo-staging"
+      server: "https://kubernetes.default.svc"
+    - namespace: "genyxo-production"
+      server: "https://kubernetes.default.svc"
+  clusterResourceWhitelist:
+    - group: "networking.k8s.io"
+      kind: "IngressClass"
+    - group: "cert-manager.io"
+      kind: "ClusterIssuer"
+    - group: "kyverno.io"
+      kind: "ClusterPolicy"
+    - group: "keda.sh"
+      kind: "ClusterTriggerAuthentication"
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: "*"
+    - group: "apps"
+      kind: "*"
+    - group: "batch"
+      kind: "*"
+    - group: "networking.k8s.io"
+      kind: "*"
+    - group: "autoscaling"
+      kind: "*"
+    - group: "policy"
+      kind: "*"
+    - group: "monitoring.coreos.com"
+      kind: "*"
+    - group: "keda.sh"
+      kind: "*"
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: "ResourceQuota"
+  roles:
+    - name: platform-developer
+      description: "Read-only access and sync capability on staging for developers"
+      policies:
+        - p, proj:genyxo-project:platform-developer, applications, get, genyxo-project/*, allow
+        - p, proj:genyxo-project:platform-developer, applications, sync, genyxo-project/genyxo-staging, allow
+    - name: platform-sre
+      description: "Full administration and manual override capability for SRE team"
+      policies:
+        - p, proj:genyxo-project:platform-sre, applications, *, genyxo-project/*, allow
+  syncWindows:
+    - kind: allow
+      schedule: "0 9 * * 1-5"
+      duration: 8h
+      applications:
+        - "genyxo-production"
+      timeZone: "UTC"

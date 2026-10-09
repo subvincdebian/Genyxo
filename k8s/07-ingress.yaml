@@ -103,6 +103,27 @@ spec:
                 name: genyxo-backend-svc
                 port:
                   number: 3000
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
           # Frontend UI and Pages
           - path: /
             pathType: Prefix

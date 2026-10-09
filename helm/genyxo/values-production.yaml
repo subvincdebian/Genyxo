@@ -1,12 +1,11 @@
 # ==============================================================
-# Default Values for Genyxo Helm Chart
+# Production Helm Values for Genyxo Platform
 # ==============================================================
 
 global:
   environment: production
   domain: genyxo.com
 
-# Backend (NestJS Fastify) Configuration
 backend:
   replicaCount: 3
   image:
@@ -17,32 +16,44 @@ backend:
     type: ClusterIP
     port: 3000
   resources:
-    limits:
-      cpu: 1000m
-      memory: 768Mi
     requests:
-      cpu: 150m
-      memory: 256Mi
+      cpu: 250m
+      memory: 384Mi
+    limits:
+      cpu: 1500m
+      memory: 1024Mi
   autoscaling:
     enabled: true
-    minReplicas: 2
-    maxReplicas: 10
+    minReplicas: 3
+    maxReplicas: 12
     targetCPUUtilizationPercentage: 70
-    targetMemoryUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 75
   pdb:
     enabled: true
-    minAvailable: 1
+    minAvailable: 2
   keda:
-    enabled: false
-    minReplicas: 2
-    maxReplicas: 10
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 12
     pollingInterval: 15
     cooldownPeriod: 300
     listLength: 10
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: backend
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: backend
 
-# Frontend (Next.js 16) Configuration
 frontend:
-  replicaCount: 2
+  replicaCount: 3
   image:
     repository: ghcr.io/ayateagh/genyxo-frontend
     pullPolicy: IfNotPresent
@@ -51,23 +62,35 @@ frontend:
     type: ClusterIP
     port: 3001
   resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 150m
+      memory: 256Mi
+    limits:
+      cpu: 800m
+      memory: 768Mi
   autoscaling:
     enabled: true
-    minReplicas: 2
-    maxReplicas: 6
+    minReplicas: 3
+    maxReplicas: 8
     targetCPUUtilizationPercentage: 75
     targetMemoryUtilizationPercentage: 80
   pdb:
     enabled: true
-    minAvailable: 1
+    minAvailable: 2
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: frontend
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: frontend
 
-# Ingress Configuration
 ingress:
   enabled: true
   className: "nginx"
@@ -78,7 +101,9 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
     nginx.ingress.kubernetes.io/websocket-services: "genyxo-backend-svc"
-    nginx.ingress.kubernetes.io/limit-rps: "30"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "3"
+    nginx.ingress.kubernetes.io/enable-brotli: "true"
   hosts:
     - host: genyxo.com
       paths:
@@ -86,6 +111,9 @@ ingress:
           pathType: Prefix
           service: backend
         - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /v1
           pathType: Prefix
           service: backend
         - path: /auth
@@ -112,6 +140,12 @@ ingress:
         - path: /health
           pathType: Prefix
           service: backend
+        - path: /docs
+          pathType: Prefix
+          service: backend
+        - path: /metrics
+          pathType: Prefix
+          service: backend
         - path: /
           pathType: Prefix
           service: frontend
@@ -121,33 +155,19 @@ ingress:
           pathType: Prefix
           service: frontend
   tls:
-    - secretName: genyxo-tls-secret
+    - secretName: genyxo-tls-prod
       hosts:
         - genyxo.com
         - www.genyxo.com
 
-# Non-sensitive configuration
 config:
   SITE_URL: "https://genyxo.com"
-  ALLOWED_ORIGINS: "https://genyxo.com,http://localhost:3000,http://localhost:3001"
+  ALLOWED_ORIGINS: "https://genyxo.com,https://www.genyxo.com"
   MYSQLHOST: "genyxo-mysql-svc"
   MYSQLPORT: "3306"
   MYSQLDATABASE: "genyxo"
   REDISHOST: "genyxo-redis-svc"
   REDISPORT: "6379"
-
-# Sensitive secrets (Set in production via external Secret or --set secrets.XXX)
-secrets:
-  JWT_SECRET: "change_me_jwt_secret"
-  WEBHOOK_SECRET: "change_me_webhook_secret"
-  MYSQLUSER: "genyxo_user"
-  MYSQLPASSWORD: "change_me_mysql_pass"
-  MYSQL_ROOT_PASSWORD: "change_me_root_pass"
-  REDISPASSWORD: "change_me_redis_pass"
-  OPENAI_API_KEY: ""
-  FAL_KEY: ""
-  OPENROUTER_API_KEY: ""
-  GOOGLE_API_KEY: ""
-  ZOHO_APP_PASSWORD: ""
-  NOWPAYMENTS_API_KEY: ""
-  NOWPAYMENTS_IPN_SECRET: ""
+  OTEL_ENABLED: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4318/v1/traces"
+  OTEL_SERVICE_NAME: "genyxo-backend-prod"

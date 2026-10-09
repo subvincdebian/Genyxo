@@ -1,0 +1,70 @@
+{{- if and .Values.backend.keda .Values.backend.keda.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "genyxo.fullname" . }}-keda-redis-auth
+  labels:
+    {{- include "genyxo.labels" . | nindent 4 }}
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: {{ include "genyxo.fullname" . }}-secrets
+      key: REDISPASSWORD
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "genyxo.fullname" . }}-backend-queue-scaler
+  labels:
+    {{- include "genyxo.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "genyxo.fullname" . }}-backend
+  pollingInterval: {{ .Values.backend.keda.pollingInterval | default 15 }}
+  cooldownPeriod: {{ .Values.backend.keda.cooldownPeriod | default 300 }}
+  minReplicaCount: {{ .Values.backend.keda.minReplicas | default 2 }}
+  maxReplicaCount: {{ .Values.backend.keda.maxReplicas | default 10 }}
+  advanced:
+    restoreToOriginalReplicaCount: false
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 15
+            - type: Pods
+              value: 4
+              periodSeconds: 15
+          selectPolicy: Max
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          policies:
+            - type: Percent
+              value: 20
+              periodSeconds: 60
+            - type: Pods
+              value: 1
+              periodSeconds: 60
+          selectPolicy: Min
+  triggers:
+    - type: redis
+      metadata:
+        address: {{ .Values.config.REDISHOST }}:{{ .Values.config.REDISPORT }}
+        listName: bull:email-queue:wait
+        listLength: "{{ .Values.backend.keda.listLength | default 10 }}"
+        enableTLS: "false"
+      authenticationRef:
+        name: {{ include "genyxo.fullname" . }}-keda-redis-auth
+    - type: redis
+      metadata:
+        address: {{ .Values.config.REDISHOST }}:{{ .Values.config.REDISPORT }}
+        listName: bull:email-queue:active
+        listLength: "25"
+        enableTLS: "false"
+      authenticationRef:
+        name: {{ include "genyxo.fullname" . }}-keda-redis-auth
+{{- end }}

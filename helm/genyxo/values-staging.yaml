@@ -1,0 +1,98 @@
+# ==============================================================
+# Staging Helm Values for Genyxo Platform
+# ==============================================================
+
+global:
+  environment: staging
+  domain: staging.genyxo.com
+
+backend:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/ayateagh/genyxo-backend
+    pullPolicy: Always
+    tag: "staging"
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: false
+  pdb:
+    enabled: false
+  keda:
+    enabled: false
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/ayateagh/genyxo-frontend
+    pullPolicy: Always
+    tag: "staging"
+  service:
+    type: ClusterIP
+    port: 3001
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 384Mi
+  autoscaling:
+    enabled: false
+  pdb:
+    enabled: false
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "15m"
+    nginx.ingress.kubernetes.io/limit-rps: "20"
+  hosts:
+    - host: staging.genyxo.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /v1
+          pathType: Prefix
+          service: backend
+        - path: /auth
+          pathType: Prefix
+          service: backend
+        - path: /health
+          pathType: Prefix
+          service: backend
+        - path: /docs
+          pathType: Prefix
+          service: backend
+        - path: /metrics
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls:
+    - secretName: genyxo-tls-staging
+      hosts:
+        - staging.genyxo.com
+
+config:
+  SITE_URL: "https://staging.genyxo.com"
+  ALLOWED_ORIGINS: "https://staging.genyxo.com"
+  MYSQLHOST: "genyxo-mysql-svc"
+  MYSQLPORT: "3306"
+  MYSQLDATABASE: "genyxo_staging"
+  REDISHOST: "genyxo-redis-svc"
+  REDISPORT: "6379"
+  OTEL_ENABLED: "false"
