@@ -7,7 +7,7 @@
 # ------------------------------------------
 # Stage 1: Dependencies Cache
 # ------------------------------------------
-FROM node:22-alpine AS dependencies
+FROM node:25-alpine AS dependencies
 WORKDIR /app
 
 # Install build tools if any native modules require compilation
@@ -19,7 +19,7 @@ RUN npm ci
 # ------------------------------------------
 # Stage 2: Application Builder
 # ------------------------------------------
-FROM node:22-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 
 COPY --from=dependencies /app/node_modules ./node_modules
@@ -34,7 +34,7 @@ RUN npm prune --omit=dev && npm cache clean --force
 # ------------------------------------------
 # Stage 3: Minimal Production Runner
 # ------------------------------------------
-FROM node:22-alpine AS runner
+FROM node:25-alpine AS runner
 WORKDIR /app
 
 # Install tini for PID 1 zombie reaping and proper POSIX signal propagation (SIGTERM/SIGINT)
