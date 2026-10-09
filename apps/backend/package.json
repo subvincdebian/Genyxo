@@ -86,7 +86,7 @@
     "htmlparser2": "^9.1.0",
     "ioredis": "^5.9.3",
     "marked": "^17.0.1",
-    "mysql2": "^3.15.3",
+    "mysql2": "^3.24.5",
     "nodemailer": "^8.0.11",
     "openai": "^6.9.1",
     "opossum": "^10.0.0",
@@ -100,7 +100,7 @@
     "sanitize-html": "^2.17.0",
     "socket.io": "4.8.3",
     "stripe": "^20.1.0",
-    "typeorm": "^0.3.27",
+    "typeorm": "^1.1.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
