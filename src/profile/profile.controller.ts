@@ -11,12 +11,16 @@ import { AuthGuard } from "@nestjs/passport";
 import { UsersService } from "../users/users.service";
 import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 
+@ApiTags("Profile")
+@ApiBearerAuth("JWT-auth")
 @Controller("profile")
 export class ProfileController {
   constructor(private usersService: UsersService) {}
 
   @UseGuards(AuthGuard("jwt"))
+  @ApiOperation({ summary: "Get current authenticated user profile" })
   @Get()
   async getProfile(@Request() req) {
     const userId = req.user.id;

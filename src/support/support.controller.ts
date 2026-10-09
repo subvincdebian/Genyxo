@@ -15,12 +15,16 @@ import { SupportService } from "./support.service";
 import { CreateTicketDto } from "./dto/create-ticket.dto";
 import { ResolveTicketDto } from "./dto/resolve-ticket.dto";
 import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
+import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 
+@ApiTags("Support")
+@ApiBearerAuth("JWT-auth")
 @Controller("support")
 @UseGuards(AuthGuard("jwt"))
 export class SupportController {
   constructor(private supportService: SupportService) {}
 
+  @ApiOperation({ summary: "Create support ticket" })
   @Post("create")
   async createTicket(@Request() req, @Body() dto: CreateTicketDto) {
     return this.supportService.create(

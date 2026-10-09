@@ -5,7 +5,12 @@ import * as dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
 
 import { NestFactory } from "@nestjs/core";
-import { ValidationPipe, Logger } from "@nestjs/common";
+import {
+  ValidationPipe,
+  Logger,
+  VersioningType,
+  VERSION_NEUTRAL,
+} from "@nestjs/common";
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -14,10 +19,11 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyCompress from "@fastify/compress";
 import * as zlib from "zlib";
 import * as Sentry from "@sentry/node";
+import { setupSwagger } from "./swagger.config";
 import { AppModule } from "./app.module";
 import { pinoConfig } from "./common/logger/pino.logger";
 import { MetricsInterceptor } from "./metrics/metrics.interceptor";
-import { SentryExceptionFilter } from "./common/filters/sentry-exception.filter";
+import { Rfc7807ExceptionFilter } from "./common/filters/rfc7807-exception.filter";
 
 function createFastifyAdapter(): FastifyAdapter {
   return new FastifyAdapter({
@@ -34,6 +40,11 @@ function createFastifyAdapter(): FastifyAdapter {
 async function configureApp(app: NestFastifyApplication) {
   app.enableShutdownHooks();
 
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: [VERSION_NEUTRAL, "1"],
+  });
+
   if (process.env.SENTRY_DSN) {
     Sentry.init({
       dsn: process.env.SENTRY_DSN,
@@ -42,7 +53,9 @@ async function configureApp(app: NestFastifyApplication) {
     });
   }
 
-  app.useGlobalFilters(new SentryExceptionFilter());
+  app.useGlobalFilters(new Rfc7807ExceptionFilter());
+
+  setupSwagger(app);
 
   const metricsInterceptor = app.get(MetricsInterceptor);
   app.useGlobalInterceptors(metricsInterceptor);
@@ -127,7 +140,7 @@ async function bootstrap() {
   Logger.log(`Application is running on: ${await app.getUrl()}`, "Bootstrap");
 }
 
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && !process.env.OPENAPI_GENERATE) {
   void bootstrap();
 }
 

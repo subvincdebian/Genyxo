@@ -12,7 +12,9 @@ import { RedisService } from "@liaoliaots/nestjs-redis";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { QUEUE_NAMES } from "../queues/queue.constants";
+import { ApiTags, ApiOperation } from "@nestjs/swagger";
 
+@ApiTags("Health")
 @SkipThrottle()
 @Controller("health")
 export class HealthController {
@@ -26,6 +28,7 @@ export class HealthController {
     private readonly emailQueue?: Queue,
   ) {}
 
+  @ApiOperation({ summary: "Kubernetes liveness probe" })
   @Get()
   @Get("liveness")
   checkLiveness() {
@@ -36,6 +39,7 @@ export class HealthController {
     };
   }
 
+  @ApiOperation({ summary: "Kubernetes readiness probe" })
   @Get("readiness")
   async checkReadiness() {
     const checks: Record<string, string> = {

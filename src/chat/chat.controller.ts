@@ -27,7 +27,9 @@ import { PricingService } from "./pricing.service";
 import { SendMessageDto } from "./dto/send-message.dto";
 import { StreamMessageDto } from "./dto/stream-message.dto";
 import * as crypto from "crypto";
+import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 
+@ApiTags("Chat")
 @Controller("chat")
 export class ChatController {
   constructor(
@@ -38,7 +40,9 @@ export class ChatController {
     private configService: ConfigService,
   ) {}
 
+  @ApiBearerAuth("JWT-auth")
   @UseGuards(AuthGuard("jwt"))
+  @ApiOperation({ summary: "Get all conversations for user" })
   @Get("conversations")
   async getConversations(@Request() req) {
     return this.chatService.getUserConversations(req.user.id);

@@ -12,13 +12,17 @@ import { Roles } from "../auth/decorators/roles.decorator";
 import { Role } from "../users/role.enum";
 import { AuditService } from "./audit.service";
 import { AuditLogQueryDto } from "./dto/audit-log-query.dto";
+import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 
+@ApiTags("Audit")
+@ApiBearerAuth("JWT-auth")
 @Controller("are-you-sure-you-want-to-admin/audit-logs")
 @UseGuards(AuthGuard("jwt"), RolesGuard)
 @Roles(Role.ADMIN)
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
+  @ApiOperation({ summary: "Query immutable audit logs" })
   @Get()
   async getAuditLogs(@Query() query: AuditLogQueryDto) {
     return this.auditService.findAll(query);

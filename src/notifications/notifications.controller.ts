@@ -10,12 +10,16 @@ import {
 import { AuthGuard } from "@nestjs/passport";
 import { NotificationsService } from "./notifications.service";
 import { ParseIntPipe } from "@nestjs/common";
+import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 
+@ApiTags("Notifications")
+@ApiBearerAuth("JWT-auth")
 @Controller("notifications")
 @UseGuards(AuthGuard("jwt"))
 export class NotificationsController {
   constructor(private service: NotificationsService) {}
 
+  @ApiOperation({ summary: "Get all notifications for authenticated user" })
   @Get()
   async getAll(@Request() req) {
     return this.service.getUserNotifications(req.user.id);
