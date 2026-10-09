@@ -8,6 +8,8 @@ import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { NotificationsService } from "../notifications/notifications.service";
 import { NotificationType } from "../notifications/notification.entity";
 import { RedisCacheService } from "../common/redis-cache.service";
+import { AuditService } from "../audit/audit.service";
+import { AuditAction } from "../audit/entities/audit-log.entity";
 
 @Injectable()
 export class AdminService {
@@ -20,6 +22,7 @@ export class AdminService {
     private ticketRepo: Repository<SupportTicket>,
     private readonly notificationsService: NotificationsService,
     private readonly redisCache: RedisCacheService,
+    private readonly auditService: AuditService,
   ) {}
 
   async getAllUsers(paginationQuery: PaginationQueryDto) {
@@ -123,7 +126,7 @@ export class AdminService {
     };
   }
 
-  async manualAddCredits(userId: number, amount: number) {
+  async manualAddCredits(userId: number, amount: number, actorId?: number) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
       select: ["id", "credits"],
@@ -133,6 +136,7 @@ export class AdminService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
+    const previousCredits = Number(user.credits || 0);
     const creditsToAdd = Number(amount);
     if (!isNaN(creditsToAdd) && creditsToAdd > 0) {
       await Promise.all([
@@ -144,7 +148,7 @@ export class AdminService {
           NotificationType.SYSTEM,
         ),
       ]);
-      user.credits = Number(user.credits) + creditsToAdd;
+      user.credits = previousCredits + creditsToAdd;
       await this.redisCache.invalidate(userId);
     } else {
       await this.notificationsService.create(
@@ -154,6 +158,17 @@ export class AdminService {
         NotificationType.SYSTEM,
       );
     }
+
+    await this.auditService.record({
+      action: AuditAction.CREDITS_MANUAL_ADD,
+      actorId: actorId ?? null,
+      userId,
+      resource: "users",
+      resourceId: String(userId),
+      oldValues: { credits: previousCredits },
+      newValues: { credits: user.credits },
+      metadata: { amount: creditsToAdd },
+    });
 
     return user;
   }

@@ -20,6 +20,8 @@ import { EmailModule } from "./email/email.module";
 import { RedisCacheModule } from "./common/redis-cache.module";
 import { HealthModule } from "./health/health.module";
 import { MetricsModule } from "./metrics/metrics.module";
+import { IdempotencyModule } from "./common/interceptors/idempotency.module";
+import { AuditModule } from "./audit/audit.module";
 
 @Module({
   imports: [
@@ -157,6 +159,8 @@ import { MetricsModule } from "./metrics/metrics.module";
     EmailModule,
     HealthModule,
     MetricsModule,
+    IdempotencyModule,
+    AuditModule,
   ],
   controllers: [],
   providers: [

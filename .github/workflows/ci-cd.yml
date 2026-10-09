@@ -2,9 +2,9 @@ name: Production CI/CD Pipeline
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
 
 permissions:
   contents: read
@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install Backend Dependencies
         run: npm ci
@@ -50,6 +50,12 @@ jobs:
       - name: Verify Frontend Build
         working-directory: ./frontend
         run: npm run build
+
+      - name: Secret Scan with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: false
 
   # ==============================================================
   # Job 2: Build & Push Container Images
@@ -123,11 +129,34 @@ jobs:
       - name: Run Trivy Vulnerability Scanner (Backend)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ env.IMAGE_BACKEND }}:${{ github.sha }}'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
+          image-ref: "${{ env.IMAGE_BACKEND }}:${{ github.sha }}"
+          format: "sarif"
+          output: "trivy-backend-results.sarif"
+          severity: "CRITICAL,HIGH"
         continue-on-error: true
+
+      - name: Run Trivy Vulnerability Scanner (Frontend)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ env.IMAGE_FRONTEND }}:${{ github.sha }}"
+          format: "sarif"
+          output: "trivy-frontend-results.sarif"
+          severity: "CRITICAL,HIGH"
+        continue-on-error: true
+
+      - name: Upload Backend Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-backend-results.sarif"
+          category: "trivy-backend"
+
+      - name: Upload Frontend Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-frontend-results.sarif"
+          category: "trivy-frontend"
 
   # ==============================================================
   # Job 4: Continuous Deployment (Kubernetes / Helm)

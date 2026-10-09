@@ -12,6 +12,7 @@ import { PaymentService } from "../payment/payment.service";
 import { JwtStrategy } from "../auth/jwt.strategy";
 import { UsersService } from "../users/users.service";
 import { Role } from "../users/role.enum";
+import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor";
 
 describe("Admin API authorization after removing legacy HTML", () => {
   let app: NestFastifyApplication;
@@ -42,7 +43,10 @@ describe("Admin API authorization after removing legacy HTML", () => {
         },
         { provide: PaymentService, useValue: {} },
       ],
-    }).compile();
+    })
+      .overrideInterceptor(IdempotencyInterceptor)
+      .useValue({ intercept: (_ctx: any, next: any) => next.handle() })
+      .compile();
     app = module.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(),
     );

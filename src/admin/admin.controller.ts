@@ -10,6 +10,7 @@ import {
   HttpCode,
   Query,
   Res,
+  UseInterceptors,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import type { FastifyReply } from "fastify";
@@ -21,6 +22,8 @@ import { AdminService } from "./admin.service";
 import { PaymentService } from "../payment/payment.service";
 import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { RolesGuard } from "../auth/guards/roles.guard";
+import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor";
+import { Idempotent } from "../common/decorators/idempotent.decorator";
 
 import { AdminAddCreditsDto } from "./dto/admin-add-credits.dto";
 import { AdminTransactionActionDto } from "./dto/admin-transaction-action.dto";
@@ -63,12 +66,20 @@ export class AdminController {
   }
 
   @Post("add-credits")
+  @UseInterceptors(IdempotencyInterceptor)
+  @Idempotent({ required: false, ttlSeconds: 86400 })
   async addCredits(@Request() req, @Body() dto: AdminAddCreditsDto) {
     this.checkAdmin(req.user);
-    return this.adminService.manualAddCredits(dto.userId, dto.amount);
+    return this.adminService.manualAddCredits(
+      dto.userId,
+      dto.amount,
+      req.user.id,
+    );
   }
 
   @Post("approve-transaction")
+  @UseInterceptors(IdempotencyInterceptor)
+  @Idempotent({ required: false, ttlSeconds: 86400 })
   @HttpCode(HttpStatus.OK)
   async approveTransaction(
     @Request() req,
@@ -82,6 +93,8 @@ export class AdminController {
   }
 
   @Post("decline-transaction")
+  @UseInterceptors(IdempotencyInterceptor)
+  @Idempotent({ required: false, ttlSeconds: 86400 })
   @HttpCode(HttpStatus.OK)
   async declineTransaction(
     @Request() req,

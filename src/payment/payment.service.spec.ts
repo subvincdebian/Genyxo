@@ -6,6 +6,7 @@ import { Transaction } from "../transactions/transaction.entity";
 import { UsersService } from "../users/users.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { ConfigService } from "@nestjs/config";
+import { AuditService } from "../audit/audit.service";
 
 describe("PaymentService", () => {
   let service: PaymentService;
@@ -20,6 +21,10 @@ describe("PaymentService", () => {
         {
           provide: ConfigService,
           useValue: { get: jest.fn().mockReturnValue("test-val") },
+        },
+        {
+          provide: AuditService,
+          useValue: { record: jest.fn() },
         },
       ],
     }).compile();

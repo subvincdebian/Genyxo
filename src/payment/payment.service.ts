@@ -26,6 +26,8 @@ import { NotificationType } from "../notifications/notification.entity";
 import { UsersService } from "../users/users.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { frontendUrl } from "../common/frontend-url";
+import { AuditService } from "../audit/audit.service";
+import { AuditAction } from "../audit/entities/audit-log.entity";
 
 export const PACKS: Record<
   number,
@@ -49,6 +51,7 @@ export class PaymentService {
     private usersService: UsersService,
     private notificationsService: NotificationsService,
     private configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {}
 
   async createPayment(userId: number, packId: number) {
@@ -169,16 +172,31 @@ export class PaymentService {
   ) {
     const transaction = await this.transactionRepo.findOne({
       where: { id: txId },
-      select: ["id", "status"],
+      select: ["id", "status", "userId"],
     });
 
     if (!transaction) throw new NotFoundException("Transaction not found.");
+
+    const previousStatus = transaction.status;
 
     if (newStatus === TransactionStatus.APPROVED) {
       await this.finalizeTransaction(txId);
     } else {
       await this.transactionRepo.update(txId, { status: newStatus });
     }
+
+    await this.auditService.record({
+      action:
+        newStatus === TransactionStatus.APPROVED
+          ? AuditAction.TRANSACTION_APPROVED
+          : AuditAction.TRANSACTION_DECLINED,
+      actorId: adminId,
+      userId: transaction.userId,
+      resource: "transactions",
+      resourceId: String(txId),
+      oldValues: { status: previousStatus },
+      newValues: { status: newStatus },
+    });
 
     this.logger.log(
       `Transaction ${txId} status updated to ${newStatus} by admin ${adminId}`,

@@ -60,6 +60,19 @@ async function configureApp(app: NestFastifyApplication) {
   await app.register(fastifyHelmet as any, {
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    noSniff: true,
+    originAgentCluster: true,
+    dnsPrefetchControl: { allow: false },
+    permittedCrossDomainPolicies: { permittedPolicies: "none" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    xssFilter: true,
+    frameguard: { action: "deny" },
   });
 
   await app.register(fastifyCompress as any, {
