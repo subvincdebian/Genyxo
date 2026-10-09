@@ -125,7 +125,7 @@ jobs:
 
       # Build Backend Image
       - name: Build & Push Backend Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./apps/backend
           file: ./apps/backend/Dockerfile
@@ -138,7 +138,7 @@ jobs:
 
       # Build Frontend Image
       - name: Build & Push Frontend Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./apps/web
           file: ./apps/web/Dockerfile
@@ -151,7 +151,7 @@ jobs:
 
       # Build Nginx Image
       - name: Build & Push Nginx Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./nginx
           file: ./nginx/Dockerfile
