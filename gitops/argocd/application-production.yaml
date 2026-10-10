@@ -12,7 +12,7 @@ metadata:
 spec:
   project: genyxo-project
   source:
-    repoURL: "https://github.com/subvincdebian/HostAISite.git"
+    repoURL: "https://github.com/subvincdebian/Genyxo.git"
     targetRevision: master
     path: helm/genyxo
     helm:

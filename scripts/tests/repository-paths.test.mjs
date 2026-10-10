@@ -37,6 +37,18 @@ test("GitOps repository and registry paths cannot silently drift apart", () => {
     },
   ];
   assert.doesNotThrow(() => checkDeploymentReferences(repositoryUrl, valid));
+  assert.doesNotThrow(() =>
+    checkDeploymentReferences(repositoryUrl, valid, "exampleowner/project"),
+  );
+  assert.throws(
+    () =>
+      checkDeploymentReferences(
+        repositoryUrl,
+        valid,
+        "exampleowner/renamed-project",
+      ),
+    /different GitHub repository/,
+  );
   assert.throws(
     () =>
       checkDeploymentReferences(repositoryUrl, [

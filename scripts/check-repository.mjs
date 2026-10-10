@@ -48,13 +48,24 @@ export function checkPackageLock(manifest, lock, label) {
   }
 }
 
-export function checkDeploymentReferences(repositoryUrl, references) {
+export function checkDeploymentReferences(
+  repositoryUrl,
+  references,
+  currentRepository,
+) {
   const repository = repositoryUrl.match(
     /^https:\/\/github\.com\/([^/]+\/[^/]+?)\.git$/,
   )?.[1];
   if (!repository)
     throw new Error(
       "Expected an explicit GitHub repository URL in the Argo project",
+    );
+  if (
+    currentRepository &&
+    repository.toLowerCase() !== currentRepository.toLowerCase()
+  )
+    throw new Error(
+      "Deployment references target a different GitHub repository; update them after a rename or fork",
     );
   const registryPrefix = `ghcr.io/${repository.toLowerCase()}/`;
   for (const reference of references) {
@@ -206,7 +217,11 @@ export function checkRepository(base = root) {
         label: file,
       });
   }
-  checkDeploymentReferences(repositoryUrl, deploymentReferences);
+  checkDeploymentReferences(
+    repositoryUrl,
+    deploymentReferences,
+    process.env.GITHUB_REPOSITORY,
+  );
   // Parse every raw Kubernetes document; duplicate keys are configuration errors.
   function checkYaml(directory) {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {

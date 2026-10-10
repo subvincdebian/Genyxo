@@ -11,9 +11,9 @@ metadata:
 spec:
   description: "Enterprise Production & Staging project for Genyxo Platform"
   sourceRepos:
-    - "https://github.com/subvincdebian/HostAISite.git"
     - "https://github.com/subvincdebian/Genyxo.git"
-    - "https://github.com/subvincdebian/HostAISite.git"
+    - "https://github.com/subvincdebian/Genyxo.git"
+    - "https://github.com/subvincdebian/Genyxo.git"
   destinations:
     - namespace: "genyxo"
       server: "https://kubernetes.default.svc"

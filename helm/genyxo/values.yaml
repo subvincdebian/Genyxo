@@ -10,7 +10,7 @@ global:
 backend:
   replicaCount: 3
   image:
-    repository: ghcr.io/subvincdebian/hostaisite/genyxo-backend
+    repository: ghcr.io/subvincdebian/genyxo/genyxo-backend
     pullPolicy: IfNotPresent
     tag: "latest"
   service:
@@ -44,7 +44,7 @@ backend:
 frontend:
   replicaCount: 2
   image:
-    repository: ghcr.io/subvincdebian/hostaisite/genyxo-frontend
+    repository: ghcr.io/subvincdebian/genyxo/genyxo-frontend
     pullPolicy: IfNotPresent
     tag: "latest"
   service:

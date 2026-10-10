@@ -32,7 +32,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: backend
-          image: ghcr.io/subvincdebian/hostaisite/genyxo-backend:latest
+          image: ghcr.io/subvincdebian/genyxo/genyxo-backend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
