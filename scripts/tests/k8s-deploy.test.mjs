@@ -70,7 +70,7 @@ fi
             DEPLOY_SCRIPT: shellPath(script),
           },
           encoding: "utf8",
-          timeout: 10_000,
+          timeout: 60_000,
         },
       ),
     commands: () =>

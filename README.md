@@ -24,6 +24,8 @@ development stack, use `./scripts/dev.sh up` or `./scripts/dev.ps1 -Action up`.
 
 ```sh
 npm run check
+npm run check:compose
+npm run test:tooling
 npm test -- --runInBand
 npm run build
 npm run contracts:sync
@@ -31,6 +33,15 @@ npm run contracts:sync
 
 Existing `frontend:*` commands remain aliases for `web:*` commands.
 Deployment commands are documented in [DEPLOYMENT.md](DEPLOYMENT.md).
+
+`check` also checks repository ownership, exact path casing and package/lockfile
+consistency. Infrastructure tests use Helm 3.19 and Bash; PowerShell launcher
+tests run when `pwsh` is available. Compose validation uses public example
+configuration and does not require a running Docker daemon.
+
+The repository does not publish npm packages or run semantic-release. Releases
+use the tested commit SHA for container images; deployment requirements and
+backup procedures are documented in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Production-success?style=for-the-badge" alt="Status" />

@@ -7,11 +7,19 @@ const configurations = [
   ["docker-compose.yml", "docker-compose.prod.yml"],
 ];
 for (const files of configurations) {
-  const result = spawnSync("docker", [
-    "compose", "--env-file", "apps/backend/.env.example",
-    ...files.flatMap((file) => ["-f", file]),
-    "config", "--no-env-resolution", "--quiet",
-  ], { cwd: fileURLToPath(new URL("../", import.meta.url)), encoding: "utf8" });
+  const result = spawnSync(
+    "docker",
+    [
+      "compose",
+      "--env-file",
+      "apps/backend/.env.example",
+      ...files.flatMap((file) => ["-f", file]),
+      "config",
+      "--no-env-resolution",
+      "--quiet",
+    ],
+    { cwd: fileURLToPath(new URL("../", import.meta.url)), encoding: "utf8" },
+  );
   if (result.error || result.status !== 0) {
     console.error(`Compose validation failed: ${files.join(" + ")}`);
     // Quiet validation uses public example values; never resolve runtime env_file secrets.

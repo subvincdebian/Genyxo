@@ -37,4 +37,10 @@ npm run start:prod
 Production image зберігає внутрішні шляхи `dist/main.js` та
 `dist/database/runner.js`.
 
+Для Vercel HTTP deployment Root Directory проєкту має бути `apps/backend`:
+`vercel.json` використовує локальний `src/main.ts`. Цю настройку задають
+у Vercel, вона не змінюється перенесенням файлів у Git. Persistent Socket.IO
+і BullMQ workers потребують окремого runtime; бази даних та міграції
+налаштовують окремо згідно з `DEPLOYMENT.md` у корені.
+
 Правила відповідальності та залежностей: [архітектура](../../docs/architecture.md).

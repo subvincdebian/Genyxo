@@ -1,3 +1,3 @@
-import { runMigrationsWithLock } from "../src/database/runner";
+import { runMigrationCli } from "../src/database/runner";
 
-void runMigrationsWithLock();
+void runMigrationCli();

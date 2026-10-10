@@ -12,7 +12,7 @@ metadata:
 spec:
   project: genyxo-project
   source:
-    repoURL: "https://github.com/AyateAgh/WebSiteNaZakaz.git"
+    repoURL: "https://github.com/subvincdebian/HostAISite.git"
     targetRevision: master
     path: helm/genyxo
     helm:
@@ -22,14 +22,14 @@ spec:
       parameters:
         - name: global.environment
           value: "production"
+        - name: secrets.existingSecret
+          value: "genyxo-secrets"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: genyxo
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-      allowEmpty: false
+    # CI owns production rollout by default. Enable automated GitOps only after
+    # disabling the CI deploy job and committing immutable image tags here.
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

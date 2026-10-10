@@ -24,7 +24,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: migration-runner
-          image: ghcr.io/ayateagh/genyxo-backend:latest
+          image: ghcr.io/subvincdebian/hostaisite/genyxo-backend:latest
           imagePullPolicy: IfNotPresent
           command: ["node", "dist/database/runner.js"]
           envFrom:

@@ -59,10 +59,32 @@ Production використовує secret management обраного сере�
 Compose залишається в корені та будує незалежні contexts застосунків.
 Для interpolation параметрів MySQL/Redis потрібно передавати
 `--env-file apps/backend/.env`; launcher scripts роблять це автоматично.
-Service names, image names, мережі та шляхи всередині контейнерів збережено,
-тому Helm/Kubernetes migration commands не змінюються.
+Service names, мережі та шляхи всередині контейнерів збережено,
+а contexts належать застосункам. Production Compose використовує окремий
+override і явну migration gate. GHCR repository у manifests відповідає
+lowercase image names, які публікує CI.
+
+Redis Socket.IO adapter працює лише у persistent backend bootstrap. Окремі
+pub/sub connections не ділять стан із cache/queue clients; shutdown звільняє
+їх і локальні BullMQ workers. Авторизаційний кеш спільний між репліками;
+локальний Map не дублює Redis. HTTP serverless handler не замінює persistent
+worker або realtime server.
+
+Міграції використовують виділене master-з'єднання для MySQL advisory lock.
+Compose, raw Kubernetes та Helm/Argo запускають їх перед rollout, із ненульовим
+exit code у разі помилки. Expand/contract сумісність схем, відновлення даних
+і staging validation залишаються вимогами до випуску.
 
 З кореня виконують `npm run check`, `npm test`, `npm run build`.
 Browser-тести: `npm run test:web` після web build та встановлення Chromium.
 Backend e2e: `npm run test:e2e` з доступними MySQL/Redis. Звичайний unit-test
 запуск не доводить працездатність production deployment чи зовнішніх API.
+
+`npm run check:repository` перевіряє ownership, lockfiles і точний регістр
+локальних Docker/CI/GitOps paths, включно на Windows. `check:compose` використовує
+публічний `.env.example` без resolution runtime secrets. `test:tooling` перевіряє
+реальний Helm rendering та сценарії помилок launcher scripts із mock commands.
+Ці команди включені в CI; generated API types також перевіряються на drift.
+
+Докладні вимоги до секретів, TLS, баз даних, одного deployment owner та
+межі offline-перевірок наведені в `DEPLOYMENT.md`.

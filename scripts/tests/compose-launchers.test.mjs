@@ -104,13 +104,13 @@ fi
                 ACTION: action,
               },
               encoding: "utf8",
-              timeout: 15_000,
+              timeout: 60_000,
             },
           )
         : spawnSync(pwsh, ["-NoProfile", "-File", script, "-Action", action], {
             env: childEnv,
             encoding: "utf8",
-            timeout: 15_000,
+            timeout: 60_000,
           });
     },
     commands: () =>

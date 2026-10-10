@@ -12,7 +12,7 @@ metadata:
 spec:
   project: genyxo-project
   source:
-    repoURL: "https://github.com/AyateAgh/WebSiteNaZakaz.git"
+    repoURL: "https://github.com/subvincdebian/HostAISite.git"
     targetRevision: master
     path: helm/genyxo
     helm:
@@ -22,6 +22,8 @@ spec:
       parameters:
         - name: global.environment
           value: "staging"
+        - name: secrets.existingSecret
+          value: "genyxo-secrets"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: genyxo-staging

@@ -1,203 +1,203 @@
-# Genyxo Platform - Infrastructure & Deployment Guide 🚀
+# Развёртывание Genyxo
 
-Документация по развертыванию, оркестрации и обслуживанию высоконагруженной производственной инфраструктуры **Genyxo**.
+Приложения находятся в `apps/backend` и `apps/web`. Общая инфраструктура
+остаётся в корне: `nginx/`, `k8s/`, `helm/`, `gitops/`, `scripts/`.
+Настройка приложений и границы модулей описаны в `docs/architecture.md`.
 
----
+## Локальная разработка
 
-## 🏗️ Архитектурный обзор
+Нужны Node.js 22+, npm, Docker Engine и актуальный Docker Compose v2+.
+Для проверки Helm используется версия 3.19.0.
 
-```mermaid
-flowchart TD
-    Client["🌐 HTTPS Clients (Browsers, Mobile, API)"]
-
-    subgraph Edge["Шлюз безопасности & Edge (Nginx)"]
-        Nginx["🛡️ Nginx Reverse Proxy (HTTP/2, SSL, Rate Limit)"]
-    end
-
-    subgraph Platform["Genyxo Core Platform"]
-        Frontend["🎨 Next.js 16 Frontend (SSR + Standalone) :3001"]
-        Backend["⚙️ NestJS 11 Fastify API + Socket.IO :3000"]
-    end
-
-    subgraph Data["Изолированный слой данных"]
-        MySQL[("🗄️ MySQL 8.4 LTS")]
-        Redis[("⚡ Redis 7 Cache & Throttler")]
-    end
-
-    Client -->|HTTPS :443| Nginx
-    Nginx -->|Pages, /_next/*, /api/*, /auth/*| Frontend
-    Nginx -->|Provider webhooks, /v1/*, health, docs, metrics| Backend
-    Nginx -->|WebSocket /socket.io/*| Backend
-    Frontend -->|Runtime HTTP proxy, BACKEND_URL| Backend
-    Backend -->|TypeORM Connection Pool| MySQL
-    Backend -->|IORedis Cache & Rate Limits| Redis
-```
-
----
-
-## ⚡ 1. Быстрый старт (Local Development)
-
-### Требования
-
-- Docker Engine 24+ & Docker Compose v2+
-- Node.js 22 LTS (опционально для запуска вне Docker)
-
-### Запуск стека разработки (с Hot-Reload и отладчиком)
-
-**Windows (PowerShell):**
-
-```powershell
-.\scripts\dev.ps1 -Action up
-```
-
-**Linux / macOS (Bash):**
-
-```bash
-chmod +x ./scripts/*.sh
-./scripts/dev.sh up
-```
-
-### Доступные эндпоинты в Dev-режиме:
-
-| Сервис               | Адрес                                                                            | Описание                                                            |
-| -------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **Frontend UI**      | [http://localhost:3001](http://localhost:3001)                                   | Next.js 16 с быстрым обновлением (HMR)                              |
-| **Backend API**      | [http://localhost:3000](http://localhost:3000)                                   | NestJS с nodemon/watch                                              |
-| **Backend Debugger** | `localhost:9229`                                                                 | Node Inspector для отладки в VS Code / Chrome DevTools              |
-| **Health Check**     | [http://localhost:3000/health/readiness](http://localhost:3000/health/readiness) | Проверка MySQL и Redis                                              |
-| **Redis Commander**  | [http://localhost:8081](http://localhost:8081)                                   | Веб-интерфейс просмотра ключей Redis                                |
-| **MySQL Database**   | `localhost:3306`                                                                 | Доступ для DataGrip / DBeaver (`user: root`, `pass: root_password`) |
-
----
-
-## 🚀 2. Развертывание в Production (Docker Compose)
-
-### Шаг 1: Конфигурация переменных окружения
-
-```bash
+```sh
+npm ci
+npm run deps:install
 cp apps/backend/.env.example apps/backend/.env
-# Заполните в apps/backend/.env ваши боевые ключи (JWT_SECRET, API-ключи AI, пароли БД)
+cp apps/web/.env.example apps/web/.env.local
+# Заполните параметры приложения перед запуском.
+bash scripts/dev.sh up
 ```
 
-Для прямого вызова Compose передавайте `--env-file apps/backend/.env`,
-например `docker compose --env-file apps/backend/.env up --build -d`.
-Скрипты запуска уже передают этот путь. Контексты сборки находятся в
-`apps/backend` и `apps/web`; backend environment file подключается из
-`apps/backend/.env`.
+Windows: `./scripts/dev.ps1 -Action up`.
+Dev Compose использует отдельные volumes и локальные пароли; API доступен
+на `localhost:3000`, web на `localhost:3001`, MySQL на `localhost:3306`,
+Redis на `localhost:6379`, Redis Commander на `localhost:8081`.
+Миграции dev-базы выполняют отдельно: `npm run db:migrate` с локальными
+MYSQLHOST/REDISHOST и параметрами доступа, либо из backend-контейнера.
 
-### Шаг 2: Запуск production стека
+## Production на одном Docker-хосте
 
-```bash
-# Windows
-.\scripts\prod.ps1 -Action up
+Подготовьте `apps/backend/.env` с настоящими паролями и ключами, корректными
+`SITE_URL`, `FRONTEND_URL`, `ALLOWED_ORIGINS` и callback URL провайдеров.
+Нельзя использовать пароли из примера. Production launcher не создаёт `.env`.
 
-# Linux / macOS
-./scripts/prod.sh up
+Разместите действительный TLS full chain в `nginx/ssl/cert.pem`, private key
+в `nginx/ssl/key.pem`. Файлы игнорируются Git и исключены из Docker context;
+в production они монтируются read-only. Настройте DNS и обновление сертификатов
+на хосте. Самоподписанные сертификаты разрешены только базовым локальным стеком.
+
+```sh
+bash scripts/prod.sh up
+# Windows: ./scripts/prod.ps1 -Action up
 ```
 
-### Что делает Production стек:
+Launcher использует `docker-compose.yml` и `docker-compose.prod.yml`:
+проверяет конфигурацию, собирает образы, запускает MySQL/Redis, выполняет
+`db-migrate`, затем запускает приложения с `up -d --wait`.
+Ошибка миграции прекращает rollout. Уже работающие приложения во время
+миграции остаются активны: изменения схемы должны быть совместимы с предыдущей
+версией (expand/contract). Откат образов не откатывает изменения базы данных.
+Перед рискованной миграцией нужен проверенный backup и план восстановления.
 
-1. Собирает минимальные образы на базе `node:22-alpine` без лишних dev-зависимостей.
-2. Запускает контейнеры под непривилегированными системными пользователями (`nestjs`, `nextjs`).
-3. Включает `tini` для корректной передачи сигналов SIGTERM и отсутствия процессов-зомби.
-4. Nginx слушает порты 80 и 443, автоматически генерирует самоподписанный SSL при отсутствии сертификатов в `nginx/ssl/` (или использует ваши боевые сертификаты).
-5. Базы данных изолированы в закрытой сети `backend_net` и недоступны напрямую из внешней сети.
+Backend имеет три реплики, web две, Nginx одну: его host ports фиксированы.
+Это конфигурация одного хоста; несколько хостов обслуживаются Kubernetes/Helm.
+Данный Compose не является поддерживаемым Docker Swarm stack.
+Для перезапуска используйте `restart`, для остановки `down`, просмотра `status`
+или `logs`. `down` без `--volumes` сохраняет данные.
 
----
+HTTP перенаправляется на HTTPS; `/health` и ACME challenge доступны по HTTP.
+Nginx направляет страницы, `/api/*`, `/auth/*` в Next.js, Socket.IO и прямые
+backend endpoints в NestJS. MySQL/Redis не публикуются наружу production-стеком.
+Redis использует `noeviction`, поскольку в нём также находятся BullMQ jobs;
+следите за памятью, очередями и ошибками записи.
 
-## 🐳 3. Оркестрация в Docker Swarm (High Availability)
+## Kubernetes: предварительные условия
 
-Для развертывания на кластере из нескольких серверов под управлением Docker Swarm:
+Нужны доступный кластер, registry access к образам, StorageClass/PVC для БД,
+MySQL и Redis, ingress-nginx, TLS/cert-manager и настроенный ClusterIssuer.
+HPA требует metrics-server; production Helm values с KEDA требуют KEDA CRDs
+и controller. Chart устанавливает приложения и migration Job, а не базы данных.
 
-```bash
-# Инициализация Swarm (если еще не инициализирован)
-docker swarm init
+Для raw manifests подготовьте реальный `k8s/02-secret.yaml` на основе
+`k8s/02-secret.example.yaml` и проверьте `k8s/01-configmap.yaml`.
+Файл настоящих секретов игнорируется Git. Не применяйте example как production.
+MySQL/Redis из `k8s/database/*-statefulset.yaml` при использовании внутренних
+БД должны быть готовы до deployment приложений. Сетевые политики предполагают
+MySQL/Redis в том же namespace с предусмотренными labels; внешние БД требуют
+соответствующего изменения egress.
 
-# Деплой стека с автоматическим масштабированием реплик и rolling updates
-docker stack deploy -c docker-compose.yml -c docker-compose.prod.yml genyxo
-
-# Проверка статуса сервисов
-docker stack services genyxo
+```sh
+bash scripts/k8s-deploy.sh
 ```
 
----
+Скрипт проверяет manifests, требует настоящий Secret, применяет базовую
+конфигурацию и политики, пересоздаёт migration Job и ждёт его завершения.
+Только после успеха применяются workloads и проверяется rollout.
+Укажите одинаковый неизменяемый image tag в backend Deployment и migration Job,
+а также нужный tag frontend, перед применением manifests.
 
-## ☸️ 4. Развертывание в Kubernetes (K8s)
+## Helm и секреты
 
-Все манифесты находятся в директории `k8s/`:
+Рекомендуемый путь: заранее подготовленный Secret `genyxo-secrets` в namespace
+релиза с ключами из `k8s/02-secret.example.yaml`. Значения должны соответствовать
+фактически настроенным MySQL/Redis и используемым интеграциям.
 
-- `00-namespace.yaml` — изолированное пространство `genyxo`
-- `01-configmap.yaml` — параметры конфигурации
-- `02-secret.example.yaml` — шаблон защищенных секретов
-- `03-backend-deployment.yaml` — бэкенд (3 реплики, RollingUpdate, Liveness/Readiness/Startup probes)
-- `03-frontend-deployment.yaml` — фронтенд (2 реплики)
-- `04-services.yaml` — ClusterIP сервисы
-- `05-hpa.yaml` — горизонтальное автоскейлирование по CPU и RAM (от 2 до 10 подов)
-- `06-pdb.yaml` — PodDisruptionBudget для гарантии нулевого простоя при обновлении нод
-- `07-ingress.yaml` — Ingress с поддержкой cert-manager (Let's Encrypt TLS) и WebSocket
-- `08-networkpolicy.yaml` — Zero-Trust изоляция сетевого трафика
-- `database/` — StatefulSets для MySQL и Redis (если базы хостятся внутри K8s)
+```sh
+helm lint helm/genyxo --set secrets.existingSecret=genyxo-secrets
+helm template genyxo helm/genyxo \
+  -f helm/genyxo/values-production.yaml \
+  --set secrets.existingSecret=genyxo-secrets
 
-### Применение манифестов в кластер:
-
-```bash
-chmod +x ./scripts/k8s-deploy.sh
-./scripts/k8s-deploy.sh
-```
-
----
-
-## 📦 5. Развертывание через Helm 3 Chart
-
-Готовый облачный Helm-чарт расположен в `helm/genyxo/`.
-
-```bash
-# Проверка синтаксиса и рендеринга чарта
-helm template genyxo ./helm/genyxo
-
-# Установка или обновление в кластере
-helm upgrade --install genyxo ./helm/genyxo \
+# IMAGE_TAG: опубликованный commit SHA или другой неизменяемый release tag.
+helm upgrade --install genyxo helm/genyxo \
   --namespace genyxo --create-namespace \
-  --set backend.image.tag="latest" \
-  --set secrets.JWT_SECRET="ваш_секретный_ключ" \
-  --set secrets.MYSQLPASSWORD="ваш_пароль_к_бд"
+  -f helm/genyxo/values-production.yaml \
+  --set-string secrets.existingSecret=genyxo-secrets \
+  --set-string backend.image.tag="$IMAGE_TAG" \
+  --set-string frontend.image.tag="$IMAGE_TAG" \
+  --atomic --wait --timeout 10m
 ```
 
----
+Managed Secret также поддерживается через закрытый values-файл в `.secrets/`;
+не передавайте секретные значения в shell arguments и не коммитьте их.
+Пустые обязательные credentials и известные placeholders останавливают rendering.
+Без `existingSecret` Helm хранит управляемые значения в release metadata: доступ
+к нему должен быть ограничен. Наличие внешнего Secret и сервисов проверяется
+при реальном запуске Job, а не при offline `helm template`.
 
-## 🛡️ 6. Nginx & Безопасность
+Pre-install/pre-upgrade и Argo PreSync запускают миграцию раньше workloads.
+Для Job создаётся отдельный migration ConfigMap, а для managed credentials
+отдельный migration Secret: неуспешная миграция не подменяет конфигурацию
+работающих приложений. Эти пассивные hook resources сохраняются до следующего
+запуска и не удаляются автоматически вместе с Helm release; после полного
+удаления приложения их очищают отдельно. `--atomic` не откатывает данные БД.
 
-Конфигурация Nginx в `nginx/`:
+## Реплики и realtime
 
-- **SSL / TLS**: Поддержка TLS 1.2 и TLS 1.3 с современными шифрами Mozilla Modern.
-- **WebSocket**: Директива `map $http_upgrade $connection_upgrade` и проксирование заголовков для бесперебойной работы сокетов уведомлений и чата.
-- **Rate Limiting**:
-  - Общий лимит API: `30 r/s` с буфером всплесков `burst=50 nodelay`.
-  - Защита авторизации: `5 r/s` с буфером `burst=10 nodelay`.
-- **Кэширование**: Статика Next.js `/_next/static/` кэшируется браузерами с `Cache-Control: public, max-age=31536000, immutable`.
-- **Заголовки безопасности**: `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Strict-Transport-Security`.
+Socket.IO использует Redis Pub/Sub для уведомлений между backend-репликами.
+Для polling нужна привязка к реплике: Docker Nginx использует `ip_hash`,
+Kubernetes — отдельный `/socket.io` Ingress с cookie `GENYXO_SID`, Path `/socket.io`.
+Web включает credentials для cross-origin socket connections; разрешённые
+origins должны точно соответствовать адресам frontend.
 
----
+Pub/Sub доставка best effort; постоянные уведомления читаются из БД.
+Auth-cache общий в Redis: изменение роли другой репликой становится видно
+после инвалидирования. Это не устраняет существующую гонку заполнения кеша
+одновременно с инвалидированием. Остановка backend закрывает локальные BullMQ
+workers и не ставит общую очередь на паузу. Persistent backend/worker обязателен
+для очередей и Socket.IO: Vercel HTTP handler сам их не заменяет.
 
-## 💾 7. Резервное копирование базы данных
+Migration runner держит advisory lock на выделенном master-соединении MySQL,
+освобождает его после миграций и завершает CLI с ошибкой после cleanup.
+Database errors не выводятся целиком в deployment logs.
 
-В комплект входит скрипт горячего резервного копирования MySQL с gzip-компрессией и ротацией:
+## CI и GitOps
 
-```bash
-# Запуск создания бэкапа
-./scripts/db-backup.sh
+`.github/workflows/ci-cd.yml` проверяет пути/lockfiles, Compose, deployment
+regressions, TypeScript/lint, backend tests, сборки, API contract drift и browser
+tests. Затем публикует образы в lowercase GHCR repository, сканирует backend,
+web и Nginx. HIGH/CRITICAL останавливают deployment; находки требуют устранения
+или отдельного обоснованного решения, их нельзя молча игнорировать.
 
-# Восстановление из бэкапа
-zcat /var/backups/genyxo/genyxo_backup_YYYYMMDD_HHMMSS.sql.gz | docker exec -i genyxo-mysql mysql -uroot -p$MYSQL_ROOT_PASSWORD genyxo
+Production job использует GitHub environment `production`, секрет `KUBECONFIG`
+(base64 kubeconfig), уже подготовленный `genyxo-secrets`, production values
+и одинаковый commit SHA для backend и migration Job. Отсутствие credentials
+является ошибкой. Настройте environment protection и registry pull access
+в самом GitHub/кластере; файлы репозитория не создают эти настройки.
+
+CI владеет production rollout по умолчанию. Production Argo Application
+оставлен с ручным sync. Для перехода на автоматический GitOps сначала отключите
+CI deploy и задайте неизменяемые image tags в GitOps-конфигурации; после этого
+включите automated sync. Два controller не должны одновременно менять release.
+Staging Application использует отдельный namespace и отдельные credentials.
+
+## Резервные копии и dev-сертификаты
+
+`bash scripts/db-backup.sh` сохраняет выбранную `MYSQL_DATABASE` (либо
+`MYSQLDATABASE`, по умолчанию `genyxo`) из `MYSQL_CONTAINER` (по умолчанию
+`genyxo-mysql`). `BACKUP_DIR` задаёт каталог; `RETENTION_DAYS` — целое число
+дней хранения, по умолчанию 14. Пароль берётся внутри контейнера из
+`MYSQL_ROOT_PASSWORD` и не передаётся в аргументах Docker/mysqldump.
+После успешного дампа и gzip временный приватный файл переименовывается
+в готовый архив; при ошибке неполный файл удаляется, старые копии сохраняются.
+Ротация выполняется после успешного сохранения. Проверяйте восстановление
+в отдельной БД и храните копии вне этого хоста; локальный архив не защищает
+от потери хоста. Дамп не включает MySQL accounts и grants других баз.
+
+Локальные сертификаты создаются `bash nginx/generate-dev-certs.sh` либо
+`./nginx/generate-dev-certs.ps1` с OpenSSL в PATH. Скрипты проверяют результат
+OpenSSL, очищают временные файлы при ошибке и сохраняют существующую пару.
+Неполная существующая пара требует ручной проверки. Сертификат содержит SAN
+для localhost/127.0.0.1 и предназначен для разработки.
+
+Автоматический npm release не используется: версия container release — commit
+SHA. Устаревший `.releaserc.json` удалён; неопределённые release plugins
+не добавляются в зависимости приложения.
+
+## Проверка перед выпуском
+
+```sh
+npm run check
+npm run check:compose
+npm run test:tooling
+npm test -- --runInBand
+npm run build
+npm run contracts:sync
+# Browser tests после сборки и установки Chromium:
+npm run test:web
 ```
 
----
-
-## 🔄 8. CI/CD Pipeline (GitHub Actions)
-
-Workflow-файл `.github/workflows/ci-cd.yml` автоматически выполняет:
-
-1. **Quality Gate**: Тестирование TypeScript, Jest тесты бэкенда, проверка сборки Next.js.
-2. **Build & Push**: Сборка образов Backend, Frontend и Nginx с кэшированием слоев в GitHub Container Registry (`ghcr.io`).
-3. **Security Scan**: Анализ образов сканером уязвимостей Trivy.
-4. **Deploy**: Автоматический роллаут в Kubernetes кластер через Helm.
+Backend e2e требует настоящих тестовых MySQL/Redis. Инфраструктурные тесты
+используют mocked Docker/kubectl; Helm tests проверяют настоящий rendering.
+Эти проверки не заменяют staging rollout, CNI/Ingress проверки, Redis failover,
+восстановление backup и нагрузочное тестирование перед production.

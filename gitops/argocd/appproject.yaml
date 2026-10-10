@@ -11,7 +11,7 @@ metadata:
 spec:
   description: "Enterprise Production & Staging project for Genyxo Platform"
   sourceRepos:
-    - "https://github.com/AyateAgh/WebSiteNaZakaz.git"
+    - "https://github.com/subvincdebian/HostAISite.git"
     - "https://github.com/subvincdebian/Genyxo.git"
     - "https://github.com/subvincdebian/HostAISite.git"
   destinations:
