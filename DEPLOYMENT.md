@@ -13,6 +13,11 @@ Compute включены. Домен принадлежит одному про�
 его вручную. `/socket.io/*`, `/health/*` и webhook endpoints идут прямо в NestJS.
 `NEXT_PUBLIC_SOCKET_URL` оставляют пустым для WebSocket на текущем домене.
 
+Для backend явно заданы `entrypoint: "src/main.ts"` и `outputDirectory: "."`.
+Это обход [ошибки сборщика Services](https://github.com/vercel/vercel/issues/17651):
+при использовании `dist` он размещает точку входа отдельно от зависимостей.
+Сборка из исходников сохраняет корректное разрешение модулей.
+
 TiDB, Upstash и ключи интеграций настраивают в Environment Variables проекта.
 `REDIS_URL` должен начинаться с `rediss://` для TLS. `FRONTEND_URL`, `SITE_URL`,
 OAuth callbacks и NOWPayments IPN URL должны указывать на публичный домен.

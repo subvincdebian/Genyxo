@@ -5,6 +5,8 @@
     "backend": {
       "root": "apps/backend",
       "framework": "nestjs",
+      "entrypoint": "src/main.ts",
+      "outputDirectory": ".",
       "functions": {
         "src/main.ts": { "maxDuration": 300 }
       }
