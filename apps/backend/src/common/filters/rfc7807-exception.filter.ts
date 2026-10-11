@@ -54,6 +54,8 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
+    // Callback URLs and OAuth query parameters can contain credentials.
+    const requestPath = String(request.url || "/").split("?")[0];
 
     if (response.sent) {
       return;
@@ -73,9 +75,8 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
     // Report unexpected server errors (5xx) to Sentry
     if (status >= 500 && process.env.SENTRY_DSN) {
       Sentry.withScope((scope) => {
-        scope.setTag("path", request.url);
+        scope.setTag("path", requestPath);
         scope.setTag("method", request.method);
-        scope.setExtra("headers", request.headers);
 
         if (correlationId) {
           scope.setTag("correlationId", correlationId);
@@ -136,7 +137,7 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
       title,
       status,
       detail,
-      instance: request.url,
+      instance: requestPath,
       timestamp: new Date().toISOString(),
       statusCode: status,
       message: detail,
@@ -152,12 +153,12 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
 
     if (status >= 500) {
       this.logger.error(
-        `[${request.method}] ${request.url} - ${status} ${title}: ${detail}`,
+        `[${request.method}] ${requestPath} - ${status} ${title}: ${detail}`,
         exception instanceof Error ? exception.stack : undefined,
       );
     } else {
       this.logger.warn(
-        `[${request.method}] ${request.url} - ${status} ${title}: ${detail}`,
+        `[${request.method}] ${requestPath} - ${status} ${title}: ${detail}`,
       );
     }
 

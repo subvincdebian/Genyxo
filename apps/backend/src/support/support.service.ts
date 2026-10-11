@@ -137,18 +137,14 @@ export class SupportService {
     ]);
 
     if (ticket.user.email) {
-      this.emailService
+      await this.emailService
         .sendSupportReply(
           ticket.user.email,
           ticket.user.name || "User",
           ticket.subject,
           response,
         )
-        .catch((err) =>
-          this.logger.error(
-            `Failed to send support reply email to ${ticket.user.email}: ${err.message}`,
-          ),
-        );
+        .catch(() => this.logger.error("Failed to send support reply email"));
     }
 
     return ticket;

@@ -84,13 +84,9 @@ export class AuthService {
       verificationToken: verificationToken,
     });
 
-    this.emailService
+    await this.emailService
       .sendVerificationEmail(newUser.email, verificationToken)
-      .catch((err) =>
-        this.logger.error(
-          `Failed to send verification email to ${newUser.email}: ${err.message}`,
-        ),
-      );
+      .catch(() => this.logger.error("Failed to send verification email"));
 
     return {
       message: "Registration successful. Please check your email to verify.",

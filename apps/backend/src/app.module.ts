@@ -38,8 +38,12 @@ import { QueuesModule } from "./queues/queues.module";
             enableReadyCheck: false,
             noDelay: true,
             keepAlive: 10000,
-            // ssl
-            tls: { rejectUnauthorized: false },
+            tls:
+              process.env.REDIS_URL.startsWith("rediss://") ||
+              process.env.REDIS_TLS === "true" ||
+              process.env.REDIS_SSL === "true"
+                ? { rejectUnauthorized: true }
+                : undefined,
           }
         : {
             host: process.env.REDISHOST || "localhost",
@@ -74,9 +78,9 @@ import { QueuesModule } from "./queues/queues.module";
         host: "smtp.zoho.eu",
         port: 587,
         secure: false,
-        pool: true,
-        maxConnections: 5,
-        maxMessages: 100,
+        ...(process.env.VERCEL
+          ? {}
+          : { pool: true as const, maxConnections: 5, maxMessages: 100 }),
         connectionTimeout: 10000,
         greetingTimeout: 10000,
         socketTimeout: 15000,
@@ -211,7 +215,9 @@ import { QueuesModule } from "./queues/queues.module";
     IdempotencyModule,
     AuditModule,
     ResilienceModule,
-    QueuesModule,
+    // A Vercel invocation cannot keep a BullMQ consumer running after response.
+    // Optional queue injection in EmailService falls back to awaited SMTP.
+    ...(process.env.VERCEL ? [] : [QueuesModule]),
   ],
   controllers: [],
   providers: [

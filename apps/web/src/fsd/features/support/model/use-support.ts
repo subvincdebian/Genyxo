@@ -75,11 +75,14 @@ export function useSupport() {
       )
         void reload();
     }
+    const resync = () => void reload();
     document.addEventListener("genyxo:notification", notification);
+    document.addEventListener("genyxo:notifications-resync", resync);
     return () => {
       mounted.abort();
       listRequest.current?.abort();
       document.removeEventListener("genyxo:notification", notification);
+      document.removeEventListener("genyxo:notifications-resync", resync);
       if (lifetime.current === mounted) lifetime.current = null;
     };
   }, [reload, router]);

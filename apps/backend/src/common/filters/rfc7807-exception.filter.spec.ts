@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   NotFoundException,
+  Logger,
 } from "@nestjs/common";
 import { Rfc7807ExceptionFilter } from "./rfc7807-exception.filter";
 
@@ -120,5 +121,21 @@ describe("Rfc7807ExceptionFilter", () => {
 
     expect(mockResponse.status).not.toHaveBeenCalled();
     expect(mockResponse.send).not.toHaveBeenCalled();
+  });
+
+  it("omits callback credentials from problem details and logger output", () => {
+    mockRequest.url = "/chat/webhook/video?secret=fixture-credential";
+    const warn = jest.spyOn(Logger.prototype, "warn").mockImplementation();
+    try {
+      filter.catch(new BadRequestException("Invalid payload"), mockHost);
+      expect(mockResponse.send).toHaveBeenCalledWith(
+        expect.objectContaining({ instance: "/chat/webhook/video" }),
+      );
+      expect(JSON.stringify(warn.mock.calls)).not.toContain(
+        "fixture-credential",
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
 });

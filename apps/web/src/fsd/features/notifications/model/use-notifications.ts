@@ -99,11 +99,14 @@ export function useNotifications() {
         /* Ignore malformed realtime messages. */
       }
     }
+    const resync = () => void reload();
     document.addEventListener("genyxo:notification", receive);
+    document.addEventListener("genyxo:notifications-resync", resync);
     return () => {
       mounted.abort();
       listRequest.current?.abort();
       document.removeEventListener("genyxo:notification", receive);
+      document.removeEventListener("genyxo:notifications-resync", resync);
       if (lifetime.current === mounted) lifetime.current = null;
     };
   }, [reload, router]);

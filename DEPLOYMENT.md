@@ -4,6 +4,33 @@
 остаётся в корне: `nginx/`, `k8s/`, `helm/`, `gitops/`, `scripts/`.
 Настройка приложений и границы модулей описаны в `docs/architecture.md`.
 
+## Vercel: Next.js и NestJS в одном проекте
+
+Корневой `vercel.json` определяет Services `web` и `backend`. В Vercel Root
+Directory оставляют пустым, Application Preset — Services; Node.js 24 и Fluid
+Compute включены. Домен принадлежит одному проекту. Next.js проксирует `/api/*`
+и `/auth/*` через автоматически созданный binding `BACKEND_URL`; не задавайте
+его вручную. `/socket.io/*`, `/health/*` и webhook endpoints идут прямо в NestJS.
+`NEXT_PUBLIC_SOCKET_URL` оставляют пустым для WebSocket на текущем домене.
+
+TiDB, Upstash и ключи интеграций настраивают в Environment Variables проекта.
+`REDIS_URL` должен начинаться с `rediss://` для TLS. `FRONTEND_URL`, `SITE_URL`,
+OAuth callbacks и NOWPayments IPN URL должны указывать на публичный домен.
+Миграции запускают перед выпуском из `apps/backend`: `npm run db:migrate:prod`
+после backend build; production не использует schema synchronization.
+
+NestJS использует один HTTP server с Redis Socket.IO adapter. Клиент подключается
+с `transports: ["websocket"]` и перечитывает уведомления после reconnect: Vercel
+закрывает соединение на лимите длительности функции (здесь 300 секунд).
+Постоянные BullMQ consumers на Vercel отключены; отправка SMTP ожидается до
+ответа HTTP, без фоновых повторных попыток. Платные AI API и платежи имеют
+собственные условия и не входят в бесплатный хостинг. Hobby допускает только
+некоммерческое использование; этот deployment не меняет условия провайдера.
+
+Документация: [Services](https://vercel.com/docs/services),
+[NestJS](https://vercel.com/docs/frameworks/backend/nestjs),
+[WebSockets](https://vercel.com/docs/functions/websockets).
+
 ## Локальная разработка
 
 Нужны Node.js 22+, npm, Docker Engine и актуальный Docker Compose v2+.

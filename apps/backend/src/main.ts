@@ -154,24 +154,7 @@ async function bootstrap() {
   Logger.log(`Application is running on: ${await app.getUrl()}`, "Bootstrap");
 }
 
-if (!process.env.VERCEL && !process.env.OPENAPI_GENERATE) {
+// Vercel's native NestJS runtime captures this HTTP server, including upgrades.
+if (!process.env.OPENAPI_GENERATE) {
   void bootstrap();
-}
-
-// Vercel Serverless
-let cachedApp: NestFastifyApplication;
-
-export default async function handler(req: any, res: any) {
-  if (!cachedApp) {
-    const adapter = createFastifyAdapter();
-    cachedApp = await NestFactory.create<NestFastifyApplication>(
-      AppModule,
-      adapter,
-    );
-    await configureApp(cachedApp);
-    await cachedApp.init();
-    await cachedApp.getHttpAdapter().getInstance().ready();
-  }
-  const fastifyInstance = cachedApp.getHttpAdapter().getInstance();
-  fastifyInstance.server.emit("request", req, res);
 }

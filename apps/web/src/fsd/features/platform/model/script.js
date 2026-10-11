@@ -423,10 +423,17 @@ export default function initialize(scope, context) {
     if (!token || typeof io === "undefined") return;
     if (socket) socket.disconnect();
     socket = io(`${SOCKET_ORIGIN}/notifications`, {
+      transports: ["websocket"],
       withCredentials: true,
       auth: {
         token,
       },
+    });
+    socket.on("connect", () => {
+      void updateNotificationsBadge();
+      scope.document.dispatchEvent(
+        new CustomEvent("genyxo:notifications-resync"),
+      );
     });
     socket.on("unread_count_update", (data) => {
       renderBadge(data.count);
@@ -591,19 +598,23 @@ export default function initialize(scope, context) {
   }
   function openCheckout(product) {
     currentProduct = product;
-    const productTrans =
-      scope.window.AppI18n?.translations?.products_data?.[product.id]
-        ? scope.window.AppI18n.translations.products_data[product.id]
-        : {
-            name: "AI Pack",
-            credits_label: "Credits",
-          };
+    const productTrans = scope.window.AppI18n?.translations?.products_data?.[
+      product.id
+    ]
+      ? scope.window.AppI18n.translations.products_data[product.id]
+      : {
+          name: "AI Pack",
+          credits_label: "Credits",
+        };
     scope.document.getElementById("checkoutImg").src = product.image;
     scope.document.getElementById("checkoutImg").alt = productTrans.name;
     scope.document.getElementById("checkoutName").textContent =
       productTrans.name;
-    scope.document.getElementById("checkoutCredits").textContent =
-      (productTrans.credits_label || productTrans.credits || "").replace(/\D/g, "");
+    scope.document.getElementById("checkoutCredits").textContent = (
+      productTrans.credits_label ||
+      productTrans.credits ||
+      ""
+    ).replace(/\D/g, "");
     scope.document.getElementById("checkoutPrice").textContent = product.price;
     scope.document.getElementById("checkoutTotal").textContent = product.price;
     checkoutModal.style.display = "flex";

@@ -86,7 +86,9 @@ test("catalogue, checkout, guest authentication forms and search actions", async
   await expect(page.locator("#searchResultsDropdown")).toBeVisible();
 });
 
-test("checkout uses the language dictionary and supports older translated credit labels", async ({ page }) => {
+test("checkout uses the language dictionary and supports older translated credit labels", async ({
+  page,
+}) => {
   await page.addInitScript(() => localStorage.setItem("appLang", "uk"));
   await mockApi(page);
   await page.goto("/");
@@ -342,6 +344,40 @@ test("notifications stay unread on failed mutation and accept safe realtime text
   await expect(page.locator(".notif-card img")).toHaveCount(0);
 });
 
+test("notifications reload messages missed while the socket was disconnected", async ({
+  page,
+}) => {
+  await authenticate(page);
+  let reconnected = false;
+  await mockApi(page, async (route, path) => {
+    if (path !== "/notifications") return false;
+    await route.fulfill({
+      json: reconnected
+        ? [
+            {
+              id: 9,
+              title: "Missed notification",
+              message: "Persisted during disconnect",
+              type: "INFO",
+              isRead: false,
+              createdAt: "2026-10-12T08:00:00Z",
+            },
+          ]
+        : [],
+    });
+    return true;
+  });
+  await page.goto("/notifications.html");
+  await expect(page.locator("#notifList")).toContainText("No notifications");
+  reconnected = true;
+  await page.evaluate(() =>
+    document.dispatchEvent(new Event("genyxo:notifications-resync")),
+  );
+  await expect(page.locator(".notif-card")).toContainText(
+    "Missed notification",
+  );
+});
+
 test("support sends the current DTO and preserves a draft on server failure", async ({
   page,
 }) => {
@@ -398,6 +434,8 @@ test("policy mobile menu opens and closes without missing DOM references", async
   await page.goto("/policies/privacy-policy.html");
   await page.locator("#toggleMobileMenu").click();
   await expect(page.locator("#mobileSidebar")).toHaveClass(/active/);
-  await page.locator("#sidebar-overlay").click({ position: { x: 380, y: 400 } });
+  await page
+    .locator("#sidebar-overlay")
+    .click({ position: { x: 380, y: 400 } });
   await expect(page.locator("#mobileSidebar")).not.toHaveClass(/active/);
 });

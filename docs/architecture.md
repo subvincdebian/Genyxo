@@ -64,11 +64,13 @@ Service names, мережі та шляхи всередині контейне�
 override і явну migration gate. GHCR repository у manifests відповідає
 lowercase image names, які публікує CI.
 
-Redis Socket.IO adapter працює лише у persistent backend bootstrap. Окремі
+Redis Socket.IO adapter працює у спільному backend bootstrap. Окремі
 pub/sub connections не ділять стан із cache/queue clients; shutdown звільняє
 їх і локальні BullMQ workers. Авторизаційний кеш спільний між репліками;
-локальний Map не дублює Redis. HTTP serverless handler не замінює persistent
-worker або realtime server.
+локальний Map не дублює Redis. Vercel використовує native NestJS runtime з
+Fluid Compute та WebSocket transport. Після reconnect клієнт перечитує стан
+сповіщень і підтримки. BullMQ на Vercel вимкнений: SMTP виконується до відповіді,
+без фонових повторних спроб; у постійному runtime workers збережені.
 
 Міграції використовують виділене master-з'єднання для MySQL advisory lock.
 Compose, raw Kubernetes та Helm/Argo запускають їх перед rollout, із ненульовим

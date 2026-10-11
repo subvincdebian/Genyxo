@@ -77,4 +77,27 @@ describe("EmailService", () => {
       }),
     );
   });
+
+  it("waits for SMTP delivery without a persistent queue", async () => {
+    let finish!: () => void;
+    mockMailer.sendMail.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const directService = new EmailService(mockMailer);
+    let completed = false;
+    const delivery = directService
+      .sendVerificationEmail("test@example.com", "token")
+      .then(() => {
+        completed = true;
+      });
+    await Promise.resolve();
+    expect(mockMailer.sendMail).toHaveBeenCalled();
+    expect(completed).toBe(false);
+    finish();
+    await delivery;
+    expect(completed).toBe(true);
+  });
 });

@@ -31,9 +31,9 @@ export class EmailService {
         );
         this.logger.log(`Verification email job enqueued for ${email}`);
         return;
-      } catch (error: any) {
+      } catch {
         this.logger.warn(
-          `Failed to enqueue verification email to BullMQ, falling back to direct send: ${error?.message}`,
+          "Failed to enqueue verification email; falling back to direct send",
         );
       }
     }
@@ -67,8 +67,8 @@ export class EmailService {
         `,
       });
       this.logger.log(`Verification email sent directly to ${email}`);
-    } catch (error) {
-      this.logger.error("Error sending verification email:", error);
+    } catch {
+      this.logger.error("Error sending verification email");
     }
   }
 
@@ -97,9 +97,9 @@ export class EmailService {
         );
         this.logger.log(`Support reply email job enqueued for ${email}`);
         return;
-      } catch (error: any) {
+      } catch {
         this.logger.warn(
-          `Failed to enqueue support reply email to BullMQ, falling back to direct send: ${error?.message}`,
+          "Failed to enqueue support reply email; falling back to direct send",
         );
       }
     }
@@ -143,8 +143,8 @@ export class EmailService {
         `,
       });
       this.logger.log(`Support reply email sent directly to ${email}`);
-    } catch (error) {
-      this.logger.error("Error sending support reply email:", error);
+    } catch {
+      this.logger.error("Error sending support reply email");
     }
   }
 

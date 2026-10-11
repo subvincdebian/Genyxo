@@ -13,6 +13,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
   Headers,
+  Query,
   Res,
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
@@ -160,18 +161,24 @@ export class ChatController {
   @Post("webhook/video")
   async handleFalWebhook(
     @Body() data: any,
-    @Headers("x-webhook-secret") secret: string,
+    @Headers("x-webhook-secret") headerSecret?: string,
+    @Query("secret") querySecret?: unknown,
   ) {
+    // FAL returns to the configured URL and does not add our custom header.
+    const secret =
+      headerSecret ??
+      (typeof querySecret === "string" ? querySecret : undefined);
     const configSecret = this.configService.get<string>("WEBHOOK_SECRET");
 
-    if (!secret || !configSecret || secret.length !== configSecret.length) {
+    if (!secret || !configSecret) {
       throw new ForbiddenException("Invalid webhook secret");
     }
-
-    const isMatch = crypto.timingSafeEqual(
-      Buffer.from(secret),
-      Buffer.from(configSecret),
-    );
+    const supplied = Buffer.from(secret);
+    const expected = Buffer.from(configSecret);
+    if (supplied.length !== expected.length) {
+      throw new ForbiddenException("Invalid webhook secret");
+    }
+    const isMatch = crypto.timingSafeEqual(supplied, expected);
     if (!isMatch) throw new ForbiddenException("Invalid webhook secret");
 
     const { request_id, status, payload } = data;

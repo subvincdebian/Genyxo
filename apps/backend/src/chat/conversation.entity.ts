@@ -12,7 +12,7 @@ import {
 import { User } from "../users/user.entity";
 import { Message } from "./message.entity";
 
-@Entity()
+@Entity("conversation")
 @Index(["userId", "updatedAt"])
 export class Conversation {
   @PrimaryGeneratedColumn()

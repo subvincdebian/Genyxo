@@ -9,6 +9,8 @@ export const pinoConfig: pino.LoggerOptions = {
     paths: [
       "req.headers.authorization",
       "req.headers.cookie",
+      "req.headers.x-webhook-secret",
+      "req.url",
       "password",
       "*.password",
       "token",
