@@ -1,7 +1,4 @@
-import { NodeSDK } from "@opentelemetry/sdk-node";
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
+import type { NodeSDK } from "@opentelemetry/sdk-node";
 
 const isOtelEnabled =
   process.env.OTEL_ENABLED === "true" ||
@@ -10,6 +7,24 @@ const isOtelEnabled =
 let sdk: NodeSDK | null = null;
 
 if (isOtelEnabled) {
+  // Load instrumentation synchronously before Nest, and only when configured.
+  /* eslint-disable @typescript-eslint/no-require-imports -- Synchronous loads preserve instrumentation order and Vercel dependency tracing. */
+  const {
+    NodeSDK,
+  }: typeof import("@opentelemetry/sdk-node") = require("@opentelemetry/sdk-node");
+  const {
+    getNodeAutoInstrumentations,
+  }: typeof import("@opentelemetry/auto-instrumentations-node") = require("@opentelemetry/auto-instrumentations-node");
+  const {
+    OTLPTraceExporter,
+  }: typeof import("@opentelemetry/exporter-trace-otlp-http") = require("@opentelemetry/exporter-trace-otlp-http");
+  const {
+    diag,
+    DiagConsoleLogger,
+    DiagLogLevel,
+  }: typeof import("@opentelemetry/api") = require("@opentelemetry/api");
+  /* eslint-enable @typescript-eslint/no-require-imports */
+
   if (process.env.OTEL_DEBUG === "true") {
     diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
   }
