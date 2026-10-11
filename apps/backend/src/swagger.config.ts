@@ -49,7 +49,9 @@ export function setupSwagger(app: any) {
 
   let isStaticPluginAvailable = false;
   try {
-    require.resolve("@fastify/static");
+    // Load the optional plugin so serverless tracing includes its runtime files.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("@fastify/static");
     isStaticPluginAvailable = true;
   } catch {
     isStaticPluginAvailable = false;
