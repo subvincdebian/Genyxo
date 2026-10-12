@@ -67,60 +67,63 @@ describe("RedisIoAdapter", () => {
     return { httpServer, adapter };
   }
 
-  it("delivers a user-room notification to a socket connected to another replica", async () => {
-    const first = createReplica();
-    const second = createReplica();
-    await Promise.all([first.adapter.connect(), second.adapter.connect()]);
-    const firstServer = first.adapter.createIOServer(0);
-    const secondServer = second.adapter.createIOServer(0);
-    servers.push(firstServer, secondServer);
-    const remoteNamespace = secondServer.of("/notifications");
-    remoteNamespace.on("connection", (socket) => {
-      void socket.join("user_7");
-    });
-    const namespaceReady = new Promise<void>((resolve) => {
-      remoteNamespace.once("connection", () => resolve());
-    });
-    await new Promise<void>((resolve) =>
-      second.httpServer.listen(0, "127.0.0.1", resolve),
-    );
-    const address = second.httpServer.address();
-    if (!address || typeof address === "string")
-      throw new Error("Missing test port");
-    const socket = new WebSocket(
-      `ws://127.0.0.1:${address.port}/socket.io/?EIO=4&transport=websocket`,
-    );
-    sockets.push(socket);
-    socket.addEventListener("message", (event) => {
-      const message = String(event.data);
-      if (message.startsWith("0")) socket.send("40/notifications,");
-    });
-    await namespaceReady;
-    const received = new Promise<string>((resolve) => {
+  it.each(["/socket.io", "/socket.io/"])(
+    "delivers an isolated user-room event across replicas through %s",
+    async (path) => {
+      const first = createReplica();
+      const second = createReplica();
+      await Promise.all([first.adapter.connect(), second.adapter.connect()]);
+      const firstServer = first.adapter.createIOServer(0);
+      const secondServer = second.adapter.createIOServer(0);
+      servers.push(firstServer, secondServer);
+      const remoteNamespace = secondServer.of("/notifications");
+      remoteNamespace.on("connection", (socket) => {
+        void socket.join("user_7");
+      });
+      const namespaceReady = new Promise<void>((resolve) => {
+        remoteNamespace.once("connection", () => resolve());
+      });
+      await new Promise<void>((resolve) =>
+        second.httpServer.listen(0, "127.0.0.1", resolve),
+      );
+      const address = second.httpServer.address();
+      if (!address || typeof address === "string")
+        throw new Error("Missing test port");
+      const socket = new WebSocket(
+        `ws://127.0.0.1:${address.port}${path}?EIO=4&transport=websocket`,
+      );
+      sockets.push(socket);
       socket.addEventListener("message", (event) => {
         const message = String(event.data);
-        if (message.startsWith("42/notifications,")) resolve(message);
+        if (message.startsWith("0")) socket.send("40/notifications,");
       });
-    });
+      await namespaceReady;
+      const received = new Promise<string>((resolve) => {
+        socket.addEventListener("message", (event) => {
+          const message = String(event.data);
+          if (message.startsWith("42/notifications,")) resolve(message);
+        });
+      });
 
-    firstServer
-      .of("/notifications")
-      .to("user_8")
-      .emit("new_notification", { title: "Other user" });
-    firstServer
-      .of("/notifications")
-      .to("user_7")
-      .emit("new_notification", { title: "Hello" });
+      firstServer
+        .of("/notifications")
+        .to("user_8")
+        .emit("new_notification", { title: "Other user" });
+      firstServer
+        .of("/notifications")
+        .to("user_7")
+        .emit("new_notification", { title: "Hello" });
 
-    expect(await received).toBe(
-      '42/notifications,["new_notification",{"title":"Hello"}]',
-    );
-    expect(jest.spyOn(sharedRedis, "duplicate")).toHaveBeenCalledTimes(4);
-    expect(jest.spyOn(clients[0], "publish")).toHaveBeenCalledWith(
-      "socket.io#/notifications#user_7#",
-      expect.any(Buffer),
-    );
-  });
+      expect(await received).toBe(
+        '42/notifications,["new_notification",{"title":"Hello"}]',
+      );
+      expect(jest.spyOn(sharedRedis, "duplicate")).toHaveBeenCalledTimes(4);
+      expect(jest.spyOn(clients[0], "publish")).toHaveBeenCalledWith(
+        "socket.io#/notifications#user_7#",
+        expect.any(Buffer),
+      );
+    },
+  );
 
   it("requires Redis readiness before creating a server", () => {
     const { adapter } = createReplica();

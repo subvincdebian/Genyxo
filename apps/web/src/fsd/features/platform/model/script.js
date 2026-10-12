@@ -424,6 +424,7 @@ export default function initialize(scope, context) {
     if (socket) socket.disconnect();
     socket = io(`${SOCKET_ORIGIN}/notifications`, {
       transports: ["websocket"],
+      addTrailingSlash: false,
       withCredentials: true,
       auth: {
         token,

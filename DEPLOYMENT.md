@@ -25,7 +25,8 @@ OAuth callbacks и NOWPayments IPN URL должны указывать на пу
 после backend build; production не использует schema synchronization.
 
 NestJS использует один HTTP server с Redis Socket.IO adapter. Клиент подключается
-с `transports: ["websocket"]` и перечитывает уведомления после reconnect: Vercel
+с `transports: ["websocket"]`, `addTrailingSlash: false` и перечитывает уведомления
+после reconnect. Путь `/socket.io` избегает redirect перед HTTP Upgrade; Vercel
 закрывает соединение на лимите длительности функции (здесь 300 секунд).
 Постоянные BullMQ consumers на Vercel отключены; отправка SMTP ожидается до
 ответа HTTP, без фоновых повторных попыток. Платные AI API и платежи имеют

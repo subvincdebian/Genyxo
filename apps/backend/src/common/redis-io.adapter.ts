@@ -59,7 +59,12 @@ export class RedisIoAdapter extends IoAdapter {
         "Socket.IO Redis adapter must connect before initialization",
       );
     }
-    const server: Server = super.createIOServer(port, options);
+    // Vercel's Next.js routing canonicalizes trailing slashes before upgrades.
+    // Accept both Socket.IO path forms so the client can avoid an HTTP redirect.
+    const server: Server = super.createIOServer(port, {
+      addTrailingSlash: false,
+      ...options,
+    });
     server.adapter(this.adapterConstructor);
     return server;
   }
