@@ -1,0 +1,10 @@
+{
+  "apps/backend/{src,test,scripts}/**/*.{ts,js}": [
+    "npm --prefix apps/backend run lint:staged --",
+    "npm --prefix apps/backend run format:staged --"
+  ],
+  "apps/web/{src,app,tests}/**/*.{ts,tsx,js,jsx}": [
+    "npm --prefix apps/web run lint"
+  ],
+  "*.{json,md,yml,yaml}": ["prettier --write"]
+}

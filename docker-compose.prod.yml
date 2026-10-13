@@ -1,0 +1,39 @@
+# Single-host Docker Compose production settings.
+# Use scripts/prod.sh or scripts/prod.ps1 to run migrations before rollout.
+# Multiple hosts use Kubernetes/Helm; this file is not a Swarm stack.
+services:
+  nginx:
+    environment:
+      NGINX_ALLOW_SELF_SIGNED: "false"
+    volumes:
+      - type: bind
+        source: ./nginx/ssl
+        target: /etc/nginx/ssl
+        read_only: true
+    deploy:
+      # Fixed host ports permit one edge instance on a single Docker host.
+      replicas: 1
+
+  frontend:
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.2"
+          memory: 256M
+
+  app:
+    environment:
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS in apps/backend/.env}
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1536M
+        reservations:
+          cpus: "0.5"
+          memory: 512M

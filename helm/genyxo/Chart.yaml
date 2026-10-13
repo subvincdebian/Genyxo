@@ -1,0 +1,15 @@
+apiVersion: v2
+name: genyxo
+description: Production-grade Helm Chart for Genyxo Platform (NestJS Backend + Next.js Frontend)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - genyxo
+  - nestjs
+  - nextjs
+  - fastify
+  - ai-platform
+maintainers:
+  - name: DevOps Team
+    email: devops@genyxo.com

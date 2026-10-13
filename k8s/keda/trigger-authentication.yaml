@@ -1,0 +1,13 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-redis-auth
+  namespace: genyxo
+  labels:
+    app.kubernetes.io/name: keda-redis-auth
+    app.kubernetes.io/part-of: genyxo-platform
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: genyxo-secrets
+      key: REDISPASSWORD

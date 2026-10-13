@@ -1,0 +1,214 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: genyxo-ingress
+  namespace: genyxo
+  labels:
+    app.kubernetes.io/name: genyxo-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/websocket-services: "genyxo-backend-svc"
+    nginx.ingress.kubernetes.io/limit-rps: "30"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: SAMEORIGIN";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - genyxo.com
+        - www.genyxo.com
+      secretName: genyxo-tls-secret
+  rules:
+    - host: genyxo.com
+      http:
+        paths:
+          - path: /chat/webhook/video
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs-json
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs-yaml
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Real-time WebSocket connection to NestJS
+          # Provider webhooks and operational endpoints
+          - path: /payment
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Frontend UI and Pages
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-frontend-svc
+                port:
+                  number: 3001
+    - host: www.genyxo.com
+      http:
+        paths:
+          - path: /chat/webhook/video
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs-json
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs-yaml
+            pathType: Exact
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Real-time WebSocket connection to NestJS
+          # Provider webhooks and operational endpoints
+          - path: /payment
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+          # Frontend UI and Pages
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-frontend-svc
+                port:
+                  number: 3001
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: genyxo-socket-ingress
+  namespace: genyxo
+  labels:
+    app.kubernetes.io/name: genyxo-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+    nginx.ingress.kubernetes.io/session-cookie-name: "GENYXO_SID"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/socket.io"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - genyxo.com
+        - www.genyxo.com
+      secretName: genyxo-tls-secret
+  rules:
+    - host: genyxo.com
+      http:
+        paths:
+          - path: /socket.io
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000
+    - host: www.genyxo.com
+      http:
+        paths:
+          - path: /socket.io
+            pathType: Prefix
+            backend:
+              service:
+                name: genyxo-backend-svc
+                port:
+                  number: 3000

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: genyxo
+  labels:
+    app.kubernetes.io/name: genyxo
+    app.kubernetes.io/part-of: genyxo-platform

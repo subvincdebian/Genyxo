@@ -1,0 +1,36 @@
+# Hooks use distinct names so failed migrations cannot replace workload configuration.
+# Keep passive hook resources until the next run; deleting on success would race the Job.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "genyxo.fullname" . }}-migration-config
+  labels:
+    {{- include "genyxo.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+    "argocd.argoproj.io/hook": PreSync
+    "argocd.argoproj.io/sync-wave": "-10"
+    "argocd.argoproj.io/hook-delete-policy": BeforeHookCreation
+data:
+  {{- include "genyxo.configData" . | nindent 2 }}
+{{- if not .Values.secrets.existingSecret }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "genyxo.fullname" . }}-migration-secrets
+  labels:
+    {{- include "genyxo.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+    "argocd.argoproj.io/hook": PreSync
+    "argocd.argoproj.io/sync-wave": "-10"
+    "argocd.argoproj.io/hook-delete-policy": BeforeHookCreation
+type: Opaque
+stringData:
+  {{- include "genyxo.secretData" . | nindent 2 }}
+{{- end }}

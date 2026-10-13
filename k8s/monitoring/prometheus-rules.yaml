@@ -1,0 +1,83 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: genyxo-alerts
+  namespace: genyxo
+  labels:
+    app.kubernetes.io/name: genyxo
+    app.kubernetes.io/part-of: genyxo-platform
+    role: alert-rules
+spec:
+  groups:
+    - name: genyxo.platform.rules
+      rules:
+        # High HTTP Error Rate
+        - alert: GenyxoHighHttpErrorRate
+          expr: |
+            (sum(rate(genyxo_http_requests_total{status_code=~"5.."}[5m]))
+            /
+            sum(rate(genyxo_http_requests_total[5m]))) * 100 > 2
+          for: 3m
+          labels:
+            severity: critical
+            tier: api
+          annotations:
+            summary: "Genyxo High HTTP 5xx error rate (>2%)"
+            description: 'Backend HTTP 5xx error rate is {{ $value | printf "%.2f" }}% over the last 5 minutes.'
+
+        # High Request Latency (p95 > 1.5s)
+        - alert: GenyxoHighHttpLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(genyxo_http_request_duration_seconds_bucket[5m])) by (le)) > 1.5
+          for: 5m
+          labels:
+            severity: warning
+            tier: performance
+          annotations:
+            summary: "Genyxo Backend p95 latency exceeds 1.5s"
+            description: 'Backend 95th percentile request latency is {{ $value | printf "%.2f" }}s over 5 minutes.'
+
+        # Event Loop Lag Critical (Node.js thread blocked)
+        - alert: GenyxoEventLoopLagCritical
+          expr: nodejs_eventloop_lag_seconds{namespace="genyxo"} > 0.25
+          for: 2m
+          labels:
+            severity: critical
+            tier: runtime
+          annotations:
+            summary: "Node.js Event Loop Lag critical (>250ms)"
+            description: "Instance {{ $labels.instance }} has an event loop lag of {{ $value }}s. Node.js thread may be blocked by sync work."
+
+        # Database Connection Pool Exhaustion
+        - alert: GenyxoDatabasePoolExhausted
+          expr: |
+            (genyxo_db_connections_active / (genyxo_db_connections_active + genyxo_db_connections_idle)) * 100 > 90
+          for: 2m
+          labels:
+            severity: critical
+            tier: database
+          annotations:
+            summary: "MySQL connection pool nearly exhausted (>90%)"
+            description: 'Database connection pool usage is {{ $value | printf "%.1f" }}% on instance {{ $labels.instance }}.'
+
+        # Redis Connection Down
+        - alert: GenyxoRedisDown
+          expr: genyxo_redis_status == 0
+          for: 1m
+          labels:
+            severity: critical
+            tier: cache
+          annotations:
+            summary: "Genyxo Redis connectivity lost"
+            description: "Backend instance {{ $labels.instance }} cannot connect to Redis cache/session store."
+
+        # Pod CrashLooping
+        - alert: GenyxoPodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total{namespace="genyxo"}[15m]) * 60 > 1
+          for: 5m
+          labels:
+            severity: critical
+            tier: infrastructure
+          annotations:
+            summary: "Pod is crash looping in genyxo namespace"
+            description: "Pod {{ $labels.pod }} is restarting more than once per minute."

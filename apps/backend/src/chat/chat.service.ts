@@ -1,0 +1,916 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  Logger,
+  Optional,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import OpenAI from "openai";
+import { GoogleGenerativeAI, Content } from "@google/generative-ai";
+import type { ServerResponse } from "http";
+import { fal } from "@fal-ai/client";
+import {
+  stringifyTokenEvent,
+  stringifyConversationEvent,
+  stringifyDoneEvent,
+  stringifyErrorEvent,
+} from "../common/serializers/chat-events.serializer";
+import { Message, IAttachedFile } from "./message.entity";
+import { Conversation } from "./conversation.entity";
+import { TransactionType } from "../transactions/transaction.entity";
+import { UsersService } from "../users/users.service";
+import { PricingService, ModelType } from "./pricing.service";
+import { FalService } from "./fal.service";
+import { CircuitBreakerService } from "../common/resilience/circuit-breaker.service";
+import { CIRCUIT_BREAKER_NAMES } from "../common/resilience/circuit-breaker.constants";
+
+@Injectable()
+export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+  private readonly maxInlineDataLength = 5_500_000;
+  private openRouter: OpenAI;
+  private googleAI: GoogleGenerativeAI;
+
+  constructor(
+    private configService: ConfigService,
+    private falService: FalService,
+    private pricingService: PricingService,
+    private usersService: UsersService,
+    @InjectRepository(Message) private messageRepository: Repository<Message>,
+    @InjectRepository(Conversation)
+    private conversationRepository: Repository<Conversation>,
+    @Optional() private readonly circuitBreakerService?: CircuitBreakerService,
+  ) {
+    this.openRouter = new OpenAI({
+      baseURL: "https://openrouter.ai/api/v1",
+      apiKey: this.configService.get("OPENROUTER_API_KEY"),
+      timeout: 60000,
+      maxRetries: 2,
+      defaultHeaders: {
+        "HTTP-Referer":
+          this.configService.get("SITE_URL") || "http://localhost:3000",
+        "X-Title": "Genyxo AI",
+      },
+    });
+
+    this.googleAI = new GoogleGenerativeAI(
+      this.configService.get("GOOGLE_API_KEY") || "",
+    );
+  }
+
+  private readonly conversationMetaCache = new Map<
+    string,
+    { data: Conversation; expiresAt: number }
+  >();
+  private readonly CONVERSATION_CACHE_TTL_MS = 60_000;
+  private readonly MAX_CONVERSATION_CACHE_SIZE = 5_000;
+
+  private getCachedConversation(
+    conversationId: number,
+    userId: number,
+  ): Conversation | null {
+    const key = `${conversationId}:${userId}`;
+    const hit = this.conversationMetaCache.get(key);
+    if (hit && hit.expiresAt > Date.now()) {
+      return hit.data;
+    }
+    return null;
+  }
+
+  private setCachedConversation(
+    conversationId: number,
+    userId: number,
+    chat: Conversation,
+  ) {
+    if (this.conversationMetaCache.size >= this.MAX_CONVERSATION_CACHE_SIZE) {
+      const firstKey = this.conversationMetaCache.keys().next().value;
+      if (firstKey !== undefined) this.conversationMetaCache.delete(firstKey);
+    }
+    this.conversationMetaCache.set(`${conversationId}:${userId}`, {
+      data: chat,
+      expiresAt: Date.now() + this.CONVERSATION_CACHE_TTL_MS,
+    });
+  }
+
+  private invalidateCachedConversation(conversationId: number, userId: number) {
+    this.conversationMetaCache.delete(`${conversationId}:${userId}`);
+  }
+
+  async saveMessage(
+    conversation: Conversation,
+    content: string,
+    sender: "user" | "bot",
+    model: string,
+    userId: number,
+    requestId?: string,
+    files: IAttachedFile[] | null = null,
+  ) {
+    const msg = this.messageRepository.create({
+      content,
+      sender,
+      model,
+      conversationId: conversation.id,
+      userId,
+      requestId,
+      files,
+    });
+    return this.messageRepository.save(msg);
+  }
+
+  async getHistory(conversationId: number) {
+    const messages = await this.messageRepository.find({
+      where: { conversationId },
+      select: ["id", "content", "sender", "createdAt"],
+      order: { createdAt: "ASC" },
+      take: 50,
+    });
+    return messages.map((m) => ({
+      role: m.sender === "bot" ? "assistant" : "user",
+      content: m.content,
+    }));
+  }
+
+  private canSendInlineToGemini(mimeType: string) {
+    return (
+      mimeType.startsWith("image/") ||
+      mimeType.startsWith("audio/") ||
+      mimeType.startsWith("video/") ||
+      mimeType.startsWith("text/") ||
+      mimeType === "application/pdf"
+    );
+  }
+
+  private canReadInlineText(mimeType: string) {
+    return (
+      mimeType.startsWith("text/") ||
+      mimeType === "application/json" ||
+      mimeType === "application/xml" ||
+      mimeType === "application/javascript" ||
+      mimeType === "application/typescript"
+    );
+  }
+
+  private getMaxOutputTokens() {
+    const configured = Number(
+      this.configService.get("CHAT_MAX_OUTPUT_TOKENS") || 12000,
+    );
+    if (!Number.isFinite(configured) || configured <= 0) return 12000;
+    return Math.min(Math.max(Math.floor(configured), 2048), 32768);
+  }
+
+  private async writeStreamChunk(
+    res: ServerResponse,
+    data: string,
+  ): Promise<boolean> {
+    if (!res.writable || res.destroyed) return false;
+    const canContinue = res.write(data);
+    if (!canContinue) {
+      await new Promise<void>((resolve) => {
+        const onDrain = () => {
+          res.off("close", onClose);
+          resolve();
+        };
+        const onClose = () => {
+          res.off("drain", onDrain);
+          resolve();
+        };
+        res.once("drain", onDrain);
+        res.once("close", onClose);
+      });
+    }
+    return !res.destroyed;
+  }
+
+  private decodeInlineText(data: string) {
+    try {
+      return Buffer.from(data, "base64").toString("utf8");
+    } catch {
+      return "";
+    }
+  }
+
+  private buildTextFilePrompt(file: IAttachedFile) {
+    const text =
+      file.data && this.canReadInlineText(file.mime_type || "")
+        ? this.decodeInlineText(file.data)
+        : "";
+    if (!text) return "";
+
+    return [
+      `[Attached file content: ${file.name || "attached file"} (${file.mime_type || "text/plain"})]`,
+      text,
+      `[End attached file: ${file.name || "attached file"}]`,
+    ].join("\n");
+  }
+
+  private buildGeminiFileParts(files: IAttachedFile[]) {
+    const parts: any[] = [];
+
+    for (const file of files) {
+      const mimeType = file.mime_type || "application/octet-stream";
+      const fileName = file.name || "attached file";
+      const fileSize =
+        typeof file.size === "number" ? `, ${file.size} bytes` : "";
+
+      parts.push({
+        text: `[Attached file: ${fileName}, ${mimeType}${fileSize}]`,
+      });
+
+      if (file.data && this.canSendInlineToGemini(mimeType)) {
+        parts.push({ inlineData: { data: file.data, mimeType } });
+      } else {
+        parts.push({
+          text: `[The file content is not available inline because this file type is not supported for direct AI inspection.]`,
+        });
+      }
+    }
+
+    return parts;
+  }
+
+  private normalizeAttachedFiles(files: IAttachedFile[] = []) {
+    return files.map((file) => {
+      const mimeType = file.mime_type || "application/octet-stream";
+      const normalized: IAttachedFile = {
+        mime_type: mimeType,
+        name: file.name || "attached file",
+        size: file.size,
+      };
+
+      if (
+        file.data &&
+        file.data.length <= this.maxInlineDataLength &&
+        this.canSendInlineToGemini(mimeType)
+      ) {
+        normalized.data = file.data;
+      }
+
+      return normalized;
+    });
+  }
+
+  async getUserConversations(userId: number) {
+    return this.conversationRepository.find({
+      where: { userId },
+      select: ["id", "title", "createdAt", "updatedAt"],
+      order: { updatedAt: "DESC" },
+      take: 100,
+    });
+  }
+
+  async getConversationMessages(userId: number, conversationId: number) {
+    const cached = this.getCachedConversation(conversationId, userId);
+    if (!cached) {
+      const conversation = await this.conversationRepository.findOne({
+        where: { id: conversationId, userId },
+        select: ["id", "title"],
+      });
+
+      if (!conversation) throw new NotFoundException("Chat not found");
+      this.setCachedConversation(conversationId, userId, conversation);
+    }
+
+    return this.messageRepository.find({
+      where: { conversationId },
+      order: { createdAt: "ASC" },
+      select: [
+        "id",
+        "content",
+        "sender",
+        "model",
+        "createdAt",
+        "type",
+        "files",
+        "requestId",
+      ],
+      take: 200,
+    });
+  }
+
+  private async getOrCreateConversation(
+    userId: number,
+    conversationId?: number,
+    firstMessage?: string,
+  ): Promise<Conversation> {
+    if (conversationId && conversationId !== 0) {
+      const cached = this.getCachedConversation(conversationId, userId);
+      if (cached) return cached;
+
+      const chat = await this.conversationRepository.findOne({
+        where: { id: conversationId, userId },
+        select: ["id", "title"],
+      });
+      if (!chat) throw new NotFoundException("Chat not found");
+      this.setCachedConversation(conversationId, userId, chat);
+      return chat;
+    }
+    const title = firstMessage ? firstMessage.substring(0, 30) : "New Chat";
+    const newChat = this.conversationRepository.create({
+      userId,
+      title: title,
+    });
+
+    const saved = await this.conversationRepository.save(newChat);
+    this.setCachedConversation(saved.id, userId, saved);
+    return saved;
+  }
+
+  async processMessage(
+    userId: number,
+    text: string,
+    model: string,
+    conversationId?: number,
+    files: IAttachedFile[] = [],
+    cost: number = 0,
+  ) {
+    const modelConfig = this.pricingService.getModelConfig(model);
+    if (!modelConfig) throw new BadRequestException("Unsupported model");
+    const normalizedFiles = this.normalizeAttachedFiles(files);
+
+    const displayTitle =
+      text ||
+      (normalizedFiles.length > 0
+        ? `Sent ${normalizedFiles.length} file(s)`
+        : "New Chat");
+    const conversation = await this.getOrCreateConversation(
+      userId,
+      conversationId,
+      displayTitle,
+    );
+
+    if (modelConfig.type === ModelType.VIDEO) {
+      const prompt = text || "Generate video based on provided source asset";
+      const [, requestId] = await Promise.all([
+        this.saveMessage(
+          conversation,
+          text,
+          "user",
+          model,
+          userId,
+          undefined,
+          normalizedFiles,
+        ),
+        this.falService.triggerVideoGeneration(prompt, model),
+      ]);
+
+      const botMsg = this.messageRepository.create({
+        content: "🎬 Video generating... Wait 1-2 minutes please.",
+        sender: "bot",
+        model,
+        conversationId: conversation.id,
+        userId,
+        requestId,
+      });
+      const [savedBotMsg, , creditsLeft] = await Promise.all([
+        this.messageRepository.save(botMsg),
+        cost > 0
+          ? this.usersService.logTransaction(
+              userId,
+              -cost,
+              TransactionType.SPEND,
+              `Used AI Model: ${model}`,
+            )
+          : Promise.resolve(null),
+        this.usersService.getBalance(userId),
+      ]);
+
+      return {
+        botReply: savedBotMsg.content,
+        conversationId: conversation.id,
+        messageId: savedBotMsg.id,
+        creditsLeft,
+        status: "processing",
+      };
+    } else {
+      let dbMessages: Message[];
+      if (!conversationId || conversationId === 0) {
+        const userMsg = await this.saveMessage(
+          conversation,
+          text,
+          "user",
+          model,
+          userId,
+          undefined,
+          normalizedFiles,
+        );
+        dbMessages = [userMsg];
+      } else {
+        const [userMsg, recentHistory] = await Promise.all([
+          this.saveMessage(
+            conversation,
+            text,
+            "user",
+            model,
+            userId,
+            undefined,
+            normalizedFiles,
+          ),
+          this.messageRepository.find({
+            where: { conversationId: conversation.id },
+            select: ["id", "content", "sender", "model", "createdAt", "files"],
+            order: { createdAt: "DESC" },
+            take: 9,
+          }),
+        ]);
+        dbMessages = [...recentHistory.reverse(), userMsg];
+      }
+
+      const aiResponse = await this.getAiResponse(dbMessages, model);
+      const [botMsg, , creditsLeft] = await Promise.all([
+        this.saveMessage(conversation, aiResponse.reply, "bot", model, userId),
+        cost > 0
+          ? this.usersService.logTransaction(
+              userId,
+              -cost,
+              TransactionType.SPEND,
+              `Used AI Model: ${model}`,
+            )
+          : Promise.resolve(null),
+        this.usersService.getBalance(userId),
+      ]);
+
+      return {
+        botReply: botMsg.content,
+        conversationId: conversation.id,
+        messageId: botMsg.id,
+        creditsLeft,
+        status: "done",
+      };
+    }
+  }
+
+  async processStreamingMessage(
+    userId: number,
+    text: string,
+    model: string,
+    conversationId: number | undefined,
+    cost: number,
+    files: IAttachedFile[],
+    res: ServerResponse,
+  ) {
+    const abortController = new AbortController();
+    const streamTimeout = setTimeout(() => {
+      abortController.abort();
+    }, 45000);
+
+    res.on("close", () => {
+      clearTimeout(streamTimeout);
+      abortController.abort();
+    });
+
+    try {
+      const normalizedFiles = this.normalizeAttachedFiles(files);
+      const displayTitle =
+        text ||
+        (normalizedFiles.length > 0
+          ? `Sent ${normalizedFiles.length} file(s)`
+          : "New Chat");
+      const conversation = await this.getOrCreateConversation(
+        userId,
+        conversationId,
+        displayTitle,
+      );
+
+      res.write(
+        `data: ${stringifyConversationEvent({
+          status: "conversation",
+          conversationId: conversation.id,
+          conversationTitle: conversation.title,
+        })}\n\n`,
+      );
+
+      let fullReply = "";
+
+      let dbMessages: Message[];
+      if (!conversationId || conversationId === 0) {
+        const userMsg = await this.saveMessage(
+          conversation,
+          text,
+          "user",
+          model,
+          userId,
+          undefined,
+          normalizedFiles,
+        );
+        dbMessages = [userMsg];
+      } else {
+        const [userMsg, recentHistory] = await Promise.all([
+          this.saveMessage(
+            conversation,
+            text,
+            "user",
+            model,
+            userId,
+            undefined,
+            normalizedFiles,
+          ),
+          this.messageRepository.find({
+            where: { conversationId: conversation.id },
+            select: ["id", "content", "sender", "model", "createdAt", "files"],
+            order: { createdAt: "DESC" },
+            take: 9,
+          }),
+        ]);
+        dbMessages = [...recentHistory.reverse(), userMsg];
+      }
+
+      if (model.startsWith("google/gemini")) {
+        const geminiModelName = model.replace("google/", "");
+        const generativeModel = this.googleAI.getGenerativeModel(
+          {
+            model: geminiModelName,
+          },
+          { timeout: 60000 },
+        );
+
+        const contents: Content[] = [];
+        let lastRole: string | null = null;
+
+        for (const m of dbMessages) {
+          const role = m.sender === "bot" ? "model" : "user";
+          const isLastMessage = m.id === dbMessages[dbMessages.length - 1].id;
+
+          const textPart = m.content ? { text: m.content } : { text: " " };
+          const parts: any[] = [textPart];
+
+          if (isLastMessage && m.files && m.files.length > 0) {
+            parts.push(...this.buildGeminiFileParts(m.files));
+          } else if (m.files && m.files.length > 0) {
+            parts.push({
+              text: `[Earlier attached file(s): ${m.files.map((file) => file.name || "attached file").join(", ")}]`,
+            });
+          }
+
+          if (lastRole === role && contents.length > 0) {
+            contents[contents.length - 1].parts.push(...parts);
+          } else {
+            contents.push({ role, parts });
+          }
+          lastRole = role;
+        }
+
+        const resultStream = await generativeModel.generateContentStream(
+          {
+            contents,
+            generationConfig: {
+              maxOutputTokens: this.getMaxOutputTokens(),
+            },
+          },
+          { signal: abortController.signal },
+        );
+
+        for await (const chunk of resultStream.stream) {
+          if (abortController.signal.aborted) break;
+
+          const content = chunk.text() || "";
+          if (content) {
+            fullReply += content;
+            const canContinue = await this.writeStreamChunk(
+              res,
+              `data: ${stringifyTokenEvent({ token: content, conversationId: conversation.id })}\n\n`,
+            );
+            if (!canContinue) break;
+          }
+        }
+      } else {
+        const openRouterMessages = dbMessages.map((m) => {
+          const role = m.sender === "bot" ? "assistant" : "user";
+          const isLastMessage = m.id === dbMessages[dbMessages.length - 1].id;
+
+          if (m.sender === "bot") {
+            return { role, content: m.content || " " };
+          }
+
+          const hasFiles = isLastMessage && m.files && m.files.length > 0;
+
+          if (!hasFiles) {
+            return { role, content: m.content || " " };
+          }
+
+          const contentArray: any[] = [];
+          if (m.content) {
+            contentArray.push({ type: "text", text: m.content });
+          }
+
+          for (const file of m.files!) {
+            const mimeType = file.mime_type || "application/octet-stream";
+            contentArray.push({
+              type: "text",
+              text: `[Attached file: ${file.name || "attached file"} (${mimeType})]`,
+            });
+
+            if (mimeType.startsWith("image/") && file.data) {
+              contentArray.push({
+                type: "image_url",
+                image_url: { url: `data:${mimeType};base64,${file.data}` },
+              });
+            } else if (file.data && this.canReadInlineText(mimeType)) {
+              contentArray.push({
+                type: "text",
+                text: this.buildTextFilePrompt(file),
+              });
+            } else {
+              contentArray.push({
+                type: "text",
+                text: `[User uploaded document: ${file.name || "attached file"}]`,
+              });
+            }
+          }
+
+          return { role, content: contentArray };
+        });
+
+        const createStreamCall = () =>
+          this.openRouter.chat.completions.create(
+            {
+              model: model,
+              messages: openRouterMessages as any,
+              stream: true,
+              max_tokens: this.getMaxOutputTokens(),
+            },
+            { signal: abortController.signal },
+          );
+
+        const response = this.circuitBreakerService
+          ? await this.circuitBreakerService.execute(
+              CIRCUIT_BREAKER_NAMES.OPENROUTER_CHAT,
+              createStreamCall,
+            )
+          : await createStreamCall();
+
+        for await (const chunk of response) {
+          const content = chunk.choices[0]?.delta?.content || "";
+          if (content) {
+            fullReply += content;
+            const canContinue = await this.writeStreamChunk(
+              res,
+              `data: ${stringifyTokenEvent({ token: content, conversationId: conversation.id })}\n\n`,
+            );
+            if (!canContinue) break;
+          }
+        }
+      }
+
+      if (!fullReply.trim()) {
+        await Promise.all([
+          this.usersService.addCredits(userId, cost),
+          this.usersService.logTransaction(
+            userId,
+            cost,
+            TransactionType.REFUND,
+            `Stream Error Refund: ${model}`,
+          ),
+        ]);
+        res.write(
+          `data: ${stringifyErrorEvent({ error: "Empty response received from AI model" })}\n\n`,
+        );
+        res.end();
+        return;
+      }
+
+      const [savedMsg, , creditBalance] = await Promise.all([
+        this.saveMessage(conversation, fullReply, "bot", model, userId),
+        this.usersService.logTransaction(
+          userId,
+          -cost,
+          TransactionType.SPEND,
+          `AI: ${model}`,
+        ),
+        this.usersService.getBalance(userId),
+      ]);
+
+      res.write(
+        `data: ${stringifyDoneEvent({
+          status: "done",
+          messageId: savedMsg.id,
+          creditBalance,
+        })}\n\n`,
+      );
+      res.end();
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        this.logger.warn(`User ${userId} aborted the stream`);
+        res.end();
+        return;
+      }
+
+      this.logger.error(`Stream Error: ${error.message}`);
+
+      await Promise.all([
+        this.usersService.addCredits(userId, cost),
+        this.usersService.logTransaction(
+          userId,
+          cost,
+          TransactionType.REFUND,
+          `Stream Error Refund: ${model}`,
+        ),
+      ]);
+
+      res.write(
+        `data: ${stringifyErrorEvent({ error: error.message || "Connection lost or payload too large" })}\n\n`,
+      );
+      res.end();
+    } finally {
+      clearTimeout(streamTimeout);
+    }
+  }
+
+  async getMessageById(id: number) {
+    return this.messageRepository.findOne({
+      where: { id },
+      select: ["id", "userId", "content"],
+    });
+  }
+
+  async updateVideoUrl(requestId: string, videoUrl: string) {
+    await this.messageRepository.update({ requestId }, { content: videoUrl });
+  }
+
+  async getAiResponse(dbMessages: Message[], model: string) {
+    try {
+      if (model.includes("dall-e")) {
+        const lastMsg = dbMessages[dbMessages.length - 1];
+        const generateImgCall = () =>
+          this.openRouter.images.generate({
+            model: "openai/dall-e-3",
+            prompt: lastMsg.content,
+            n: 1,
+          });
+
+        const completion = this.circuitBreakerService
+          ? await this.circuitBreakerService.execute(
+              CIRCUIT_BREAKER_NAMES.OPENROUTER_IMAGE,
+              generateImgCall,
+            )
+          : await generateImgCall();
+
+        if (!completion.data || completion.data.length === 0) {
+          throw new Error("No image generated");
+        }
+        return {
+          reply: `Here is your image: <br><img src="${completion.data[0].url}" class="chat-img">`,
+          tokensUsed: 120,
+        };
+      }
+
+      if (model.startsWith("google/gemini")) {
+        const geminiModelName = model.replace("google/", "");
+        const generativeModel = this.googleAI.getGenerativeModel(
+          {
+            model: geminiModelName,
+          },
+          { timeout: 60000 },
+        );
+
+        const lastMsgId = dbMessages[dbMessages.length - 1]?.id;
+        const contents: Content[] = dbMessages.map((m) => {
+          const role = m.sender === "bot" ? "model" : "user";
+          const isLastMessage = m.id === lastMsgId;
+          const parts: any[] = [];
+
+          if (m.content) parts.push({ text: m.content });
+
+          if (isLastMessage && m.files && m.files.length > 0) {
+            parts.push(...this.buildGeminiFileParts(m.files));
+          } else if (m.files && m.files.length > 0) {
+            parts.push({
+              text: `[Earlier attached file(s): ${m.files.map((file) => file.name || "attached file").join(", ")}]`,
+            });
+          }
+
+          if (parts.length === 0) parts.push({ text: " " });
+          return { role, parts };
+        });
+
+        const result = await generativeModel.generateContent({
+          contents,
+          generationConfig: { maxOutputTokens: this.getMaxOutputTokens() },
+        });
+        return {
+          reply: result.response.text() || "AI did not respond",
+          tokensUsed: result.response.usageMetadata?.totalTokenCount || 0,
+        };
+      }
+
+      const lastMsgId = dbMessages[dbMessages.length - 1]?.id;
+      const openRouterMessages = dbMessages.map((m) => {
+        const role = m.sender === "bot" ? "assistant" : "user";
+        if (m.sender === "bot") return { role, content: m.content || " " };
+
+        const isLastMessage = m.id === lastMsgId;
+        const hasFiles = isLastMessage && m.files && m.files.length > 0;
+
+        if (!hasFiles) {
+          return { role, content: m.content || " " };
+        }
+
+        const contentArray: any[] = [];
+        if (m.content) contentArray.push({ type: "text", text: m.content });
+
+        for (const file of m.files!) {
+          const mimeType = file.mime_type || "application/octet-stream";
+          contentArray.push({
+            type: "text",
+            text: `[Attached file: ${file.name || "attached file"} (${mimeType})]`,
+          });
+
+          if (mimeType.startsWith("image/") && file.data) {
+            contentArray.push({
+              type: "image_url",
+              image_url: { url: `data:${mimeType};base64,${file.data}` },
+            });
+          } else if (file.data && this.canReadInlineText(mimeType)) {
+            contentArray.push({
+              type: "text",
+              text: this.buildTextFilePrompt(file),
+            });
+          } else {
+            contentArray.push({
+              type: "text",
+              text: `[Attached file: ${file.name || "attached file"}]`,
+            });
+          }
+        }
+
+        return { role, content: contentArray };
+      });
+
+      const createChatCall = () =>
+        this.openRouter.chat.completions.create({
+          model,
+          messages: openRouterMessages as any,
+          max_tokens: this.getMaxOutputTokens(),
+          temperature: 0.7,
+        });
+
+      const completion = this.circuitBreakerService
+        ? await this.circuitBreakerService.execute(
+            CIRCUIT_BREAKER_NAMES.OPENROUTER_CHAT,
+            createChatCall,
+          )
+        : await createChatCall();
+
+      return {
+        reply: completion.choices[0].message.content || "AI did not respond",
+        tokensUsed: completion.usage?.total_tokens || 0,
+      };
+    } catch (error: any) {
+      this.logger.error("API Error in getAiResponse:", error.message);
+      throw error;
+    }
+  }
+
+  async generateVideo(prompt: string, model: string) {
+    try {
+      const webhookUrl = `${this.configService.get("SITE_URL")}/chat/webhook/video?secret=${this.configService.get("WEBHOOK_SECRET")}`;
+
+      const modelTarget = model.startsWith("fal-ai/")
+        ? model
+        : `fal-ai/${model}`;
+
+      const submitFalCall = () =>
+        fal.queue.submit(modelTarget, {
+          input: {
+            prompt: prompt,
+            video_size: "landscape",
+          },
+          webhookUrl: webhookUrl,
+        });
+
+      const result: any = this.circuitBreakerService
+        ? await this.circuitBreakerService.execute(
+            CIRCUIT_BREAKER_NAMES.FAL_AI,
+            submitFalCall,
+          )
+        : await submitFalCall();
+
+      return {
+        videoUrl: result.video?.url,
+        requestId: result.request_id,
+      };
+    } catch (error) {
+      this.logger.error("Video Generation Error:", error);
+      throw new Error("Failed to generate video");
+    }
+  }
+
+  async renameConversation(userId: number, id: number, newTitle: string) {
+    const result = await this.conversationRepository.update(
+      { id, userId },
+      { title: newTitle },
+    );
+    if ((result.affected ?? 0) === 0) throw new NotFoundException();
+    this.invalidateCachedConversation(id, userId);
+    return { id, title: newTitle };
+  }
+
+  async deleteConversation(userId: number, id: number) {
+    const result = await this.conversationRepository.delete({ id, userId });
+    if ((result.affected ?? 0) === 0) throw new NotFoundException();
+    this.invalidateCachedConversation(id, userId);
+    return { success: true };
+  }
+}

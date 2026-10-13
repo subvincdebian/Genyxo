@@ -1,0 +1,38 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["fra1"],
+  "services": {
+    "backend": {
+      "root": "apps/backend",
+      "framework": "nestjs",
+      "entrypoint": "src/main.ts",
+      "outputDirectory": ".",
+      "functions": {
+        "src/main.ts": { "maxDuration": 300 }
+      }
+    },
+    "web": {
+      "root": "apps/web",
+      "framework": "nextjs",
+      "buildCommand": "npm run build",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "backend",
+          "format": "url",
+          "env": "BACKEND_URL"
+        }
+      ]
+    }
+  },
+  "rewrites": [
+    { "source": "/socket.io/:path*", "destination": { "service": "backend" } },
+    { "source": "/health/:path*", "destination": { "service": "backend" } },
+    { "source": "/payment/webhook", "destination": { "service": "backend" } },
+    {
+      "source": "/chat/webhook/video",
+      "destination": { "service": "backend" }
+    },
+    { "source": "/(.*)", "destination": { "service": "web" } }
+  ]
+}

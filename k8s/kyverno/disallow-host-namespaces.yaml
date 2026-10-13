@@ -1,0 +1,31 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-namespaces
+  annotations:
+    policies.kyverno.io/title: Disallow Host Namespaces
+    policies.kyverno.io/category: Pod Security Standards (Baseline)
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >-
+      Sharing host namespaces (network, PID, IPC) bypasses node isolation boundaries and is strictly forbidden.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-host-namespaces
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - genyxo
+                - genyxo-staging
+                - genyxo-production
+      validate:
+        message: "Sharing hostNetwork, hostPID, or hostIPC is strictly disallowed."
+        pattern:
+          spec:
+            =(hostNetwork): false
+            =(hostPID): false
+            =(hostIPC): false

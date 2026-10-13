@@ -1,0 +1,43 @@
+{{- $hasSocket := false -}}
+{{- range .Values.ingress.hosts -}}
+{{- range .paths -}}
+{{- if eq .path "/socket.io" -}}
+{{- $hasSocket = true -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- if and .Values.ingress.enabled $hasSocket }}
+# Socket affinity must be isolated from frontend responses sharing the same host.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "genyxo.fullname" . }}-socket-ingress
+  labels:
+    {{- include "genyxo.labels" . | nindent 4 }}
+  annotations:
+    {{- omit .Values.ingress.annotations "cert-manager.io/cluster-issuer" "cert-manager.io/issuer" | toYaml | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    {{- $host := .host }}
+    {{- range .paths }}
+    {{- if eq .path "/socket.io" }}
+    - host: {{ $host | quote }}
+      http:
+        paths:
+          - path: /socket.io
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "genyxo.fullname" $ }}-backend-svc
+                port:
+                  number: {{ $.Values.backend.service.port }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+{{- end }}

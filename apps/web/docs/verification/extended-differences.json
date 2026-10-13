@@ -1,0 +1,571 @@
+[
+  {
+    "state": "home-checkout",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#checkoutCredits",
+        "geometry": [
+          {
+            "key": "width",
+            "baseline": 0,
+            "migrated": 23.296875
+          }
+        ],
+        "styles": [],
+        "baselineText": "",
+        "migratedText": "750"
+      }
+    ]
+  },
+  {
+    "state": "home-login",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "home-signup",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "home-language",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "home-language-uk",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-light",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-dark",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-search",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-model-menu",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-attachment-preview",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-history-loaded",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "profile-general",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 112.84375,
+            "migrated": 107.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "profile-password",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 112.84375,
+            "migrated": 107.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "profile-payment",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 112.84375,
+            "migrated": 107.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "profile-transactions",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 112.84375,
+            "migrated": 107.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "profile-affiliate",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 112.84375,
+            "migrated": 107.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "admin-populated",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "admin-users-page2",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "admin-reply-modal",
+    "viewport": "desktop",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "home-checkout",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#checkoutCredits",
+        "geometry": [
+          {
+            "key": "width",
+            "baseline": 0,
+            "migrated": 23.296875
+          }
+        ],
+        "styles": [],
+        "baselineText": "",
+        "migratedText": "750"
+      }
+    ]
+  },
+  {
+    "state": "home-login",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "home-signup",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "home-language",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "home-language-uk",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "home-mobile-menu",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-light",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-dark",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-search",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-model-menu",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-attachment-preview",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "chat-history-loaded",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "profile-general",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 157.84375,
+            "migrated": 152.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "profile-password",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 157.84375,
+            "migrated": 152.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "profile-payment",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 157.84375,
+            "migrated": 152.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "profile-transactions",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 157.84375,
+            "migrated": 152.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "profile-affiliate",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": [
+      {
+        "selector": "#profileName",
+        "geometry": [
+          {
+            "key": "x",
+            "baseline": 157.84375,
+            "migrated": 152.390625
+          },
+          {
+            "key": "width",
+            "baseline": 74.296875,
+            "migrated": 85.203125
+          }
+        ],
+        "styles": [],
+        "baselineText": "Loading...",
+        "migratedText": "Visual User"
+      }
+    ]
+  },
+  {
+    "state": "admin-populated",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "admin-users-page2",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  },
+  {
+    "state": "admin-reply-modal",
+    "viewport": "mobile",
+    "baselineActionError": null,
+    "migratedActionError": null,
+    "baselineErrors": [],
+    "migratedErrors": [],
+    "differences": []
+  }
+]

@@ -1,0 +1,34 @@
+import { Test, TestingModule } from "@nestjs/testing";
+import { AdminService } from "./admin.service";
+
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { User } from "../users/user.entity";
+import { Transaction } from "../transactions/transaction.entity";
+import { SupportTicket } from "../support/support.entity";
+import { NotificationsService } from "../notifications/notifications.service";
+import { RedisCacheService } from "../common/redis-cache.service";
+import { AuditService } from "../audit/audit.service";
+
+describe("AdminService", () => {
+  let service: AdminService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AdminService,
+        { provide: getRepositoryToken(User), useValue: {} },
+        { provide: getRepositoryToken(Transaction), useValue: {} },
+        { provide: getRepositoryToken(SupportTicket), useValue: {} },
+        { provide: NotificationsService, useValue: {} },
+        { provide: RedisCacheService, useValue: { invalidate: jest.fn() } },
+        { provide: AuditService, useValue: { record: jest.fn() } },
+      ],
+    }).compile();
+
+    service = module.get<AdminService>(AdminService);
+  });
+
+  it("should be defined", () => {
+    expect(service).toBeDefined();
+  });
+});

@@ -1,0 +1,968 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Email already registered"
+          }
+        },
+        "summary": "Register new user account",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JWT access token returned"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "User login with email and password",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/verify": {
+      "get": {
+        "operationId": "AuthController_verify",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/google": {
+      "get": {
+        "operationId": "AuthController_googleAuth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "operationId": "AuthController_googleAuthRedirect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/facebook": {
+      "get": {
+        "operationId": "AuthController_facebookLogin",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/facebook/callback": {
+      "get": {
+        "operationId": "AuthController_facebookLoginCallback",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Auth"]
+      }
+    },
+    "/profile": {
+      "get": {
+        "operationId": "ProfileController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get current authenticated user profile",
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/update": {
+      "post": {
+        "operationId": "ProfileController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/affiliate": {
+      "get": {
+        "operationId": "ProfileController_getAffiliateStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/transactions": {
+      "get": {
+        "operationId": "ProfileController_getTransactions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/chat/conversations": {
+      "get": {
+        "operationId": "ChatController_getConversations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all conversations for user",
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/history/{id}": {
+      "get": {
+        "operationId": "ChatController_getChatHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/stream": {
+      "post": {
+        "operationId": "ChatController_streamMessage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/message": {
+      "post": {
+        "operationId": "ChatController_sendMessage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/conversation/{id}": {
+      "patch": {
+        "operationId": "ChatController_rename[0]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      },
+      "delete": {
+        "operationId": "ChatController_delete[0]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/conversations/{id}": {
+      "patch": {
+        "operationId": "ChatController_rename[1]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      },
+      "delete": {
+        "operationId": "ChatController_delete[1]",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/webhook/video": {
+      "post": {
+        "operationId": "ChatController_handleFalWebhook",
+        "parameters": [
+          {
+            "name": "x-webhook-secret",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/message-status/{id}": {
+      "get": {
+        "operationId": "ChatController_getMessageStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/payment/buy": {
+      "post": {
+        "operationId": "PaymentController_buyPack",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuyPackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Purchase credit pack with idempotency support",
+        "tags": ["Payment"]
+      }
+    },
+    "/payment/webhook": {
+      "post": {
+        "operationId": "PaymentController_webhook",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Payment"]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "NotificationsController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all notifications for authenticated user",
+        "tags": ["Notifications"]
+      }
+    },
+    "/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationsController_getUnreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Notifications"]
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Notifications"]
+      }
+    },
+    "/notifications/read-all": {
+      "post": {
+        "operationId": "NotificationsController_markAllRead",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Notifications"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/panel": {
+      "get": {
+        "operationId": "AdminController_getAdminPanel",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Admin"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/users": {
+      "get": {
+        "operationId": "AdminController_getUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Admin"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/transactions": {
+      "get": {
+        "operationId": "AdminController_getTransactions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Admin"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/tickets": {
+      "get": {
+        "operationId": "AdminController_getTickets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Admin"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/add-credits": {
+      "post": {
+        "operationId": "AdminController_addCredits",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAddCreditsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Admin"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/approve-transaction": {
+      "post": {
+        "operationId": "AdminController_approveTransaction",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminTransactionActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Admin"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/decline-transaction": {
+      "post": {
+        "operationId": "AdminController_declineTransaction",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminTransactionActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Admin"]
+      }
+    },
+    "/support/create": {
+      "post": {
+        "operationId": "SupportController_createTicket",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create support ticket",
+        "tags": ["Support"]
+      }
+    },
+    "/support/my-tickets": {
+      "get": {
+        "operationId": "SupportController_getMyTickets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Support"]
+      }
+    },
+    "/support/admin/all": {
+      "get": {
+        "operationId": "SupportController_getAllTickets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Support"]
+      }
+    },
+    "/support/admin/resolve": {
+      "post": {
+        "operationId": "SupportController_resolveTicket",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Support"]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthController_checkLiveness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Kubernetes liveness probe",
+        "tags": ["Health"]
+      }
+    },
+    "/health/readiness": {
+      "get": {
+        "operationId": "HealthController_checkReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Kubernetes readiness probe",
+        "tags": ["Health"]
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "MetricsController_getMetrics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Prometheus scraping metrics endpoint",
+        "tags": ["Metrics"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/audit-logs": {
+      "get": {
+        "operationId": "AuditController_getAuditLogs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Query immutable audit logs",
+        "tags": ["Audit"]
+      }
+    },
+    "/are-you-sure-you-want-to-admin/audit-logs/{id}": {
+      "get": {
+        "operationId": "AuditController_getAuditLogById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Audit"]
+      }
+    }
+  },
+  "info": {
+    "title": "Genyxo Enterprise Platform API",
+    "description": "Production-ready API specification for Genyxo Generative AI Platform",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication, registration, social login & password management"
+    },
+    {
+      "name": "Profile",
+      "description": "User profile, balance, subscription status & accounts"
+    },
+    {
+      "name": "Chat",
+      "description": "AI chat streaming, conversations & media generation"
+    },
+    {
+      "name": "Payment",
+      "description": "Payment gateways, top-ups & transaction lifecycle"
+    },
+    {
+      "name": "Notifications",
+      "description": "User notifications & announcements"
+    },
+    {
+      "name": "Support",
+      "description": "Support tickets & customer care"
+    },
+    {
+      "name": "Admin",
+      "description": "Administrative controls & manual credit allocation"
+    },
+    {
+      "name": "Audit",
+      "description": "Immutable audit trail & compliance logs"
+    },
+    {
+      "name": "Health",
+      "description": "Kubernetes liveness and readiness probes"
+    },
+    {
+      "name": "Metrics",
+      "description": "Prometheus metrics endpoint"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT-auth": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "Enter your JWT Bearer token"
+      },
+      "Idempotency-Key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "description": "Optional UUID idempotency key for mutations"
+      }
+    },
+    "schemas": {
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "StreamMessageDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "BuyPackDto": {
+        "type": "object",
+        "properties": {
+          "packId": {
+            "type": "number",
+            "example": 1,
+            "description": "Credit pack tier ID (1 to 6)",
+            "minimum": 1,
+            "maximum": 6
+          }
+        },
+        "required": ["packId"]
+      },
+      "AdminAddCreditsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AdminTransactionActionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateTicketDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ResolveTicketDto": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,502 @@
+[
+  {
+    "page": "home-checkout",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 1666,
+    "pixelsOver10": 1587,
+    "percentOver10": 0.1225,
+    "boundsOver10": {
+      "minX": 606,
+      "minY": 295,
+      "maxX": 709,
+      "maxY": 366
+    }
+  },
+  {
+    "page": "home-login",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "home-signup",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "home-language",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "home-language-uk",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "chat-light",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 227,
+    "pixelsOver10": 181,
+    "percentOver10": 0.014,
+    "boundsOver10": {
+      "minX": 1182,
+      "minY": 29,
+      "maxX": 1203,
+      "maxY": 810
+    }
+  },
+  {
+    "page": "chat-dark",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 125,
+    "pixelsOver10": 95,
+    "percentOver10": 0.0073,
+    "boundsOver10": {
+      "minX": 1189,
+      "minY": 29,
+      "maxX": 1203,
+      "maxY": 42
+    }
+  },
+  {
+    "page": "chat-search",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 309,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "chat-model-menu",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 102,
+    "pixelsOver10": 82,
+    "percentOver10": 0.0063,
+    "boundsOver10": {
+      "minX": 1182,
+      "minY": 797,
+      "maxX": 1195,
+      "maxY": 810
+    }
+  },
+  {
+    "page": "chat-attachment-preview",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 145,
+    "pixelsOver10": 99,
+    "percentOver10": 0.0076,
+    "boundsOver10": {
+      "minX": 1189,
+      "minY": 29,
+      "maxX": 1203,
+      "maxY": 42
+    }
+  },
+  {
+    "page": "chat-history-loaded",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 95,
+    "pixelsOver10": 82,
+    "percentOver10": 0.0063,
+    "boundsOver10": {
+      "minX": 1182,
+      "minY": 797,
+      "maxX": 1195,
+      "maxY": 810
+    }
+  },
+  {
+    "page": "profile-general",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 755,
+    "pixelsOver10": 736,
+    "percentOver10": 0.0568,
+    "boundsOver10": {
+      "minX": 107,
+      "minY": 240,
+      "maxX": 192,
+      "maxY": 257
+    }
+  },
+  {
+    "page": "profile-password",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 751,
+    "pixelsOver10": 736,
+    "percentOver10": 0.0568,
+    "boundsOver10": {
+      "minX": 107,
+      "minY": 240,
+      "maxX": 192,
+      "maxY": 257
+    }
+  },
+  {
+    "page": "profile-payment",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 751,
+    "pixelsOver10": 736,
+    "percentOver10": 0.0568,
+    "boundsOver10": {
+      "minX": 107,
+      "minY": 240,
+      "maxX": 192,
+      "maxY": 257
+    }
+  },
+  {
+    "page": "profile-transactions",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 751,
+    "pixelsOver10": 736,
+    "percentOver10": 0.0568,
+    "boundsOver10": {
+      "minX": 107,
+      "minY": 240,
+      "maxX": 192,
+      "maxY": 257
+    }
+  },
+  {
+    "page": "profile-affiliate",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 748,
+    "pixelsOver10": 702,
+    "percentOver10": 0.0542,
+    "boundsOver10": {
+      "minX": 107,
+      "minY": 240,
+      "maxX": 192,
+      "maxY": 257
+    }
+  },
+  {
+    "page": "admin-populated",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "admin-users-page2",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "admin-reply-modal",
+    "viewport": "desktop",
+    "width": 1440,
+    "height": 900,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "home-checkout",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 1640,
+    "pixelsOver10": 1606,
+    "percentOver10": 0.4879,
+    "boundsOver10": {
+      "minX": 130,
+      "minY": 259,
+      "maxX": 234,
+      "maxY": 330
+    }
+  },
+  {
+    "page": "home-login",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "home-signup",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "home-language",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "home-language-uk",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "home-mobile-menu",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "chat-light",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 76,
+    "pixelsOver10": 59,
+    "percentOver10": 0.0179,
+    "boundsOver10": {
+      "minX": 224,
+      "minY": 21,
+      "maxX": 234,
+      "maxY": 30
+    }
+  },
+  {
+    "page": "chat-dark",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 81,
+    "pixelsOver10": 60,
+    "percentOver10": 0.0182,
+    "boundsOver10": {
+      "minX": 224,
+      "minY": 21,
+      "maxX": 234,
+      "maxY": 30
+    }
+  },
+  {
+    "page": "chat-search",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "chat-model-menu",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 76,
+    "pixelsOver10": 59,
+    "percentOver10": 0.0179,
+    "boundsOver10": {
+      "minX": 224,
+      "minY": 21,
+      "maxX": 234,
+      "maxY": 30
+    }
+  },
+  {
+    "page": "chat-attachment-preview",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 122,
+    "pixelsOver10": 67,
+    "percentOver10": 0.0204,
+    "boundsOver10": {
+      "minX": 224,
+      "minY": 21,
+      "maxX": 365,
+      "maxY": 162
+    }
+  },
+  {
+    "page": "chat-history-loaded",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 76,
+    "pixelsOver10": 59,
+    "percentOver10": 0.0179,
+    "boundsOver10": {
+      "minX": 224,
+      "minY": 21,
+      "maxX": 234,
+      "maxY": 30
+    }
+  },
+  {
+    "page": "profile-general",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 754,
+    "pixelsOver10": 736,
+    "percentOver10": 0.2236,
+    "boundsOver10": {
+      "minX": 152,
+      "minY": 223,
+      "maxX": 237,
+      "maxY": 240
+    }
+  },
+  {
+    "page": "profile-password",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 751,
+    "pixelsOver10": 736,
+    "percentOver10": 0.2236,
+    "boundsOver10": {
+      "minX": 152,
+      "minY": 223,
+      "maxX": 237,
+      "maxY": 240
+    }
+  },
+  {
+    "page": "profile-payment",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 751,
+    "pixelsOver10": 736,
+    "percentOver10": 0.2236,
+    "boundsOver10": {
+      "minX": 152,
+      "minY": 223,
+      "maxX": 237,
+      "maxY": 240
+    }
+  },
+  {
+    "page": "profile-transactions",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 751,
+    "pixelsOver10": 736,
+    "percentOver10": 0.2236,
+    "boundsOver10": {
+      "minX": 152,
+      "minY": 223,
+      "maxX": 237,
+      "maxY": 240
+    }
+  },
+  {
+    "page": "profile-affiliate",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 748,
+    "pixelsOver10": 702,
+    "percentOver10": 0.2133,
+    "boundsOver10": {
+      "minX": 152,
+      "minY": 223,
+      "maxX": 237,
+      "maxY": 240
+    }
+  },
+  {
+    "page": "admin-populated",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "admin-users-page2",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  },
+  {
+    "page": "admin-reply-modal",
+    "viewport": "mobile",
+    "width": 390,
+    "height": 844,
+    "differentPixels": 0,
+    "pixelsOver10": 0,
+    "percentOver10": 0,
+    "boundsOver10": null
+  }
+]

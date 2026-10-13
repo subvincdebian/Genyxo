@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-probes
+  annotations:
+    policies.kyverno.io/title: Require Readiness and Liveness Probes
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Liveness and readiness probes ensure high availability and prevent routing traffic to unready pods.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-probes
+      match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+              namespaces:
+                - genyxo
+                - genyxo-staging
+                - genyxo-production
+      validate:
+        message: "Both livenessProbe and readinessProbe must be configured for all containers in Deployments."
+        pattern:
+          spec:
+            template:
+              spec:
+                containers:
+                  - livenessProbe: {}
+                    readinessProbe: {}
