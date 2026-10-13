@@ -1875,6 +1875,34 @@ display: block !important;
     display: none !important;
 }
 
+#chatBox .message.bot-message .message-content p {
+    animation: none !important;
+}
+
+#chatBox .message.bot-message.streaming .message-content.is-streaming-render::after {
+    content: "" !important;
+    display: inline-block !important;
+    width: 8px;
+    height: 1.08em;
+    margin-left: 4px;
+    vertical-align: -0.16em;
+    border-radius: 999px;
+    background: #19d3da;
+    box-shadow: 0 0 14px rgba(25, 211, 218, 0.45);
+    animation: streamingCaretPulse 1.05s ease-in-out infinite;
+}
+
+@keyframes streamingCaretPulse {
+    0%, 100% {
+        opacity: 0.35;
+        transform: scaleY(0.72);
+    }
+    50% {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
 #chatBox .chat-loader {
     width: 60px;
     aspect-ratio: 4;

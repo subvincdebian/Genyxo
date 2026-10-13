@@ -134,6 +134,12 @@ export class ChatService {
     return parts;
   }
 
+  private getMaxOutputTokens() {
+    const configured = Number(this.configService.get('CHAT_MAX_OUTPUT_TOKENS') || 12000);
+    if (!Number.isFinite(configured) || configured <= 0) return 12000;
+    return Math.min(Math.max(Math.floor(configured), 2048), 32768);
+  }
+
   private normalizeAttachedFiles(files: IAttachedFile[] = []) {
     return files.map((file) => {
       const mimeType = file.mime_type || 'application/octet-stream';
@@ -304,7 +310,12 @@ export class ChatService {
             lastRole = role;
           }
 
-          const resultStream = await generativeModel.generateContentStream({ contents });
+          const resultStream = await generativeModel.generateContentStream({
+            contents,
+            generationConfig: {
+              maxOutputTokens: this.getMaxOutputTokens(),
+            },
+          });
 
           for await (const chunk of resultStream.stream) {
             if (abortController.signal.aborted) break;
@@ -359,7 +370,7 @@ export class ChatService {
             model: model,
             messages: openRouterMessages as any,
             stream: true,
-            max_tokens: 2000,
+            max_tokens: this.getMaxOutputTokens(),
           }, { signal: abortController.signal });
 
           for await (const chunk of response) {
@@ -448,7 +459,12 @@ export class ChatService {
           return { role, parts };
         });
 
-        const result = await generativeModel.generateContent({ contents });
+        const result = await generativeModel.generateContent({
+          contents,
+          generationConfig: {
+            maxOutputTokens: this.getMaxOutputTokens(),
+          },
+        });
         return {
           reply: result.response.text() || "AI did not respond",
           tokensUsed: result.response.usageMetadata?.totalTokenCount || 0
@@ -487,7 +503,7 @@ export class ChatService {
       const completion = await this.openRouter.chat.completions.create({
         model,
         messages: openRouterMessages as any,
-        max_tokens: 2000,
+        max_tokens: this.getMaxOutputTokens(),
         temperature: 0.7,
       });
 

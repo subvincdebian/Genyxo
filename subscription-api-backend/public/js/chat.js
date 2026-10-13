@@ -1012,6 +1012,14 @@ function normalizeCodeLanguage(language = '') {
     return aliases[normalized] || normalized || 'text';
 }
 
+function getDirectCodeElement(pre) {
+    if (!pre) return null;
+    for (const child of pre.children) {
+        if (child.tagName?.toLowerCase() === 'code') return child;
+    }
+    return null;
+}
+
 function getCodeLanguageFromPre(preEl) {
     const className = preEl?.className || '';
     const match = className.match(/(?:language|lang)-([\w#+.-]+)/i);
@@ -1051,7 +1059,7 @@ function enhanceCodeBlocks(root, defaultLanguage = '') {
     root.querySelectorAll('pre').forEach((pre, index) => {
         if (pre.closest('.ai-code-block')) return;
 
-        let codeEl = pre.querySelector(':scope > code');
+        let codeEl = getDirectCodeElement(pre);
         const rawCode = codeEl ? (codeEl.textContent || '') : (pre.textContent || '');
         if (!rawCode.trim()) return;
 
@@ -1069,6 +1077,16 @@ function enhanceCodeBlocks(root, defaultLanguage = '') {
 
         createHighlightedCodeBlock(pre, codeEl, rawCode, language, index);
     });
+}
+
+function hasOpenMarkdownCodeFence(markdown = '') {
+    const matches = markdown.match(/(^|\n)\s*```/g);
+    return Boolean(matches && matches.length % 2 === 1);
+}
+
+function closeOpenMarkdownCodeFence(markdown = '') {
+    if (!hasOpenMarkdownCodeFence(markdown)) return markdown;
+    return `${markdown.replace(/\s*$/, '')}\n\`\`\``;
 }
 
 function looksLikeRawCodeResponse(markdown = '') {
@@ -1093,17 +1111,96 @@ function inferCodeLanguageFromText(text = '') {
     return 'text';
 }
 
+function normalizeLooseCodeMarkdown(markdown = '') {
+    if (!markdown || markdown.includes('```')) return markdown || '';
+
+    const codeStartMatch = markdown.match(/(^|\n)(\s*)(<!doctype\s+html|<html[\s>]|<style[\s>]|<script[\s>])/i);
+    if (!codeStartMatch || typeof codeStartMatch.index !== 'number') return markdown || '';
+
+    const codeStartIndex = codeStartMatch.index + codeStartMatch[1].length;
+    const intro = markdown.slice(0, codeStartIndex).trimEnd();
+    const code = markdown.slice(codeStartIndex).trim();
+    const language = inferCodeLanguageFromText(code);
+    const prefix = intro ? `${intro}\n\n` : '';
+
+    return `${prefix}\`\`\`${language}\n${code}\n\`\`\``;
+}
+
 function normalizeBotMarkdown(markdown = '') {
+    const looseCodeMarkdown = normalizeLooseCodeMarkdown(markdown || '');
+    if (looseCodeMarkdown !== (markdown || '')) return looseCodeMarkdown;
     if (!looksLikeRawCodeResponse(markdown)) return markdown || '';
     const language = inferCodeLanguageFromText(markdown);
     return `\`\`\`${language}\n${markdown.trim()}\n\`\`\``;
 }
 
-function renderMarkdownInto(element, markdown) {
-    const normalizedMarkdown = normalizeBotMarkdown(markdown || '');
-    const parsed = DOMPurify.sanitize(marked.parse(normalizedMarkdown));
-    element.innerHTML = parsed || `<pre><code>${escapeHtml(markdown || '')}</code></pre>`;
-    enhanceCodeBlocks(element, inferCodeLanguageFromText(markdown || ''));
+function renderMarkdownInto(element, markdown, options = {}) {
+    if (!element) return;
+
+    const sourceMarkdown = options.streaming
+        ? closeOpenMarkdownCodeFence(markdown || '')
+        : (markdown || '');
+    const normalizedMarkdown = normalizeBotMarkdown(sourceMarkdown);
+
+    try {
+        const parsed = DOMPurify.sanitize(marked.parse(normalizedMarkdown));
+        element.innerHTML = parsed || `<pre><code>${escapeHtml(markdown || '')}</code></pre>`;
+        enhanceCodeBlocks(element, inferCodeLanguageFromText(markdown || ''));
+    } catch (error) {
+        console.error('Failed to render markdown:', error);
+        element.innerHTML = `<pre><code>${escapeHtml(markdown || '')}</code></pre>`;
+        enhanceCodeBlocks(element, inferCodeLanguageFromText(markdown || ''));
+    }
+}
+
+function createStreamingMarkdownRenderer(element, onRender) {
+    let animationFrame = 0;
+    let renderTimer = 0;
+    let latestMarkdown = '';
+    let lastRenderAt = 0;
+    const minRenderInterval = 90;
+
+    const clearPendingRender = () => {
+        if (renderTimer) {
+            clearTimeout(renderTimer);
+            renderTimer = 0;
+        }
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = 0;
+        }
+    };
+
+    const render = (streaming = true) => {
+        lastRenderAt = performance.now();
+        if (streaming) element.classList.add('is-streaming-render');
+        renderMarkdownInto(element, latestMarkdown, { streaming });
+        if (typeof onRender === 'function') onRender();
+    };
+
+    return {
+        update(markdown) {
+            latestMarkdown = markdown || '';
+            if (renderTimer || animationFrame) return;
+
+            const elapsed = performance.now() - lastRenderAt;
+            const delay = Math.max(0, minRenderInterval - elapsed);
+
+            renderTimer = setTimeout(() => {
+                renderTimer = 0;
+                animationFrame = requestAnimationFrame(() => {
+                    animationFrame = 0;
+                    render(true);
+                });
+            }, delay);
+        },
+        flush(markdown = latestMarkdown) {
+            latestMarkdown = markdown || '';
+            clearPendingRender();
+            element.classList.remove('is-streaming-render');
+            render(false);
+        }
+    };
 }
 
 function getPreviousUserMessage(botBubble) {
@@ -1531,7 +1628,7 @@ async function regenerateBotMessage(botBubble) {
     contentDiv.innerHTML = '<div class="chat-loader" aria-label="AI is thinking"></div>';
 
     let fullContent = '';
-    let isUpdating = false;
+    const streamingRenderer = createStreamingMarkdownRenderer(contentDiv, scrollToBottom);
 
     try {
         const base64Files = [];
@@ -1584,14 +1681,7 @@ async function regenerateBotMessage(botBubble) {
                 if (data.token) {
                     fullContent += data.token;
                     botBubble._botText = fullContent;
-                    if (!isUpdating) {
-                        isUpdating = true;
-                        requestAnimationFrame(() => {
-                            renderMarkdownInto(contentDiv, fullContent);
-                            scrollToBottom();
-                            isUpdating = false;
-                        });
-                    }
+                    streamingRenderer.update(fullContent);
                 }
 
                 if (data.status === 'done' && data.creditBalance !== undefined) {
@@ -1599,12 +1689,14 @@ async function regenerateBotMessage(botBubble) {
                 }
             }
         }
+        if (fullContent.trim()) streamingRenderer.flush(fullContent);
     } catch (err) {
         showToast(err.message, 'error');
         contentDiv.textContent = `Error: ${err.message}`;
         contentDiv.style.color = 'var(--error-red)';
     } finally {
         botBubble.classList.remove('streaming');
+        contentDiv.classList.remove('is-streaming-render');
         sendBtn.disabled = false;
         userInput.disabled = false;
         userInput.focus();
@@ -1643,7 +1735,7 @@ async function sendMessage() {
     const contentDiv = botBubble.querySelector('.message-content') || botBubble;
 
     let fullContent = "";
-    let isUpdating = false;
+    const streamingRenderer = createStreamingMarkdownRenderer(contentDiv, scrollToBottom);
     const controller = new AbortController();
 
     try {
@@ -1715,15 +1807,7 @@ async function sendMessage() {
                             if (fullContent === "") contentDiv.innerHTML = "";
                             fullContent += data.token;
                             botBubble._botText = fullContent;
-                            
-                            if (!isUpdating) {
-                                isUpdating = true;
-                                requestAnimationFrame(() => {
-                                    renderMarkdownInto(contentDiv, fullContent);
-                                    scrollToBottom();
-                                    isUpdating = false;
-                                });
-                            }
+                            streamingRenderer.update(fullContent);
                         }
 
                         if (data.status === 'conversation' && data.conversationId && !currentChatId) {
@@ -1766,6 +1850,7 @@ async function sendMessage() {
             }
             scrollToBottom();
         }
+        if (fullContent.trim()) streamingRenderer.flush(fullContent);
     } catch (err) {
         if (err.name === 'AbortError') return;
         showToast(err.message, 'error');
@@ -1773,6 +1858,7 @@ async function sendMessage() {
         contentDiv.style.color = 'var(--error-red)';
     } finally {
         botBubble.classList.remove('streaming');
+        contentDiv.classList.remove('is-streaming-render');
         sendBtn.disabled = false;
         userInput.disabled = false;
         userInput.focus();
