@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.4.0",
-    "@playwright/test": "1.64.0",
+    "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "4.3.3",
     "@types/canvas-confetti": "1.9.0",
     "@types/node": "26.6.4",
