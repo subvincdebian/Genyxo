@@ -15,7 +15,7 @@ export function ProfileMobileMenu({}: {
           <Localized
             as="a"
             translationKey="nav.home"
-            href="/index.html"
+            href="/"
             data-i18n="nav.home"
             aria-label="Home Page"
           >
@@ -27,7 +27,7 @@ export function ProfileMobileMenu({}: {
           <Localized
             as="a"
             translationKey="nav.chat"
-            href="/chat.html"
+            href="/chat"
             data-i18n="nav.chat"
             aria-label="Chat Page"
           >

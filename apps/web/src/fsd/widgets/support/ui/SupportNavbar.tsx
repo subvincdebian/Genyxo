@@ -17,7 +17,7 @@ export function SupportNavbar({
         <div className="nav-logo">
           {"\n                "}
           <a
-            href="/index.html"
+            href="/"
             aria-label="Home Page"
             style={{
               textDecoration: "none",
@@ -50,7 +50,7 @@ export function SupportNavbar({
             <Localized
               as="a"
               translationKey="nav.back_home"
-              href="/index.html"
+              href="/"
               className="nav-link active"
               data-i18n="nav.back_home"
               aria-label="Back To Home"
@@ -61,7 +61,7 @@ export function SupportNavbar({
             <Localized
               as="a"
               translationKey="nav.chat"
-              href="/chat.html"
+              href="/chat"
               className="nav-link"
               data-i18n="nav.chat"
               aria-label="Chat Page"
@@ -156,7 +156,7 @@ export function SupportNavbar({
                 </div>
                 {"\n                            "}
                 <a
-                  href="/index.html#products"
+                  href="/#products"
                   style={{ textDecoration: "none" }}
                   aria-label="Buy Credits"
                 >

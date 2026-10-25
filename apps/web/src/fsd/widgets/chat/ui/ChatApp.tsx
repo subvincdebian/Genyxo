@@ -1,19 +1,31 @@
 "use client";
-import type { SyntheticEvent } from "react";
+import type { ReactNode, SyntheticEvent } from "react";
 import { NavUsername } from "@/entities/session";
+import { WelcomeGreeting } from "./WelcomeGreeting";
+import { ComposerPlusMenu } from "./ComposerPlusMenu";
+import { VoiceControls, VoiceStage } from "./VoiceMode";
+import { GenyxoOrb } from "@/shared/ui/GenyxoOrb";
 
 import { Localized } from "@/shared/i18n";
+import { WorkspaceIcon } from "@/shared/ui/workspace";
+import "./action-card.css";
 export function ChatApp({
   dispatch,
   ready,
+  workspace = false,
+  isChatRoute = true,
+  children,
 }: {
   dispatch: (name: string, event: SyntheticEvent<Element>) => unknown;
   ready: boolean;
+  workspace?: boolean;
+  isChatRoute?: boolean;
+  children?: ReactNode;
 }) {
   return (
-    <div className="app-container" id="app">
+    <div className={`app-container${workspace ? " workspace-chat-app" : ""}${!isChatRoute ? " workspace-other-route" : ""}`} id="app">
       {"\n        "}
-      <aside id="sidebar">
+      {!workspace && <><aside id="sidebar">
         {"\n            "}
         <div className="sidebar-full" id="sidebarOverlay">
           {"\n                "}
@@ -24,7 +36,7 @@ export function ChatApp({
               <div className="logo-circle">
                 {"\n                            "}
                 <a
-                  href="/index.html"
+                  href="/"
                   aria-label="Genyxo Home"
                   style={{
                     textDecoration: "none",
@@ -149,7 +161,18 @@ export function ChatApp({
             {"\n                "}
           </div>
           {"\n\n                "}
+          <nav className="workspace-navigation" aria-label="Workspace">
+            <button type="button" id="libraryBtn" className="workspace-nav-btn" disabled={!ready}><i className="far fa-images" aria-hidden="true"></i><span>Library</span></button>
+          </nav>
+          <section className="sidebar-projects" aria-label="Projects">
+            <div className="sidebar-projects-header">
+              <button type="button" id="projectToggleBtn" className="sidebar-projects-toggle" aria-expanded="true" aria-controls="projectSidebarList"><span>Projects</span><i className="fas fa-chevron-down" aria-hidden="true"></i></button>
+              <button type="button" id="projectsBtn" className="sidebar-projects-add" disabled={!ready} aria-label="Create or manage projects" title="Create or manage projects"><i className="fas fa-plus" aria-hidden="true"></i></button>
+            </div>
+            <div id="projectSidebarList" className="project-sidebar-list" aria-label="Projects"></div>
+          </section>
           <div className="history-container">
+            <div className="recent-heading">Recent</div>
             {"\n                    "}
             <div className="history-list" id="historyList">
               {"\n                        "}
@@ -418,7 +441,7 @@ export function ChatApp({
             {"\n                    "}
             <div className="mini-btn" data-tooltip="Shop">
               {"\n                        "}
-              <a className="shop-btn-icon" href="/index.html#products">
+              <a className="shop-btn-icon" href="/#products">
                 {"   \n                            "}
                 <svg
                   width="20"
@@ -606,7 +629,7 @@ export function ChatApp({
         {"\n        "}
       </aside>
       {"\n\n        "}
-      <div className="sidebar-overlay" id="sidebar-overlay"></div>
+      <div className="sidebar-overlay" id="sidebar-overlay"></div></>}
       {"\n\n        "}
       <main className="main-container">
         {"\n            "}
@@ -617,11 +640,12 @@ export function ChatApp({
             <button
               disabled={!ready}
               className="mobile-menu-btn"
-              id="sidebarToggle"
-              aria-label="Toggle menu"
+              id={workspace ? "workspaceMobileToggle" : "sidebarToggle"}
+              aria-label={workspace ? "Open navigation" : "Toggle menu"}
+              onClick={workspace ? () => document.dispatchEvent(new CustomEvent("genyxo:workspace-toggle")) : undefined}
             >
               {"\n                        "}
-              <i className="fa-solid fa-bars-staggered"></i>
+              {workspace ? <WorkspaceIcon name="panel"/> : <i className="fa-solid fa-bars-staggered"></i>}
               {"\n                    "}
             </button>
             {"\n                "}
@@ -632,11 +656,6 @@ export function ChatApp({
             id="model-selector"
           >
             {"\n                        "}
-            <i
-              className=" fa-solid fas fa-robot bot-icon-to-hide"
-              style={{ color: "#10e6cc" }}
-            ></i>
-            {"\n\n                        "}
             <div
               className="custom-select"
               id="customModelSelect"
@@ -645,11 +664,19 @@ export function ChatApp({
               aria-expanded="false"
             >
               {"\n                            "}
-              <span className="current-model-name">{"GPT-4o (40 cr)"}</span>
+              <span className="current-model-name">{"Gemini 3.5 Flash-Lite"}</span>
               {"\n                            "}
-              <i className="fas fa-chevron-down caret"></i>
+              {workspace ? <span className="caret gx-caret"><WorkspaceIcon name="chevron-down" size={16} /></span> : <i className="fas fa-chevron-down caret"></i>}
               {"\n                            "}
-              <ul className="custom-options" role="listbox"></ul>
+              <div className="model-picker-menu">
+                <div className="model-picker-tabs" role="tablist" aria-label="Creation mode">
+                  <button type="button" data-mode="chat" role="tab" aria-selected="true">Chat</button>
+                  <button type="button" data-mode="image" role="tab" aria-selected="false">Image</button>
+                  <button type="button" data-mode="video" role="tab" aria-selected="false">Video</button>
+                </div>
+                <input className="model-picker-search" type="search" placeholder="Search models" aria-label="Search models" />
+                <ul className="custom-options" role="listbox" aria-label="Compatible models"></ul>
+              </div>
               {"\n                        "}
             </div>
             {"\n\n                        "}
@@ -657,14 +684,11 @@ export function ChatApp({
               disabled={!ready}
               id="modelSelect"
               style={{ display: "none" }}
-              defaultValue="arcee-ai/trinity-large-preview:free"
+              defaultValue="google/gemini-3.5-flash-lite"
             >
               {"\n                            "}
-              <option value="arcee-ai/trinity-large-preview:free">
-                {"Arcee (Free)"}
-              </option>
-              {"\n                            "}
-              <option value="openai/gpt-oss-120b:free">{"ChatGPT OSS"}</option>
+              <option value="google/gemini-3.5-flash-lite">{"Gemini 3.5 Flash-Lite"}</option>
+              <option value="nvidia/nemotron-3-ultra-550b-a55b:free">{"Nemotron 3 Ultra"}</option>
               {"\n                            "}
               <option value="google/gemini-3.5-flash">
                 {"Gemini 3.5 Flash"}
@@ -696,22 +720,22 @@ export function ChatApp({
                 {"Gemini Robotics-ER 1.6"}
               </option>
               {"\n                            "}
-              <option value="meta-llama/llama-3.3-70b-instruct:free">
-                {"Llama 3.3"}
+              <option value="nvidia/nemotron-3.5-super-vl:free">
+                {"Nemotron 3.5 Super"}
               </option>
               {"\n                            "}
-              <option value="qwen/qwen3-next-80b-a3b-instruct:free">
-                {"QWEN 3"}
+              <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">
+                {"Nemotron 3 Nano Omni"}
               </option>
               {"\n                            "}
               <option value="google/gemma-4-31b-it:free">{"Gemma 4"}</option>
               {"\n                            "}
               <option value="openai/gpt-5.1">{"ChatGPT-5.1 (150 cr)"}</option>
               {"\n                            "}
-              <option value="openai/gpt-5-mini">{"ChatGPT-5 (70 cr)"}</option>
+              <option value="openai/gpt-5-mini">{"GPT-5 Mini (70 cr)"}</option>
               {"\n                            "}
               <option value="openai/gpt-5-nano">
-                {"ChatGPT-5 Mini (45 cr)"}
+                {"GPT-5 Nano (45 cr)"}
               </option>
               {"\n                            "}
               <option value="openai/gpt-4.1">{"ChatGPT-4.1 (55 cr)"}</option>
@@ -733,11 +757,11 @@ export function ChatApp({
               </option>
               {"\n                            "}
               <option value="anthropic/claude-sonnet-4.6">
-                {"Claude-Sonnet 4.6 (100 cr)"}
+                {"Claude Sonnet 4.6 (75 cr)"}
               </option>
               {"\n                            "}
               <option value="anthropic/claude-sonnet-4.5">
-                {"Claude-Sonnet 4.5 (90 cr)"}
+                {"Claude Sonnet 4.5 (70 cr)"}
               </option>
               {"\n                            "}
               <option value="anthropic/claude-opus-4.6">
@@ -765,6 +789,7 @@ export function ChatApp({
           </div>
           {"\n\n                "}
           <div className="header-actions">
+            <button type="button" id="activeProjectBtn" className="active-project-btn" hidden disabled={!ready}></button>
             {"\n\n                    "}
             <div className="header-right">
               {"\n                        "}
@@ -776,22 +801,14 @@ export function ChatApp({
                   className="creditsBtn primary"
                   aria-label="Get More Credits"
                   onClick={(event) => dispatch("chat-15", event)}
-                  style={{
-                    cursor: "default",
-                    background: "rgba(255,255,255,0.1)",
-                    color: "white",
-                    border: "1px solid rgba(255,255,255,0.2)",
-                    minWidth: "auto",
-                    padding: "0.5rem 1rem",
-                  }}
                 >
                   {"\n                                "}
-                  <i className="fas fa-coins" style={{ color: "#ffd700" }}></i>
+                  <span className="credits-gem" aria-hidden="true">{workspace ? <WorkspaceIcon name="gem" size={14} /> : "✦"}</span>
                   {" \n                                "}
                   <span id="creditBalance">{"0"}</span>
-                  {" Credits"}
+                  <span className="credits-unit">credits</span>
                   <span className="credits-cta hide-on-mobile credits-text">
-                    {" - Get more"}
+                    {"Add credits"}
                   </span>
                   {"\n                            "}
                 </button>
@@ -820,7 +837,7 @@ export function ChatApp({
                     alt="Avatar"
                   />
                   {"\n                                "}
-                  <i className="fas fa-user" id="navIcon"></i>
+                  <i className={workspace ? "workspace-account-icon" : "fas fa-user"} id="navIcon" aria-hidden="true">{workspace && <WorkspaceIcon name="user" size={18}/>}</i>
                   {"\n                                "}
                   <NavUsername id="navUsername">
                     {"Register / Login"}
@@ -846,7 +863,7 @@ export function ChatApp({
                     <div className="user-details">
                       {"\n                                        "}
                       <img
-                        src=""
+                        src="/images/logo.svg"
                         alt="Avatar"
                         width="48"
                         height="48"
@@ -895,7 +912,7 @@ export function ChatApp({
                     </div>
                     {"\n                                    "}
                     <a
-                      href="/index.html#products"
+                      href="/#products"
                       style={{ textDecoration: "none" }}
                       aria-label="Buy Credits"
                     >
@@ -1051,75 +1068,33 @@ export function ChatApp({
           {"\n            "}
         </header>
         {"\n            "}
-        <div id="chatContainer">
+        <div id="chatContainer" aria-hidden={!isChatRoute ? true : undefined}>
           {"\n                "}
           <div className="welcome-container" id="welcomeScreen">
-            {"\n                    "}
             <div className="logo-wrapper">
-              {"\n                        "}
               <div className="glow-effect"></div>
-              {"\n                        "}
               <div className="logo-inner">
-                {"\n                            "}
-                <img
-                  className="welcome-logo-genyxo"
-                  src="/images/logo.svg"
-                  width="46"
-                  height="46"
-                  fetchPriority="high"
-                  alt="Logo"
-                />
-                {"\n                        "}
+                <img className="welcome-logo-genyxo" src="/images/logo.svg" width="46" height="46" fetchPriority="high" alt="Logo" />
               </div>
-              {"\n                    "}
             </div>
-            {"\n                    "}
-            <h1 className="welcome-text">
-              {"Hi, I'm "}
-              <span className="text-gradient">{"Genyxo"}</span>
-            </h1>
-            {"\n                    "}
-            <p className="welcome-subtext">{"How can I help you today?"}</p>
-            {"\n                    "}
-            <div className="features-grid">
-              {"\n                        "}
-              <div
-                className="feature-card"
-                onClick={(event) => dispatch("chat-16", event)}
-              >
-                {"\n                            "}
+            {workspace && <div className="gx-welcome-orb"><GenyxoOrb size={112} /></div>}
+            <h1 className="welcome-text">{workspace ? <WelcomeGreeting /> : "What can we create together?"}</h1>
+            <p className="welcome-subtext">{workspace ? "Every leading model, one credit balance. Ask anything or pick a starting point." : "Ask anything, or choose a way to begin."}</p>
+            {!workspace && <div className="features-grid">
+              <button type="button" className="feature-card" onClick={(event) => dispatch("chat-16", event)} disabled={!ready}>
                 <i className="fas fa-image cyan-icon"></i>
-                {"\n                            "}
-                <span>{"Image Generation"}</span>
-                {"\n                        "}
-              </div>
-              {"\n                        "}
-              <div
-                className="feature-card"
-                onClick={(event) => dispatch("chat-17", event)}
-              >
-                {"\n                            "}
+                <span>{"Create an image"}</span>
+              </button>
+              <button type="button" className="feature-card" onClick={(event) => dispatch("chat-17", event)} disabled={!ready}>
                 <i className="fas fa-code cyan-icon"></i>
-                {"\n                            "}
-                <span>{"Code Assistant"}</span>
-                {"\n                        "}
-              </div>
-              {"\n                        "}
-              <div
-                className="feature-card"
-                onClick={(event) => dispatch("chat-18", event)}
-              >
-                {"\n                            "}
+                <span>{"Help me code"}</span>
+              </button>
+              <button type="button" className="feature-card" onClick={(event) => dispatch("chat-18", event)} disabled={!ready}>
                 <i className="fas fa-video cyan-icon"></i>
-                {"\n                            "}
-                <span>{"Video Creation"}</span>
-                {"\n                        "}
-              </div>
-              {"\n                    "}
-            </div>
-            {"\n                "}
+                <span>{"Make a video"}</span>
+              </button>
+            </div>}
           </div>
-          {"\n\n                "}
           <div className="messages-container" id="chatBox">
             {"\n                "}
           </div>
@@ -1132,7 +1107,9 @@ export function ChatApp({
             {"\n                "}
           </div>
           {"\n\n                "}
+          {workspace && <VoiceStage />}
           <div className="chat-input-container">
+            {workspace && <button type="button" id="scrollBottomBtn" className="gx-scroll-bottom" aria-label="Scroll to latest message" tabIndex={-1}><WorkspaceIcon name="arrow-down" size={18} /></button>}
             {"\n                    "}
             <div className="input-wrapper" id="dropZone">
               {"\n                        "}
@@ -1164,11 +1141,16 @@ export function ChatApp({
                 {"\n                            "}
                 <form className="input-form" id="chatForm">
                   {"\n                                "}
+                  {workspace ? <>
+                    <input disabled={!ready} type="file" accept="image/*" multiple hidden id="photoInput" />
+                    <input disabled={!ready} type="file" multiple hidden id="fileInput" />
+                    <ComposerPlusMenu disabled={!ready} />
+                  </> : <>
                   <div className="attachment-menu" id="attachmentMenu">
                     {"\n                                    "}
                     <label className="plus-menu-item">
                       {"\n                                        "}
-                      <i className="fas fa-image cyan-icon"></i>
+                      {workspace ? <WorkspaceIcon name="image" size={18} /> : <i className="fas fa-image cyan-icon"></i>}
                       {"\n                                        "}
                       <span className="text-box">{"Add Photo"}</span>
                       {"\n                                        "}
@@ -1185,7 +1167,7 @@ export function ChatApp({
                     {"\n                                    "}
                     <label className="plus-menu-item">
                       {"\n                                        "}
-                      <i className="fas fa-file-alt cyan-icon"></i>
+                      {workspace ? <WorkspaceIcon name="file" size={18} /> : <i className="fas fa-file-alt cyan-icon"></i>}
                       {"\n                                        "}
                       <span className="text-box">{"Add Files"}</span>
                       {"\n                                        "}
@@ -1210,12 +1192,13 @@ export function ChatApp({
                     data-tooltip="Add Files"
                   >
                     {"\n                                    "}
-                    <i className="fas fa-plus"></i>
+                    {workspace ? <WorkspaceIcon name="plus" /> : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>}
                     {"\n                                "}
                   </button>
                   {
                     "\n                                \n                                "
                   }
+                  </>}
                   <div className="input-content">
                     {"\n                                    "}
                     <div className="textarea-wrapper">
@@ -1227,11 +1210,18 @@ export function ChatApp({
                         rows={1}
                         defaultValue=""
                       />
+                      <span className="composer-scrollbar" aria-hidden="true"><span className="composer-scrollbar-thumb" /></span>
                       {"\n                                    "}
                     </div>
                     {"\n                                "}
                   </div>
                   {"\n\n                                "}
+                  <span id="dictationStatus" className="dictation-status" role="status" aria-live="polite"></span>
+                  <button disabled={!ready} type="button" className="voice-btn" id="voiceBtn" aria-label="Dictate a message" title="Dictate a message">
+                    {workspace ? <WorkspaceIcon name="mic" /> : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 10.5v1a6.5 6.5 0 0 0 13 0v-1M12 18v3.5m-4 0h8"/></svg>}
+                  </button>
+                  {workspace && <VoiceControls />}
+                  {workspace && <button type="button" className="gx-stop-btn" id="stopBtn" aria-label="Stop generating (Esc)" title="Stop generating (Esc)"><WorkspaceIcon name="stop" size={14} /></button>}
                   <button
                     disabled={!ready}
                     type="submit"
@@ -1239,7 +1229,7 @@ export function ChatApp({
                     id="sendBtn"
                   >
                     {"\n                                    "}
-                    <i className="fas fa-arrow-up"></i>
+                    {workspace ? <WorkspaceIcon name="arrow-up" /> : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>}
                     {"\n                                "}
                   </button>
                   {"\n                            "}
@@ -1257,6 +1247,7 @@ export function ChatApp({
           {"\n            "}
         </div>
         {"\n        "}
+        {!isChatRoute && <section className="workspace-route-content">{children}</section>}
       </main>
       {"\n    "}
     </div>

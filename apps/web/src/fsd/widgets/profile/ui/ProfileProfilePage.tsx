@@ -734,7 +734,7 @@ export function ProfileProfilePage({
                 </div>
                 {"\n                                "}
                 <a
-                  href="/index.html#products"
+                  href="/#products"
                   style={{ textDecoration: "none" }}
                 >
                   {"\n                                    "}
@@ -987,7 +987,7 @@ export function ProfileProfilePage({
                               "\n                                                        "
                             }
                             <span className="bold-white">
-                              {"Unlimited Power"}
+                              {"Power Credits"}
                             </span>
                             {
                               "\n                                                    "
@@ -1028,7 +1028,7 @@ export function ProfileProfilePage({
                             {
                               "\n                                                        "
                             }
-                            <span className="bold-white">{"AI Titan"}</span>
+                            <span className="bold-white">{"Titan Credits"}</span>
                             {
                               "\n                                                    "
                             }

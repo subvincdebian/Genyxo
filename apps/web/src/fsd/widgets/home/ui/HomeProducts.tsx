@@ -1,11 +1,13 @@
 "use client";
-import type { SyntheticEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 
-import { Localized } from "@/shared/i18n";
+import { Localized, useLanguage } from "@/shared/i18n";
 export function HomeProducts({}: {
   dispatch: (name: string, event: SyntheticEvent<Element>) => unknown;
   ready: boolean;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const { t } = useLanguage();
   return (
     <section className="products" id="products">
       {"\n        "}
@@ -21,9 +23,13 @@ export function HomeProducts({}: {
         </Localized>
         {"\n            "}
         <div
-          className="products-grid animate-on-scroll"
+          className={`products-grid${expanded ? " gx-packs-expanded" : ""}`}
           id="productsGrid"
         ></div>
+        <button className="gx-view-packs" type="button" aria-expanded={expanded} aria-controls="productsGrid" onClick={() => setExpanded(value => !value)}>
+          {t(expanded ? "landing.fewer_packs" : "landing.all_packs")}
+          <span aria-hidden="true">{expanded ? "−" : "+"}</span>
+        </button>
         {"\n        "}
       </div>
       {"\n    "}

@@ -25,7 +25,7 @@ export function DashboardAdminNavbar({
         </button>
         {"\n            "}
         <a
-          href="/index.html"
+          href="/"
           style={{ textDecoration: "none", color: "#fff", display: "flex" }}
         >
           {"\n            "}
@@ -127,7 +127,7 @@ export function DashboardAdminNavbar({
               </div>
               {"\n                        "}
               <a
-                href="/index.html#products"
+                href="/#products"
                 style={{ textDecoration: "none" }}
                 aria-label="Buy Credits"
               >

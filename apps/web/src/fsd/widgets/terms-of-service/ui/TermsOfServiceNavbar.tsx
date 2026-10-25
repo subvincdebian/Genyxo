@@ -185,7 +185,7 @@ export function TermsOfServiceNavbar({
           <div className="nav-logo">
             {"\n                    "}
             <a
-              href="/index.html"
+              href="/"
               aria-label="Home Page"
               style={{
                 textDecoration: "none",
@@ -220,7 +220,7 @@ export function TermsOfServiceNavbar({
             <Localized
               as="a"
               translationKey="nav.home"
-              href="/index.html"
+              href="/"
               className="nav-link"
               data-i18n="nav.home"
               aria-label="Back To Home"
@@ -231,7 +231,7 @@ export function TermsOfServiceNavbar({
             <Localized
               as="a"
               translationKey="nav.chat"
-              href="/chat.html"
+              href="/chat"
               className="nav-link"
               data-i18n="nav.chat"
               aria-label="Chat Page"
@@ -326,7 +326,7 @@ export function TermsOfServiceNavbar({
                 </div>
                 {"\n                                "}
                 <a
-                  href="/index.html#products"
+                  href="/#products"
                   style={{ textDecoration: "none" }}
                   aria-label="Buy Credits"
                 >

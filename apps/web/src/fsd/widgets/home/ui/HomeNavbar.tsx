@@ -2,20 +2,20 @@
 import type { SyntheticEvent } from "react";
 import { NavUsername } from "@/entities/session";
 
-import { Localized } from "@/shared/i18n";
+import { Localized, useLanguage } from "@/shared/i18n";
 export function HomeNavbar({
-  dispatch,
   ready,
 }: {
   dispatch: (name: string, event: SyntheticEvent<Element>) => unknown;
   ready: boolean;
 }) {
+  const { t } = useLanguage();
   return (
-    <nav className="navbar">
+    <nav className="navbar" aria-label={t("nav.navigation", "Main navigation")}>
       {"\n        "}
       <div className="nav-container">
         {"\n            "}
-        <div className="burger" id="burger">
+        <button className="burger" id="burger" type="button" aria-label={t("nav.open_menu", "Open navigation menu")} aria-controls="mobileMenu" aria-expanded="false">
           {"\n                "}
           <span></span>
           {"\n                "}
@@ -23,11 +23,11 @@ export function HomeNavbar({
           {"\n                "}
           <span></span>
           {"\n            "}
-        </div>
+        </button>
         {"\n\n            "}
         <div className="left-side">
           {"\n                "}
-          <div className="nav-logo">
+          <a className="nav-logo" href="#home" aria-label="Genyxo home">
             {"\n                    "}
             <img
               src="/images/logo.svg"
@@ -40,119 +40,16 @@ export function HomeNavbar({
             {"\n                    "}
             <span>{"Genyxo"}</span>
             {"\n                "}
-          </div>
+          </a>
           {"\n                    \n                "}
-          <div className="search-container">
-            {"\n                    "}
-            <div className="search-box">
-              {"\n                        "}
-              <input
-                disabled={!ready}
-                type="text"
-                style={{ display: "none" }}
-                autoComplete="username"
-              />
-              {"\n                        "}
-              <input
-                disabled={!ready}
-                type="password"
-                style={{ display: "none" }}
-                autoComplete="current-password"
-              />
-              {"\n                        "}
-              <Localized
-                disabled={!ready}
-                as="input"
-                translationKey="nav.search_placeholder"
-                type="text"
-                className="search-input"
-                data-i18n="nav.search_placeholder"
-                placeholder="Search products..."
-                autoComplete="off"
-                autoCapitalize="none"
-                spellCheck="false"
-                name="search-field-xyz"
-              />
-              {"\n                        \n                        "}
-              <button
-                disabled={!ready}
-                className="search-btn"
-                aria-label="Search Button"
-              >
-                {"\n                            "}
-                <i className="fas fa-search"></i>
-                {"\n                        "}
-              </button>
-              {"\n                    "}
-            </div>
-            {"\n\n                    "}
-            <div className="search-results-dropdown" id="searchResultsDropdown">
-              {"\n    \n                        "}
-              <div id="searchDefaultState" className="search-state-view">
-                {"\n                            "}
-                <div className="search-section-label">{"Popular packs"}</div>
-                {"\n                            "}
-                <div id="defaultSearchList">
-                  {"\n                                "}
-                </div>
-                {"\n                            \n                            "}
-                <div className="search-categories-grid">
-                  {"\n                                "}
-                  <button
-                    disabled={!ready}
-                    className="search-category-btn"
-                    onClick={(event) => dispatch("home-0", event)}
-                  >
-                    {"\n                                    "}
-                    <i className="fas fa-box"></i>
-                    {
-                      "\n                                    Credit Packages\n                                "
-                    }
-                  </button>
-                  {"\n                                "}
-                  <button
-                    disabled={!ready}
-                    className="search-category-btn"
-                    onClick={(event) => dispatch("home-1", event)}
-                  >
-                    {"\n                                    "}
-                    <i className="fas fa-robot"></i>
-                    {
-                      "\n                                    AI Models\n                                "
-                    }
-                  </button>
-                  {"\n                                "}
-                  <button
-                    disabled={!ready}
-                    className="search-category-btn"
-                    onClick={(event) => dispatch("home-2", event)}
-                  >
-                    {"\n                                    "}
-                    <i className="fas fa-bolt"></i>
-                    {
-                      "\n                                    Quick Actions\n                                "
-                    }
-                  </button>
-                  {"\n                            "}
-                </div>
-                {"\n                        "}
-              </div>
-              {"\n\n                        "}
-              <div
-                id="searchResultsState"
-                className="search-state-view"
-                style={{ display: "none" }}
-              ></div>
-              {"\n                    "}
-            </div>
-            {"\n                "}
-          </div>
           {"\n            "}
         </div>
         {"\n\n            "}
         <div className="right-side">
           {"\n                "}
           <div className="nav-links">
+            <img className="gx-nav-brain" src="/images/logo.svg" width="34" height="34" alt="" aria-hidden="true" />
+            <span className="gx-nav-bubble" aria-hidden="true" />
             {"\n                    "}
             <Localized
               as="a"
@@ -173,13 +70,13 @@ export function HomeNavbar({
               data-i18n="nav.products"
               aria-label="Product Section"
             >
-              {"Products"}
+              {"Credits"}
             </Localized>
             {"\n                    "}
             <Localized
               as="a"
               translationKey="nav.chat"
-              href="/chat.html"
+              href="/chat"
               className="nav-link"
               data-i18n="nav.chat"
               aria-label="Chat Page"
@@ -224,6 +121,7 @@ export function HomeNavbar({
               <NavUsername id="navUsername" data-i18n="nav.login">
                 {"Register / Login"}
               </NavUsername>
+              <span className="gx-mobile-login-label" aria-hidden="true">{t("nav.sign_in")}</span>
               {"\n                    "}
             </button>
             {"\n                    \n                    "}
@@ -285,7 +183,7 @@ export function HomeNavbar({
                 </div>
                 {"\n                            "}
                 <a
-                  href="/index.html#products"
+                  href="/#products"
                   style={{ textDecoration: "none" }}
                   aria-label="Buy Credits"
                 >
