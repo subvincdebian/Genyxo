@@ -8,6 +8,7 @@ import {
   ValidateNested,
   IsNumber,
   ArrayMaxSize,
+  Matches,
 } from "class-validator";
 import { Transform, Type } from "class-transformer";
 import sanitizeHtml from "sanitize-html";
@@ -33,6 +34,16 @@ export class AttachedFileDto {
 }
 
 export class SendMessageDto {
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-zA-Z\d_-]{8,64}$/)
+  clientRequestId?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  presetId?: number | null;
+
   @IsString()
   @IsOptional()
   @MaxLength(2000)
@@ -52,6 +63,11 @@ export class SendMessageDto {
   @IsInt()
   @Type(() => Number)
   conversationId?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  projectId?: number;
 
   @IsOptional()
   @IsArray()
