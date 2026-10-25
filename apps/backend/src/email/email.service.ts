@@ -69,7 +69,19 @@ export class EmailService {
       this.logger.log(`Verification email sent directly to ${email}`);
     } catch {
       this.logger.error("Error sending verification email");
+      throw new Error("Verification email could not be sent");
     }
+  }
+
+  async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+    const target = frontendUrl("/sign-in");
+    target.searchParams.set("mode", "reset");
+    target.searchParams.set("token", token);
+    await this.mailerService.sendMail({
+      to: email,
+      subject: "Reset your Genyxo password",
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:32px;color:#12231d"><h1>Reset your password</h1><p>Use this link to choose a new password. It expires in 30 minutes.</p><p><a href="${target.href}" style="display:inline-block;padding:14px 24px;background:#123d32;color:#fff;text-decoration:none;border-radius:8px">Choose a new password</a></p><p>If you did not request this, you can ignore this email.</p></div>`,
+    });
   }
 
   async sendSupportReply(

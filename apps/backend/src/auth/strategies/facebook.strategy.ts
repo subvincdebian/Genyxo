@@ -30,10 +30,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
     const { name, emails, photos, id } = profile;
 
     const user = {
-      email:
-        emails && emails[0]
-          ? emails[0].value
-          : `fb.${id}@no-email.facebook.com`,
+      email: emails && emails[0] ? emails[0].value : null,
 
       firstName: name.givenName,
       lastName: name.familyName,

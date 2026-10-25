@@ -18,8 +18,8 @@ const REFERRAL_REWARDS: Record<number, number> = {
   2: 1, // AI Explorer
   3: 2.5, // Pro Creator
   4: 5, // AI Master
-  5: 10, // Unlimited Power
-  6: 22, // AI Titan
+  5: 10, // Power Credits
+  6: 22, // Titan Credits
 };
 
 @Injectable()
@@ -50,6 +50,10 @@ export class UsersService {
         "isEmailVerified",
         "googleId",
         "facebookId",
+        "verificationToken",
+        "verificationExpires",
+        "resetPasswordToken",
+        "resetPasswordExpires",
       ],
     });
   }
@@ -60,6 +64,26 @@ export class UsersService {
     return this.usersRepository.findOne({
       where: { email },
       select: ["id", "googleId"],
+    });
+  }
+
+  async findByOAuthId(
+    provider: "google" | "facebook",
+    id: string,
+  ): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: provider === "google" ? { googleId: id } : { facebookId: id },
+      select: [
+        "id",
+        "email",
+        "role",
+        "name",
+        "credits",
+        "avatar",
+        "googleId",
+        "facebookId",
+        "isEmailVerified",
+      ],
     });
   }
 
@@ -129,6 +153,20 @@ export class UsersService {
         "avatar",
         "isEmailVerified",
         "verificationToken",
+        "verificationExpires",
+      ],
+    });
+  }
+
+  async findByResetToken(token: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: { resetPasswordToken: token },
+      select: [
+        "id",
+        "email",
+        "password",
+        "resetPasswordToken",
+        "resetPasswordExpires",
       ],
     });
   }

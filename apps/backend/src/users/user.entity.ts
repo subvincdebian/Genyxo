@@ -48,6 +48,16 @@ export class User {
   @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   verificationToken?: string | null;
 
+  @Column({ type: "datetime", nullable: true })
+  verificationExpires?: Date | null;
+
+  @Index()
+  @Column({ type: "varchar", length: 255, nullable: true, select: false })
+  resetPasswordToken?: string | null;
+
+  @Column({ type: "datetime", nullable: true, select: false })
+  resetPasswordExpires?: Date | null;
+
   @Index()
   @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   googleId?: string;

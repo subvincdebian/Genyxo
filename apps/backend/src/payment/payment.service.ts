@@ -47,8 +47,8 @@ export const PACKS: Record<
   2: { name: "AI Explorer", price: 9.99, credits: 2000 },
   3: { name: "Pro Creator", price: 24.99, credits: 5000 },
   4: { name: "AI Master", price: 49.99, credits: 10000 },
-  5: { name: "Unlimited Power", price: 99.99, credits: 20000 },
-  6: { name: "AI Titan", price: 219.99, credits: 45000 },
+  5: { name: "Power Credits", price: 99.99, credits: 20000 },
+  6: { name: "Titan Credits", price: 219.99, credits: 45000 },
 };
 
 @Injectable()
