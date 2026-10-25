@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1320" viewBox="0 0 1600 1320">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3f8f5"/><stop offset=".4" stop-color="#ccf1e4"/><stop offset=".75" stop-color="#55d6be"/><stop offset="1" stop-color="#087f6d"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".82"/><stop offset=".5" stop-color="#ddfff4" stop-opacity=".15"/><stop offset="1" stop-color="#087f6d" stop-opacity=".5"/></linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1c4d42"/><stop offset="1" stop-color="#101917"/></linearGradient>
+    <clipPath id="heroClip"><rect x="40" y="155" width="1000" height="565" rx="18"/></clipPath>
+    <clipPath id="mobileClip"><rect x="1138" y="195" width="290" height="425" rx="26"/></clipPath>
+    <style>
+      text{font-family:'Segoe UI',Arial,sans-serif;fill:#122b27}
+      .small{font-size:16px}.body{font-size:20px}.label{font-size:14px;letter-spacing:1.7px}.muted{fill:#536a63}.light{fill:#f3f8f5}.mint{fill:#55d6be}.dim{fill:#a8bbb4}.strong{font-weight:600}
+    </style>
+  </defs>
+  <rect width="1600" height="1320" fill="#e6ede8"/>
+  <text x="40" y="55" font-size="32" class="strong">Genyxo</text>
+  <text x="200" y="55" font-size="24">Свет → рабочее пространство → результат</text>
+  <text x="40" y="91" class="body muted">Визуальная схема направления · 15.10.2026 · композиция и сценарий, не финальный макет</text>
+  <text x="40" y="133" class="label strong">DESKTOP / ПЕРВЫЙ ЭКРАН</text>
+  <rect x="40" y="155" width="1000" height="565" rx="18" fill="url(#sea)"/>
+  <g clip-path="url(#heroClip)">
+    <path d="M-30 540 C220 240 360 720 740 390 C900 250 1000 390 1140 510 L1140 830 L-30 830Z" fill="url(#glass)"/>
+    <path d="M-80 530 C140 220 420 760 760 415 C935 240 1080 415 1150 370" fill="none" stroke="#effff7" stroke-opacity=".6" stroke-width="2"/>
+    <path d="M-30 655 C260 360 410 835 850 470 C1020 330 1050 600 1180 535" fill="none" stroke="#046b58" stroke-opacity=".18" stroke-width="90"/>
+    <text x="77" y="195" font-size="23" class="strong">Genyxo</text>
+    <text x="390" y="193" class="small">Модели</text><text x="485" y="193" class="small">Возможности</text><text x="620" y="193" class="small">Кредиты</text>
+    <text x="760" y="193" class="small">Войти</text><rect x="835" y="170" width="166" height="38" rx="19" fill="#122b27"/><text x="918" y="195" text-anchor="middle" class="small light">Открыть чат ↗</text>
+    <text x="540" y="300" text-anchor="middle" font-size="57" font-weight="450">Разные модели ИИ.</text>
+    <text x="540" y="365" text-anchor="middle" font-size="57" font-weight="450">Один ваш чат.</text>
+    <text x="540" y="415" text-anchor="middle" font-size="19">Выбирайте модель под задачу.</text>
+    <text x="540" y="442" text-anchor="middle" font-size="19">Пополняйте общий баланс кредитов.</text>
+    <rect x="345" y="474" width="170" height="46" rx="23" fill="#122b27"/><text x="430" y="503" text-anchor="middle" class="small light">Открыть чат ↗</text>
+    <rect x="530" y="474" width="215" height="46" rx="23" fill="#fff" fill-opacity=".5"/><text x="637" y="503" text-anchor="middle" class="small">Посмотреть, как работает</text>
+    <rect x="186" y="562" width="708" height="245" rx="16" fill="#101917" stroke="#71998a"/>
+    <path d="M186 605 H894 M345 605 V810" stroke="#35413c"/>
+    <text x="208" y="590" font-size="14" class="light strong">Genyxo</text><text x="365" y="590" font-size="14" class="dim">Выбранная модель</text><text x="870" y="590" text-anchor="end" font-size="13" class="mint">Обзор интерфейса</text>
+    <text x="208" y="636" font-size="13" class="dim">+ Новый чат</text><text x="208" y="672" font-size="13" class="dim">История</text>
+    <rect x="529" y="630" width="325" height="38" rx="10" fill="#253b33"/><text x="549" y="654" font-size="14" class="light">Помоги сформулировать идею проекта</text>
+    <text x="385" y="700" font-size="14" class="light">Давайте начнём с задачи и аудитории…</text>
+  </g>
+  <text x="40" y="753" class="small muted">Большая типографика · собственная световая поверхность · продукт виден сразу</text>
+  <text x="1090" y="133" class="label strong">MOBILE / СОХРАНЯЕМ СЮЖЕТ</text>
+  <rect x="1090" y="155" width="470" height="565" rx="18" fill="#f3f8f5"/>
+  <rect x="1128" y="185" width="310" height="445" rx="34" fill="#122b27"/>
+  <g clip-path="url(#mobileClip)">
+    <rect x="1138" y="195" width="290" height="425" fill="url(#sea)"/>
+    <path d="M1100 570 Q1240 330 1470 530" fill="none" stroke="#f3fff8" stroke-opacity=".4" stroke-width="70"/>
+    <text x="1156" y="228" font-size="17" class="strong">Genyxo</text><text x="1406" y="228" text-anchor="end" font-size="16">☰</text>
+    <text x="1283" y="298" text-anchor="middle" font-size="31">Разные модели.</text><text x="1283" y="338" text-anchor="middle" font-size="31">Один ваш чат.</text>
+    <text x="1283" y="374" text-anchor="middle" font-size="15">Выбирайте ИИ под задачу.</text><text x="1283" y="396" text-anchor="middle" font-size="15">Один баланс кредитов.</text>
+    <rect x="1196" y="423" width="174" height="42" rx="21" fill="#122b27"/><text x="1283" y="450" text-anchor="middle" font-size="15" class="light">Открыть чат ↗</text>
+    <rect x="1156" y="496" width="254" height="150" rx="12" fill="#101917"/><text x="1173" y="525" font-size="13" class="dim">Обзор интерфейса</text>
+    <rect x="1173" y="545" width="219" height="32" rx="8" fill="#253b33"/><text x="1184" y="566" font-size="12" class="light">Помоги сформулировать идею</text>
+    <text x="1173" y="602" font-size="12" class="light">Начнём с задачи и аудитории…</text>
+  </g>
+  <text x="1475" y="325" font-size="36" class="muted">↓</text><text x="1475" y="415" font-size="36" class="muted">↓</text><text x="1475" y="505" font-size="36" class="muted">↓</text>
+  <text x="1120" y="664" class="small">Нативный скролл · последовательные сцены</text>
+  <text x="1120" y="690" class="small muted">Тот же режим при reduced motion</text>
+  <text x="40" y="808" class="label strong">SCROLL STORY / ОДИН ПРОДУКТОВЫЙ КАДР</text>
+  <rect x="40" y="833" width="480" height="290" rx="16" fill="url(#sea)"/>
+  <text x="65" y="868" class="label strong">01 / ПРИБЛИЖЕНИЕ</text>
+  <text x="65" y="899" class="small">Кадр растёт, фон уходит в глубину</text>
+  <rect x="103" y="931" width="356" height="154" rx="12" fill="#101917"/>
+  <path d="M103 963 H459 M173 963 V1085" stroke="#35413c"/>
+  <text x="120" y="952" font-size="12" class="light">Genyxo</text><text x="192" y="952" font-size="12" class="dim">Текст</text>
+  <rect x="263" y="981" width="177" height="25" rx="5" fill="#253b33"/>
+  <path d="M193 1028 H417 M193 1042 H430 M193 1056 H341" stroke="#a8bbb4" stroke-width="3"/>
+  <text x="531" y="985" font-size="25">→</text>
+  <rect x="560" y="833" width="480" height="290" rx="16" fill="url(#fade)"/>
+  <text x="585" y="868" class="label light strong">02 / ЗАКРЕПЛЁННАЯ СЦЕНА</text>
+  <text x="585" y="899" class="small dim">Текст → код → изображение</text>
+  <rect x="585" y="931" width="430" height="154" rx="12" fill="#101917" stroke="#536a63"/>
+  <path d="M585 963 H1015 M664 963 V1085" stroke="#35413c"/>
+  <text x="601" y="952" font-size="12" class="light">Genyxo</text><text x="682" y="952" font-size="12" class="mint">Код</text><text x="997" y="952" text-anchor="end" font-size="12" class="dim">Цена видна до отправки</text>
+  <rect x="683" y="978" width="312" height="84" rx="6" fill="#1d2a24"/>
+  <text x="697" y="1002" font-size="12" class="mint">function formatResult(data) {</text><text x="710" y="1022" font-size="12" class="light">return data.map(render);</text><text x="697" y="1042" font-size="12" class="mint">}</text>
+  <text x="1051" y="985" font-size="25">→</text>
+  <rect x="1080" y="833" width="480" height="290" rx="16" fill="#f3f8f5"/>
+  <text x="1105" y="868" class="label strong">03 / РЕЗУЛЬТАТ И КРЕДИТЫ</text>
+  <text x="1105" y="899" class="small muted">Выход из сцены в обычный поток</text>
+  <rect x="1105" y="931" width="185" height="154" rx="10" fill="url(#sea)"/>
+  <path d="M1118 1060 Q1155 935 1275 989 L1235 1072Z" fill="url(#glass)" stroke="#f3fff8"/>
+  <text x="1312" y="959" font-size="21">От идеи</text><text x="1312" y="986" font-size="21">к результату.</text>
+  <text x="1312" y="1025" font-size="14" class="muted">Модель · задача · расход</text>
+  <text x="1312" y="1063" font-size="14" class="strong">Как работают кредиты ↗</text>
+  <path d="M40 1170 H1560" stroke="#bdcbc3"/>
+  <text x="40" y="1205" class="body strong">Далее</text><text x="140" y="1205" class="body">Модели → примеры → расход кредитов → пакеты → FAQ → помощь</text>
+  <text x="40" y="1247" class="small muted">Скролл: приближение 65–85 vh → одна pin-сцена 180–220 vh → спокойная остальная страница.</text>
+  <text x="40" y="1277" class="small muted">Схематичные результаты — иллюстрация сценария. Финальные макеты используют проверенные примеры и фактические цены.</text>
+</svg>
