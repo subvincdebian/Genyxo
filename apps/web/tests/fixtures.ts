@@ -20,6 +20,12 @@ export async function authenticate(page: Page, role = "user") {
       localStorage.setItem("userCredits", String(user.credits));
       localStorage.setItem("userRole", role);
       localStorage.setItem("appLang", "en");
+      // The Next.js dev overlay pill can sit over the sidebar footer; it never ships.
+      document.addEventListener("DOMContentLoaded", () => {
+        const style = document.createElement("style");
+        style.textContent = "nextjs-portal{display:none!important}";
+        document.head.appendChild(style);
+      });
     },
     { user, token, role },
   );
