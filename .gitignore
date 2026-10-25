@@ -58,6 +58,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /apps/web/.next/
 /apps/web/test-results/
+/apps/web/.next-workspace*/
+/apps/web/test-results-*/
 /apps/web/playwright-report/
 /apps/web/*.tsbuildinfo
 
@@ -78,3 +80,4 @@ apps/web/.env*
 
 
 *.tsbuildinfo
+/apps/web/.next-*preview/
