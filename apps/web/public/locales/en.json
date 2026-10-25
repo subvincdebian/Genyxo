@@ -1,7 +1,59 @@
 {
+  "authPage": {
+    "resetAgain": "If this account exists, a new reset link is on its way.",
+    "oauthError": "Could not sign in with this provider. Try another method.",
+    "providerUnavailable": "This sign-in option is not connected yet. Use email for now.",
+    "serviceUnavailable": "Sign-in is temporarily unavailable. Please try again shortly.",
+    "language": "Language",
+    "signupTitle": "Create your workspace",
+    "forgotTitle": "Reset your password",
+    "resetTitle": "Choose a new password",
+    "checkTitle": "Check your inbox",
+    "loginTitle": "Welcome back",
+    "newAccount": "NEW ACCOUNT",
+    "yourAccount": "YOUR ACCOUNT",
+    "story": "Your ideas, every model, one place.",
+    "storyBody": "Pick the AI that fits the task. Keep your conversations and credits together.",
+    "signupIntro": "Start with your email. Your workspace will be ready after verification.",
+    "forgotIntro": "Enter your email and we’ll send a secure reset link.",
+    "resetIntro": "Use a password with at least 8 characters.",
+    "checkIntro": "We sent a link to your email. Open it to continue.",
+    "loginIntro": "Sign in to continue where you left off.",
+    "google": "Continue with Google",
+    "facebook": "Continue with Facebook",
+    "orEmail": "or use email",
+    "email": "Email address",
+    "password": "Password",
+    "newPassword": "New password",
+    "forgot": "Forgot password?",
+    "passwordHint": "At least 8 characters",
+    "hide": "Hide password",
+    "show": "Show password",
+    "working": "One moment…",
+    "create": "Create account",
+    "sendReset": "Send reset link",
+    "savePassword": "Save password",
+    "signIn": "Sign in",
+    "resend": "Resend verification email",
+    "resendReset": "Send another reset link",
+    "changeEmail": "Use a different email",
+    "noAccount": "New to Genyxo?",
+    "signUp": "Create an account",
+    "backLogin": "Back to sign in",
+    "termsIntro": "By continuing, you agree to our",
+    "terms": "Terms",
+    "and": "and",
+    "privacy": "Privacy Policy",
+    "resetDone": "Password changed. Sign in with your new password.",
+    "sentAgain": "If this address needs verification, a new email is on its way.",
+    "expired": "This link has expired. Request a new one.",
+    "badLogin": "Email or password is incorrect.",
+    "exists": "An account with this email already exists. Sign in instead.",
+    "error": "Something went wrong. Try again."
+  },
   "nav": {
     "home": "Home",
-    "products": "Products",
+    "products": "Credits",
     "chat": "Chat",
     "about": "About Us",
     "login": "Register / Login",
@@ -15,7 +67,11 @@
     "notifications": "Notifications",
     "language": "Language",
     "contact": "Contact us",
-    "logout": "Log out"
+    "logout": "Log out",
+    "sign_in": "Sign in",
+    "navigation": "Main navigation",
+    "open_menu": "Open navigation menu",
+    "close_menu": "Close menu"
   },
   "hero": {
     "title": "Genyxo",
@@ -42,48 +98,32 @@
     "1": {
       "name": "Start AI",
       "credits_label": "750 credits",
-      "features": [
-        "Access to basic AI models",
-        "Standard support",
-        "Lifetime validity"
-      ]
+      "features": ["Use with available AI models", "One-time credit purchase"]
     },
     "2": {
       "name": "AI Explorer",
       "credits_label": "2,000 credits",
-      "features": [
-        "Access to advanced AI models",
-        "Priority support",
-        "Lifetime validity"
-      ]
+      "features": ["Use with available AI models", "One-time credit purchase"]
     },
     "3": {
       "name": "Pro Creator",
       "credits_label": "5,000 credits",
-      "features": ["All AI models included", "VIP support", "Lifetime validity"]
+      "features": ["Use with available AI models", "One-time credit purchase"]
     },
     "4": {
       "name": "AI Master",
       "credits_label": "10,000 credits",
-      "features": ["All AI models", "24/7 Premium support", "Lifetime validity"]
+      "features": ["Use with available AI models", "One-time credit purchase"]
     },
     "5": {
-      "name": "Unlimited Power",
+      "name": "Power Credits",
       "credits_label": "20,000 credits",
-      "features": [
-        "All features",
-        "Dedicated support manager",
-        "Lifetime validity"
-      ]
+      "features": ["Use with available AI models", "One-time credit purchase"]
     },
     "6": {
-      "name": "AI Titan",
+      "name": "Titan Credits",
       "credits_label": "45,000 credits",
-      "features": [
-        "Unlimited everything",
-        "White-label options",
-        "Lifetime validity"
-      ]
+      "features": ["Use with available AI models", "One-time credit purchase"]
     },
     "products_title": "Subscription packages",
     "buy_now": "Buy Now"
@@ -329,5 +369,91 @@
     "toast_success": "Ticket created successfully!",
     "toast_error": "Error creating ticket.",
     "toast_server_error": "Server error. Please try again later."
+  },
+  "landing": {
+    "eyebrow": "Your workspace for AI",
+    "title": "Different AI models.",
+    "title_end": "One place to work.",
+    "intro": "Choose a model for your next task. One chat, one credit balance.",
+    "open_chat": "Open chat",
+    "credits": "Explore credit packs",
+    "pause": "Pause background motion",
+    "resume": "Resume background motion",
+    "workspace": "A closer look at your workspace",
+    "scroll": "Scroll to explore",
+    "preview_alt": "Genyxo chat interface with model selection, conversation history and message composer",
+    "preview_note": "A view of the current Genyxo workspace. Open the chat to choose a model and start your own conversation.",
+    "statement_label": "From a question to your next idea",
+    "statement": "A place to think, write and create. With the model you choose.",
+    "meta_title": "Genyxo — Different AI models. One place to work.",
+    "meta_description": "Choose an AI model for your next task in one chat with one credit balance.",
+    "about_label": "How Genyxo works",
+    "about_title": "Your ideas deserve room to move.",
+    "about_body": "A simple workspace for asking, exploring and creating with different AI models. Choose what fits the task and keep working in one place.",
+    "about_step_1_title": "Choose a model",
+    "about_step_1_body": "See the available models and pick the one you want to use for this conversation.",
+    "about_step_2_title": "Make it a conversation",
+    "about_step_2_body": "Write your prompt in the chat and keep your work in your conversation history.",
+    "about_step_3_title": "Add credits when you need them",
+    "about_step_3_body": "Choose a credit pack and use your balance across the models available to you.",
+    "footer_description": "Different AI models, one place to work.",
+    "footer_explore": "Explore",
+    "footer_help": "Help",
+    "footer_legal": "Legal",
+    "back_to_top": "Back to top",
+    "footer_faq": "FAQ",
+    "footer_privacy": "Privacy policy",
+    "footer_terms": "Terms of service",
+    "model_families": "AI models you can choose",
+    "all_packs": "View all packs",
+    "fewer_packs": "Show fewer packs",
+    "mobile_start": "Explore starting points",
+    "mobile_message": "Write your message"
+  },
+  "workspace": {
+    "close_navigation": "Close navigation",
+    "navigation": "Workspace navigation",
+    "remove_preset": "Remove skill",
+    "dismiss": "Dismiss",
+    "project": "Project",
+    "project_unavailable": "This project is no longer available.",
+    "name_required": "Enter a name",
+    "max_files": "A project can contain up to 5 files",
+    "project_saved": "Project saved",
+    "memory_saved": "Memory saved",
+    "project_settings": "Project settings",
+    "overview": "Overview",
+    "memory": "Memory",
+    "project_name": "Project name",
+    "project_instructions": "Project instructions",
+    "project_context_help": "Instructions, shared files and saved memory are available to chats in this project.",
+    "remove": "Remove",
+    "add_files": "Add shared files",
+    "file_limit": "PDF, DOCX or text · up to 5 files · 4 MB each",
+    "new_chat": "New chat",
+    "saving": "Saving…",
+    "save": "Save",
+    "memory_help": "Save facts and decisions that models should remember across this project's chats.",
+    "use_memory": "Use this memory",
+    "edit_memory": "Edit memory",
+    "delete_memory": "Delete memory",
+    "no_memories": "No saved memory yet",
+    "no_text": "No text preview is available",
+    "download": "Download original",
+    "delete_memory_confirm": "Delete this saved memory? It will no longer be used in future replies.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "search_chats": "Search chats",
+    "search_placeholder": "Search titles and messages…",
+    "clear_search": "Clear search",
+    "search_results": "Search results",
+    "retry": "Retry",
+    "no_results": "No matching chats",
+    "choose": "Choose",
+    "open": "Open",
+    "close": "Close",
+    "new_memory": "New memory",
+    "remember": "Remember",
+    "save_changes": "Save changes"
   }
 }

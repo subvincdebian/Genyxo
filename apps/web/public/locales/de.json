@@ -1,7 +1,59 @@
 {
+  "authPage": {
+    "resetAgain": "Falls das Konto existiert, kommt ein neuer Link.",
+    "oauthError": "Anmeldung mit diesem Anbieter fehlgeschlagen. Versuche eine andere Methode.",
+    "providerUnavailable": "Diese Anmeldemethode ist noch nicht verbunden. Verwende vorerst E-Mail.",
+    "serviceUnavailable": "Die Anmeldung ist vorübergehend nicht verfügbar. Bitte versuche es gleich noch einmal.",
+    "language": "Sprache",
+    "signupTitle": "Erstelle deinen Arbeitsbereich",
+    "forgotTitle": "Passwort zurücksetzen",
+    "resetTitle": "Neues Passwort wählen",
+    "checkTitle": "Posteingang prüfen",
+    "loginTitle": "Willkommen zurück",
+    "newAccount": "NEUES KONTO",
+    "yourAccount": "DEIN KONTO",
+    "story": "Deine Ideen. Alle Modelle. Ein Ort.",
+    "storyBody": "Wähle die passende KI. Gespräche und Guthaben bleiben zusammen.",
+    "signupIntro": "Beginne mit deiner E-Mail. Bestätige sie, um fortzufahren.",
+    "forgotIntro": "Gib deine E-Mail ein. Wir senden dir einen sicheren Link.",
+    "resetIntro": "Verwende mindestens 8 Zeichen.",
+    "checkIntro": "Wir haben dir einen Link geschickt. Öffne ihn, um fortzufahren.",
+    "loginIntro": "Melde dich an und mach dort weiter, wo du aufgehört hast.",
+    "google": "Mit Google fortfahren",
+    "facebook": "Mit Facebook fortfahren",
+    "orEmail": "oder E-Mail verwenden",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "newPassword": "Neues Passwort",
+    "forgot": "Passwort vergessen?",
+    "passwordHint": "Mindestens 8 Zeichen",
+    "hide": "Verbergen",
+    "show": "Anzeigen",
+    "working": "Einen Moment…",
+    "create": "Konto erstellen",
+    "sendReset": "Link senden",
+    "savePassword": "Passwort speichern",
+    "signIn": "Anmelden",
+    "resend": "Bestätigung erneut senden",
+    "resendReset": "Neuen Link senden",
+    "changeEmail": "Andere E-Mail verwenden",
+    "noAccount": "Neu bei Genyxo?",
+    "signUp": "Konto erstellen",
+    "backLogin": "Zurück zur Anmeldung",
+    "termsIntro": "Wenn du fortfährst, akzeptierst du unsere",
+    "terms": "Nutzungsbedingungen",
+    "and": "und",
+    "privacy": "Datenschutzerklärung",
+    "resetDone": "Passwort geändert. Melde dich erneut an.",
+    "sentAgain": "Falls eine Bestätigung nötig ist, kommt eine neue E-Mail.",
+    "expired": "Der Link ist abgelaufen. Fordere einen neuen an.",
+    "badLogin": "E-Mail oder Passwort ist falsch.",
+    "exists": "Für diese E-Mail gibt es bereits ein Konto. Melde dich an.",
+    "error": "Etwas ist schiefgelaufen. Versuche es erneut."
+  },
   "nav": {
     "home": "Startseite",
-    "products": "Produkte",
+    "products": "Credits",
     "chat": "Chat",
     "about": "Über uns",
     "login": "Registrieren / Anmelden",
@@ -15,7 +67,11 @@
     "notifications": "Benachrichtigungen",
     "language": "Sprache",
     "contact": "Kontakt",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "sign_in": "Anmelden",
+    "navigation": "Hauptnavigation",
+    "open_menu": "Navigationsmenü öffnen",
+    "close_menu": "Menü schließen"
   },
   "hero": {
     "title": "Genyxo",
@@ -43,54 +99,48 @@
       "name": "Start AI",
       "credits_label": "500 Credits",
       "features": [
-        "Zugang zu Basis-KI-Modellen",
-        "Standard-Support",
-        "Lebenslange Gültigkeit"
+        "Mit verfügbaren KI-Modellen nutzen",
+        "Einmaliger Credit-Kauf"
       ]
     },
     "2": {
       "name": "AI Explorer",
       "credits_label": "1.000 Credits",
       "features": [
-        "Zugang zu fortgeschrittenen KI-Modellen",
-        "Priorisierter Support",
-        "Lebenslange Gültigkeit"
+        "Mit verfügbaren KI-Modellen nutzen",
+        "Einmaliger Credit-Kauf"
       ]
     },
     "3": {
       "name": "Pro Creator",
       "credits_label": "2.000 Credits",
       "features": [
-        "Alle KI-Modelle inklusive",
-        "VIP-Support",
-        "Lebenslange Gültigkeit"
+        "Mit verfügbaren KI-Modellen nutzen",
+        "Einmaliger Credit-Kauf"
       ]
     },
     "4": {
       "name": "AI Master",
       "credits_label": "5.000 Credits",
       "features": [
-        "Alle KI-Modelle",
-        "24/7 Premium-Support",
-        "Lebenslange Gültigkeit"
+        "Mit verfügbaren KI-Modellen nutzen",
+        "Einmaliger Credit-Kauf"
       ]
     },
     "5": {
-      "name": "Unlimited Power",
+      "name": "Power Credits",
       "credits_label": "10.000 Credits",
       "features": [
-        "Alle Funktionen",
-        "Dedizierter Support-Manager",
-        "Lebenslange Gültigkeit"
+        "Mit verfügbaren KI-Modellen nutzen",
+        "Einmaliger Credit-Kauf"
       ]
     },
     "6": {
-      "name": "AI Titan",
+      "name": "Titan Credits",
       "credits": "25.000 Credits",
       "features": [
-        "Alles unbegrenzt",
-        "White-Label-Optionen",
-        "Lebenslange Gültigkeit"
+        "Mit verfügbaren KI-Modellen nutzen",
+        "Einmaliger Credit-Kauf"
       ]
     },
     "products_title": "Abonnement-Pakete",
@@ -337,5 +387,91 @@
     "toast_success": "Ticket erfolgreich erstellt!",
     "toast_error": "Fehler beim Erstellen des Tickets.",
     "toast_server_error": "Serverfehler. Bitte versuchen Sie es später erneut."
+  },
+  "landing": {
+    "eyebrow": "Ihr Arbeitsbereich für KI",
+    "title": "Verschiedene KI-Modelle.",
+    "title_end": "Ein Ort zum Arbeiten.",
+    "intro": "Wählen Sie ein Modell für Ihre nächste Aufgabe. Ein Chat, ein gemeinsames Guthaben.",
+    "open_chat": "Chat öffnen",
+    "credits": "Credit-Pakete ansehen",
+    "pause": "Hintergrundbewegung pausieren",
+    "resume": "Hintergrundbewegung fortsetzen",
+    "workspace": "Ihr Arbeitsbereich im Detail",
+    "scroll": "Zum Entdecken scrollen",
+    "preview_alt": "Genyxo-Chat mit Modellauswahl, Verlauf und Eingabefeld",
+    "preview_note": "Der aktuelle Genyxo-Arbeitsbereich. Öffnen Sie den Chat, wählen Sie ein Modell und beginnen Sie Ihr Gespräch.",
+    "statement_label": "Von einer Frage zur nächsten Idee",
+    "statement": "Ein Ort zum Denken, Schreiben und Gestalten. Mit dem Modell Ihrer Wahl.",
+    "meta_title": "Genyxo — Verschiedene KI-Modelle. Ein Ort zum Arbeiten.",
+    "meta_description": "Wählen Sie für jede Aufgabe ein KI-Modell. Ein Chat, ein gemeinsames Credit-Guthaben.",
+    "about_label": "So funktioniert Genyxo",
+    "about_title": "Geben Sie Ihren Ideen Raum.",
+    "about_body": "Ein einfacher Arbeitsbereich, um mit verschiedenen KI-Modellen zu fragen, zu entdecken und zu gestalten. Wählen Sie das passende Modell und arbeiten Sie an einem Ort weiter.",
+    "about_step_1_title": "Modell auswählen",
+    "about_step_1_body": "Sehen Sie die verfügbaren Modelle und wählen Sie eines für Ihr Gespräch.",
+    "about_step_2_title": "Gespräch beginnen",
+    "about_step_2_body": "Schreiben Sie Ihre Anfrage im Chat und finden Sie Ihre Arbeit im Gesprächsverlauf wieder.",
+    "about_step_3_title": "Bei Bedarf Credits hinzufügen",
+    "about_step_3_body": "Wählen Sie ein Credit-Paket und nutzen Sie Ihr Guthaben mit den verfügbaren Modellen.",
+    "footer_description": "Verschiedene KI-Modelle an einem Ort.",
+    "footer_explore": "Entdecken",
+    "footer_help": "Hilfe",
+    "footer_legal": "Rechtliches",
+    "back_to_top": "Nach oben",
+    "footer_faq": "Häufige Fragen",
+    "footer_privacy": "Datenschutz",
+    "footer_terms": "Nutzungsbedingungen",
+    "model_families": "Verfügbare KI-Modelle",
+    "all_packs": "Alle Pakete ansehen",
+    "fewer_packs": "Weniger anzeigen",
+    "mobile_start": "Wähle einen Einstieg",
+    "mobile_message": "Schreibe deine Nachricht"
+  },
+  "workspace": {
+    "project": "Projekt",
+    "project_unavailable": "Dieses Projekt ist nicht mehr verfügbar.",
+    "name_required": "Namen eingeben",
+    "max_files": "Ein Projekt kann bis zu 5 Dateien enthalten",
+    "project_saved": "Projekt gespeichert",
+    "memory_saved": "Erinnerung gespeichert",
+    "project_settings": "Projekteinstellungen",
+    "overview": "Übersicht",
+    "memory": "Erinnerungen",
+    "project_name": "Projektname",
+    "project_instructions": "Projektanweisungen",
+    "project_context_help": "Chats dieses Projekts nutzen Anweisungen, gemeinsame Dateien und gespeicherte Erinnerungen.",
+    "remove": "Entfernen",
+    "add_files": "Gemeinsame Dateien hinzufügen",
+    "file_limit": "PDF, DOCX oder Text · bis zu 5 Dateien · je 4 MB",
+    "new_chat": "Neuer Chat",
+    "saving": "Wird gespeichert…",
+    "save": "Speichern",
+    "memory_help": "Speichere Fakten und Entscheidungen für die Chats dieses Projekts.",
+    "use_memory": "Diese Erinnerung verwenden",
+    "edit_memory": "Erinnerung bearbeiten",
+    "delete_memory": "Erinnerung löschen",
+    "no_memories": "Noch keine Erinnerungen gespeichert",
+    "new_memory": "Neue Erinnerung",
+    "remember": "Merken",
+    "no_text": "Keine Textvorschau verfügbar",
+    "download": "Original herunterladen",
+    "delete_memory_confirm": "Diese Erinnerung löschen? Sie wird in künftigen Antworten nicht mehr verwendet.",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "close_navigation": "Navigation schließen",
+    "navigation": "Arbeitsbereich-Navigation",
+    "remove_preset": "Fähigkeit entfernen",
+    "dismiss": "Schließen",
+    "search_chats": "Chats durchsuchen",
+    "search_placeholder": "Titel und Nachrichten durchsuchen…",
+    "clear_search": "Suche löschen",
+    "search_results": "Suchergebnisse",
+    "retry": "Erneut versuchen",
+    "no_results": "Keine passenden Chats",
+    "choose": "Auswählen",
+    "open": "Öffnen",
+    "close": "Schließen",
+    "save_changes": "Änderungen speichern"
   }
 }
