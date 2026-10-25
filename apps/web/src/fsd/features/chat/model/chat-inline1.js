@@ -20,15 +20,15 @@ export default function initialize(scope, context) {
       } else {
         root.setAttribute("data-theme", "light");
       }
-      scope.document.getElementById("theme-system").classList.add("active");
+      scope.document.getElementById("theme-system")?.classList.add("active");
     } else if (theme === "dark") {
       localStorage.setItem("theme", "dark");
       root.removeAttribute("data-theme");
-      scope.document.getElementById("theme-dark").classList.add("active");
+      scope.document.getElementById("theme-dark")?.classList.add("active");
     } else if (theme === "light") {
       localStorage.setItem("theme", "light");
       root.setAttribute("data-theme", "light");
-      scope.document.getElementById("theme-light").classList.add("active");
+      scope.document.getElementById("theme-light")?.classList.add("active");
     }
   }
   function initTheme() {

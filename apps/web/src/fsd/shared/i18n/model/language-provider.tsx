@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import type { ReactNode } from "react";
+import english from "../../../../../public/locales/en.json";
 
 export type Language = "en" | "uk" | "es" | "de" | "fr";
 export type TranslationDictionary = Readonly<Record<string, unknown>>;
@@ -72,8 +73,7 @@ function initialLanguage(): Language {
   } catch {
     // Language selection also works when browser storage is unavailable.
   }
-  const browser = navigator.language.toLowerCase().split("-")[0];
-  return isLanguage(browser) ? browser : "en";
+  return "en";
 }
 
 async function loadDictionary(
@@ -91,7 +91,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   // Server markup and the first client render use the original fallback text.
   const [state, setState] = useState<LanguageSnapshot>({
     lang: "en",
-    translations: {},
+    translations: english,
   });
   const snapshot = useRef(state);
   const mounted = useRef(false);
@@ -119,7 +119,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
           activeRequest.current !== request
         )
           return false;
-        const next = { lang: effectiveLanguage, translations };
+        const next = { lang: effectiveLanguage, translations: { ...english, ...translations } };
         snapshot.current = next;
         setState(next);
         try {

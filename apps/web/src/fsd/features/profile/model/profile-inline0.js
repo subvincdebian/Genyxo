@@ -9,29 +9,53 @@ scope.listen(scope.document.getElementById("avatarInput"), "change", function (e
     context.showToast("The file is too big! Maximum 50MB.", "error");
     return;
   }
+  // A blob: URL only lives in this tab, so the server gets a small square
+  // data URL that survives reloads and other devices.
+  // Animated formats are kept as uploaded (re-encoding keeps only the first frame).
+  const animated = file.type === "image/gif" || file.type === "image/webp";
+  if (animated && file.size > 2 * 1024 * 1024) {
+    context.showToast("Animated avatars can be up to 2 MB.", "error");
+    return;
+  }
   const reader = new FileReader();
-  reader.onload = async function (e) {
-    const objectUrl = URL.createObjectURL(file);
-    scope.document.getElementById("avatarPreview").style.backgroundImage = `url('${objectUrl}')`;
-    try {
-      const response = await scope.fetch(`${context.API_BASE_URL}/profile/update`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${context.token}`
-        },
-        body: JSON.stringify({
-          avatar: objectUrl
-        })
-      });
-      if (response.ok) {
-        context.showToast("Avatar Succesfully Updated!", "success");
-      } else {
-        context.showToast("Loading Failed!", "error");
+  reader.onload = function (e) {
+    const image = new Image();
+    image.onload = async function () {
+      let avatar = e.target.result;
+      if (!animated) {
+        const size = 256;
+        const canvas = scope.document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const side = Math.min(image.naturalWidth, image.naturalHeight);
+        canvas.getContext("2d").drawImage(image, (image.naturalWidth - side) / 2, (image.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+        avatar = canvas.toDataURL("image/jpeg", 0.88);
       }
-    } catch (error) {
-      console.error("Error uploading avatar:", error);
-    }
+      scope.document.getElementById("avatarPreview").style.backgroundImage = `url('${avatar}')`;
+      try {
+        const response = await scope.fetch(`${context.API_BASE_URL}/profile/update`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${context.token}`
+          },
+          body: JSON.stringify({ avatar })
+        });
+        if (response.ok) {
+          try { localStorage.setItem("userAvatar", avatar); } catch { /* Too large to cache; the next profile load supplies it. */ }
+          scope.document.querySelectorAll("#navAvatar, .dropdown-avatar").forEach((img) => { img.src = avatar; });
+          scope.document.dispatchEvent(new Event("genyxo:session"));
+          context.showToast("Avatar updated", "success");
+        } else {
+          context.showToast("The avatar could not be saved.", "error");
+        }
+      } catch (error) {
+        console.error("Error uploading avatar:", error);
+        context.showToast("The avatar could not be saved.", "error");
+      }
+    };
+    image.onerror = () => context.showToast("This file is not an image we can read.", "error");
+    image.src = e.target.result;
   };
   reader.readAsDataURL(file);
 });

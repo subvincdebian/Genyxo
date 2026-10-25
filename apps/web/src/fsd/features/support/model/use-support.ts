@@ -59,7 +59,7 @@ export function useSupport() {
     } catch {
       token.current = null;
     }
-    if (!token.current) router.replace("/index.html");
+    if (!token.current) router.replace("/");
     else
       queueMicrotask(() => {
         if (!mounted.signal.aborted) void reload();

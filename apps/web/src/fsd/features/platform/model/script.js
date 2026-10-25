@@ -13,7 +13,7 @@ export default function initialize(scope, context) {
   let verificationRequest = null;
   let currentProduct = null;
   const urlParams = new URLSearchParams(scope.window.location.search);
-  const tokenFromUrl = urlParams.get("token");
+  const tokenFromUrl = urlParams.get("token") || (scope.window.location.hash.startsWith("#auth-token=") ? scope.window.location.hash.slice(12) : null);
   const refCode = urlParams.get("referralCode") || urlParams.get("ref");
   if (tokenFromUrl) {
     localStorage.setItem("authToken", tokenFromUrl);
@@ -26,6 +26,14 @@ export default function initialize(scope, context) {
     const cleanUrl =
       scope.window.location.origin + scope.window.location.pathname;
     scope.window.history.replaceState({}, scope.document.title, cleanUrl);
+  }
+  if (tokenFromUrl) {
+    const returnTo = sessionStorage.getItem("authReturnTo");
+    sessionStorage.removeItem("authReturnTo");
+    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//") && !returnTo.startsWith("/\\")) {
+      scope.window.location.replace(returnTo);
+      return () => {};
+    }
   }
   let token = localStorage.getItem("authToken");
   scope.window.token = token;
@@ -101,15 +109,21 @@ export default function initialize(scope, context) {
       id: 5,
       price: "$99.99",
       image: "./images/unlimitedpower.jpg",
-      alt: "Unlimited Power Pack",
+      alt: "Power Credits Pack",
     },
     {
       id: 6,
       price: "$219.99",
       image: "./images/aititan.jpg",
-      alt: "AI Titan Pack",
+      alt: "Titan Credits Pack",
     },
   ];
+  if (token && checkoutModal) {
+    const pendingPack = Number(sessionStorage.getItem("pendingAuthPack"));
+    sessionStorage.removeItem("pendingAuthPack");
+    const product = products.find((item) => item.id === pendingPack);
+    if (product) queueMicrotask(() => openCheckout(product));
+  }
   const SVG_ICONS = {
     check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
     bolt: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
@@ -140,6 +154,7 @@ export default function initialize(scope, context) {
       );
     }
     localStorage.setItem("userCredits", numericAmount);
+    scope.document.dispatchEvent(new Event("genyxo:credits"));
   }
   function updateUIState(isLoggedIn, userData = null) {
     const userName = userData?.name || userData?.email || "User";
@@ -337,7 +352,12 @@ export default function initialize(scope, context) {
         const user = await response.json();
         localStorage.setItem("userName", user.name || "");
         localStorage.setItem("userEmail", user.email || "");
-        if (user.avatar) localStorage.setItem("userAvatar", user.avatar);
+        try {
+          if (user.avatar) localStorage.setItem("userAvatar", user.avatar);
+          else localStorage.removeItem("userAvatar");
+        } catch {
+          // A large animated avatar may not fit browser storage.
+        }
         if (user.role) localStorage.setItem("userRole", user.role);
         updateUIState(true, user);
         updateAdminDashboardVisibility();
@@ -365,16 +385,20 @@ export default function initialize(scope, context) {
         localStorage.setItem("userEmail", user.email);
         localStorage.setItem("userId", user.id);
         if (user.name) localStorage.setItem("userName", user.name);
-        if (user.avatar) localStorage.setItem("userAvatar", user.avatar);
+        try {
+          if (user.avatar) localStorage.setItem("userAvatar", user.avatar);
+          else localStorage.removeItem("userAvatar");
+        } catch {
+          // A large animated avatar may not fit browser storage.
+        }
         updateUIState(true, user);
-      } else {
+      } else if (res.status === 401 || res.status === 403) {
         localStorage.removeItem("authToken");
         updateUIState(false);
       }
     } catch (e) {
+      // A dropped request (navigation, offline, server restart) keeps the session.
       console.error("Profile fetch error", e);
-      localStorage.removeItem("authToken");
-      updateUIState(false);
     }
   }
   function showToast(message, type = "success", duration = 3000) {
@@ -626,18 +650,8 @@ export default function initialize(scope, context) {
     loginForm.style.display = "block";
   }
   function openLoginModal() {
-    const loginFormEl = scope.document.getElementById("loginForm");
-    const signupFormEl = scope.document.getElementById("signupForm");
-    if (!loginModal || !loginFormEl || !signupFormEl) {
-      scope.window.location.href = "index.html#login";
-      return;
-    }
-    loginModal.style.display = "flex";
-    scope.document.body.style.overflow = "hidden";
-    if (logoutContainer) {
-      logoutContainer.style.display = "none";
-    }
-    showLoginForm();
+    const next = `${scope.window.location.pathname}${scope.window.location.search}${scope.window.location.hash}`;
+    scope.window.location.assign(`/sign-in?next=${encodeURIComponent(next)}`);
   }
   function closeLoginModal() {
     loginModal.style.display = "none";
@@ -651,6 +665,7 @@ export default function initialize(scope, context) {
   }
   async function processPayment() {
     if (!token) {
+      if (currentProduct) sessionStorage.setItem("pendingAuthPack", String(currentProduct.id));
       checkoutModal.style.display = "none";
       openLoginModal();
       return;
@@ -872,6 +887,7 @@ export default function initialize(scope, context) {
       }
     });
   }
+  scope.onReady(() => initProductsEventListeners());
   function loadProducts() {
     const productsGrid = scope.document.getElementById("productsGrid");
     if (!productsGrid) return;
@@ -1261,21 +1277,35 @@ export default function initialize(scope, context) {
     const burger = scope.document.getElementById("burger");
     const mobileMenu = scope.document.getElementById("mobileMenu");
     const overlay = scope.document.getElementById("menuOverlay");
+    const closeButton = scope.document.getElementById("closeMobileMenu");
     if (!burger || !mobileMenu || !overlay) return;
     function closeMenu() {
       burger.classList.remove("active");
       mobileMenu.classList.remove("active");
       overlay.classList.remove("active");
+      burger.setAttribute("aria-expanded", "false");
     }
     scope.listen(burger, "click", () => {
-      burger.classList.toggle("active");
-      mobileMenu.classList.toggle("active");
-      overlay.classList.toggle("active");
+      const open = !mobileMenu.classList.contains("active");
+      burger.classList.toggle("active", open);
+      mobileMenu.classList.toggle("active", open);
+      overlay.classList.toggle("active", open);
+      burger.setAttribute("aria-expanded", String(open));
+      if (open) closeButton?.focus();
     });
     scope.document.querySelectorAll(".mobile-menu a").forEach((link) => {
       scope.listen(link, "click", closeMenu);
     });
     scope.listen(overlay, "click", closeMenu);
+    if (closeButton) scope.listen(closeButton, "click", () => { closeMenu(); burger.focus(); });
+    scope.listen(scope.document, "keydown", (event) => {
+      if (event.key === "Escape" && mobileMenu.classList.contains("active")) {
+        closeMenu();
+        burger.focus();
+      }
+    });
+    const desktopNav = scope.window.matchMedia("(min-width: 901px)");
+    scope.listen(desktopNav, "change", () => { if (desktopNav.matches) closeMenu(); });
   }
   const copyAffBtn = scope.document.getElementById("copyAffBtn");
   if (copyAffBtn) {
@@ -1758,14 +1788,6 @@ export default function initialize(scope, context) {
       icon: "./images/kling-video.svg",
       desc: "the latest flagship AI model by Kuaishou Technology with enhanced multimodal capabilities.",
     },
-    {
-      id: "arcee",
-      name: "Arcee",
-      company: "Arcee",
-      creator: "Arcee",
-      icon: "./images/arcee-ai.svg",
-      desc: "the latest flagship AI model by Arcee with enhanced multimodal capabilities.",
-    },
   ];
   const quickActionsData = [
     {
@@ -1980,7 +2002,6 @@ export default function initialize(scope, context) {
         resultsState.appendChild(item);
       });
     });
-    initProductsEventListeners();
   });
   function openCategoryModal(type) {
     const modal = scope.document.getElementById("categoryModal");
