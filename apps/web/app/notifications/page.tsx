@@ -42,7 +42,7 @@ export default function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html:
-            '\n    {\n      "@context": "https://schema.org",\n      "@type": "BreadcrumbList",\n      "itemListElement": [{\n        "@type": "ListItem",\n        "position": 1,\n        "name": "Home",\n        "item": "https://genyxo.com/index.html"\n      },{\n        "@type": "ListItem",\n        "position": 2,\n        "name": "Notifications",\n        "item": "https://genyxo.com/notifications.html"\n      }]\n    }\n    ',
+            '\n    {\n      "@context": "https://schema.org",\n      "@type": "BreadcrumbList",\n      "itemListElement": [{\n        "@type": "ListItem",\n        "position": 1,\n        "name": "Home",\n        "item": "https://genyxo.com/"\n      },{\n        "@type": "ListItem",\n        "position": 2,\n        "name": "Notifications",\n        "item": "https://genyxo.com/notifications.html"\n      }]\n    }\n    ',
         }}
       />
       <NotificationsPage />
