@@ -1,5 +1,5 @@
 import { ConfigService } from "@nestjs/config";
-import { NotFoundException, ServiceUnavailableException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { WorkspaceService } from "./workspace.service";
 
 // Persistence is an injected boundary; the fake retains actual mutations so
@@ -207,15 +207,6 @@ describe("Workspace ownership and shared context", () => {
         endpoint: "http://127.0.0.1/internal",
       }),
     ).rejects.toThrow();
-  });
-  it("reports a genuinely unavailable scheduler and rejects creation", async () => {
-    expect(await service.listScheduled(1)).toMatchObject({
-      available: false,
-      items: [],
-    });
-    await expect(service.saveScheduled()).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
   });
   it("keeps deleted generated media out of later library indexing", async () => {
     Object.assign(library.rows[0], { type: "image", sourceMessageId: 9 });

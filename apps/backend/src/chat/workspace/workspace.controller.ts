@@ -16,8 +16,24 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { IsInt, IsOptional, IsString, Matches } from "class-validator";
 import { WorkspaceService } from "./workspace.service";
 import { ChatService } from "../chat.service";
+import { ScheduledService } from "../scheduled/scheduled.service";
+import { ShareService } from "../share/share.service";
+
+class StopGenerationDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  conversationId?: number;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-zA-Z\d_-]{8,64}$/)
+  clientRequestId?: string;
+}
 
 @Injectable()
 class ObjectBodyPipe implements PipeTransform {
@@ -38,7 +54,29 @@ export class WorkspaceController {
   constructor(
     private readonly workspace: WorkspaceService,
     private readonly chat: ChatService,
+    private readonly scheduledTasks: ScheduledService,
+    private readonly shares: ShareService,
   ) {}
+
+  /**
+   * Chats whose reply is still generating, for the sidebar shimmer, and when
+   * the next scheduled task runs, so an idle page knows when to look again.
+   */
+  @Get("generating")
+  async generating(@Request() req: AuthRequest) {
+    return {
+      conversationIds: this.chat.generatingConversations(req.user.id),
+      nextTaskAt: await this.scheduledTasks
+        .nextRunAt(req.user.id)
+        .catch(() => null),
+    };
+  }
+
+  /** Stop button: replies keep generating when the page is left, so stopping is explicit. */
+  @Post("stop")
+  stop(@Request() req: AuthRequest, @Body() body: StopGenerationDto) {
+    return this.chat.stopGeneration(req.user.id, body);
+  }
   @Get() snapshot(@Request() req: AuthRequest) {
     return this.workspace.snapshot(req.user.id);
   }
@@ -251,16 +289,64 @@ export class WorkspaceController {
   ) {
     return this.workspace.deleteRecord(req.user.id, "connection", id);
   }
-  @Get("scheduled") scheduled(@Request() req: AuthRequest) {
-    return this.workspace.listScheduled(req.user.id);
+  @Get("scheduled") scheduled(
+    @Request() req: AuthRequest,
+    @Query("status") status?: string,
+  ) {
+    return this.scheduledTasks.list(req.user.id, status);
   }
-  @Post("scheduled") createScheduled() {
-    return this.workspace.saveScheduled();
+  @Get("scheduled/:id") scheduledTask(
+    @Request() req: AuthRequest,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.scheduledTasks.get(req.user.id, id);
   }
-  @Patch("scheduled/:id") updateScheduled() {
-    return this.workspace.saveScheduled();
+  @Post("scheduled") async createScheduled(
+    @Request() req: AuthRequest,
+    @Body(ObjectBodyPipe) body: Input,
+  ) {
+    const preferences = await this.workspace.getPreferences(req.user.id);
+    return this.scheduledTasks.create(req.user.id, body, {
+      timezone: String(preferences.timezone || "UTC"),
+    });
   }
-  @Delete("scheduled/:id") deleteScheduled() {
-    return this.workspace.saveScheduled();
+  @Patch("scheduled/:id") updateScheduled(
+    @Request() req: AuthRequest,
+    @Param("id", ParseIntPipe) id: number,
+    @Body(ObjectBodyPipe) body: Input,
+  ) {
+    return this.scheduledTasks.update(req.user.id, id, body);
+  }
+  @Post("scheduled/:id/run") runScheduled(
+    @Request() req: AuthRequest,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.scheduledTasks.runNow(req.user.id, id);
+  }
+  @Delete("scheduled/:id") deleteScheduled(
+    @Request() req: AuthRequest,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.scheduledTasks.remove(req.user.id, id);
+  }
+
+  /** Public links to a chat (Share). */
+  @Get("conversations/:id/share") shareStatus(
+    @Request() req: AuthRequest,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.shares.status(req.user.id, id);
+  }
+  @Post("conversations/:id/share") share(
+    @Request() req: AuthRequest,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.shares.share(req.user.id, id);
+  }
+  @Delete("conversations/:id/share") unshare(
+    @Request() req: AuthRequest,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.shares.unshare(req.user.id, id);
   }
 }

@@ -1,6 +1,18 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/auth/providers": {
+      "get": {
+        "operationId": "AuthController_providers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Auth"]
+      }
+    },
     "/auth/register": {
       "post": {
         "operationId": "AuthController_register",
@@ -53,6 +65,72 @@
           }
         },
         "summary": "User login with email and password",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/resend-verification": {
+      "post": {
+        "operationId": "AuthController_resendVerification",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
         "tags": ["Auth"]
       }
     },
@@ -243,6 +321,205 @@
         "tags": ["Chat"]
       }
     },
+    "/chat/projects": {
+      "get": {
+        "operationId": "ChatController_listProjects",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      },
+      "post": {
+        "operationId": "ChatController_createProject",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/projects/{id}": {
+      "patch": {
+        "operationId": "ChatController_updateProject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      },
+      "delete": {
+        "operationId": "ChatController_deleteProject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/conversations/{id}/project": {
+      "patch": {
+        "operationId": "ChatController_setConversationProject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/alternative": {
+      "post": {
+        "operationId": "ChatController_alternative",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlternativeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/library": {
+      "get": {
+        "operationId": "ChatController_listLibrary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      },
+      "post": {
+        "operationId": "ChatController_saveLibraryItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveLibraryItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/library/document/{id}": {
+      "get": {
+        "operationId": "ChatController_getLibraryDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/chat/library/{id}": {
+      "delete": {
+        "operationId": "ChatController_deleteLibraryItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
     "/chat/stream": {
       "post": {
         "operationId": "ChatController_streamMessage",
@@ -407,6 +684,30 @@
           }
         },
         "tags": ["Chat"]
+      }
+    },
+    "/chat/maps/route": {
+      "get": {
+        "operationId": "MapsController_route",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat maps"]
+      }
+    },
+    "/chat/maps/where": {
+      "get": {
+        "operationId": "MapsController_where",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Chat maps"]
       }
     },
     "/payment/buy": {
@@ -767,7 +1068,20 @@
     },
     "/health": {
       "get": {
-        "operationId": "HealthController_checkLiveness",
+        "operationId": "HealthController_checkLiveness[0]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Kubernetes liveness probe",
+        "tags": ["Health"]
+      }
+    },
+    "/health/liveness": {
+      "get": {
+        "operationId": "HealthController_checkLiveness[1]",
         "parameters": [],
         "responses": {
           "200": {
@@ -922,7 +1236,27 @@
         "type": "object",
         "properties": {}
       },
+      "EmailRequestDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {}
+      },
       "UpdateProfileDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ProjectDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AlternativeDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SaveLibraryItemDto": {
         "type": "object",
         "properties": {}
       },

@@ -17,6 +17,8 @@ export type LiveHooks = {
   /** A finished exchange, ready to be saved into the chat. */
   onTurn: (turn: { user: string; reply: string; interrupted: boolean }) => void;
   onError: (message: string) => void;
+  /** Runs a map tool the call asked for (Maps page); the card goes into the reply. */
+  onMapsTool?: (name: string, args: Record<string, unknown>) => Promise<{ output: unknown; markdown?: string }>;
 };
 export type LiveSession = { stop: () => void; setMuted: (muted: boolean) => void; interrupt: () => void };
 
@@ -170,6 +172,14 @@ export async function startLiveSession(stream: MediaStream, session: { token: st
       if (message.goAway) hooks.onError("The call is about to time out.");
       for (const call of message.toolCall?.functionCalls || []) {
         const args = call.args || {};
+        if (call.name.startsWith("genyxo_maps_") && hooks.onMapsTool) {
+          // Places and routes come from the server; the map card joins the reply.
+          setPhase("thinking");
+          const found = await hooks.onMapsTool(call.name, args).catch((error: Error) => ({ output: { error: error.message }, markdown: undefined }));
+          if (found.markdown) { files += found.markdown; hooks.onReply(reply()); }
+          send({ toolResponse: { functionResponses: [{ id: call.id, name: call.name, response: { result: found.output } }] } });
+          continue;
+        }
         if (call.name === "create_file" && typeof args.content === "string") {
           files += fileMarkdown({ name: String(args.name || "file.txt").slice(0, 120), language: String(args.language || ""), content: args.content });
           hooks.onReply(reply());

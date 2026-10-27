@@ -275,7 +275,9 @@ function flushSentences(final = false) {
     const fence = speechBuffer.indexOf("```");
     if (fence >= 0) {
       if (speechBuffer.slice(0, fence).trim()) speak(speechBuffer.slice(0, fence));
-      if (!codeAnnounced) { speak(fileNotice()); codeAnnounced = true; }
+      // A map card is shown on screen, not announced as a file.
+      const isMap = speechBuffer.startsWith("genyxo-map", fence + 3);
+      if (!codeAnnounced && !isMap) { speak(fileNotice()); codeAnnounced = true; }
       speechBuffer = speechBuffer.slice(fence + 3);
       inCode = true;
       continue;
@@ -328,7 +330,9 @@ const liveEvent = (detail: Record<string, unknown>) => document.dispatchEvent(ne
 async function startLive() {
   if (!stream || typeof AudioWorkletNode === "undefined" || typeof WebSocket === "undefined") return false;
   try {
-    const session = await api<{ token: string; model: string; url: string }>("live", { voice: getVoiceName(), conversationId: currentConversationId(), locales: browserLocales() });
+    // On the Maps page the call knows where the user is and can search the map.
+    const location = window.genyxoMaps?.location?.() || undefined;
+    const session = await api<{ token: string; model: string; url: string }>("live", { voice: getVoiceName(), conversationId: currentConversationId(), locales: browserLocales(), location });
     if (!snapshot.active || !stream) return true;
     let userText = "";
     const started = await startLiveSession(stream, session, {
@@ -338,6 +342,9 @@ async function startLive() {
       onReply: (markdown) => liveEvent({ type: "reply", user: userText, markdown }),
       onTurn: ({ user, reply }) => { liveEvent({ type: "turn", user, markdown: reply }); userText = ""; },
       onError: (message) => { notify(message, "info"); stopVoice(); },
+      onMapsTool: location
+        ? (name, args) => api<{ output: unknown; markdown?: string }>("maps-tool", { name, args, location: window.genyxoMaps?.location?.() || location, language: snapshot.language.split("-")[0] || undefined })
+        : undefined,
     });
     if (!snapshot.active) { started.stop(); return true; }
     live = started;

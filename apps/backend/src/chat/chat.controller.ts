@@ -220,6 +220,9 @@ export class ChatController {
         language: dto.language,
         locales: dto.locales,
         country: countryFromHeaders(req.headers || {}),
+        location: dto.location,
+        pinnedPlaces: dto.pinnedPlaces,
+        mode: dto.mode,
       },
     );
   }

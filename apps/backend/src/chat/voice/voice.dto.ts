@@ -3,7 +3,12 @@ import {
   IsArray,
   IsIn,
   IsInt,
+  IsNumber,
+  IsObject,
   IsOptional,
+  Max,
+  Min,
+  ValidateNested,
   IsString,
   Matches,
   MaxLength,
@@ -89,7 +94,48 @@ export class SpeakVoiceDto {
   voice?: string;
 }
 
+export class VoiceLocationDto {
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  lat!: number;
+
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  lng!: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100_000)
+  accuracy?: number;
+}
+
+export class LiveMapsToolDto {
+  @IsIn(["genyxo_maps_search", "genyxo_maps_route"])
+  name!: string;
+
+  @IsObject()
+  args!: Record<string, unknown>;
+
+  @ValidateNested()
+  @Type(() => VoiceLocationDto)
+  location!: VoiceLocationDto;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-zA-Z]{2,3}(-[A-Za-z0-9]{2,8})*$/)
+  language?: string;
+}
+
 export class LiveSessionDto {
+  /** Shared on the Maps page: the call gets the map tools. */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => VoiceLocationDto)
+  location?: VoiceLocationDto;
+
   @IsOptional()
   @IsIn(VOICES)
   voice?: string;

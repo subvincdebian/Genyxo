@@ -1323,7 +1323,52 @@ export default function initialize(scope, context) {
     element._render = render;
     pre.replaceWith(element);
   }
+  // ```genyxo-map fences are places or a route from the built-in map tools. The
+  // React map card mounts into the element; while the answer streams the same
+  // element is reused, so the map is not rebuilt on every token.
+  const mapCards = new Map();
+  function createMapCard(pre, rawCode) {
+    const key = rawCode.trim();
+    let element = mapCards.get(key);
+    if (!element) {
+      let data;
+      try { data = JSON.parse(key); } catch { data = null; }
+      if (!data || (data.type !== "places" && data.type !== "route")) { pre.remove(); return; }
+      element = scope.document.createElement("div");
+      element.className = "gx-map-card-slot";
+      mapCards.set(key, element);
+      pre.replaceWith(element);
+      scope.document.dispatchEvent(new CustomEvent("genyxo:map-card", { detail: { element, data } }));
+      return;
+    }
+    pre.replaceWith(element);
+  }
+  // ```genyxo-sources (pages an answer used) and ```genyxo-memory ("Memory updated")
+  // become React cards the same way, keyed by their content so streaming keeps them.
+  const richCards = new Map();
+  function createRichCard(pre, rawCode, kind) {
+    const key = `${kind}:${rawCode.trim()}`;
+    let element = richCards.get(key);
+    if (element) { pre.replaceWith(element); return; }
+    let data;
+    try { data = JSON.parse(rawCode.trim()); } catch { data = null; }
+    if (!data) { pre.remove(); return; }
+    element = scope.document.createElement("div");
+    element.className = `gx-rich-slot gx-rich-${kind}`;
+    richCards.set(key, element);
+    pre.replaceWith(element);
+    scope.document.dispatchEvent(new CustomEvent("genyxo:rich-card", { detail: { kind, element, data } }));
+  }
   function createHighlightedCodeBlock(pre, codeEl, rawCode, language, index) {
+    if (/(?:^|\s)language-genyxo-map(?:\s|$)/.test(codeEl?.className || "")) {
+      createMapCard(pre, rawCode);
+      return;
+    }
+    const rich = /(?:^|\s)language-genyxo-(sources|memory|task|weather)(?:\s|$)/.exec(codeEl?.className || "");
+    if (rich) {
+      createRichCard(pre, rawCode, rich[1]);
+      return;
+    }
     if (/(?:^|\s)language-genyxo-media(?:\s|$)/.test(codeEl?.className || "")) {
       createMediaCard(pre, rawCode);
       return;
@@ -1698,8 +1743,32 @@ export default function initialize(scope, context) {
   }
   function stopGeneration() {
     if (!activeSendController) return false;
+    // Leaving the page keeps a reply generating on the server, so Stop has to say so.
+    const target = {
+      conversationId: currentChatId ? Number(currentChatId) : undefined,
+      clientRequestId: pendingFirstSend?.id,
+    };
+    if (context.token && (target.conversationId || target.clientRequestId)) {
+      scope.fetch(`${context.API_BASE_URL}/chat/workspace/stop`, {
+        method: "POST",
+        keepalive: true,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${context.token}` },
+        body: JSON.stringify(target),
+      }).catch(() => {});
+    }
     activeSendController.abort();
     return true;
+  }
+  // A reply that kept generating after the page was left: the chat shows it is
+  // still coming, and loads it once the server has saved it.
+  function showPendingReply() {
+    const bubble = appendMessage("bot", "");
+    const content = bubble?.querySelector(".message-content");
+    if (!bubble || !content) return;
+    bubble.classList.add("gx-pending-reply");
+    bubble.dataset.activity = "Still answering";
+    content.innerHTML = scope.sanitizeHtml('<div class="chat-loader" aria-label="AI is still answering"></div>');
+    scrollToBottom(true);
   }
   function createBotActions(botBubble) {
     const actions = scope.document.createElement("div");
@@ -1801,7 +1870,42 @@ export default function initialize(scope, context) {
     if (value.includes("kling")) return "Kling";
     return "AI";
   }
+  // A scheduled task's run shows as a quiet header with the task's name (as in
+  // ChatGPT) instead of a user bubble; it opens to the instruction it ran.
+  function appendTaskRun(text, messageId) {
+    let task;
+    try { task = JSON.parse(text.replace(/^```genyxo-task-run\n/, "").replace(/\n```\s*$/, "")); } catch { task = null; }
+    if (!task) return null;
+    const row = scope.document.createElement("div");
+    row.className = "message task-run-message";
+    if (messageId) row.dataset.messageId = String(messageId);
+    const toggle = scope.document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "gx-task-run";
+    toggle.setAttribute("aria-expanded", "false");
+    const title = scope.document.createElement("span");
+    title.textContent = String(task.title || "Scheduled task");
+    const chevron = scope.document.createElement("i");
+    chevron.className = "fas fa-chevron-right";
+    chevron.setAttribute("aria-hidden", "true");
+    toggle.append(title, chevron);
+    const prompt = scope.document.createElement("p");
+    prompt.className = "gx-task-run-prompt";
+    prompt.textContent = String(task.prompt || "");
+    prompt.hidden = true;
+    scope.listen(toggle, "click", () => {
+      prompt.hidden = !prompt.hidden;
+      toggle.setAttribute("aria-expanded", String(!prompt.hidden));
+    });
+    row.append(toggle, prompt);
+    chatBox.appendChild(row);
+    return row;
+  }
   function appendMessage(sender, text, model = "", files = [], activity = [], sources = [], messageId = null, alternativeToMessageId = null) {
+    if (sender === "user" && typeof text === "string" && text.startsWith("```genyxo-task-run\n")) {
+      const row = appendTaskRun(text, messageId);
+      if (row) return row;
+    }
     const msgDiv = scope.document.createElement("div");
     msgDiv.className = `message ${sender}-message ${model ? "model-" + model.replace("/", "-") : ""}`;
     msgDiv._messageText = text || "";
@@ -2005,6 +2109,7 @@ export default function initialize(scope, context) {
           );
           refreshVariantActions();
         }
+        if (scope.window.genyxoGenerating?.has(Number(id)) && !activeSendController) showPendingReply();
         scrollToBottom(true);
       }
     } catch (e) {
@@ -2494,8 +2599,17 @@ export default function initialize(scope, context) {
     scope.listen(composerScrollTrack, "lostpointercapture", stopScrollbarDrag);
   }
   function adjustHeight() {
+    // Expanded (the composer's Expand button) takes the free height the composer measured.
+    const expanded = DOM.chatForm?.classList.contains("is-expanded");
+    const fitted = parseFloat(DOM.chatForm?.style.getPropertyValue("--gx-expanded-h") || "");
+    const max = expanded ? Math.max(144, fitted || Math.round(scope.window.innerHeight * 0.5)) : 144;
+    const previous = userInput.style.height;
     userInput.style.height = "auto";
-    userInput.style.height = Math.min(userInput.scrollHeight, 144) + "px";
+    const next = (expanded ? max : Math.min(userInput.scrollHeight, max)) + "px";
+    // Start from the old height so the CSS height transition animates growth.
+    userInput.style.height = previous;
+    void userInput.offsetHeight;
+    userInput.style.height = next;
     updateComposerScrollbar();
     updateComposerState();
   }
@@ -2623,6 +2737,9 @@ export default function initialize(scope, context) {
   }
   async function sendMessage() {
     const requestViewRevision = chatViewRevision;
+    // A skill or map places mentioned with "@" in the React composer go with this message.
+    const composer = { presetId: undefined, places: undefined, mode: undefined };
+    scope.document.dispatchEvent(new CustomEvent("genyxo:composer-collect", { detail: composer }));
     const text = userInput.value.trim();
     const selectedModel = modelSelect
       ? modelSelect.value
@@ -2632,6 +2749,8 @@ export default function initialize(scope, context) {
       : [];
     if ((!text && files.length === 0) || !context.token || sendBtn.disabled)
       return;
+    if (composer.presetId !== undefined) activePresetId = composer.presetId;
+    scope.document.dispatchEvent(new CustomEvent("genyxo:composer-sent"));
     stopDictation();
     sendBtn.disabled = true;
     userInput.disabled = true;
@@ -2681,6 +2800,12 @@ export default function initialize(scope, context) {
         files: base64Files,
       };
       if (activePresetId !== undefined) payload.presetId = activePresetId;
+      // The Maps page shares the user's location, which gives the model map tools.
+      const sharedLocation = scope.window.genyxoMaps?.location?.();
+      if (sharedLocation) payload.location = sharedLocation;
+      if (composer.places?.length) payload.pinnedPlaces = composer.places;
+      // "+" menu modes: Web search or Deep research for this message.
+      if (composer.mode) payload.mode = composer.mode;
       // Voice mode marks its turns on the form so replies come back short and in the spoken language.
       const voiceTurn = DOM.chatForm?.dataset.voiceTurn === "1";
       const voiceLanguage = DOM.chatForm?.dataset.voiceLanguage || "";
@@ -4336,6 +4461,12 @@ export default function initialize(scope, context) {
       await selectChat(event.detail.id);
       setActiveProject(event.detail.projectId);
       publishWorkspaceState();
+    });
+    scope.listen(scope.document, "genyxo:generation-finished", (event) => {
+      const id = event.detail?.id;
+      if (!id || String(currentChatId) !== String(id) || activeSendController) return;
+      currentChatId = null;
+      selectChat(id);
     });
     scope.listen(scope.document, "genyxo:workspace-new", (event) => {
       startNewChat();

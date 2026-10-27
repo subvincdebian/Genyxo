@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useGeneratingChats } from "./generating-chats";
 import { workspaceRequest, type WorkspaceConversation, type WorkspacePreferences, type WorkspaceProject, type WorkspaceSnapshot } from "./types";
 
 const defaults: WorkspacePreferences = { grouping: "projects", sort: "activity", showProjects: true, timezone: "UTC", libraryView: "grid" };
@@ -25,6 +26,10 @@ interface WorkspaceContextValue {
   conversationHasMore: boolean;
   loadingMore: boolean;
   loadMore: () => Promise<void>;
+  /** Chats whose reply is still generating, possibly started on another page. */
+  generatingIds: number[];
+  /** Chats with an answer that arrived while the user was elsewhere. */
+  unreadIds: number[];
 }
 const Context = createContext<WorkspaceContextValue | null>(null);
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
@@ -144,6 +149,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const openProject = useCallback((id: number) => {
     document.dispatchEvent(new CustomEvent("genyxo:workspace-project", { detail: { id } }));
   }, []);
-  return <Context.Provider value={{ ...snapshot, loading, error, refresh, request: workspaceRequest, notify, userId, activeProjectId, setActiveProjectId, selectedChatId, selectChat, startNewChat, openProject, conversationHasMore, loadingMore, loadMore }}>{children}</Context.Provider>;
+  const refreshQuietly = useCallback(() => { void refresh(); }, [refresh]);
+  const generatingIds = useGeneratingChats(userId !== null, refreshQuietly);
+  const [unreadIds, setUnreadIds] = useState<number[]>([]);
+  useEffect(() => {
+    const unread = (event: Event) => { const id = Number((event as CustomEvent<{ id: number }>).detail?.id); if (id) setUnreadIds((list) => (list.includes(id) ? list : [...list, id])); };
+    document.addEventListener("genyxo:reply-unread", unread);
+    return () => document.removeEventListener("genyxo:reply-unread", unread);
+  }, []);
+  // Opening a chat reads its new answer.
+  useEffect(() => { if (selectedChatId !== null) queueMicrotask(() => setUnreadIds((list) => (list.includes(selectedChatId) ? list.filter((id) => id !== selectedChatId) : list))); }, [selectedChatId]);
+  return <Context.Provider value={{ ...snapshot, loading, error, refresh, request: workspaceRequest, notify, userId, activeProjectId, setActiveProjectId, selectedChatId, selectChat, startNewChat, openProject, conversationHasMore, loadingMore, loadMore, generatingIds, unreadIds }}>{children}</Context.Provider>;
 }
 export function useWorkspace() { const value = useContext(Context); if (!value) throw new Error("WorkspaceProvider is missing"); return value; }

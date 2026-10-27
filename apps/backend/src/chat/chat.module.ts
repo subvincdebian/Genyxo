@@ -22,6 +22,12 @@ import { IntegrationsModule } from "../integrations/integrations.module";
 import { GeneratedMedia } from "./media/generated-media.entity";
 import { MediaService } from "./media/media.service";
 import { MediaController } from "./media/media.controller";
+import { MapsService } from "./maps/maps.service";
+import { WebSearchService } from "./web/web-search.service";
+import { MapsController } from "./maps/maps.controller";
+import { ScheduledService } from "./scheduled/scheduled.service";
+import { ShareService } from "./share/share.service";
+import { ShareController } from "./share/share.controller";
 @Module({
   imports: [
     ConfigModule,
@@ -39,18 +45,24 @@ import { MediaController } from "./media/media.controller";
   providers: [
     ChatService,
     MediaService,
+    MapsService,
+    WebSearchService,
     FalService,
     PricingService,
     WorkspaceService,
     VoiceService,
     LanguageProfileService,
     LiveVoiceService,
+    ScheduledService,
+    ShareService,
   ],
   controllers: [
     WorkspaceController,
     MediaController,
+    MapsController,
     ChatController,
     VoiceController,
+    ShareController,
   ],
   exports: [ChatService],
 })

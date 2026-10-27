@@ -36,6 +36,40 @@ describe("ChatService", () => {
     expect(service).toBeDefined();
   });
 
+  it("lists generating chats per user and stops only the asked one", () => {
+    const streams = (service as unknown as { activeStreams: Set<unknown> })
+      .activeStreams;
+    const mine = {
+      userId: 7,
+      conversationId: 41,
+      controller: new AbortController(),
+    };
+    const first = {
+      userId: 7,
+      clientRequestId: "req-12345678",
+      controller: new AbortController(),
+    };
+    const theirs = {
+      userId: 8,
+      conversationId: 41,
+      controller: new AbortController(),
+    };
+    streams.add(mine);
+    streams.add(first);
+    streams.add(theirs);
+
+    expect(service.generatingConversations(7)).toEqual([41]);
+    expect(service.stopGeneration(7, { conversationId: 41 })).toEqual({
+      stopped: 1,
+    });
+    expect(mine.controller.signal.aborted).toBe(true);
+    expect(theirs.controller.signal.aborted).toBe(false);
+    expect(
+      service.stopGeneration(7, { clientRequestId: "req-12345678" }),
+    ).toEqual({ stopped: 1 });
+    expect(first.controller.signal.aborted).toBe(true);
+  });
+
   it("should use circuit breaker when provided", async () => {
     const mockCircuitBreaker = {
       execute: jest.fn().mockResolvedValue({

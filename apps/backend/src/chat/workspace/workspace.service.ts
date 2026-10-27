@@ -82,7 +82,7 @@ const CATALOG = [
   },
 ];
 
-const LIBRARY_TYPES = ["document", "image", "video", "audio"];
+const LIBRARY_TYPES = ["document", "image", "video", "audio", "place"];
 /** Generated media is served here; the random id is the capability. */
 const MEDIA_URL = "/api/chat/media/";
 
@@ -243,17 +243,14 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
         available: Boolean(this.config.get("OPENROUTER_API_KEY")),
         maxTokens: 20,
       },
-      sharing: { available: false, reason: "Public sharing is not configured" },
+      sharing: { available: true },
       plugins: {
         available: true,
         executionAvailable: false,
         reason:
           "Connections store configuration; external adapters are not configured",
       },
-      scheduled: {
-        available: false,
-        reason: "A scheduler worker and delivery runtime are not configured",
-      },
+      scheduled: { available: true },
     };
   }
   async snapshot(userId: number) {
@@ -653,10 +650,13 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
           where: { userId, id: effectiveProjectId },
         })
       : null;
-    const rows = await this.records.find({
-      where: { userId, kind: "memory" },
-      order: { id: "ASC" },
-    });
+    const memoryOn = (await this.getPreferences(userId)).memory !== false;
+    const rows = memoryOn
+      ? await this.records.find({
+          where: { userId, kind: "memory" },
+          order: { id: "ASC" },
+        })
+      : [];
     const memories = rows
       .filter(
         (row) =>
@@ -700,6 +700,7 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
       showProjects: true,
       timezone: "UTC",
       libraryView: "grid",
+      memory: true,
       ...(row?.data || {}),
       timezoneInitialized: Boolean(row?.data.timezone),
     };
@@ -718,6 +719,8 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
       }
     if (input.showProjects !== undefined)
       data.showProjects = this.boolean(input.showProjects, "showProjects");
+    if (input.memory !== undefined)
+      data.memory = this.boolean(input.memory, "memory");
     if (input.timezone !== undefined) {
       const timezone = this.text(input.timezone, "timezone", 100);
       try {
@@ -743,12 +746,16 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
       videos: "video",
       audio: "audio",
       documents: "document",
+      places: "place",
       image: "image",
       video: "video",
       document: "document",
     };
     if (tabs[query.tab])
       qb.andWhere("l.type = :type", { type: tabs[query.tab] });
+    // Saved map places have their own Library tab and stay out of the media views.
+    else if (query.type !== "place")
+      qb.andWhere("l.type != :place", { place: "place" });
     if (LIBRARY_TYPES.includes(query.type))
       qb.andWhere("l.type = :filterType", { filterType: query.type });
     if (["favorites", "favourites", "favorite"].includes(query.tab))
@@ -823,6 +830,23 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
     }
     if (input.content !== undefined)
       patch.content = this.text(input.content, "content", 100000, false);
+    // A saved place keeps its point as JSON: {lat, lng, address?, kind?}.
+    if ((patch.type || row.type) === "place") {
+      let point: any = null;
+      try {
+        point = JSON.parse(patch.content ?? row.content ?? "");
+      } catch {
+        point = null;
+      }
+      if (
+        !point ||
+        !Number.isFinite(point.lat) ||
+        !Number.isFinite(point.lng) ||
+        Math.abs(point.lat) > 90 ||
+        Math.abs(point.lng) > 180
+      )
+        throw new BadRequestException("A place needs lat and lng");
+    }
     if (input.url !== undefined)
       patch.url = input.url === null ? null : this.safeEndpoint(input.url);
     if (input.isFavorite !== undefined)
@@ -1091,19 +1115,6 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
       ),
     );
   }
-  async listScheduled(_userId: number) {
-    return {
-      items: [],
-      available: false,
-      reason: "A scheduler worker and delivery runtime are not configured",
-    };
-  }
-  async saveScheduled(): Promise<never> {
-    throw new ServiceUnavailableException(
-      "Scheduled tasks are unavailable until a scheduler worker and delivery runtime are configured",
-    );
-  }
-
   async validateChatInput(userId: number, input: Input) {
     if (input.conversationId)
       await this.conversation(userId, this.id(input.conversationId));

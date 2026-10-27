@@ -10,6 +10,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { Throttle } from "@nestjs/throttler";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
+  LiveMapsToolDto,
   LiveSessionDto,
   SpeakVoiceDto,
   TranscribeVoiceDto,
@@ -22,6 +23,8 @@ import {
   countryFromHeaders,
 } from "../language/language-profile.service";
 import { ChatService } from "../chat.service";
+import { MapsService } from "../maps/maps.service";
+import { runMapsTool } from "../maps/maps-tools";
 
 @ApiTags("Chat voice")
 @ApiBearerAuth()
@@ -33,6 +36,7 @@ export class VoiceController {
     private readonly languages: LanguageProfileService,
     private readonly live: LiveVoiceService,
     private readonly chat: ChatService,
+    private readonly maps: MapsService,
   ) {}
 
   @ApiOperation({ summary: "Transcribe speech and detect its language" })
@@ -66,10 +70,24 @@ export class VoiceController {
   @Post("live")
   liveSession(@Body() body: LiveSessionDto, @Request() req) {
     return this.live.createSession(req.user.id, {
+      location: body.location,
       voice: body.voice,
       conversationId: body.conversationId,
       locales: body.locales,
       country: countryFromHeaders(req.headers || {}),
+    });
+  }
+
+  @ApiOperation({
+    summary: "Run a map tool a live call asked for (places, routes)",
+  })
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  @HttpCode(200)
+  @Post("maps-tool")
+  mapsTool(@Body() body: LiveMapsToolDto) {
+    return runMapsTool(this.maps, body.name, body.args, {
+      origin: body.location,
+      language: body.language,
     });
   }
 

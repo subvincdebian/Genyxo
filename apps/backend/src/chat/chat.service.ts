@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   Logger,
@@ -59,6 +61,50 @@ import {
   runMediaTool,
   describeMediaFences,
 } from "./media/media-tools";
+import { MapsService } from "./maps/maps.service";
+import { WebSearchService } from "./web/web-search.service";
+import {
+  activityFor,
+  describeWebFences,
+  isWebTool,
+  runWebTool,
+  sourcesFence,
+  webGeminiDeclarations,
+  webOpenAiTools,
+  webPrompt,
+  type Source,
+} from "./web/web-tools";
+import {
+  isMemoryTool,
+  MEMORY_PROMPT,
+  memoryActivity,
+  memoryGeminiDeclarations,
+  memoryOpenAiTools,
+  runMemoryTool,
+} from "./web/memory-tools";
+import { deepResearch } from "./web/deep-research";
+import { ScheduledService } from "./scheduled/scheduled.service";
+import {
+  describeTaskFences,
+  isTaskTool,
+  taskActivity,
+  taskFence,
+  taskGeminiDeclarations,
+  taskOpenAiTools,
+  taskPrompt,
+  taskRunContent,
+  taskRunPrompt,
+} from "./scheduled/task-tools";
+import {
+  describeMapFences,
+  isMapsTool,
+  mapsActivity,
+  mapsGeminiDeclarations,
+  mapsOpenAiTools,
+  mapsPrompt,
+  pinnedPlacesPrompt,
+  runMapsTool,
+} from "./maps/maps-tools";
 
 /** Model ↔ plugin round trips allowed in one reply. */
 const MAX_TOOL_STEPS = 6;
@@ -70,11 +116,28 @@ export type ChatTurnOptions = {
   language?: string;
   country?: string;
   locales?: string[];
+  /** Shared on the Maps page; turns on the built-in map tools. */
+  location?: { lat: number; lng: number; accuracy?: number };
+  /** Map places the user mentioned with "@". */
+  pinnedPlaces?: { name: string; lat: number; lng: number; address?: string }[];
+  /** "+" menu modes: always search the web, or run Deep research. */
+  mode?: "search" | "research";
+  /** Set when a scheduled task runs this turn on its own. */
+  scheduledTask?: { id: number; title: string; prompt: string };
+};
+
+/** A reply being generated, kept until it is saved, stopped or fails. */
+type ActiveStream = {
+  userId: number;
+  conversationId?: number;
+  clientRequestId?: string;
+  controller: AbortController;
 };
 
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
+  private readonly activeStreams = new Set<ActiveStream>();
   private readonly maxInlineDataLength = 5_500_000;
   private readonly maxExtractedTextLength = 45_000;
   private readonly contextInputBudget = 18_000;
@@ -100,6 +163,12 @@ export class ChatService {
     @Optional() private languageProfile?: LanguageProfileService,
     @Optional() private integrationTools?: IntegrationToolsService,
     @Optional() private mediaService?: MediaService,
+    @Optional() private mapsService?: MapsService,
+    @Optional() private webSearch?: WebSearchService,
+    // Scheduled tasks run through this service, so the two refer to each other.
+    @Optional()
+    @Inject(forwardRef(() => ScheduledService))
+    private scheduled?: ScheduledService,
   ) {
     this.openRouter = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
@@ -1259,10 +1328,26 @@ export class ChatService {
       abortController.abort();
     }, 45000);
 
-    res.on("close", () => {
-      clearTimeout(streamTimeout);
-      abortController.abort();
-    });
+    // Leaving the page only detaches the browser: the reply keeps generating
+    // and is saved, so it is there when the user comes back. Only Stop
+    // (stopGeneration) or a timeout ends it early.
+    const active: ActiveStream = {
+      userId,
+      conversationId,
+      clientRequestId,
+      controller: abortController,
+    };
+    this.activeStreams.add(active);
+    const write = res.write.bind(res) as (...args: unknown[]) => boolean;
+    const end = res.end.bind(res) as (...args: unknown[]) => ServerResponse;
+    res.write = ((...args: unknown[]) =>
+      res.destroyed || res.writable === false
+        ? false
+        : write(...args)) as typeof res.write;
+    res.end = ((...args: unknown[]) =>
+      res.destroyed || res.writableEnded === true
+        ? res
+        : end(...args)) as typeof res.end;
     const turn: { conversation?: Conversation; userMessage?: Message } = {};
 
     try {
@@ -1327,6 +1412,7 @@ export class ChatService {
         presetId,
       );
       turn.conversation = conversation;
+      active.conversationId = conversation.id;
       await this.workspaceService?.linkRequest(
         userId,
         clientRequestId,
@@ -1343,9 +1429,12 @@ export class ChatService {
 
       let fullReply = "";
 
+      // A task run shows as a header with the task's name, not a user bubble.
       const userMsg = await this.saveMessage(
         conversation,
-        text,
+        turnOptions.scheduledTask
+          ? taskRunContent(turnOptions.scheduledTask)
+          : text,
         "user",
         model,
         userId,
@@ -1392,13 +1481,59 @@ export class ChatService {
         this.mediaService && !turnOptions.voice
           ? mediaTools(this.mediaService)
           : [];
-      const hasTools = Boolean(toolset) || media.length > 0;
+      // Map tools only when the user shared a location (the Maps page),
+      // spoken questions included: the map shows while the answer is read out.
+      const mapsContext =
+        this.mapsService && turnOptions.location
+          ? {
+              origin: turnOptions.location,
+              language:
+                turnOptions.language || turnOptions.locales?.[0]?.split("-")[0],
+            }
+          : null;
+      // Web search for every text model (the model decides; Search mode insists),
+      // and memory when the user keeps it on.
+      const web = Boolean(this.webSearch) && !turnOptions.voice;
+      const memory =
+        Boolean(this.workspaceService) &&
+        !turnOptions.voice &&
+        (await this.workspaceService!.getPreferences(userId)
+          .then((preferences) => preferences.memory !== false)
+          .catch(() => false));
+      const webSources: Source[] = [];
+      // Scheduling: any typed turn may create a task; a task run never does.
+      const timezone = await this.workspaceService
+        ?.getPreferences(userId)
+        .then((preferences) => String(preferences.timezone || "UTC"))
+        .catch(() => "UTC");
+      const tasks =
+        Boolean(this.scheduled) &&
+        !turnOptions.voice &&
+        !turnOptions.scheduledTask;
+      const hasTools =
+        Boolean(toolset) ||
+        media.length > 0 ||
+        Boolean(mapsContext) ||
+        web ||
+        memory ||
+        tasks;
       const systemInstruction = [
         baseInstruction,
+        // Before the plugin prompt, so time requests are not taken for plugin work.
+        tasks ? taskPrompt(new Date(), timezone || "UTC") : "",
         toolset && this.integrationTools
           ? this.integrationTools.systemPrompt(toolset)
           : "",
         media.length ? MEDIA_PROMPT : "",
+        mapsContext ? mapsPrompt(mapsContext) : "",
+        web ? webPrompt(turnOptions.mode === "search") : "",
+        memory ? MEMORY_PROMPT : "",
+        turnOptions.scheduledTask
+          ? taskRunPrompt(turnOptions.scheduledTask.title)
+          : "",
+        turnOptions.pinnedPlaces?.length
+          ? pinnedPlacesPrompt(turnOptions.pinnedPlaces)
+          : "",
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -1406,20 +1541,104 @@ export class ChatService {
         .filter((file) => file.mime_type?.startsWith("image/") && file.data)
         .map((file) => ({ mimeType: file.mime_type, data: file.data! }));
       if (hasTools) {
-        // Tool round trips take longer than a plain answer.
+        // Tool round trips take longer than a plain answer; a map question is
+        // at least two model calls plus the place search.
         clearTimeout(streamTimeout);
-        streamTimeout = setTimeout(() => abortController.abort(), 150_000);
+        streamTimeout = setTimeout(
+          () => abortController.abort(),
+          mapsContext ? 240_000 : 150_000,
+        );
       }
       const toolSteps: string[] = [];
       const actionIds: string[] = [];
-      const emit = (token: string) => {
+      // A browser that left only stops receiving tokens; the reply goes on
+      // until it is complete (and saved) unless Stop or a timeout aborts it.
+      const emit = async (token: string) => {
         fullReply += token;
-        return this.writeStreamChunk(
+        await this.writeStreamChunk(
           res,
           `data: ${stringifyTokenEvent({ token, conversationId: conversation.id })}\n\n`,
         );
+        return !abortController.signal.aborted;
       };
       const runTool = async (name: string, args: unknown) => {
+        const input =
+          args && typeof args === "object" ? (args as Record<string, any>) : {};
+        if (web && isWebTool(name)) {
+          const step = activityFor(name, input);
+          toolSteps.push(step);
+          res.write(
+            `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
+          );
+          return runWebTool(
+            this.webSearch!,
+            name,
+            input,
+            webSources,
+            mapsContext?.language || turnOptions.language,
+          );
+        }
+        if (tasks && isTaskTool(name)) {
+          const step = taskActivity();
+          toolSteps.push(step);
+          res.write(
+            `data: ${stringifyActivityEvent({ status: "activity", step })}
+
+`,
+          );
+          try {
+            const task = await this.scheduled!.create(userId, input, {
+              conversationId: conversation.id,
+              model,
+              timezone,
+              location: turnOptions.location,
+              places: turnOptions.pinnedPlaces,
+              language:
+                turnOptions.language || turnOptions.locales?.[0]?.split("-")[0],
+            });
+            await emit(taskFence(task));
+            return {
+              scheduled: true,
+              title: task.title,
+              when: task.summary,
+              timezone: task.timezone,
+            };
+          } catch (error) {
+            return { scheduled: false, error: (error as Error).message };
+          }
+        }
+        if (memory && isMemoryTool(name)) {
+          const step = memoryActivity();
+          toolSteps.push(step);
+          res.write(
+            `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
+          );
+          const done = await runMemoryTool(
+            this.workspaceService!,
+            userId,
+            name,
+            input,
+          );
+          if (done.markdown) await emit(done.markdown);
+          return done.output;
+        }
+        if (mapsContext && isMapsTool(name)) {
+          const step = mapsActivity(name);
+          toolSteps.push(step);
+          res.write(
+            `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
+          );
+          const found = await runMapsTool(
+            this.mapsService!,
+            name,
+            args && typeof args === "object"
+              ? (args as Record<string, any>)
+              : {},
+            mapsContext,
+          );
+          if (found.markdown) await emit(found.markdown);
+          return found.output;
+        }
         if (isMediaTool(name)) {
           const step = mediaActivity(name);
           toolSteps.push(step);
@@ -1460,7 +1679,43 @@ export class ChatService {
       };
       const stepLimitNote = `\n\n_Stopped after ${MAX_TOOL_STEPS} plugin steps. Ask me to continue if you need more._`;
 
-      if (model.startsWith("google/gemini")) {
+      if (turnOptions.mode === "research" && this.webSearch) {
+        // Deep research runs its own plan → search → read → report loop.
+        clearTimeout(streamTimeout);
+        streamTimeout = setTimeout(() => abortController.abort(), 420_000);
+        const history = dbMessages
+          .slice(-7, -1)
+          .map(
+            (message) =>
+              `${message.sender === "bot" ? "Assistant" : "User"}: ${describeTaskFences(describeWebFences(String(message.content || ""))).slice(0, 1500)}`,
+          )
+          .join("\n");
+        const found = await deepResearch({
+          question: text,
+          history,
+          language:
+            turnOptions.language || turnOptions.locales?.[0]?.split("-")[0],
+          search: this.webSearch,
+          signal: abortController.signal,
+          step: (step) => {
+            toolSteps.push(step);
+            res.write(
+              `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
+            );
+          },
+          complete: (system, prompt) =>
+            this.completeText(model, system, prompt, abortController.signal),
+          stream: (system, prompt) =>
+            this.streamText(
+              model,
+              `${system}\n\n${baseInstruction}`,
+              prompt,
+              emit,
+              abortController.signal,
+            ),
+        });
+        webSources.push(...found);
+      } else if (model.startsWith("google/gemini")) {
         const geminiModelName = model.replace("google/", "");
         const generativeModel = this.googleAI.getGenerativeModel(
           {
@@ -1476,13 +1731,18 @@ export class ChatService {
                               .functionDeclarations
                           : []),
                         ...mediaGeminiDeclarations(media),
+                        ...(mapsContext ? mapsGeminiDeclarations() : []),
+                        ...(web ? webGeminiDeclarations() : []),
+                        ...(memory ? memoryGeminiDeclarations() : []),
+                        ...(tasks ? taskGeminiDeclarations() : []),
                       ],
                     },
                   ] as any,
                 }
               : {}),
           },
-          { timeout: 60000 },
+          // A single Gemini call with tools can take well over a minute.
+          { timeout: hasTools ? 120_000 : 60_000 },
         );
 
         const contents: Content[] = summary
@@ -1505,8 +1765,16 @@ export class ChatService {
             ? {
                 text:
                   role === "model"
-                    ? describeMediaFences(describeActionFences(m.content))
-                    : m.content,
+                    ? describeTaskFences(
+                        describeWebFences(
+                          describeMapFences(
+                            describeMediaFences(
+                              describeActionFences(m.content),
+                            ),
+                          ),
+                        ),
+                      )
+                    : describeTaskFences(m.content),
               }
             : { text: " " };
           const parts: any[] = [textPart];
@@ -1590,8 +1858,12 @@ export class ChatService {
           if (m.sender === "bot") {
             return {
               role,
-              content: describeMediaFences(
-                describeActionFences(m.content || " "),
+              content: describeTaskFences(
+                describeWebFences(
+                  describeMapFences(
+                    describeMediaFences(describeActionFences(m.content || " ")),
+                  ),
+                ),
               ),
             };
           }
@@ -1599,7 +1871,7 @@ export class ChatService {
           const hasFiles = m.files && m.files.length > 0;
 
           if (!hasFiles) {
-            return { role, content: m.content || " " };
+            return { role, content: describeTaskFences(m.content || " ") };
           }
 
           const contentArray: any[] = [];
@@ -1651,6 +1923,10 @@ export class ChatService {
           ? [
               ...(toolset ? this.integrationTools!.openAiTools(toolset) : []),
               ...mediaOpenAiTools(media),
+              ...(mapsContext ? mapsOpenAiTools() : []),
+              ...(web ? webOpenAiTools() : []),
+              ...(memory ? memoryOpenAiTools() : []),
+              ...(tasks ? taskOpenAiTools() : []),
             ]
           : undefined;
         const createStreamCall = () =>
@@ -1753,6 +2029,10 @@ export class ChatService {
           }
         }
       }
+
+      // Pages the answer used, as a Sources card under it.
+      if (fullReply.trim() && webSources.length)
+        await emit(sourcesFence(webSources));
 
       if (!fullReply.trim()) {
         await this.workspaceService?.failRequest(userId, clientRequestId);
@@ -1857,7 +2137,112 @@ export class ChatService {
       res.end();
     } finally {
       clearTimeout(streamTimeout);
+      this.activeStreams.delete(active);
     }
+  }
+
+  /** One plain answer from the chosen model (Deep research planning). */
+  private async completeText(
+    model: string,
+    system: string,
+    prompt: string,
+    signal: AbortSignal,
+  ): Promise<string> {
+    if (model.startsWith("google/gemini")) {
+      const generative = this.googleAI.getGenerativeModel(
+        { model: model.replace("google/", ""), systemInstruction: system },
+        { timeout: 120_000 },
+      );
+      const result = await generative.generateContent(
+        { contents: [{ role: "user", parts: [{ text: prompt }] }] },
+        { signal },
+      );
+      return result.response.text();
+    }
+    const response = await this.openRouter.chat.completions.create(
+      {
+        model,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 800,
+      },
+      { signal },
+    );
+    return response.choices[0]?.message?.content || "";
+  }
+
+  /** A streamed answer from the chosen model (the Deep research report). */
+  private async streamText(
+    model: string,
+    system: string,
+    prompt: string,
+    emit: (token: string) => Promise<boolean>,
+    signal: AbortSignal,
+  ) {
+    if (model.startsWith("google/gemini")) {
+      const generative = this.googleAI.getGenerativeModel(
+        { model: model.replace("google/", ""), systemInstruction: system },
+        { timeout: 180_000 },
+      );
+      const result = await generative.generateContentStream(
+        { contents: [{ role: "user", parts: [{ text: prompt }] }] },
+        { signal },
+      );
+      for await (const chunk of result.stream) {
+        const token = chunk.text();
+        if (token && !(await emit(token))) break;
+      }
+      return;
+    }
+    const stream = await this.openRouter.chat.completions.create(
+      {
+        model,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: prompt },
+        ],
+        stream: true,
+        max_tokens: this.getMaxOutputTokens(),
+      },
+      { signal },
+    );
+    for await (const chunk of stream) {
+      const token = chunk.choices[0]?.delta?.content || "";
+      if (token && !(await emit(token))) break;
+    }
+  }
+
+  /** Conversations of this user whose reply is still being generated. */
+  generatingConversations(userId: number) {
+    return [
+      ...new Set(
+        [...this.activeStreams]
+          .filter((stream) => stream.userId === userId && stream.conversationId)
+          .map((stream) => stream.conversationId!),
+      ),
+    ];
+  }
+
+  /** Stop: ends the user's generation in a conversation or for a first message. */
+  stopGeneration(
+    userId: number,
+    target: { conversationId?: number; clientRequestId?: string },
+  ) {
+    let stopped = 0;
+    for (const stream of this.activeStreams) {
+      if (stream.userId !== userId) continue;
+      const matches =
+        (target.conversationId !== undefined &&
+          stream.conversationId === target.conversationId) ||
+        (target.clientRequestId !== undefined &&
+          stream.clientRequestId === target.clientRequestId);
+      if (!matches) continue;
+      stream.controller.abort();
+      stopped++;
+    }
+    return { stopped };
   }
 
   /**

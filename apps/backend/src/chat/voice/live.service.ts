@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { ChatService } from "../chat.service";
+import { mapsGeminiDeclarations, mapsPrompt } from "../maps/maps-tools";
 import { languageName } from "../language/language";
 import {
   LanguageProfileService,
@@ -42,6 +43,27 @@ const CREATE_FILE_TOOL = {
     },
   ],
 };
+
+/** Live's schema dialect spells types in capitals (OBJECT, STRING…). */
+function liveSchema(schema: any): any {
+  if (Array.isArray(schema)) return schema.map(liveSchema);
+  if (!schema || typeof schema !== "object") return schema;
+  return Object.fromEntries(
+    Object.entries(schema).map(([key, value]) => [
+      key,
+      key === "type" && typeof value === "string"
+        ? value.toUpperCase()
+        : liveSchema(value),
+    ]),
+  );
+}
+const liveDeclarations = (
+  declarations: ReturnType<typeof mapsGeminiDeclarations>,
+) =>
+  declarations.map((declaration) => ({
+    ...declaration,
+    parameters: liveSchema(declaration.parameters),
+  }));
 
 /**
  * Starts Gemini Live voice calls. The browser talks to Gemini directly over a
@@ -90,7 +112,11 @@ export class LiveVoiceService {
 
   async createSession(
     userId: number,
-    input: LanguageSignals & { voice?: string; conversationId?: number },
+    input: LanguageSignals & {
+      voice?: string;
+      conversationId?: number;
+      location?: { lat: number; lng: number; accuracy?: number };
+    },
   ) {
     const key = this.config.get<string>("GOOGLE_API_KEY");
     if (!key || key.startsWith("your_"))
@@ -116,11 +142,26 @@ export class LiveVoiceService {
       systemInstruction: {
         parts: [
           {
-            text: await this.instruction(userId, input, input.conversationId),
+            text: [
+              await this.instruction(userId, input, input.conversationId),
+              input.location
+                ? `${mapsPrompt({ origin: input.location })} On a call, say the answer briefly; the map with the places or the route is on the user's screen.`
+                : "",
+            ]
+              .filter(Boolean)
+              .join("\n"),
           },
         ],
       },
-      tools: [CREATE_FILE_TOOL],
+      // On the Maps page the call can also search places and plan routes.
+      tools: input.location
+        ? [
+            CREATE_FILE_TOOL,
+            {
+              functionDeclarations: liveDeclarations(mapsGeminiDeclarations()),
+            },
+          ]
+        : [CREATE_FILE_TOOL],
       inputAudioTranscription: {},
       outputAudioTranscription: {},
     };

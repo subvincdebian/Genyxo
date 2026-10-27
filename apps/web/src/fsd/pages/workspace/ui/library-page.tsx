@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNod
 import { workspaceRequest, useWorkspace } from "@/features/workspace";
 import { WorkspaceDialog, WorkspaceIcon, WorkspaceMenu, WorkspaceTooltip } from "@/shared/ui/workspace";
 import { ConfirmDelete, Field, Form, FormFooter, jsonBody, ResourceState, Search, tabKeys, useAction, useLabels, usePageQuery, useResource, type Id } from "./page-tools";
+import { SavedPlacesBoard } from "@/widgets/maps";
 import "./library-page.css";
 
 type Kind = "document" | "image" | "video" | "audio";
@@ -25,7 +26,7 @@ const fileName = (item: LibraryItem) => {
 
 export function WorkspaceLibraryPage() {
   const l = useLabels(); const workspace = useWorkspace(); const [query, setQuery] = usePageQuery();
-  const tab = ["recommended", "favorites", "folders", "images", "all"].includes(query.get("tab") || "") ? query.get("tab")! : "recommended";
+  const tab = ["recommended", "favorites", "folders", "images", "places", "all"].includes(query.get("tab") || "") ? query.get("tab")! : "recommended";
   const folderId = query.get("folderId") || ""; const sort = query.get("sort") || "date";
   const [search, setSearch] = useState(""); const [type, setType] = useState("");
   const path = `library?${new URLSearchParams({ tab, search, folderId, sort, ...(type ? { type } : {}) })}`;
@@ -73,7 +74,7 @@ export function WorkspaceLibraryPage() {
   /** Focus returns to the tile of the item last shown, which may differ from the one opened. */
   const closeViewer = (id: Id) => { setViewing(null); requestAnimationFrame(() => document.querySelector<HTMLElement>(`.lb-open[data-lb-item="${String(id)}"]`)?.focus({ preventScroll: false })); };
   const viewed = items.find((item) => item.id === viewing) || null;
-  const tabs = [["recommended", l("recommended", "Recommended")], ["favorites", l("favorites", "Favorites")], ["folders", l("folders", "Folders")], ["images", l("images", "Images")], ["all", l("all", "All")]];
+  const tabs = [["recommended", l("recommended", "Recommended")], ["favorites", l("favorites", "Favorites")], ["folders", l("folders", "Folders")], ["images", l("images", "Images")], ["places", l("places", "Places")], ["all", l("all", "All")]];
   const types: Array<[string, string]> = [["", l("allTypes", "All types")], ["image", l("images", "Images")], ["video", l("videos", "Videos")], ["audio", l("audio", "Audio")], ["document", l("documents", "Documents")]];
 
   return <section className="wp-library lb-page" aria-labelledby="library-title">
@@ -106,12 +107,12 @@ export function WorkspaceLibraryPage() {
     {folderId && <button className="lb-back" aria-label={l("allFolders", "All folders")} onClick={() => setQuery({ folderId: null })}><WorkspaceIcon name="arrow-left" size={18} />{l("allFolders", "All folders")}</button>}
     {action.error && <p className="wp-error" role="alert">{action.error}</p>}
     {uploading && <p className="wp-muted" role="status"><progress aria-label={l("uploading", "Uploading file…")} /> {l("uploading", "Uploading file…")}</p>}
-    <ResourceState icon={search ? "search" : tab === "images" ? "image" : tab === "favorites" ? "heart" : tab === "folders" ? "folder" : "library"} loading={resource.loading} error={resource.error} retry={refresh} empty={!resource.loading && !resource.error && (showFolders ? folders.length === 0 : items.length === 0)} emptyTitle={search ? l("noResults", "No results found") : l("libraryEmpty", "Your library is ready for something new")} emptyText={search ? l("trySearch", "Try a different search or clear your filters.") : l("libraryEmptyHint", "Images, videos and audio you make in chat appear here. You can also save documents.")} />
+    {tab === "places" ? <SavedPlacesBoard /> : <ResourceState icon={search ? "search" : tab === "images" ? "image" : tab === "favorites" ? "heart" : tab === "folders" ? "folder" : "library"} loading={resource.loading} error={resource.error} retry={refresh} empty={!resource.loading && !resource.error && (showFolders ? folders.length === 0 : items.length === 0)} emptyTitle={search ? l("noResults", "No results found") : l("libraryEmpty", "Your library is ready for something new")} emptyText={search ? l("trySearch", "Try a different search or clear your filters.") : l("libraryEmptyHint", "Images, videos and audio you make in chat appear here. You can also save documents.")} />}
     {!resource.loading && !resource.error && showFolders && <div className="lb-folders">{folders.map((folder) => <article className="lb-folder" key={folder.id}>
       <button className="lb-folder-open" aria-label={`${l("openFolder", "Open folder")} ${folder.name}`} onClick={() => setQuery({ folderId: String(folder.id) })}><WorkspaceIcon name="folder" size={26} /><span>{folder.name}</span></button>
       <WorkspaceTooltip label={`${l("folderActions", "Folder actions")} ${folder.name}`} side="bottom"><button className="lb-icon lb-small" aria-label={`${l("folderActions", "Folder actions")} ${folder.name}`} onClick={(event) => setMenu({ x: event.clientX, y: event.clientY, folder })}><WorkspaceIcon name="more" size={18} /></button></WorkspaceTooltip>
     </article>)}</div>}
-    {!resource.loading && !resource.error && !showFolders && items.length > 0 && <Masonry list={view === "list"} busy={loadingMore} items={items} render={(item, index) => <article className={`lb-tile lb-kind-${item.type}`} key={item.id} style={{ animationDelay: `${Math.min(index, 12) * 35}ms` }}>
+    {tab !== "places" && !resource.loading && !resource.error && !showFolders && items.length > 0 && <Masonry list={view === "list"} busy={loadingMore} items={items} render={(item, index) => <article className={`lb-tile lb-kind-${item.type}`} key={item.id} style={{ animationDelay: `${Math.min(index, 12) * 35}ms` }}>
         <button className="lb-open" data-lb-item={item.id} aria-label={`${l("open", "Open")} ${item.name}`} onClick={() => setViewing(item.id)}>
           <Thumb item={item} l={l} list={view === "list"} />
           {view === "list" && <span className="lb-row-text"><strong>{item.name}</strong><span>{kindLabel(l, item.type)}{item.createdAt ? ` · ${new Date(item.createdAt).toLocaleDateString()}` : ""}</span></span>}
@@ -121,7 +122,7 @@ export function WorkspaceLibraryPage() {
           <WorkspaceTooltip label={`${l("itemActions", "Actions for")} ${item.name}`} side="bottom"><button className="lb-icon lb-small" aria-label={`${l("itemActions", "Actions for")} ${item.name}`} onClick={(event) => openMenu(item, event.currentTarget)}><WorkspaceIcon name="more" size={18} /></button></WorkspaceTooltip>
         </div>
       </article>} />}
-    {!resource.loading && (extra?.path === path ? extra.hasMore : resource.data?.hasMore) && <button className="lb-more" disabled={loadingMore} onClick={() => void loadMore()}>{l("loadMore", "Load more")}</button>}
+    {tab !== "places" && !resource.loading && (extra?.path === path ? extra.hasMore : resource.data?.hasMore) && <button className="lb-more" disabled={loadingMore} onClick={() => void loadMore()}>{l("loadMore", "Load more")}</button>}
     {menu && <WorkspaceMenu anchor={menu} onClose={() => setMenu(null)}>
       {menu.item?.url && <a role="menuitem" href={menu.item.url} download={fileName(menu.item)} onClick={() => setMenu(null)}><WorkspaceIcon name="download" size={18} />{l("download", "Download")}</a>}
       <button role="menuitem" onClick={() => { setEdit({ kind: menu.folder ? "folder" : "document", id: menu.folder?.id || menu.item!.id, name: menu.folder?.name || menu.item!.name, content: menu.item?.type === "document" ? menu.item.content || "" : undefined }); setMenu(null); }}><WorkspaceIcon name="edit" size={18} />{l("rename", "Rename")}</button>

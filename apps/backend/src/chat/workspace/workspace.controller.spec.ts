@@ -24,6 +24,8 @@ it("includes generated media in the new filtered library route", async () => {
   const controller = new WorkspaceController(
     workspace as unknown as WorkspaceService,
     chat as unknown as ChatService,
+    {} as never,
+    {} as never,
   );
   expect(
     await controller.library({ user: { id: 7 } }, { tab: "images" }),

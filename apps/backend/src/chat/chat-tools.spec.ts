@@ -319,3 +319,39 @@ describe("ChatService plugin tools", () => {
     expect(saved.at(-1).content).toBe("Plain answer");
   });
 });
+
+describe("ChatService background replies", () => {
+  it("keeps generating and saves the answer after the browser leaves", async () => {
+    const { service, res, saved } = setup();
+    // The browser is gone: no token reaches it any more.
+    (service as any).writeStreamChunk = async () => false;
+    const generateContentStream = jest.fn().mockResolvedValueOnce({
+      stream: stream([
+        gemini([{ text: "Part one, " }]),
+        gemini([{ text: "part two." }]),
+      ]),
+    });
+    (service as any).googleAI = {
+      getGenerativeModel: jest.fn(() => ({ generateContentStream })),
+    };
+
+    const running = service.processStreamingMessage(
+      9,
+      "write a long answer",
+      "google/gemini-3.5-flash-lite",
+      undefined,
+      1,
+      [],
+      res as any,
+    );
+    await running;
+
+    expect(saved.at(-1)).toEqual(
+      expect.objectContaining({
+        sender: "bot",
+        content: "Part one, part two.",
+      }),
+    );
+    expect(service.generatingConversations(9)).toEqual([]);
+  });
+});

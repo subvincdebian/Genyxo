@@ -3,6 +3,7 @@ import type { ReactNode, SyntheticEvent } from "react";
 import { NavUsername } from "@/entities/session";
 import { WelcomeGreeting } from "./WelcomeGreeting";
 import { ComposerPlusMenu } from "./ComposerPlusMenu";
+import { ChatHeaderActions } from "./ChatHeaderActions";
 import { VoiceControls, VoiceStage } from "./VoiceMode";
 import { GenyxoOrb } from "@/shared/ui/GenyxoOrb";
 
@@ -792,7 +793,7 @@ export function ChatApp({
             <button type="button" id="activeProjectBtn" className="active-project-btn" hidden disabled={!ready}></button>
             {"\n\n                    "}
             <div className="header-right">
-              {"\n                        "}
+              {workspace && isChatRoute && <ChatHeaderActions />}
               <div className="credits-display" id="credits-btn">
                 {"\n                            "}
                 <button
@@ -1221,7 +1222,7 @@ export function ChatApp({
                     {workspace ? <WorkspaceIcon name="mic" /> : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 10.5v1a6.5 6.5 0 0 0 13 0v-1M12 18v3.5m-4 0h8"/></svg>}
                   </button>
                   {workspace && <VoiceControls />}
-                  {workspace && <button type="button" className="gx-stop-btn" id="stopBtn" aria-label="Stop generating (Esc)" title="Stop generating (Esc)"><WorkspaceIcon name="stop" size={14} /></button>}
+                  {workspace && <button type="button" className="gx-stop-btn" id="stopBtn" aria-label="Stop generating (Esc)" title="Stop generating (Esc)"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.2" fill="currentColor" /></svg></button>}
                   <button
                     disabled={!ready}
                     type="submit"

@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { WorkspaceProvider, useWorkspace } from "@/features/workspace";
 import { WorkspaceSidebar } from "@/widgets/workspace/ui/WorkspaceSidebar";
 import { CanvasPanel } from "@/widgets/canvas";
+import { MapCardsHost, MapsHome } from "@/widgets/maps";
+import { MemoryManager, ReplyNotifier, RichCardsHost, TaskPanel, ThinkingOrbs } from "@/widgets/chat";
 import { WorkspaceIcon, WorkspaceTooltip, lockWorkspaceScroll } from "@/shared/ui/workspace";
 import { useLanguage } from "@/shared/i18n";
 import { ChatPage } from "./ChatPage";
@@ -107,8 +109,15 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
     {mobileOpen && <button className="workspace-drawer-backdrop" tabIndex={-1} aria-label={t("workspace.close_navigation", "Close navigation")} onClick={() => setMobileOpen(false)}/>}
     <aside id="sidebar" ref={asideRef} className="workspace-sidebar" inert={isMobile && !mobileOpen ? true : undefined} role={isMobile && mobileOpen ? "dialog" : undefined} aria-modal={isMobile && mobileOpen ? true : undefined} aria-label={t("workspace.navigation", "Workspace navigation")}><WorkspaceSidebar collapsed={collapsed && !isMobile} onToggle={toggle} onSearch={() => { setMobileOpen(false); setSearchOpen(true); }} onCloseMobile={() => setMobileOpen(false)}/></aside>
     <div className="workspace-main" inert={mobileOpen ? true : undefined}>
-      <ChatPage workspace isChatRoute={pathname === "/chat"}>{children}</ChatPage>
-      <CanvasPanel active={pathname === "/chat"}/>
+      <ChatPage workspace isChatRoute={pathname === "/chat" || pathname === "/maps"}>{children}</ChatPage>
+      <CanvasPanel active={pathname === "/chat" || pathname === "/maps"}/>
+      <MapCardsHost/>
+      <ThinkingOrbs/>
+      <ReplyNotifier/>
+      <RichCardsHost/>
+      <MemoryManager/>
+      <TaskPanel/>
+      {pathname === "/maps" && <MapsHome/>}
       {preset && pathname === "/chat" && <div className="workspace-preset-badge"><WorkspaceIcon name="sparkles" size={14}/><span>{preset.name}</span><WorkspaceTooltip label={t("workspace.remove_preset", "Remove skill")}><button className="ws-icon-btn" onClick={() => { document.dispatchEvent(new CustomEvent("genyxo:workspace-preset", { detail: { presetId: null } })); setPreset(null); }} aria-label={t("workspace.remove_preset", "Remove skill")}><WorkspaceIcon name="close" size={14}/></button></WorkspaceTooltip></div>}
     </div>
     {searchOpen && <WorkspaceSearch onClose={() => setSearchOpen(false)}/>}

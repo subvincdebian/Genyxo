@@ -69,6 +69,8 @@ export function WorkspaceSidebar({
     selectedChatId,
     activeProjectId,
     userId,
+    generatingIds,
+    unreadIds,
   } = workspace;
   const { lang, t } = useLanguage();
   const profile = useSessionProfile();
@@ -754,9 +756,12 @@ export function WorkspaceSidebar({
                 : undefined
             }
           >
-            <span className="ws-row-title">
+            <span className={`ws-row-title${generatingIds.includes(chat.id) ? " is-generating" : ""}`}>
               {chat.title || label("newChat")}
             </span>
+            {unreadIds.includes(chat.id) && !generatingIds.includes(chat.id) && (
+              <span className="ws-unread-dot" role="img" aria-label="New answer" />
+            )}
             {projectName &&
               (chat.pinnedAt || prefs.grouping === "list" || archived) && (
                 <span className="ws-project-caption">{projectName}</span>
@@ -1341,17 +1346,7 @@ export function WorkspaceSidebar({
           <div ref={menuBody}>
             {menu.kind === "overview" && (
               <>
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="ws-sidebar-menu-item"
-                  aria-disabled="true"
-                  aria-describedby="workspace-overview-planned"
-                  onClick={() => notify(label("planned"))}
-                >
-                  <WorkspaceIcon name="maps" />
-                  <span>{label("maps")}</span>
-                </button>
+                {menuLink(label("maps"), "/maps", "maps")}
                 {menuLink(label("images"), "/library?tab=images", "image")}
                 {menuLink(label("assistants"), "/plugins?tab=skills", "cube")}
                 <button
@@ -1386,6 +1381,14 @@ export function WorkspaceSidebar({
             )}
             {menu.kind === "settings" && (
               <>
+                {menuAction(
+                  "Memory",
+                  () => {
+                    closeMenu();
+                    document.dispatchEvent(new CustomEvent("genyxo:open-memory"));
+                  },
+                  "sparkles",
+                )}
                 <WorkspaceSubmenu label={label("grouping")} icon="panel">
                   {(["projects", "list"] as const).map((value) => (
                     <button
