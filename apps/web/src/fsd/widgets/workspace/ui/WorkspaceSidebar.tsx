@@ -16,6 +16,7 @@ import {
 import { useLanguage } from "@/shared/i18n";
 import { useSessionProfile } from "@/entities/session";
 import {
+  ShareDialog,
   isWorkspaceSignInError,
   useWorkspace,
   type WorkspaceConversation,
@@ -94,6 +95,9 @@ export function WorkspaceSidebar({
     moveChatId?: number;
   } | null>(null);
   const [confirmation, setConfirmation] = useState<Entity | null>(null);
+  const [shareChat, setShareChat] = useState<WorkspaceConversation | null>(
+    null,
+  );
   const [deleteError, setDeleteError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [pending, setPending] = useState<Set<string>>(new Set());
@@ -770,6 +774,17 @@ export function WorkspaceSidebar({
         )}
         {!editing && (
           <div className="ws-row-actions">
+            <WorkspaceTooltip label={label("chatMenu")} side="bottom">
+              <button
+                type="button"
+                className="ws-sidebar-icon ws-btn"
+                aria-label={label("chatMenu")}
+                aria-haspopup="menu"
+                onClick={(event) => openMenu(event, { kind: "entity", entity })}
+              >
+                <WorkspaceIcon name="more" size={16} />
+              </button>
+            </WorkspaceTooltip>
             <WorkspaceTooltip label={label(chat.pinnedAt ? "unpin" : "pin")} side="bottom">
               <button
                 type="button"
@@ -782,17 +797,6 @@ export function WorkspaceSidebar({
                 }
               >
                 <WorkspaceIcon name="pin" size={14} />
-              </button>
-            </WorkspaceTooltip>
-            <WorkspaceTooltip label={label("chatMenu")} side="bottom">
-              <button
-                type="button"
-                className="ws-sidebar-icon ws-btn"
-                aria-label={label("chatMenu")}
-                aria-haspopup="menu"
-                onClick={(event) => openMenu(event, { kind: "entity", entity })}
-              >
-                <WorkspaceIcon name="more" size={16} />
               </button>
             </WorkspaceTooltip>
           </div>
@@ -1507,17 +1511,14 @@ export function WorkspaceSidebar({
                 {menu.entity.kind === "chat" ? (
                   <>
                     <div className="ws-menu-divider" />
-                    <button
-                      type="button"
-                      role="menuitem"
-                      aria-disabled="true"
-                      className="ws-sidebar-menu-item"
-                      onClick={() => notify(label("planned"))}
-                    >
-                      <WorkspaceIcon name="share" size={16} />
-                      <span>{label("share")}</span>
-                      <small>{label("planned")}</small>
-                    </button>
+                    {menuAction(
+                      label("share"),
+                      () => {
+                        setShareChat(menu.entity.item as WorkspaceConversation);
+                        closeMenu();
+                      },
+                      "share",
+                    )}
                     <div className="ws-menu-divider" />
                     {menuAction(
                       label(
@@ -1636,6 +1637,14 @@ export function WorkspaceSidebar({
             setCreateProject(null);
             workspace.openProject(project.id);
           }}
+        />
+      )}
+      {shareChat && (
+        <ShareDialog
+          chatId={shareChat.id}
+          title={shareChat.title}
+          livePreview={pathname === "/chat" && selectedChatId === shareChat.id}
+          onClose={() => setShareChat(null)}
         />
       )}
       {confirmation && (

@@ -273,9 +273,8 @@
   display: flex;
   align-items: center;
   opacity: 0;
+  gap: 2px;
   transition: opacity 100ms ease;
-  border-radius: 7px;
-  background: var(--ws-sidebar-background, var(--ws-sidebar-bg, #1b1d1c));
 }
 .ws-sidebar-row:hover .ws-row-actions,
 .ws-sidebar-row:focus-within .ws-row-actions {
@@ -288,6 +287,16 @@
   width: 25px;
   height: 28px;
   flex-basis: 25px;
+}
+/* Bare glyphs on the row's own hover fill, as in ChatGPT: no chip behind
+   the actions or the icons, only the colour lifts on hover. */
+.ws-sidebar-inner .ws-sidebar-row .ws-row-actions .ws-sidebar-icon,
+.ws-sidebar-inner .ws-sidebar-row .ws-row-actions .ws-sidebar-icon:hover {
+  background: transparent;
+}
+.ws-sidebar-inner .ws-sidebar-row .ws-row-actions .ws-sidebar-icon:hover,
+.ws-sidebar-inner .ws-sidebar-row .ws-row-actions .ws-sidebar-icon[aria-expanded="true"] {
+  color: var(--ws-text, #eceeed);
 }
 .ws-sidebar-inner .is-pinned {
   color: var(--ws-accent, #b4e9dc);
@@ -646,16 +655,12 @@
 }
 .ws-sidebar-archive .ws-row-actions {
   opacity: 1;
-  background: var(--ws-surface, #262927);
 }
 [data-theme="light"] .ws-sidebar-inner {
   --ws-sidebar-hover: var(--ws-hover, rgba(18, 37, 29, 0.055));
   --ws-sidebar-selection: var(--ws-selection, rgba(18, 37, 29, 0.085));
   --ws-sidebar-muted: var(--ws-muted, #5e6b65);
   color: var(--ws-text, #1c2923);
-}
-[data-theme="light"] .ws-row-actions {
-  background: var(--ws-sidebar-background, var(--ws-sidebar-bg, #f0f3f1));
 }
 [data-theme="light"] .ws-sidebar-menu-item.is-danger {
   color: var(--ws-danger, #a33434);

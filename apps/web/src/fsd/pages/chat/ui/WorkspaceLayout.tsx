@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { WorkspaceProvider, useWorkspace } from "@/features/workspace";
 import { WorkspaceSidebar } from "@/widgets/workspace/ui/WorkspaceSidebar";
@@ -12,11 +12,19 @@ import { ChatPage } from "./ChatPage";
 import { WorkspaceSearch } from "./WorkspaceSearch";
 import { WorkspaceProjectDialog } from "./WorkspaceProjectDialog";
 
+// Sidebar widths in px. Dragging the edge below `snap` folds it into the rail.
+const SIDEBAR = { fallback: 280, min: 220, max: 480, snap: 150, step: 16 };
+// Keep at least this much room for the chat beside a wide sidebar.
+const sidebarMax = () => Math.max(SIDEBAR.min, Math.min(SIDEBAR.max, innerWidth - 600));
+const clampSidebar = (value: number) => Math.round(Math.min(sidebarMax(), Math.max(SIDEBAR.min, value)));
+const storeSidebar = (key: string, value: string) => { try { localStorage.setItem(`genyxo:sidebar-${key}`, value); } catch { /* Storage is optional. */ } };
+
 function WorkspaceFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { startNewChat, projects } = useWorkspace();
   const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR.fallback);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -27,8 +35,61 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
   const asideRef = useRef<HTMLElement>(null);
   const toggle = useCallback(() => {
     if (window.matchMedia("(max-width: 767px)").matches) setMobileOpen((value) => !value);
-    else setCollapsed((value) => { try { localStorage.setItem("genyxo:sidebar-collapsed", String(!value)); } catch { /* Storage is optional. */ } return !value; });
+    else setCollapsed((value) => { storeSidebar("collapsed", String(!value)); return !value; });
   }, []);
+  const setRail = useCallback((value: boolean) => { storeSidebar("collapsed", String(value)); setCollapsed(value); }, []);
+  const commitWidth = useCallback((value: number) => { storeSidebar("width", String(value)); setSidebarWidth(value); }, []);
+  /**
+   * Drag the sidebar edge: the width follows the pointer with no easing, and
+   * crossing the snap point folds it into the rail (or out of it) with the
+   * shell's own grid transition, as in ChatGPT.
+   */
+  const startResize = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    const shell = frameRef.current;
+    if (event.button !== 0 || !shell) return;
+    event.preventDefault();
+    const handle = event.currentTarget;
+    handle.setPointerCapture(event.pointerId);
+    const left = shell.getBoundingClientRect().left;
+    let rail = collapsed;
+    let width = sidebarWidth;
+    // A data attribute, not a class: React rewrites className when the rail toggles.
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    shell.dataset.resizing = "true";
+    const move = (moveEvent: PointerEvent) => {
+      const x = moveEvent.clientX - left;
+      if (x < SIDEBAR.snap !== rail) {
+        rail = !rail;
+        // Let the fold animate, then go back to following the pointer.
+        delete shell.dataset.resizing;
+        clearTimeout(settle);
+        settle = setTimeout(() => { shell.dataset.resizing = "true"; }, 260);
+        setRail(rail);
+      }
+      if (!rail) { width = clampSidebar(x); shell.style.setProperty("--ws-sidebar-width", `${width}px`); }
+    };
+    const end = () => {
+      clearTimeout(settle);
+      delete shell.dataset.resizing;
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", end);
+      handle.removeEventListener("pointercancel", end);
+      if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
+      commitWidth(width);
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", end);
+    handle.addEventListener("pointercancel", end);
+  }, [collapsed, sidebarWidth, setRail, commitWidth]);
+  const resizeByKey = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter") { event.preventDefault(); setRail(!collapsed); return; }
+    const delta = event.key === "ArrowRight" ? SIDEBAR.step : event.key === "ArrowLeft" ? -SIDEBAR.step : 0;
+    if (!delta && event.key !== "Home" && event.key !== "End") return;
+    event.preventDefault();
+    if (collapsed) { if (delta > 0 || event.key === "End") setRail(false); return; }
+    if (event.key === "Home" || (delta < 0 && sidebarWidth <= SIDEBAR.min)) { setRail(true); return; }
+    commitWidth(event.key === "End" ? sidebarMax() : clampSidebar(sidebarWidth + delta));
+  }, [collapsed, sidebarWidth, setRail, commitWidth]);
   useEffect(() => {
     // Legacy message actions use this optional icon font. Loading it after
     // hydration keeps an unavailable CDN from suspending the workspace layout.
@@ -40,7 +101,13 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
     document.head.appendChild(link);
   }, []);
   useEffect(() => {
-    queueMicrotask(() => { try { setCollapsed(localStorage.getItem("genyxo:sidebar-collapsed") === "true"); } catch { /* Storage is optional. */ } });
+    queueMicrotask(() => {
+      try {
+        setCollapsed(localStorage.getItem("genyxo:sidebar-collapsed") === "true");
+        const stored = Number(localStorage.getItem("genyxo:sidebar-width"));
+        if (stored) setSidebarWidth(clampSidebar(stored));
+      } catch { /* Storage is optional. */ }
+    });
     const toggleEvent = () => toggle();
     const projectEvent = (e: Event) => setProjectId((e as CustomEvent).detail.id);
     const notify = (e: Event) => setToast((e as CustomEvent).detail);
@@ -105,9 +172,11 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
     document.addEventListener("scroll", activity, true);
     return () => { document.removeEventListener("scroll", activity, true); timers.forEach(clearTimeout); };
   }, []);
-  return <div ref={frameRef} className={`workspace-shell${collapsed ? " is-collapsed" : ""}${mobileOpen ? " is-mobile-open" : ""}`}>
+  return <div ref={frameRef} className={`workspace-shell${collapsed ? " is-collapsed" : ""}${mobileOpen ? " is-mobile-open" : ""}`} style={{ "--ws-sidebar-width": `${sidebarWidth}px` } as CSSProperties}>
     {mobileOpen && <button className="workspace-drawer-backdrop" tabIndex={-1} aria-label={t("workspace.close_navigation", "Close navigation")} onClick={() => setMobileOpen(false)}/>}
-    <aside id="sidebar" ref={asideRef} className="workspace-sidebar" inert={isMobile && !mobileOpen ? true : undefined} role={isMobile && mobileOpen ? "dialog" : undefined} aria-modal={isMobile && mobileOpen ? true : undefined} aria-label={t("workspace.navigation", "Workspace navigation")}><WorkspaceSidebar collapsed={collapsed && !isMobile} onToggle={toggle} onSearch={() => { setMobileOpen(false); setSearchOpen(true); }} onCloseMobile={() => setMobileOpen(false)}/></aside>
+    <aside id="sidebar" ref={asideRef} className="workspace-sidebar" inert={isMobile && !mobileOpen ? true : undefined} role={isMobile && mobileOpen ? "dialog" : undefined} aria-modal={isMobile && mobileOpen ? true : undefined} aria-label={t("workspace.navigation", "Workspace navigation")}><WorkspaceSidebar collapsed={collapsed && !isMobile} onToggle={toggle} onSearch={() => { setMobileOpen(false); setSearchOpen(true); }} onCloseMobile={() => setMobileOpen(false)}/>
+      {!isMobile && <div className="workspace-sidebar-resizer" role="separator" tabIndex={0} aria-orientation="vertical" aria-label={t("workspace.resize_sidebar", "Resize sidebar")} aria-valuemin={0} aria-valuemax={SIDEBAR.max} aria-valuenow={collapsed ? 0 : sidebarWidth} onPointerDown={startResize} onDoubleClick={() => setRail(!collapsed)} onKeyDown={resizeByKey}/>}
+    </aside>
     <div className="workspace-main" inert={mobileOpen ? true : undefined}>
       <ChatPage workspace isChatRoute={pathname === "/chat" || pathname === "/maps"}>{children}</ChatPage>
       <CanvasPanel active={pathname === "/chat" || pathname === "/maps"}/>

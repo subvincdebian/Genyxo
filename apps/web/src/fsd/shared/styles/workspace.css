@@ -19,8 +19,13 @@
   --ws-hover: rgba(20,40,30,.045); --ws-selection: rgba(20,40,30,.09);
   --ws-accent: #525252; --ws-danger: #b83a2e; --ws-glass: rgba(248,250,247,.94);
 }
-.workspace-shell { display: grid; grid-template-columns: 280px minmax(0,1fr); width: 100%; height: var(--app-height,100dvh); min-height: 0; overflow: hidden; color: var(--ws-text); background: var(--ws-bg); font-family: var(--ws-font); transition: grid-template-columns 260ms cubic-bezier(.2,.7,.2,1); }
+.workspace-shell { display: grid; grid-template-columns: var(--ws-sidebar-width,280px) minmax(0,1fr); width: 100%; height: var(--app-height,100dvh); min-height: 0; overflow: hidden; color: var(--ws-text); background: var(--ws-bg); font-family: var(--ws-font); transition: grid-template-columns 260ms cubic-bezier(.2,.7,.2,1); }
 .workspace-shell.is-collapsed { grid-template-columns: 64px minmax(0,1fr); }
+.workspace-shell[data-resizing] { transition: none; cursor: col-resize; user-select: none; }
+.workspace-sidebar-resizer { position: absolute; top: 0; right: -5px; bottom: 0; z-index: 40; width: 10px; cursor: col-resize; touch-action: none; outline: none; }
+.workspace-sidebar-resizer::after { content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px; border-radius: 2px; background: var(--ws-muted); opacity: 0; transition: opacity 160ms ease; }
+.workspace-sidebar-resizer:hover::after { opacity: .45; transition-delay: 150ms; }
+.workspace-sidebar-resizer:focus-visible::after, .workspace-shell[data-resizing] .workspace-sidebar-resizer::after { opacity: .7; transition-delay: 0ms; }
 .workspace-shell *, .ws-dialog *, .ws-menu * { box-sizing: border-box; }
 .ws-dialog *, .ws-menu *, .ws-tooltip * { font-family: inherit; }
 .workspace-shell > #sidebar.workspace-sidebar { position: relative; inset: auto; z-index: 30; width: 100%; min-width: 0; height: 100%; min-height: 0; padding: 0; background: var(--ws-sidebar-bg); border: 0; border-right: 1px solid var(--ws-border); overflow: visible; flex-shrink: 0; transform: none; transition: none; }
