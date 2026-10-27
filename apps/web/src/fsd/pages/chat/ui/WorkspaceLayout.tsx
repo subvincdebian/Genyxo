@@ -118,7 +118,7 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
       <MemoryManager/>
       <TaskPanel/>
       {pathname === "/maps" && <MapsHome/>}
-      {preset && pathname === "/chat" && <div className="workspace-preset-badge"><WorkspaceIcon name="sparkles" size={14}/><span>{preset.name}</span><WorkspaceTooltip label={t("workspace.remove_preset", "Remove skill")}><button className="ws-icon-btn" onClick={() => { document.dispatchEvent(new CustomEvent("genyxo:workspace-preset", { detail: { presetId: null } })); setPreset(null); }} aria-label={t("workspace.remove_preset", "Remove skill")}><WorkspaceIcon name="close" size={14}/></button></WorkspaceTooltip></div>}
+      {preset && pathname === "/chat" && <div className="workspace-preset-badge"><WorkspaceIcon name="sparkles" size={14}/><span>{preset.name}</span><WorkspaceTooltip label={t("workspace.remove_preset", "Remove skill")} side="bottom"><button className="ws-icon-btn" onClick={() => { document.dispatchEvent(new CustomEvent("genyxo:workspace-preset", { detail: { presetId: null } })); setPreset(null); }} aria-label={t("workspace.remove_preset", "Remove skill")}><WorkspaceIcon name="close" size={14}/></button></WorkspaceTooltip></div>}
     </div>
     {searchOpen && <WorkspaceSearch onClose={() => setSearchOpen(false)}/>}
     {projectId !== null && <WorkspaceProjectDialog project={projects.find((item) => item.id === projectId)} onClose={() => setProjectId(null)}/>}

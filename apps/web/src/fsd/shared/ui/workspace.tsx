@@ -179,7 +179,13 @@ export function WorkspaceTooltip({ label, shortcut, children, side = "right", di
     let y = side === "bottom" ? anchor.bottom + 7 : anchor.top + (anchor.height - box.height) / 2;
     if (side === "right" && x + box.width > innerWidth - 8) { x = anchor.left + (anchor.width - box.width) / 2; y = anchor.bottom + 7; }
     if (y + box.height > innerHeight - 8) y = anchor.top - box.height - 7;
-    setPosition({ left: Math.max(8, Math.min(x, innerWidth - box.width - 8)), top: Math.max(8, Math.min(y, innerHeight - box.height - 8)), visibility: "visible" });
+    const next = { left: Math.max(8, Math.min(x, innerWidth - box.width - 8)), top: Math.max(8, Math.min(y, innerHeight - box.height - 8)) };
+    // Write the DOM too: React skips a style prop equal to its last render,
+    // which would leave the measuring left: 0 in place on a repeat hover.
+    tip.current.style.left = `${next.left}px`;
+    tip.current.style.top = `${next.top}px`;
+    tip.current.style.visibility = "visible";
+    setPosition({ ...next, visibility: "visible" });
   }, [anchor, label, shortcut, side]);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   useEffect(() => {

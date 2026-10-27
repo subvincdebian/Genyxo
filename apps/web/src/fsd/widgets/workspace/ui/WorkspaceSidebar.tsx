@@ -627,7 +627,7 @@ export function WorkspaceSidebar({
     onClick: (event: MouseEvent<HTMLButtonElement>) => void,
     shortcut?: string,
   ) => (
-    <WorkspaceTooltip label={text} shortcut={shortcut}>
+    <WorkspaceTooltip label={text} shortcut={shortcut} side={collapsed ? "right" : "bottom"}>
       <button
         type="button"
         className="ws-sidebar-icon ws-btn"
@@ -770,7 +770,7 @@ export function WorkspaceSidebar({
         )}
         {!editing && (
           <div className="ws-row-actions">
-            <WorkspaceTooltip label={label(chat.pinnedAt ? "unpin" : "pin")}>
+            <WorkspaceTooltip label={label(chat.pinnedAt ? "unpin" : "pin")} side="bottom">
               <button
                 type="button"
                 className={`ws-sidebar-icon ws-btn${chat.pinnedAt ? " is-pinned" : ""}`}
@@ -784,7 +784,7 @@ export function WorkspaceSidebar({
                 <WorkspaceIcon name="pin" size={14} />
               </button>
             </WorkspaceTooltip>
-            <WorkspaceTooltip label={label("chatMenu")}>
+            <WorkspaceTooltip label={label("chatMenu")} side="bottom">
               <button
                 type="button"
                 className="ws-sidebar-icon ws-btn"
