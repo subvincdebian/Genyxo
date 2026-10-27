@@ -91,6 +91,20 @@ const OSRM: Record<TravelMode, string> = {
   cycling: "https://routing.openstreetmap.de/routed-bike/route/v1/bike",
 };
 const CACHE_TTL = 10 * 60 * 1000;
+// The only hosts map requests may reach; user input fills query strings and
+// coordinates, never the destination.
+const MAP_HOSTS = new Set([
+  "nominatim.openstreetmap.org",
+  "photon.komoot.io",
+  "routing.openstreetmap.de",
+  "api.open-meteo.com",
+]);
+const coordinate = (value: unknown, limit: number) => {
+  const number = Number(value);
+  if (!Number.isFinite(number) || Math.abs(number) > limit)
+    throw new Error("Invalid coordinates");
+  return number;
+};
 
 export type Weather = {
   place: string;
@@ -204,7 +218,10 @@ export class MapsService {
   }
 
   private async getJson<T>(url: string, timeout = 9000): Promise<T> {
-    const response = await fetch(url, {
+    const target = new URL(url);
+    if (target.protocol !== "https:" || !MAP_HOSTS.has(target.hostname))
+      throw new Error("Map service host is not allowed");
+    const response = await fetch(target, {
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
       signal: AbortSignal.timeout(timeout),
     });
@@ -327,7 +344,16 @@ export class MapsService {
   async route(from: LatLng, to: LatLng, mode: TravelMode): Promise<MapRoute> {
     const key = `route:${mode}:${from.lat.toFixed(4)},${from.lng.toFixed(4)}:${to.lat.toFixed(4)},${to.lng.toFixed(4)}`;
     return this.cached(key, async () => {
-      const url = `${OSRM[mode]}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson&steps=true`;
+      // Numbers only in the path, and only a known profile.
+      const base = Object.hasOwn(OSRM, mode) ? OSRM[mode] : null;
+      if (!base) throw new Error("Unknown travel mode");
+      const points = [
+        [coordinate(from.lng, 180), coordinate(from.lat, 90)],
+        [coordinate(to.lng, 180), coordinate(to.lat, 90)],
+      ]
+        .map((point) => point.join(","))
+        .join(";");
+      const url = `${base}/${points}?overview=full&geometries=geojson&steps=true`;
       const data = await this.getJson<any>(url, 12_000);
       const route = data.routes?.[0];
       if (!route) throw new Error("No route found");

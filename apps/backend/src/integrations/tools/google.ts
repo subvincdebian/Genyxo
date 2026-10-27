@@ -1,3 +1,4 @@
+import { htmlToText } from "../../common/html-text";
 import {
   int,
   IntegrationTool,
@@ -20,18 +21,7 @@ const header = (message: any, name: string) =>
     (item: any) => item.name.toLowerCase() === name.toLowerCase(),
   )?.value;
 const decode = (data = "") => Buffer.from(data, "base64url").toString("utf8");
-const stripHtml = (html: string) =>
-  html
-    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+const stripHtml = (html = "") => htmlToText(html);
 
 function bodyText(part: any): string {
   if (!part) return "";

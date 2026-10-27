@@ -1151,7 +1151,7 @@ export function ChatApp({
                     {"\n                                    "}
                     <label className="plus-menu-item">
                       {"\n                                        "}
-                      {workspace ? <WorkspaceIcon name="image" size={18} /> : <i className="fas fa-image cyan-icon"></i>}
+                      <i className="fas fa-image cyan-icon"></i>
                       {"\n                                        "}
                       <span className="text-box">{"Add Photo"}</span>
                       {"\n                                        "}
@@ -1168,7 +1168,7 @@ export function ChatApp({
                     {"\n                                    "}
                     <label className="plus-menu-item">
                       {"\n                                        "}
-                      {workspace ? <WorkspaceIcon name="file" size={18} /> : <i className="fas fa-file-alt cyan-icon"></i>}
+                      <i className="fas fa-file-alt cyan-icon"></i>
                       {"\n                                        "}
                       <span className="text-box">{"Add Files"}</span>
                       {"\n                                        "}
@@ -1193,7 +1193,7 @@ export function ChatApp({
                     data-tooltip="Add Files"
                   >
                     {"\n                                    "}
-                    {workspace ? <WorkspaceIcon name="plus" /> : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>}
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
                     {"\n                                "}
                   </button>
                   {

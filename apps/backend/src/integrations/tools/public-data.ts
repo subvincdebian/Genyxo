@@ -1,3 +1,4 @@
+import { decodeEntities, htmlToText } from "../../common/html-text";
 import {
   int,
   IntegrationTool,
@@ -12,18 +13,11 @@ import {
 // Public APIs: no account, no token; requests skip the Authorization header.
 
 const STACK = "https://api.stackexchange.com/2.3";
-const decode = (text = "") =>
-  text
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
+const decode = decodeEntities;
+// Code blocks become fenced Markdown before the remaining tags are removed.
 const stripHtml = (html = "") =>
-  decode(
-    html
-      .replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/g, "\n```\n$1\n```\n")
-      .replace(/<[^>]+>/g, ""),
+  htmlToText(
+    html.replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/g, "\n```\n$1\n```\n"),
   );
 
 export const stackOverflowTools: IntegrationTool[] = [

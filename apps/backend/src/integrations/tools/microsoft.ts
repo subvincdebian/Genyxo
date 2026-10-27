@@ -1,3 +1,4 @@
+import { htmlToText } from "../../common/html-text";
 import {
   int,
   IntegrationTool,
@@ -15,18 +16,7 @@ const GRAPH = "https://graph.microsoft.com/v1.0";
 const seg = encodeURIComponent;
 const recipients = (value: unknown) =>
   list(value).map((address) => ({ emailAddress: { address } }));
-const stripHtml = (html = "") =>
-  html
-    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+const stripHtml = (html = "") => htmlToText(html);
 const escapeHtml = (text: string) =>
   text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 

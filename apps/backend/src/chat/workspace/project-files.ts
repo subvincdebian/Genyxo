@@ -1,3 +1,4 @@
+import { htmlToText } from "../../common/html-text";
 import { BadRequestException } from "@nestjs/common";
 import { inflateRawSync } from "zlib";
 
@@ -47,33 +48,12 @@ export function extractDocxText(bytes: Buffer): string {
             : Buffer.alloc(0)
       ).toString("utf8");
       if (!xml || /<!DOCTYPE|<!ENTITY/i.test(xml)) throw new Error();
-      return xml
-        .replace(/<w:(?:br|tab)\b[^>]*\/?\s*>/g, " ")
-        .replace(/<\/w:p>/g, "\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(
-          /&#(x[\da-f]+|\d+);|&(amp|lt|gt|quot|apos);/gi,
-          (_match, numeric: string, named: string) => {
-            if (numeric) {
-              const point = numeric.startsWith("x")
-                ? parseInt(numeric.slice(1), 16)
-                : Number(numeric);
-              return point > 0 && point <= 0x10ffff
-                ? String.fromCodePoint(point)
-                : "";
-            }
-            return (
-              (
-                { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" } as Record<
-                  string,
-                  string
-                >
-              )[named.toLowerCase()] || ""
-            );
-          },
-        )
-        .trim()
-        .slice(0, 45000);
+      // Word breaks and paragraphs first, then the shared tag and entity pass.
+      return htmlToText(
+        xml
+          .replace(/<w:(?:br|tab)\b[^>]*\/?\s*>/g, " ")
+          .replace(/<\/w:p>/g, "\n"),
+      ).slice(0, 45000);
     }
   } catch {
     throw new BadRequestException(
