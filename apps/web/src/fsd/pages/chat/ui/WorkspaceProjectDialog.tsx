@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useWorkspace, type WorkspaceFile, type WorkspaceProject } from "@/features/workspace";
 import { WorkspaceDialog, WorkspaceIcon, WorkspaceTooltip } from "@/shared/ui/workspace";
+import { ProjectIconPicker } from "@/shared/ui/project-icons";
 import { useLanguage } from "@/shared/i18n";
 
 interface Memory { id: number; content: string; enabled?: boolean; }
@@ -15,6 +16,7 @@ export function WorkspaceProjectDialog({ project, onClose }: { project?: Workspa
   const { t } = useLanguage();
   const [tab, setTab] = useState("overview");
   const [name, setName] = useState(project?.name || "");
+  const [appearance, setAppearance] = useState({ icon: project?.icon || null, color: project?.color || null });
   const [instructions, setInstructions] = useState(project?.instructions || "");
   const [files, setFiles] = useState<File[]>([]);
   const [removed, setRemoved] = useState<Array<string | number>>([]);
@@ -44,7 +46,7 @@ export function WorkspaceProjectDialog({ project, onClose }: { project?: Workspa
     setBusy(true); setError("");
     try {
       const additions = await Promise.all(files.map(readFile));
-      await request(`projects/${project.id}`, { method: "PATCH", body: JSON.stringify({ name: name.trim(), instructions, ...(additions.length ? { files: additions } : {}), ...(removed.length ? { removeFileIds: removed } : {}) }) });
+      await request(`projects/${project.id}`, { method: "PATCH", body: JSON.stringify({ name: name.trim(), ...appearance, instructions, ...(additions.length ? { files: additions } : {}), ...(removed.length ? { removeFileIds: removed } : {}) }) });
       await refresh(); notify(t("workspace.project_saved", "Project saved"), "success"); onClose();
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to save project"); } finally { setBusy(false); }
   };
@@ -57,7 +59,8 @@ export function WorkspaceProjectDialog({ project, onClose }: { project?: Workspa
     <div className="ws-project-tabs" role="tablist" aria-label={t("workspace.project_settings", "Project settings")}>{[["overview",t("workspace.overview", "Overview")],["memory",t("workspace.memory", "Memory")]].map(([key,label]) => <button key={key} role="tab" aria-selected={tab === key} className="ws-btn" onClick={() => { setError(""); setTab(key); }}>{label}</button>)}</div>
     {error && <p className="ws-inline-error" role="alert">{error}</p>}
     {tab === "overview" ? <form noValidate className="ws-form" onSubmit={save}>
-      <label>{t("workspace.project_name", "Project name")}<input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required/></label>
+      <label htmlFor="workspace-project-settings-name">{t("workspace.project_name", "Project name")}</label>
+      <div className="ws-project-name-field"><ProjectIconPicker icon={appearance.icon} color={appearance.color} onChange={setAppearance} label={t("workspace.project_icon", "Project icon")} searchLabel={t("workspace.search_icons", "Search icons")} clearLabel={t("workspace.clear", "Clear")} disabled={busy}/><input id="workspace-project-settings-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required placeholder={t("workspace.project_name_placeholder", "Trip to Copenhagen")}/></div>
       <label>{t("workspace.project_instructions", "Project instructions")}<textarea className="resize-none" value={instructions} onChange={(e) => setInstructions(e.target.value)} rows={5} maxLength={8000}/></label>
       <p className="ws-muted">{t("workspace.project_context_help", "Instructions, shared files and saved memory are available to chats in this project.")}</p>
       <div className="ws-project-files">{(project.files || []).filter((file) => !removed.includes(file.id ?? file.name)).map((file) => <div className="ws-file-row" key={file.id ?? file.name}><WorkspaceIcon name="file" size={18}/><button className="ws-file-preview" type="button" onClick={async () => { try { setPreview(await request<WorkspaceFile>(`projects/${project.id}/files/${encodeURIComponent(file.id ?? file.name)}`)); } catch (caught) { setError((caught as Error).message); } }}>{file.name}</button><WorkspaceTooltip label={`${t("workspace.remove", "Remove")} ${file.name}`} side="bottom"><button type="button" className="ws-icon-btn" aria-label={`${t("workspace.remove", "Remove")} ${file.name}`} onClick={() => setRemoved((items) => [...items, file.id ?? file.name])}><WorkspaceIcon name="close" size={16}/></button></WorkspaceTooltip></div>)}</div>

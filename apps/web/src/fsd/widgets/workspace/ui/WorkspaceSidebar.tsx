@@ -31,6 +31,7 @@ import {
   WorkspaceSubmenu,
   WorkspaceTooltip,
 } from "@/shared/ui/workspace";
+import { ProjectGlyph, ProjectIconPicker } from "@/shared/ui/project-icons";
 import { isChatPath } from "@/shared/lib/chat-url";
 import { groupSidebarConversations } from "../model/sidebar-groups";
 import { sidebarCopy } from "../model/sidebar-copy";
@@ -46,6 +47,27 @@ type OpenMenu =
     }
   | { kind: "entity"; entity: Entity; anchor: { x: number; y: number } };
 type Rename = { entity: Entity; value: string; error: string };
+
+/**
+ * A chat title cut off by the hover actions scrolls to its end and back, as
+ * in ChatGPT; a title that fits stays still.
+ */
+function startTitleMarquee(row: HTMLElement) {
+  const box = row.querySelector<HTMLElement>(".ws-row-title");
+  const actions = row.querySelector<HTMLElement>(".ws-row-actions");
+  if (!box) return;
+  const covered = actions
+    ? Math.max(0, box.getBoundingClientRect().right - actions.getBoundingClientRect().left + 8)
+    : 0;
+  const shift = box.scrollWidth - (box.clientWidth - covered);
+  if (shift <= 2) {
+    delete box.dataset.marquee;
+    return;
+  }
+  box.style.setProperty("--marquee-shift", `${-shift}px`);
+  box.style.setProperty("--marquee-time", `${(2.4 + shift / 32).toFixed(2)}s`);
+  box.dataset.marquee = "true";
+}
 
 export function WorkspaceSidebar({
   collapsed,
@@ -250,9 +272,17 @@ export function WorkspaceSidebar({
     const element = root.current;
     if (!element) return;
     const update = () => {
-      const active = element.querySelector<HTMLElement>(
+      let active = element.querySelector<HTMLElement>(
         '[data-workspace-active="true"]',
       );
+      // A collapsed project keeps its rows mounted at zero height; mark the
+      // project row instead of an empty slot under it.
+      const folded = active?.closest('.ws-collapsible[data-open="false"]');
+      if (active && folded)
+        active =
+          folded
+            .closest(".ws-project-tree-item")
+            ?.querySelector<HTMLElement>(".ws-project-row") ?? null;
       if (!active) {
         setIndicator({ opacity: 0 });
         return;
@@ -280,10 +310,13 @@ export function WorkspaceSidebar({
     const observer = new ResizeObserver(update);
     observer.observe(element);
     element.addEventListener("scroll", update, true);
+    // Follow rows that move while a project or the project list folds.
+    element.addEventListener("transitionend", update, true);
     window.addEventListener("resize", update);
     return () => {
       observer.disconnect();
       element.removeEventListener("scroll", update, true);
+      element.removeEventListener("transitionend", update, true);
       window.removeEventListener("resize", update);
     };
   }, [
@@ -730,6 +763,7 @@ export function WorkspaceSidebar({
         onContextMenu={(event) => {
           if (!editing) openMenu(event, { kind: "entity", entity });
         }}
+        onMouseEnter={(event) => startTitleMarquee(event.currentTarget)}
         onKeyDown={(event) => rowKeyboard(event, entity)}
         draggable={!editing && !pending.has(entityKey(entity)) && !archived}
         onDragStart={(event) => {
@@ -762,7 +796,9 @@ export function WorkspaceSidebar({
             }
           >
             <span className={`ws-row-title${generatingIds.includes(chat.id) ? " is-generating" : ""}`}>
-              {chat.title || label("newChat")}
+              <span className="ws-row-title-text">
+                {chat.title || label("newChat")}
+              </span>
             </span>
             {unreadIds.includes(chat.id) && !generatingIds.includes(chat.id) && (
               <span className="ws-unread-dot" role="img" aria-label="New answer" />
@@ -1034,23 +1070,32 @@ export function WorkspaceSidebar({
                 aria-label={label("projects")}
               >
                 <div className="ws-sidebar-section-heading">
+                  {/* A plain label as in ChatGPT: the chevron and + fade in on hover. */}
                   <button
                     type="button"
-                    className="ws-section-toggle ws-btn"
+                    className="ws-section-toggle"
                     aria-expanded={expandedState.projects}
                     aria-controls="workspace-project-tree"
                     onClick={() =>
                       saveExpanded(expanded, !expandedState.projects)
                     }
                   >
-                    <WorkspaceIcon name="chevron" size={13} />
                     <span>{label("projects")}</span>
+                    <WorkspaceIcon name="chevron" size={12} />
                   </button>
-                  {iconButton("plus", label("createProject"), () =>
-                    setCreateProject({}),
-                  )}
+                  <div className="ws-section-actions">
+                    {iconButton("plus", label("createProject"), () =>
+                      setCreateProject({}),
+                    )}
+                  </div>
                 </div>
-                <div id="workspace-project-tree" hidden={!projectTreeShown}>
+                <div
+                  id="workspace-project-tree"
+                  className="ws-collapsible"
+                  data-open={projectTreeShown}
+                  inert={!projectTreeShown}
+                >
+                  <div className="ws-collapsible-inner">
                   {visibleProjects.length === 0 && (
                     <p className="ws-sidebar-empty">{label("noProjects")}</p>
                   )}
@@ -1150,13 +1195,31 @@ export function WorkspaceSidebar({
                           }}
                           onKeyDown={(event) => rowKeyboard(event, entity)}
                         >
-                          <WorkspaceTooltip
-                            label={`${open ? label("collapse") : label("expand")}: ${project.name}`}
-                            side="bottom"
-                          >
+                          {editing ? (
+                            renameField(entity)
+                          ) : (
                             <button
                               type="button"
-                              className="ws-sidebar-icon ws-btn ws-project-chevron"
+                              className="ws-row-open ws-btn"
+                              onClick={() => openProject(project.id)}
+                            >
+                              <ProjectGlyph
+                                icon={project.icon}
+                                color={project.color}
+                                size={17}
+                              />
+                              <span className="ws-row-title">
+                                {project.name}
+                              </span>
+                              {project.pinnedAt && (
+                                <WorkspaceIcon name="pin" size={12} />
+                              )}
+                            </button>
+                          )}
+                          {!editing && (
+                            <button
+                              type="button"
+                              className="ws-project-chevron"
                               aria-label={`${open ? label("collapse") : label("expand")}: ${project.name}`}
                               aria-expanded={open}
                               aria-controls={`workspace-project-chats-${project.id}`}
@@ -1168,24 +1231,7 @@ export function WorkspaceSidebar({
                                 )
                               }
                             >
-                              <WorkspaceIcon name="chevron" size={13} />
-                            </button>
-                          </WorkspaceTooltip>
-                          {editing ? (
-                            renameField(entity)
-                          ) : (
-                            <button
-                              type="button"
-                              className="ws-row-open ws-btn"
-                              onClick={() => openProject(project.id)}
-                            >
-                              <WorkspaceIcon name="folder" size={17} />
-                              <span className="ws-row-title">
-                                {project.name}
-                              </span>
-                              {project.pinnedAt && (
-                                <WorkspaceIcon name="pin" size={12} />
-                              )}
+                              <WorkspaceIcon name="chevron" size={11} />
                             </button>
                           )}
                           {!editing && (
@@ -1201,9 +1247,11 @@ export function WorkspaceSidebar({
                         </div>
                         <div
                           id={`workspace-project-chats-${project.id}`}
-                          className="ws-project-chats"
-                          hidden={!open}
+                          className="ws-project-chats ws-collapsible"
+                          data-open={open}
+                          inert={!open}
                         >
+                          <div className="ws-collapsible-inner">
                           {prefs.grouping === "projects" &&
                             sorted.map((chat) => chatRow(chat))}
                           {(chats.length === 0 ||
@@ -1239,10 +1287,12 @@ export function WorkspaceSidebar({
                                 {label("newChat")}
                               </button>
                             )}
+                          </div>
                         </div>
                       </div>
                     );
                   })}
+                  </div>
                 </div>
               </section>
             )}
@@ -1753,6 +1803,10 @@ function CreateProjectDialog({
   const label = (key: keyof typeof copy) =>
     t(`workspace.sidebar.${key}`, copy[key]);
   const [name, setName] = useState("");
+  const [appearance, setAppearance] = useState<{
+    icon: string | null;
+    color: string | null;
+  }>({ icon: null, color: null });
   const [instructions, setInstructions] = useState("");
   const [files, setFiles] = useState<WorkspaceFile[]>([]);
   const [error, setError] = useState("");
@@ -1831,6 +1885,7 @@ function CreateProjectDialog({
           method: "POST",
           body: JSON.stringify({
             name: name.trim(),
+            ...appearance,
             instructions: instructions.trim(),
             files,
           }),
@@ -1867,22 +1922,34 @@ function CreateProjectDialog({
         }}
       >
         <label htmlFor="workspace-project-name">{label("projectName")}</label>
-        <input
-          ref={input}
-          id="workspace-project-name"
-          value={name}
-          maxLength={100}
-          aria-invalid={invalidName}
-          aria-describedby={invalidName ? "workspace-project-error" : undefined}
-          onChange={(event) => {
-            setName(event.target.value);
-            setInvalidName(false);
-          }}
-          disabled={busy || Boolean(createdProject)}
-          autoComplete="off"
-        />
+        <div className="ws-project-name-field">
+          <ProjectIconPicker
+            icon={appearance.icon}
+            color={appearance.color}
+            onChange={setAppearance}
+            label={label("projectIcon")}
+            searchLabel={label("searchIcons")}
+            clearLabel={label("clear")}
+            disabled={busy || Boolean(createdProject)}
+          />
+          <input
+            ref={input}
+            id="workspace-project-name"
+            value={name}
+            maxLength={100}
+            placeholder={label("projectNamePlaceholder")}
+            aria-invalid={invalidName}
+            aria-describedby={invalidName ? "workspace-project-error" : undefined}
+            onChange={(event) => {
+              setName(event.target.value);
+              setInvalidName(false);
+            }}
+            disabled={busy || Boolean(createdProject)}
+            autoComplete="off"
+          />
+        </div>
         <label htmlFor="workspace-project-instructions">
-          {label("instructions")} <small>{label("optional")}</small>
+          {label("instructions")}
         </label>
         <textarea
           className="resize-none"
@@ -1893,9 +1960,7 @@ function CreateProjectDialog({
           onChange={(event) => setInstructions(event.target.value)}
           disabled={busy || Boolean(createdProject)}
         />
-        <label htmlFor="workspace-project-files">
-          {label("files")} <small>{label("optional")}</small>
-        </label>
+        <label htmlFor="workspace-project-files">{label("files")}</label>
         <input
           id="workspace-project-files"
           type="file"
@@ -1907,7 +1972,6 @@ function CreateProjectDialog({
             event.target.value = "";
           }}
         />
-        <p className="ws-field-help">{label("uploadHint")}</p>
         {files.length > 0 && (
           <ul className="ws-project-file-list">
             {files.map((file, index) => (

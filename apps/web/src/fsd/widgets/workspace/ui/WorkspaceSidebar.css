@@ -264,17 +264,74 @@
 }
 .ws-chat-row .ws-row-open {
   display: block;
-  padding-right: 55px;
+  padding-right: 12px;
+}
+/* A block, so it clips with an ellipsis and the marquee can measure it. */
+.ws-chat-row .ws-row-title {
+  display: block;
+}
+/* A pinned row always shows its pin, so its title stops short of it. */
+.ws-chat-row:has(.is-pinned) .ws-row-open {
+  padding-right: 40px;
 }
 .ws-row-actions {
   position: absolute;
-  right: 2px;
-  top: 3px;
+  z-index: 1;
+  top: 0;
+  right: 6px;
+  bottom: 0;
   display: flex;
   align-items: center;
+  gap: 4px;
   opacity: 0;
-  gap: 2px;
-  transition: opacity 100ms ease;
+  transition: opacity 120ms ease;
+}
+/*
+ * A shade the colour of the row itself (sidebar + selection + hover layers)
+ * fades in under the actions, so the title never shows through them, in
+ * either theme. The z-index above makes it sit over the title.
+ */
+.ws-chat-row {
+  --row-shade-selected: transparent;
+  --row-shade-hover: transparent;
+}
+.ws-chat-row[data-workspace-active="true"] {
+  --row-shade-selected: var(--ws-sidebar-selection);
+}
+.ws-chat-row:hover,
+.ws-chat-row:focus-within {
+  --row-shade-hover: var(--ws-sidebar-hover);
+}
+.ws-chat-row .ws-row-actions::before {
+  content: "";
+  position: absolute;
+  inset: 0 -6px 0 -32px;
+  z-index: -1;
+  border-radius: 0 8px 8px 0;
+  background:
+    linear-gradient(var(--row-shade-hover), var(--row-shade-hover)),
+    linear-gradient(var(--row-shade-selected), var(--row-shade-selected)),
+    var(--gx-sidebar, var(--ws-sidebar-bg, #0b0d0c));
+  mask-image: linear-gradient(90deg, transparent, #000 30px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30px);
+}
+.ws-chat-row:hover .ws-row-title[data-marquee] {
+  text-overflow: clip;
+}
+.ws-chat-row:hover .ws-row-title[data-marquee] .ws-row-title-text {
+  display: inline-block;
+  animation: ws-title-marquee var(--marquee-time, 4s) ease-in-out 500ms infinite alternate;
+}
+@keyframes ws-title-marquee {
+  0%, 18% { transform: none; }
+  82%, 100% { transform: translateX(var(--marquee-shift, 0)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-chat-row:hover .ws-row-title[data-marquee] .ws-row-title-text { animation: none; }
+}
+/* Pinned rows keep the pin visible; the ⋯ waits for hover. */
+.ws-sidebar-row:not(:hover):not(:focus-within) .ws-row-actions .ws-tooltip-owner:has(> [aria-haspopup]) {
+  opacity: 0;
 }
 .ws-sidebar-row:hover .ws-row-actions,
 .ws-sidebar-row:focus-within .ws-row-actions {
@@ -284,9 +341,10 @@
   opacity: 1;
 }
 .ws-sidebar-row .ws-row-actions .ws-sidebar-icon {
-  width: 25px;
-  height: 28px;
-  flex-basis: 25px;
+  width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+  border-radius: 6px;
 }
 /* Bare glyphs on the row's own hover fill, as in ChatGPT: no chip behind
    the actions or the icons, only the colour lifts on hover. */
@@ -310,13 +368,36 @@
   font-size: 10px;
   color: var(--ws-sidebar-muted);
 }
-.ws-project-row .ws-row-open {
-  padding-left: 0;
-  padding-right: 29px;
+/* Icon and name from the left edge like any row, a small chevron right
+   after the name (as in Claude's sidebar), then the ⋯ at the far right. */
+.ws-sidebar-inner .ws-project-row .ws-row-open {
+  flex: 0 1 auto;
+  padding-left: 12px;
+  padding-right: 2px;
 }
 .ws-sidebar-inner .ws-project-chevron {
-  width: 23px;
-  flex-basis: 23px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin-right: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ws-sidebar-muted);
+  cursor: pointer;
+  transition: color 140ms ease;
+}
+.ws-sidebar-inner .ws-project-chevron:hover,
+.ws-sidebar-inner .ws-project-chevron:focus-visible {
+  background: transparent;
+  color: var(--ws-text, #eceeed);
+}
+.ws-project-row:has(.ws-row-actions) {
+  padding-right: 40px;
 }
 .ws-project-tree-item {
   border: 1px solid transparent;
@@ -333,6 +414,51 @@
   margin: 2px 0 8px 12px;
   padding-left: 8px;
   border-left: 1px solid var(--ws-border, rgba(255, 255, 255, 0.09));
+}
+.ws-project-chats[data-open="false"] {
+  margin-block: 0;
+}
+/* Open and close by animating the row track, so no height has to be measured. */
+.ws-collapsible {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 200ms ease,
+    margin 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ws-collapsible[data-open="false"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.ws-collapsible-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-collapsible { transition: none; }
+}
+/* Projects heading: a plain label whose chevron and + appear on hover. */
+.ws-sidebar-inner .ws-sidebar-section-heading .ws-section-toggle {
+  gap: 4px;
+  padding: 5px 0;
+  cursor: pointer;
+}
+.ws-sidebar-inner .ws-sidebar-section-heading .ws-section-toggle:hover {
+  background: transparent;
+}
+.ws-sidebar-inner .ws-section-toggle > svg {
+  display: block;
+  opacity: 0;
+  transform: rotate(0deg);
+  transition: opacity 160ms ease, transform 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ws-sidebar-inner .ws-section-toggle[aria-expanded="true"] > svg {
+  transform: rotate(90deg);
+}
+.ws-sidebar-section-heading:hover .ws-section-toggle > svg,
+.ws-section-toggle:focus-visible > svg {
+  opacity: 0.8;
 }
 .ws-project-chats .ws-chat-row {
   font-size: 12px;
@@ -638,6 +764,17 @@
   background: var(--ws-accent, #b4e9dc);
   color: var(--ws-accent-ink, #112923);
   border: 0;
+  transition: background 140ms ease, transform 140ms ease;
+}
+/* Lighter on hover; the generic .ws-btn:hover fill would grey it out. */
+.ws-dialog-actions .ws-sidebar-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ws-accent, #b4e9dc) 84%, #fff);
+}
+.ws-dialog-actions .ws-sidebar-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+[data-theme="light"] .ws-dialog-actions .ws-sidebar-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ws-accent, #b4e9dc) 88%, #000);
 }
 .ws-dialog-actions .ws-sidebar-danger {
   color: var(--ws-danger, #f3a3a3);
@@ -756,4 +893,150 @@
   .ws-sidebar-inner .ws-sidebar-icon {
     color: ButtonText;
   }
+}
+/* Project name with its icon button inside the field, as in ChatGPT. */
+.ws-project-name-field {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  border: 1px solid var(--ws-border, rgba(255, 255, 255, 0.14));
+  border-radius: 10px;
+  background: var(--ws-field, #252927);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.ws-project-name-field:focus-within {
+  border-color: var(--ws-accent, #a8e1d6);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ws-accent, #a8e1d6) 18%, transparent);
+}
+.ws-project-name-field > input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 10px 7px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ws-text, #eceeed);
+  font: inherit;
+  font-size: 13px;
+}
+.ws-project-name-field > input:focus,
+.ws-project-name-field > input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.ws-project-name-field > input::placeholder {
+  color: var(--ws-muted, #8d9592);
+}
+.ws-project-icon-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ws-text, #eceeed);
+  cursor: pointer;
+  transition: background 140ms ease, transform 140ms ease;
+}
+.ws-project-icon-trigger:hover,
+.ws-project-icon-trigger[aria-expanded="true"] {
+  background: var(--ws-hover, rgba(255, 255, 255, 0.07));
+}
+.ws-project-icon-trigger:active {
+  transform: scale(0.94);
+}
+/* The glass picker reuses .ws-menu's material; only its layout is set here. */
+.ws-menu.ws-project-icon-picker {
+  width: 312px;
+  max-width: calc(100vw - 16px);
+  padding: 12px !important;
+}
+.ws-project-icon-search {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.ws-project-icon-search > input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--ws-border, rgba(255, 255, 255, 0.14));
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+.ws-project-icon-search > input:focus-visible {
+  border-color: var(--ws-accent, #a8e1d6);
+}
+.ws-project-icon-search > button {
+  flex: 0 0 auto;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  cursor: pointer;
+}
+.ws-project-colors,
+.ws-project-icons {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  justify-items: center;
+  gap: 4px;
+}
+.ws-project-colors {
+  margin-bottom: 10px;
+}
+.ws-project-color {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.ws-project-color:hover {
+  transform: scale(1.08);
+}
+.ws-project-color[aria-checked="true"] {
+  box-shadow: 0 0 0 2px var(--ws-panel, #1c1f1e), 0 0 0 4px rgba(255, 255, 255, 0.55);
+}
+.ws-project-icon-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ws-text, #eceeed);
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.ws-project-icon-option:hover,
+.ws-project-icon-option[aria-checked="true"] {
+  background: rgba(255, 255, 255, 0.09);
+}
+[data-theme="light"] .ws-project-icon-option:hover,
+[data-theme="light"] .ws-project-icon-option[aria-checked="true"],
+[data-theme="light"] .ws-project-icon-search > button {
+  background: rgba(0, 0, 0, 0.06);
+}
+.ws-project-glyph {
+  flex-shrink: 0;
 }

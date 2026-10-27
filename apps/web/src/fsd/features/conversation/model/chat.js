@@ -1850,16 +1850,16 @@ export default function initialize(scope, context) {
     return actions;
   }
   function getModelIconSrc(value = "") {
-    if (value.includes("dall-e")) return "./images/dalle-text.png";
+    if (value.includes("dall-e")) return "/images/dalle-text.png";
     if (value.includes("google/gemini") || value.includes("gemma"))
-      return "./images/google-gemini.svg";
+      return "/images/google-gemini.svg";
     if (value.includes("openai") || value.includes("gpt"))
-      return "./images/openai-mark.svg";
+      return "/images/openai-mark.svg";
     if (value.includes("anthropic") || value.includes("claude"))
-      return "./images/claude-ai.svg";
-    if (value.includes("nvidia/")) return "./images/nvidia-icon.svg";
-    if (value.includes("kling")) return "./images/kling-video.svg";
-    return "./images/logo.svg";
+      return "/images/claude-ai.svg";
+    if (value.includes("nvidia/")) return "/images/nvidia-icon.svg";
+    if (value.includes("kling")) return "/images/kling-video.svg";
+    return "/images/logo.svg";
   }
   function getModelProviderName(value = "") {
     if (value.includes("google/gemini") || value.includes("gemma"))
@@ -2280,7 +2280,8 @@ export default function initialize(scope, context) {
     const project = projects.find((item) => item.id === activeProjectId);
     const badge = scope.document.getElementById("activeProjectBtn");
     if (badge) {
-      badge.hidden = !project;
+      // The workspace sidebar already marks the chat's project, as in ChatGPT.
+      badge.hidden = context.workspaceManaged || !project;
       badge.textContent = project ? `⌁ ${project.name}` : "";
       badge.title = project ? `Project: ${project.name}` : "";
     }

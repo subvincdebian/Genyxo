@@ -60,7 +60,7 @@
 .ws-btn-primary:hover { background: #d9d9d9; }
 .ws-icon-btn { width: 34px; height: 34px; min-height: 34px; padding: 7px; border: 0; background: transparent; flex: 0 0 auto; }
 .workspace-shell :focus-visible,.ws-menu :focus-visible,.ws-dialog :focus-visible { outline: 2px solid var(--ws-accent); outline-offset: 3px; }
-.ws-dialog { width: min(480px,calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: min(820px,calc(100dvh - 40px)); margin: auto; padding: 0; border: 1px solid var(--ws-border); border-radius: 20px; color: var(--ws-text); background: var(--ws-panel); box-shadow: 0 32px 100px rgba(0,0,0,.4); font: 14px/1.5 var(--ws-font); overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; animation: ws-dialog-in 180ms ease both; }
+.ws-dialog { width: min(480px,calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: min(820px,calc(100dvh - 40px)); margin: auto; padding: 0; border: 1px solid var(--ws-border); border-radius: 20px; color: var(--ws-text); background: var(--ws-panel); box-shadow: 0 32px 100px rgba(0,0,0,.4); font: 14px/1.5 var(--ws-font); overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; animation: ws-dialog-in 180ms ease backwards; }
 .ws-dialog-wide { width: min(680px,calc(100vw - 32px)); }
 .ws-dialog::backdrop { background: rgba(0,0,0,.62); backdrop-filter: blur(5px); }
 .ws-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 22px 14px; position: sticky; top: 0; z-index: 2; background: var(--ws-panel); }

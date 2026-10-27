@@ -84,37 +84,37 @@ export default function initialize(scope, context) {
     {
       id: 1,
       price: "$3.99",
-      image: "./images/startai.jpg",
+      image: "/images/startai.jpg",
       alt: "StartAI Pack",
     },
     {
       id: 2,
       price: "$9.99",
-      image: "./images/aiexplorer.jpg",
+      image: "/images/aiexplorer.jpg",
       alt: "AI Explorer Pack",
     },
     {
       id: 3,
       price: "$24.99",
-      image: "./images/procreatorai.jpg",
+      image: "/images/procreatorai.jpg",
       alt: "Pro Creator AI Pack",
     },
     {
       id: 4,
       price: "$49.99",
-      image: "./images/aimaster.jpg",
+      image: "/images/aimaster.jpg",
       alt: "AI Master Pack",
     },
     {
       id: 5,
       price: "$99.99",
-      image: "./images/unlimitedpower.jpg",
+      image: "/images/unlimitedpower.jpg",
       alt: "Power Credits Pack",
     },
     {
       id: 6,
       price: "$219.99",
-      image: "./images/aititan.jpg",
+      image: "/images/aititan.jpg",
       alt: "Titan Credits Pack",
     },
   ];
@@ -1641,7 +1641,7 @@ export default function initialize(scope, context) {
       name: "Gemini Pro",
       company: "Google",
       creator: "Google",
-      icon: "./images/google-gemini.svg",
+      icon: "/images/google-gemini.svg",
       desc: "Google's most powerful model for complex logical tasks, coding, and analyzing large texts.",
     },
     {
@@ -1649,7 +1649,7 @@ export default function initialize(scope, context) {
       name: "Gemini Flash",
       company: "Google",
       creator: "Google",
-      icon: "./images/google-gemini.svg",
+      icon: "/images/google-gemini.svg",
       desc: "A lightweight and lightning-fast model. Perfect for everyday tasks.",
     },
     {
@@ -1657,7 +1657,7 @@ export default function initialize(scope, context) {
       name: "Gemini Flash-Lite",
       company: "Google",
       creator: "Google",
-      icon: "./images/google-gemini.svg",
+      icon: "/images/google-gemini.svg",
       desc: "Google's fastest model. Perfect for quick answers.",
     },
     {
@@ -1665,7 +1665,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-5.1",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "a highly efficient AI model by OpenAI that introduces adaptive reasoning, allowing it to dynamically shift between a fast, lightweight chat mode and a deep, stepwise thinking mode",
     },
     {
@@ -1673,7 +1673,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-5",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "OpenAI's flagship multimodal AI model family, featuring advanced deep reasoning, significantly reduced hallucination rates, and native integration for text, images, and audio.",
     },
     {
@@ -1681,7 +1681,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-5 Mini",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "OpenAI's lightweight, efficiency-focused AI model. It is designed to deliver high-speed text and image processing, tool use, and strong coding capabilities at a fraction of the cost and latency of flagship models, making it ideal for high-volume tasks and multi-agent workflows.",
     },
     {
@@ -1689,7 +1689,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-4.1",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "high-speed, cost-effective AI model family by OpenAI. The series includes the flagship model, a low-latency Mini, and an exceptionally cheap Nano.",
     },
     {
@@ -1697,7 +1697,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-4 Mini",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "OpenAI’s fastest, most cost-effective small AI model. Designed for high-volume, low-latency tasks, it combines advanced textual intelligence and multimodal reasoning (text + image input) with massive affordability, making it ideal for apps, chatbots, and focused workflows.",
     },
     {
@@ -1705,7 +1705,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-o1",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "a cutting-edge AI model by OpenAI with exceptional reasoning capabilities.",
     },
     {
@@ -1713,7 +1713,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-o3 Reasoning",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "a highly advanced AI model by OpenAI designed for complex reasoning tasks.",
     },
     {
@@ -1721,7 +1721,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-4o",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "the latest flagship AI model by OpenAI with enhanced multimodal capabilities.",
     },
     {
@@ -1729,7 +1729,7 @@ export default function initialize(scope, context) {
       name: "Claude Sonnet 4.6",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "the latest flagship AI model by Anthropic with improved reasoning and safety features.",
     },
     {
@@ -1737,7 +1737,7 @@ export default function initialize(scope, context) {
       name: "Claude Sonnet 4.5",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "a highly capable AI model by Anthropic designed for complex tasks.",
     },
     {
@@ -1745,7 +1745,7 @@ export default function initialize(scope, context) {
       name: "Claude Opus 4.6",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "highly advanced, agentic reasoning model released by Anthropic. It is celebrated for its industry-leading capabilities in complex knowledge work, deep research, and multi-step tasks.",
     },
     {
@@ -1753,7 +1753,7 @@ export default function initialize(scope, context) {
       name: "Claude Opus 4.5",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "Anthropic's flagship frontier AI model designed for complex reasoning, long-horizon agent workflows, and professional software engineering.",
     },
     {
@@ -1761,7 +1761,7 @@ export default function initialize(scope, context) {
       name: "Claude Haiku 4.5",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "Anthropic's flagship compact AI model. Designed for extreme speed and cost-efficiency, it matches the coding and reasoning capabilities of previous heavyweight models (like Sonnet 4) at a fraction of the cost.",
     },
     {
@@ -1769,7 +1769,7 @@ export default function initialize(scope, context) {
       name: "Claude Haiku 3",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "Anthropic's fastest and most compact AI model. It is specifically designed for ultra-low-latency, high-volume, and cost-efficient tasks like batch processing, rapid text summarization, and responsive customer support.",
     },
     {
@@ -1777,7 +1777,7 @@ export default function initialize(scope, context) {
       name: "DALL-E Image",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/dalle-text.png",
+      icon: "/images/dalle-text.png",
       desc: "A model for creating images based on text descriptions.",
     },
     {
@@ -1785,7 +1785,7 @@ export default function initialize(scope, context) {
       name: "Kling Video",
       company: "Kuaishou Technology",
       creator: "Kuaishou Technology",
-      icon: "./images/kling-video.svg",
+      icon: "/images/kling-video.svg",
       desc: "the latest flagship AI model by Kuaishou Technology with enhanced multimodal capabilities.",
     },
   ];

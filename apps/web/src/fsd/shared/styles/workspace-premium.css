@@ -111,7 +111,7 @@
 .ws-sidebar-active-indicator { border-radius: 10px; transition: transform 260ms var(--gx-ease), width 260ms var(--gx-ease), height 260ms var(--gx-ease), opacity 160ms ease; }
 .ws-sidebar-section-heading { min-height: 32px; padding: 0 4px 0 10px; }
 .ws-sidebar-section-heading h2, .ws-sidebar-section-label, .ws-sidebar-inner .ws-section-toggle { font-size: 12px !important; font-weight: 560 !important; color: var(--gx-muted) !important; letter-spacing: .01em; }
-.ws-sidebar-inner .ws-section-toggle svg { transition: transform 240ms var(--gx-ease); }
+.ws-sidebar-inner .ws-section-toggle svg { transition: opacity 160ms ease, transform 240ms var(--gx-ease); }
 .ws-sidebar-inner .ws-section-toggle[aria-expanded="true"] svg { transform: rotate(90deg); }
 .ws-sidebar-section-heading .ws-section-actions { opacity: .0; transition: opacity 160ms; }
 .ws-sidebar-section-heading:hover .ws-section-actions, .ws-sidebar-section-heading:focus-within .ws-section-actions { opacity: 1; }
@@ -377,7 +377,7 @@
 .workspace-route-content .wp-skeleton { border: 0 !important; border-radius: 18px !important; background: linear-gradient(90deg, var(--gx-surface) 0%, var(--gx-surface-2) 40%, var(--gx-elevated) 50%, var(--gx-surface-2) 60%, var(--gx-surface) 100%) !important; background-size: 250% 100% !important; animation: gx-shimmer 1.8s linear infinite !important; }
 
 /* ---------- Dialogs, menus, tooltips, toasts ---------- */
-.ws-dialog { border: 1px solid var(--gx-border-strong) !important; border-radius: 22px !important; background: var(--gx-surface-2) !important; box-shadow: var(--gx-shadow-lg) !important; animation: gx-dialog-in 340ms var(--gx-ease) both !important; }
+.ws-dialog { border: 1px solid var(--gx-border-strong) !important; border-radius: 22px !important; background: var(--gx-surface-2) !important; box-shadow: var(--gx-shadow-lg) !important; animation: gx-dialog-in 340ms var(--gx-ease) backwards !important; }
 .ws-dialog::backdrop { background: rgba(3, 5, 5, .62) !important; backdrop-filter: blur(8px) saturate(.9) !important; animation: gx-fade 260ms ease both; }
 .ws-dialog-header { background: var(--gx-surface-2) !important; }
 .ws-dialog-header h2 { font: 620 19px/1.25 var(--gx-display) !important; letter-spacing: -.03em !important; }

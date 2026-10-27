@@ -26,6 +26,9 @@ export interface WorkspaceProject {
   id: number;
   name: string;
   instructions?: string | null;
+  /** Sidebar glyph and tint; null is the plain folder in the text colour. */
+  icon?: string | null;
+  color?: string | null;
   files?: WorkspaceFile[];
   pinnedAt?: string | null;
   presetId?: number | null;

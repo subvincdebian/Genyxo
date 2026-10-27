@@ -186,6 +186,10 @@ export function WorkspaceTooltip({ label, shortcut, children, side = "right", di
     tip.current.style.top = `${next.top}px`;
     tip.current.style.visibility = "visible";
     setPosition({ ...next, visibility: "visible" });
+    // While a dialog's entrance animation runs it contains fixed descendants;
+    // place the tip again once it settles.
+    const settling = tip.current.closest("dialog")?.getAnimations() || [];
+    if (settling.length) void Promise.all(settling.map((animation) => animation.finished)).then(() => { const rect = ref.current?.getBoundingClientRect(); if (rect && tip.current?.dataset.state === "open") setAnchor(rect); }, () => undefined);
   }, [anchor, label, shortcut, side]);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   useEffect(() => {
