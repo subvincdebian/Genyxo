@@ -15,7 +15,9 @@ export type WorkspaceKind =
   | "library-hidden"
   | "connection"
   | "preferences"
-  | "request";
+  | "request"
+  | "task"
+  | "share";
 
 @Entity("chat_workspace_records")
 @Index("IDX_workspace_owner_kind", ["userId", "kind"])

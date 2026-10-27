@@ -67,10 +67,14 @@ test("plugins have independent catalog scopes and skills create a personal prese
   await expect(page).toHaveURL(/\/chat/);
 });
 
-test("scheduled tasks explain genuine unavailable runtime", async ({ page }) => {
+test("scheduled starts empty with recommendations and a task composer", async ({ page }) => {
   await workspace(page); await page.goto("/scheduled");
-  await expect(page.getByText("Scheduler is not configured", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Create task", exact: true })).toBeDisabled();
+  await expect(page.getByText(/No active tasks/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add Morning briefing", exact: true })).toBeVisible();
+  const create = page.getByRole("button", { name: "Create task", exact: true });
+  await expect(create).toBeDisabled();
+  await page.getByLabel("Describe a task").fill("Every morning at 8 send me the weather");
+  await expect(create).toBeEnabled();
 });
 
 test("workspace forms explain missing values and focus the first invalid field", async ({ page }) => {

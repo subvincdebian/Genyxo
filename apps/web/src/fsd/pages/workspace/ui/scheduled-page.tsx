@@ -1,30 +1,133 @@
 "use client";
 
-import { useState } from "react";
-import { workspaceRequest, useWorkspace } from "@/features/workspace";
-import { WorkspaceDialog, WorkspaceIcon, WorkspaceTooltip } from "@/shared/ui/workspace";
-import { ConfirmDelete, Field, Form, FormFooter, jsonBody, ResourceState, useAction, useLabels, useResource } from "./page-tools";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { createTask, describeTask, loadSavedPlaces, openTask, useWorkspace, workspaceRequest, type ScheduledTask, type TaskStatus } from "@/features/workspace";
+import { WorkspaceIcon } from "@/shared/ui/workspace";
+import { useLabels } from "./page-tools";
 
-type ScheduledTask = { id: number; name: string; prompt: string; model: string; projectId?: number | null; timezone: string; schedule: string; nextRunAt?: string; paused: boolean; lastRunAt?: string; lastError?: string };
-type ScheduledResponse = { items: ScheduledTask[]; available: boolean; reason?: string };
+type Recipe = { id: string; icon: ReactNode; title: string; hint: string; prompt: string; repeat: ScheduledTask["schedule"]["repeat"]; time: string; weekday?: number; location?: boolean };
+const glyph = (path: string) => <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={path} /></svg>;
+const RECIPES: Recipe[] = [
+  { id: "morning", icon: glyph("M10 3v1.5M4.3 5.3l1 1M15.7 5.3l-1 1M3 11h1.5M15.5 11H17M6.5 11a3.5 3.5 0 0 1 7 0M3 15h14"), title: "Morning briefing", hint: "Weather, the drive to work and local news every morning", repeat: "weekdays", time: "08:00", location: true, prompt: "Give me a short morning briefing for my area: today's weather (call genyxo_weather), the usual drive or transit time to @Work if I saved it, and the 3 most important local news with sources. Keep it brief and friendly." },
+  { id: "news", icon: glyph("M4 4.5h9.5v11H5.5A1.5 1.5 0 0 1 4 14V4.5ZM13.5 7.5H16V14a1.5 1.5 0 0 1-1.5 1.5M6.5 7.5h4.5M6.5 10h4.5M6.5 12.5h3"), title: "Evening news digest", hint: "The day's top headlines with sources", repeat: "daily", time: "19:00", prompt: "Search the web and give me the 5 most important news stories of the day, one or two sentences each, with sources." },
+  { id: "weekend", icon: glyph("M5 3.5v2M15 3.5v2M3.5 7.5h13M4.5 5h11a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM7 11h2M11 11h2M7 14h2"), title: "Weekend ideas", hint: "Events and places near you every Friday", repeat: "weekly", weekday: 5, time: "17:00", location: true, prompt: "Suggest 5 ideas for this weekend near me: events, places to visit and somewhere good to eat, with the weather forecast. Use the map and web search, and include sources." },
+  { id: "tech", icon: glyph("M7 3.5h6M10 3.5V6M5.5 6h9a1 1 0 0 1 1 1v7.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM8 10h.01M12 10h.01M8 13h4"), title: "Weekly AI roundup", hint: "What happened in AI and tech this week", repeat: "weekly", weekday: 1, time: "09:00", prompt: "Search the web and summarise the most important AI and tech news of the past week: models, products and research, with sources." },
+];
+const FILTERS: { id: TaskStatus; label: string }[] = [{ id: "active", label: "Active" }, { id: "paused", label: "Paused" }, { id: "completed", label: "Completed" }];
+const pad = (value: number) => String(value).padStart(2, "0");
+/** The next date with this weekday (0 = Sunday), today included. */
+const nextWeekday = (weekday: number) => { const date = new Date(); date.setDate(date.getDate() + ((weekday - date.getDay() + 7) % 7)); return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`; };
+const position = () => new Promise<{ lat: number; lng: number } | null>((resolve) => {
+  if (!navigator.geolocation) return resolve(null);
+  navigator.geolocation.getCurrentPosition((found) => resolve({ lat: found.coords.latitude, lng: found.coords.longitude }), () => resolve(null), { timeout: 8000, maximumAge: 600_000 });
+});
 
+/**
+ * Scheduled, as in ChatGPT: describe a task in your own words (the model sets
+ * it up in a new chat), start from a recommendation, and see your tasks by state.
+ */
 export function WorkspaceScheduledPage() {
-  const l = useLabels(); const resource = useResource<ScheduledResponse>("scheduled"); const action = useAction();
-  const [edit, setEdit] = useState<ScheduledTask | "new" | null>(null); const [deleting, setDeleting] = useState<ScheduledTask | null>(null);
-  const available = resource.data?.available === true;
-  const mutate = async (path: string, init?: RequestInit) => { const result = await workspaceRequest(path, init); resource.reload(); return result; };
-  const formatTime = (value?: string, timezone?: string) => { if (!value) return l("notScheduled", "Not scheduled"); const date = new Date(value); if (Number.isNaN(date.getTime())) return value; try { return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short", timeZone: timezone }).format(date); } catch { return date.toLocaleString(); } };
-  return <section className="wp-page wp-scheduled" aria-labelledby="scheduled-title"><header className="wp-page-heading"><div><p className="wp-eyebrow">{l("yourWorkspace", "Your workspace")}</p><h1 id="scheduled-title">{l("scheduled", "Scheduled")}</h1><p className="wp-muted">{l("scheduledHint", "Keep recurring work on your calendar.")}</p></div><button className="wp-primary" disabled={!available} onClick={() => setEdit("new")}><WorkspaceIcon name="plus" size={17} />{l("createTask", "Create task")}</button></header>
-    <ResourceState icon="calendar" loading={resource.loading} error={resource.error} retry={resource.reload} empty={available && !resource.data?.items?.length} emptyTitle={l("noTasks", "No scheduled tasks yet")} emptyText={l("noTasksHint", "Create a task with a prompt, model, and schedule.")} />
-    {!resource.loading && !resource.error && !available && <div className="wp-unavailable"><span className="wp-app-icon"><WorkspaceIcon name="clock" size={28} /></span><h2>{l("schedulingUnavailable", "Scheduling is unavailable")}</h2><p>{resource.data?.reason || l("schedulerUnconfigured", "Scheduled execution has not been configured for this workspace.")}</p><button onClick={resource.reload}>{l("checkAvailability", "Check availability")}</button></div>}
-    {action.error && <p className="wp-error" role="alert">{action.error}</p>}
-    <div className="wp-task-list" aria-busy={resource.loading}>{resource.data?.items?.map((task) => <article className="wp-task" key={task.id}><span className="wp-app-icon"><WorkspaceIcon name={task.paused ? "pause" : "clock"} size={24} /></span><div className="wp-task-copy"><h2>{task.name}</h2><p>{task.prompt}</p><dl><div><dt>{l("nextRun", "Next run")}</dt><dd>{task.paused ? l("paused", "Paused") : formatTime(task.nextRunAt, task.timezone)}</dd></div><div><dt>{l("timezone", "Time zone")}</dt><dd>{task.timezone}</dd></div><div><dt>{l("model", "Model")}</dt><dd>{task.model}</dd></div>{task.lastRunAt && <div><dt>{l("lastRun", "Last run")}</dt><dd>{formatTime(task.lastRunAt, task.timezone)}</dd></div>}</dl>{task.lastError && <p className="wp-error">{task.lastError}</p>}</div><div className="wp-task-actions"><button disabled={!available || action.busy} onClick={() => void action.run(() => mutate(`scheduled/${task.id}`, jsonBody({ paused: !task.paused }, "PATCH")))}>{task.paused ? l("resume", "Resume") : l("pause", "Pause")}</button><button disabled={!available} onClick={() => setEdit(task)}>{l("edit", "Edit")}</button><WorkspaceTooltip label={`${l("delete", "Delete")} ${task.name}`} side="bottom"><button className="wp-icon-button" aria-label={`${l("delete", "Delete")} ${task.name}`} onClick={() => setDeleting(task)}><WorkspaceIcon name="trash" size={17} /></button></WorkspaceTooltip></div></article>)}</div>
-    {edit && <ScheduledEditor task={edit === "new" ? null : edit} onClose={() => setEdit(null)} onSave={(body) => mutate(`scheduled${edit === "new" ? "" : `/${edit.id}`}`, jsonBody(body, edit === "new" ? "POST" : "PATCH"))} />}
-    {deleting && <ConfirmDelete name={deleting.name} onClose={() => setDeleting(null)} onDelete={() => mutate(`scheduled/${deleting.id}`, { method: "DELETE" })} />}
+  const l = useLabels();
+  const workspace = useWorkspace();
+  const [tasks, setTasks] = useState<ScheduledTask[] | null>(null);
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState<TaskStatus>("active");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [showRecipes, setShowRecipes] = useState(true);
+  const [draft, setDraft] = useState("");
+  const [adding, setAdding] = useState("");
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const load = () => workspaceRequest<{ items: ScheduledTask[] }>("scheduled").then((data) => { setTasks(data.items || []); setError(""); }, (caught) => { setTasks((current) => current ?? []); setError(caught.message); });
+    void load();
+    document.addEventListener("genyxo:task-updated", load);
+    document.addEventListener("genyxo:generation-finished", load);
+    return () => { document.removeEventListener("genyxo:task-updated", load); document.removeEventListener("genyxo:generation-finished", load); };
+  }, []);
+  useEffect(() => {
+    if (!filterOpen) return;
+    const outside = (event: PointerEvent) => { if (!filterRef.current?.contains(event.target as Node)) setFilterOpen(false); };
+    const key = (event: KeyboardEvent) => { if (event.key === "Escape") setFilterOpen(false); };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", key);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", key); };
+  }, [filterOpen]);
+
+  const describe = (event: FormEvent) => {
+    event.preventDefault();
+    const text = draft.trim();
+    if (!text) return;
+    workspace.startNewChat();
+    requestAnimationFrame(() => document.dispatchEvent(new CustomEvent("genyxo:composer-draft", { detail: { text, send: true } })));
+  };
+  const add = async (recipe: Recipe) => {
+    setAdding(recipe.id);
+    setError("");
+    try {
+      const [location, places] = await Promise.all([recipe.location ? position() : null, loadSavedPlaces().catch(() => [])]);
+      const date = recipe.weekday !== undefined ? nextWeekday(recipe.weekday) : undefined;
+      const task = await createTask({
+        title: recipe.title, prompt: recipe.prompt, repeat: recipe.repeat, time: recipe.time, date, location,
+        places: places.slice(0, 6).map((place) => ({ name: place.label, lat: place.lat, lng: place.lng, address: place.address })),
+      });
+      openTask(task.id);
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Couldn't add the task"); }
+    finally { setAdding(""); }
+  };
+
+  const shown = (tasks || []).filter((task) => task.status === filter);
+  const taken = new Set((tasks || []).map((task) => task.title));
+  const recipes = RECIPES.filter((recipe) => !taken.has(recipe.title));
+  return <section className="wp-page gx-sched" aria-labelledby="scheduled-title">
+    <header className="gx-sched-head">
+      <div>
+        <h1 id="scheduled-title">{l("scheduled", "Scheduled")}</h1>
+        <p>{l("scheduledLead", "Ask Genyxo to schedule tasks, set reminders or track updates")}</p>
+      </div>
+      <div className="gx-sched-filter" ref={filterRef}>
+        <button type="button" aria-haspopup="listbox" aria-expanded={filterOpen} onClick={() => setFilterOpen(!filterOpen)}>
+          <svg width="15" height="15" viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 4.5h13l-5 6v5l-3-1.5v-3.5l-5-6Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
+          {FILTERS.find((item) => item.id === filter)!.label}
+        </button>
+        {filterOpen && <div className="gx-task-pop is-right gx-task-list" role="listbox" aria-label="Show tasks">
+          {FILTERS.map((item) => <button key={item.id} type="button" role="option" aria-selected={item.id === filter} onClick={() => { setFilter(item.id); setFilterOpen(false); }}>{item.label}{item.id === filter && <WorkspaceIcon name="check" size={14} />}</button>)}
+        </div>}
+      </div>
+    </header>
+
+    <form className="gx-sched-composer" onSubmit={describe}>
+      <WorkspaceIcon name="clock" size={18} />
+      <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={l("describeTask", "Describe a task, e.g. “every morning at 8 send me the weather”")} aria-label="Describe a task" maxLength={2000} />
+      <button type="submit" aria-label="Create task" disabled={!draft.trim()}><WorkspaceIcon name="arrow-up" size={17} /></button>
+    </form>
+
+    {error && <p className="wp-error" role="alert">{error}</p>}
+
+    {recipes.length > 0 && <section className="gx-sched-section">
+      <button type="button" className="gx-sched-section-toggle" aria-expanded={showRecipes} onClick={() => setShowRecipes(!showRecipes)}>{l("recommended", "Recommended")}<WorkspaceIcon name="chevron-down" size={13} /></button>
+      {showRecipes && <ul className="gx-sched-rows">
+        {recipes.map((recipe) => <li key={recipe.id}>
+          <span className="gx-sched-tile">{recipe.icon}</span>
+          <span className="gx-sched-copy"><strong>{recipe.title}</strong><small>{recipe.hint}</small></span>
+          <button type="button" className="gx-sched-add" aria-label={`Add ${recipe.title}`} disabled={Boolean(adding)} onClick={() => void add(recipe)}>{adding === recipe.id ? <span className="gx-sched-spinner" /> : <WorkspaceIcon name="plus" size={18} />}</button>
+        </li>)}
+      </ul>}
+    </section>}
+
+    <section className="gx-sched-section">
+      <h2 className="gx-sched-section-title">{FILTERS.find((item) => item.id === filter)!.label}<span>{shown.length || ""}</span></h2>
+      {tasks === null ? <ul className="gx-sched-rows" aria-busy="true">{[0, 1].map((index) => <li key={index} className="is-loading"><span className="gx-sched-tile" /><span className="gx-sched-copy"><span /><span /></span></li>)}</ul>
+        : shown.length === 0 ? <p className="gx-sched-empty">{filter === "active" ? "No active tasks. Describe one above or add a recommendation." : `No ${filter} tasks.`}</p>
+        : <ul className="gx-sched-rows">
+          {shown.map((task) => <li key={task.id}>
+            <button type="button" className="gx-sched-row" onClick={() => openTask(task.id)}>
+              <span className="gx-sched-tile"><WorkspaceIcon name={task.status === "paused" ? "pause" : "clock"} size={18} /></span>
+              <span className="gx-sched-copy"><strong>{task.title}</strong><small>{task.running ? "Running…" : describeTask(task)}{task.lastError ? " · Last run failed" : ""}</small></span>
+              <WorkspaceIcon name="chevron" size={14} />
+            </button>
+          </li>)}
+        </ul>}
+    </section>
   </section>;
-}
-function ScheduledEditor({ task, onClose, onSave }: { task: ScheduledTask | null; onClose: () => void; onSave: (body: unknown) => Promise<unknown> }) {
-  const l = useLabels(); const workspace = useWorkspace(); const action = useAction(onClose);
-  const [name, setName] = useState(task?.name || ""); const [prompt, setPrompt] = useState(task?.prompt || ""); const [model, setModel] = useState(task?.model || "openai/gpt-4o-mini"); const [schedule, setSchedule] = useState(task?.schedule || ""); const [timezone, setTimezone] = useState(task?.timezone || workspace.preferences.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone); const [projectId, setProjectId] = useState(String(task?.projectId || ""));
-  return <WorkspaceDialog title={task ? l("editTask", "Edit task") : l("createTask", "Create task")} onClose={onClose}><Form noValidate className="wp-form" onSubmit={(event) => { event.preventDefault(); if (name.trim() && prompt.trim()) void action.run(() => onSave({ name: name.trim(), prompt: prompt.trim(), model: model.trim(), schedule: schedule.trim(), timezone, projectId: projectId ? Number(projectId) : null })); }}><Field label={l("name", "Name")}><input required autoFocus maxLength={200} value={name} onChange={(event) => setName(event.target.value)} /></Field><Field label={l("prompt", "Prompt")}><textarea className="resize-none" required rows={5} value={prompt} onChange={(event) => setPrompt(event.target.value)} /></Field><Field label={l("model", "Model")}><input required value={model} onChange={(event) => setModel(event.target.value)} /></Field><Field label={l("schedule", "Schedule")}><input required placeholder={l("scheduleExample", "For example: 0 9 * * 1-5")} value={schedule} onChange={(event) => setSchedule(event.target.value)} /></Field><Field label={l("timezone", "Time zone")}><input required value={timezone} onChange={(event) => setTimezone(event.target.value)} /></Field><Field label={l("project", "Project")}><select value={projectId} onChange={(event) => setProjectId(event.target.value)}><option value="">{l("noProject", "No project")}</option>{workspace.projects.map((project) => <option value={project.id} key={project.id}>{project.name}</option>)}</select></Field><FormFooter {...action} onClose={onClose} /></Form></WorkspaceDialog>;
 }
