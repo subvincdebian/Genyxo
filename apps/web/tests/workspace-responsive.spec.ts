@@ -16,7 +16,8 @@ test("workspace fits phones, tablets, short screens and wide desktops", async ({
     for (const route of ["chat", "library", "plugins", "scheduled"]) {
       await page.goto(`/${route}`);
       await expect(page.locator(".workspace-shell")).toBeVisible();
-      if (route !== "chat") await expect(page.locator(".wp-page")).toBeVisible();
+      // Library has its own page root (.lb-page); the other pages share .wp-page.
+      if (route !== "chat") await expect(page.locator(".wp-page, .lb-page").first()).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${route} overflow at ${width}×${height}`).toBe(true);
     }
     if (width < 768) await page.getByRole("button", { name: "Open navigation" }).click();

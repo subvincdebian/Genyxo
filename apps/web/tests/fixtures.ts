@@ -30,6 +30,10 @@ export async function authenticate(page: Page, role = "user") {
     { user, token, role },
   );
 }
+/** The URL key the fixture API gives chat `id`, as the backend's /c/<uuid>. */
+export const chatKey = (id: number) =>
+  `00000000-0000-4000-8000-${String(id).padStart(12, "0")}`;
+
 export async function mockApi(
   page: Page,
   override?: (route: Route, path: string) => Promise<boolean>,
@@ -64,6 +68,10 @@ export async function mockApi(
       json = [];
     else if (path.includes("/are-you-sure-you-want-to-admin/"))
       json = { data: [], meta: { page: 1, lastPage: 1, total: 0 } };
+    else if (/^\/chat\/workspace\/conversations\/\d+\/key$/.test(path)) {
+      const id = Number(path.split("/")[4]);
+      json = { id, publicId: chatKey(id) };
+    }
     await route.fulfill({ status: 200, json });
   });
 }

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { authenticate, mockApi, user, token } from "./fixtures";
+import { authenticate, chatKey, mockApi, user, token } from "./fixtures";
 
 test("admin preserves populated table cells, pagination and sanitized user content", async ({
   page,
@@ -151,7 +151,7 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
   await page.locator("#sendBtn").click();
   await expect(page.locator("#chatBox")).toContainText("Hello React");
   await expect(page.locator("#sidebar")).toContainText("Test conversation");
-  await expect(page).toHaveURL(/id=42/);
+  await expect(page).toHaveURL(new RegExp(`/c/${chatKey(42)}$`));
   expect(payload).toMatchObject({
     message: "Test message",
     files: [
@@ -392,7 +392,7 @@ test("support sends the current DTO and preserves a draft on server failure", as
   await page.goto("/support.html");
   await page.locator("#ticketSubject").fill("Payment issue");
   await page.locator("#ticketMessage").fill("Please check my payment.");
-  await page.locator("#ticketPriority").selectOption("HIGH");
+  await page.getByRole("radio", { name: "High" }).check();
   await page.getByRole("button", { name: "Submit Ticket" }).click();
   await expect(
     page.locator("#createTicketForm").getByRole("alert"),

@@ -125,15 +125,18 @@ test("an answer that finishes elsewhere marks the chat unread and offers notific
 test("during a voice call, a map the model finds slides up on the voice stage", async ({ page }) => {
   await setup(page);
   await page.goto("/maps");
-  await page.evaluate((data) => {
+  await page.evaluate(() => {
     const stage = document.createElement("div");
     stage.className = "gx-voice-stage";
     document.body.append(stage);
     document.documentElement.setAttribute("data-voice-mode", "");
-    document.dispatchEvent(new CustomEvent("genyxo:map-card", { detail: { element: document.createElement("div"), data } }));
-  }, card);
+  });
   const peek = page.locator(".gx-voice-stage .gx-voice-map");
-  await expect(peek.locator(".gx-mapcard-row", { hasText: "Novus" })).toBeVisible();
+  // The listener attaches on hydration; repeat the card until it is heard.
+  await expect(async () => {
+    await page.evaluate((data) => document.dispatchEvent(new CustomEvent("genyxo:map-card", { detail: { element: document.createElement("div"), data } })), card);
+    await expect(peek.locator(".gx-mapcard-row", { hasText: "Novus" })).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15000 });
   await page.evaluate(() => document.documentElement.removeAttribute("data-voice-mode"));
   await expect(peek).toHaveCount(0);
 });

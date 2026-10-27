@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { authenticate, mockApi } from "./fixtures";
+import { authenticate, chatKey, mockApi } from "./fixtures";
 
 const fence = "```";
 const html = [
@@ -469,7 +469,7 @@ test("live voice call streams mic audio to Gemini Live, shows the reply and file
   expect(toolAnswered).toBe(true);
   await expect.poll(() => saved).toMatchObject({ user: "Привіт, зроби файл hello.py" });
   expect(String(saved!.assistant)).toContain("```python file=hello.py");
-  await expect(page).toHaveURL(/id=77/);
+  await expect(page).toHaveURL(new RegExp(`/c/${chatKey(77)}$`));
   await expect(page.locator(".gx-voice-phase")).toHaveText("Listening", { timeout: 10000 });
   await page.locator(".gx-voice-end").click();
   await expect(page.locator(".gx-voice-stage")).toHaveCount(0);

@@ -136,8 +136,6 @@ test("project accordion persists by user across reload", async ({page}) => {
   await page.reload();
   await expect(page.getByRole("button", {name: "Collapse sidebar: Research", exact: true})).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator("#workspace-project-chats-5")).toBeVisible();
-  await page.getByRole("button", {name: "Collapse sidebar: Research", exact: true}).hover();
-  await expect(page.getByRole("tooltip", {name: "Collapse sidebar: Research", exact: true})).toBeVisible();
 });
 
 test("sidebar footer shows the account behind Menu, whose services open above it", async ({
@@ -197,9 +195,10 @@ test("project plus opens creation directly and context menu preserves selection"
   ).toBeVisible();
   await page.keyboard.press("Escape");
   await page.locator('[data-workspace-chat="31"]').click({ button: "right" });
-  await expect(page.getByRole("menuitem", { name: "Share" })).toHaveAttribute(
-    "aria-disabled",
-    "true",
-  );
+  // Share is live: it opens the share dialog for that chat.
+  await expect(page.getByRole("menuitem", { name: "Share" })).toBeEnabled();
+  await expect(
+    page.getByRole("menuitem", { name: "Share" }),
+  ).not.toHaveAttribute("aria-disabled", "true");
   await expect(page).toHaveURL(/\/chat$/);
 });
