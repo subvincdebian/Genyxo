@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { NotificationsPage } from "@/pages/notifications";
 import "@/shared/styles/profile.css";
 import "@/pages/notifications/ui/page.css";
+import { RouteScope } from "@/shared/ui/route-scope";
 
 export const metadata: Metadata = {
   openGraph: {
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
 };
 export default function Page() {
   return (
-    <>
+    <RouteScope name="notifications">
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -46,6 +47,6 @@ export default function Page() {
         }}
       />
       <NotificationsPage />
-    </>
+    </RouteScope>
   );
 }

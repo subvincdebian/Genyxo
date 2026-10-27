@@ -2,6 +2,11 @@
 import type { SyntheticEvent } from "react";
 
 import { Localized } from "@/shared/i18n";
+import styles from "./SupportFaqWindow.module.css";
+
+// features/support/model/support-inline1.js drives this panel: it toggles
+// #faqWindow.active, #faqMenu, #faqBackBtn and .faq-content-page.active, and
+// scrolls .faq-body. Those ids and hook classes must stay.
 export function SupportFaqWindow({
   dispatch,
   ready,
@@ -9,117 +14,71 @@ export function SupportFaqWindow({
   dispatch: (name: string, event: SyntheticEvent<Element>) => unknown;
   ready: boolean;
 }) {
+  const topics = [
+    { action: "support-0", key: "faq.general", label: "General Questions" },
+    { action: "support-1", key: "faq.subscription", label: "Credits and Payment" },
+    { action: "support-2", key: "faq.models", label: "Models (GPT, Gemini)" },
+    { action: "support-3", key: "faq.tech", label: "Technical problems" },
+  ];
   return (
-    <div id="faqWindow">
-      {"\n        "}
-      <div className="faq-header">
-        {"\n            "}
+    <aside
+      id="faqWindow"
+      className={styles.window}
+      aria-labelledby="faqWindowTitle"
+    >
+      <div className={styles.header}>
         <button
+          type="button"
           disabled={!ready}
           id="faqBackBtn"
-          className="faq-icon-btn"
+          className={styles.iconButton}
           style={{ visibility: "hidden" }}
+          aria-label="Back"
         >
-          {"\n                "}
-          <i className="fas fa-arrow-left"></i>{" "}
+          <i className="fas fa-arrow-left" aria-hidden="true"></i>
         </button>
-        {"\n            "}
         <Localized
           as="span"
           translationKey="faq.title"
-          className="faq-title"
+          className={`${styles.title} faq-title`}
+          id="faqWindowTitle"
           data-i18n="faq.title"
         >
           {"Help & FAQ"}
         </Localized>
-        {"\n            "}
-        <button disabled={!ready} id="faqCloseBtn" className="faq-icon-btn">
-          {"\n                "}
-          <i className="fas fa-times"></i>{" "}
+        <button
+          type="button"
+          disabled={!ready}
+          id="faqCloseBtn"
+          className={styles.iconButton}
+          aria-label="Close"
+        >
+          <i className="fas fa-times" aria-hidden="true"></i>
         </button>
-        {"\n        "}
       </div>
-      {"\n\n        "}
-      <div className="faq-body">
-        {"\n            \n            "}
-        <div id="faqMenu" className="faq-menu">
-          {"\n                "}
-          <div
-            className="faq-menu-item"
-            onClick={(event) => dispatch("support-0", event)}
-          >
-            {"\n                    "}
-            <Localized
-              as="span"
-              translationKey="faq.general"
-              className="faq-item-title"
-              data-i18n="faq.general"
+
+      <div className={`${styles.body} faq-body`}>
+        <div id="faqMenu" className={styles.menu}>
+          {topics.map((topic) => (
+            <button
+              key={topic.action}
+              type="button"
+              className={styles.topic}
+              onClick={(event) => dispatch(topic.action, event)}
             >
-              {"General Questions"}
-            </Localized>
-            {"\n                    "}
-            <span className="faq-arrow">{"❯"}</span>
-            {"\n                "}
-          </div>
-          {"\n                "}
-          <div
-            className="faq-menu-item"
-            onClick={(event) => dispatch("support-1", event)}
-          >
-            {"\n                    "}
-            <Localized
-              as="span"
-              translationKey="faq.subscription"
-              className="faq-item-title"
-              data-i18n="faq.subscription"
-            >
-              {"Credits and Payment"}
-            </Localized>
-            {"\n                    "}
-            <span className="faq-arrow">{"❯"}</span>
-            {"\n                "}
-          </div>
-          {"\n                "}
-          <div
-            className="faq-menu-item"
-            onClick={(event) => dispatch("support-2", event)}
-          >
-            {"\n                    "}
-            <Localized
-              as="span"
-              translationKey="faq.models"
-              className="faq-item-title"
-              data-i18n="faq.models"
-            >
-              {"Models (GPT, Gemini)"}
-            </Localized>
-            {"\n                    "}
-            <span className="faq-arrow">{"❯"}</span>
-            {"\n                "}
-          </div>
-          {"\n                "}
-          <div
-            className="faq-menu-item"
-            onClick={(event) => dispatch("support-3", event)}
-          >
-            {"\n                    "}
-            <Localized
-              as="span"
-              translationKey="faq.tech"
-              className="faq-item-title"
-              data-i18n="faq.tech"
-            >
-              {"Technical problems"}
-            </Localized>
-            {"\n                    "}
-            <span className="faq-arrow">{"❯"}</span>
-            {"\n                "}
-          </div>
-          {"\n            "}
+              <Localized
+                as="span"
+                translationKey={topic.key}
+                data-i18n={topic.key}
+              >
+                {topic.label}
+              </Localized>
+              <i className="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+          ))}
         </div>
-        {"\n\n            "}
-        <div id="page-general" className="faq-content-page">
-          {"\n                "}
+
+        <div id="page-general" className={`${styles.page} faq-content-page`}>
           <Localized
             as="h4"
             translationKey="faq.general_title"
@@ -127,7 +86,6 @@ export function SupportFaqWindow({
           >
             {"What is Genyxo AI?"}
           </Localized>
-          {"\n                "}
           <Localized
             as="p"
             translationKey="faq.general_text"
@@ -137,7 +95,6 @@ export function SupportFaqWindow({
               "Genyxo AI is a platform that combines the best neural networks in a single interface..."
             }
           </Localized>
-          {"\n                \n                "}
           <Localized
             as="h4"
             translationKey="faq.safe_title"
@@ -145,7 +102,6 @@ export function SupportFaqWindow({
           >
             {"Is my data safe?"}
           </Localized>
-          {"\n                "}
           <Localized
             as="p"
             translationKey="faq.safe_text"
@@ -155,11 +111,12 @@ export function SupportFaqWindow({
               "We transmit your prompts to neural networks via secure corporate API channels. According to our agreements, your data is not used to train global models. However, we still recommend that you do not enter your passwords or bank card information in the chat."
             }
           </Localized>
-          {"\n            "}
         </div>
-        {"\n\n            "}
-        <div id="page-subscription" className="faq-content-page">
-          {"\n                "}
+
+        <div
+          id="page-subscription"
+          className={`${styles.page} faq-content-page`}
+        >
           <Localized
             as="h4"
             translationKey="faq.tokens_title"
@@ -167,7 +124,6 @@ export function SupportFaqWindow({
           >
             {"How do Credits work?"}
           </Localized>
-          {"\n                "}
           <Localized
             as="p"
             translationKey="faq.tokens_text"
@@ -177,7 +133,6 @@ export function SupportFaqWindow({
               "You purchase a package of credits that are spent on each message. The amount spent depends on two factors: the chosen model and the length of the conversation.."
             }
           </Localized>
-          {"\n                "}
           <Localized
             as="h4"
             translationKey="faq.tokens_title"
@@ -185,7 +140,6 @@ export function SupportFaqWindow({
           >
             {"How much does one message cost?"}
           </Localized>
-          {"\n                "}
           <Localized
             as="p"
             translationKey="faq.tokens_text"
@@ -193,19 +147,16 @@ export function SupportFaqWindow({
           >
             {"Different models cost differently:"}
             <br />
-            {"\n                • "}
+            {"• "}
             <b>{"GPT-4o / Claude 3 Opus:"}</b>
             {" High cost (smart models)."}
             <br />
-            {"\n                • "}
+            {"• "}
             <b>{"GPT-3.5 / Gemini Flash:"}</b>
             {" Low cost (fast models)."}
             <br />
-            {
-              "\n                The exact price is displayed next to the model selection."
-            }
+            {"The exact price is displayed next to the model selection."}
           </Localized>
-          {"\n\n                "}
           <Localized
             as="h4"
             translationKey="faq.tokens_title"
@@ -213,7 +164,6 @@ export function SupportFaqWindow({
           >
             {"Do credits burn out?"}
           </Localized>
-          {"\n                "}
           <Localized
             as="p"
             translationKey="faq.tokens_text"
@@ -223,7 +173,6 @@ export function SupportFaqWindow({
               "No! Purchased credit packages remain on your balance forever until you spend them. You can return to them even after a year."
             }
           </Localized>
-          {"\n\n                "}
           <Localized
             as="h4"
             translationKey="faq.tokens_title"
@@ -231,7 +180,6 @@ export function SupportFaqWindow({
           >
             {"What to do if you run out of credit?"}
           </Localized>
-          {"\n                "}
           <Localized
             as="p"
             translationKey="faq.tokens_text"
@@ -241,11 +189,9 @@ export function SupportFaqWindow({
               'The chat will be paused. You need to click the "Top Up" button in the menu to purchase a new package.'
             }
           </Localized>
-          {"\n            "}
         </div>
-        {"\n\n            "}
-        <div id="page-models" className="faq-content-page">
-          {"\n                "}
+
+        <div id="page-models" className={`${styles.page} faq-content-page`}>
           <Localized
             as="h4"
             translationKey="faq.models_diff"
@@ -253,39 +199,29 @@ export function SupportFaqWindow({
           >
             {"What is the difference between the models?"}
           </Localized>
-          {"\n                "}
           <p>
             {
               "GPT-4 is better suited for logic and code. Gemini works great with large texts. Sora generates video."
             }
           </p>
-          {"\n            "}
         </div>
-        {"\n\n            "}
-        <div id="page-errors" className="faq-content-page">
-          {"\n                "}
+
+        <div id="page-errors" className={`${styles.page} faq-content-page`}>
           <h4>{"Why is the chat not responding?"}</h4>
-          {"\n                "}
           <p>
             {
               'Check your internet connection or refresh the page. If the issue persists, click the "Report a Bug" button below.'
             }
           </p>
-          {"\n            "}
         </div>
-        {"\n\n        "}
       </div>
-      {"\n\n        "}
-      <div className="faq-footer">
-        {"\n            "}
-        <a href="/support.html" className="faq-report-btn">
-          {"\n                "}
-          <i className="fas fa-bug" style={{ marginRight: "8px" }}></i>
-          {" Report a Bug\n            "}
+
+      <div className={styles.footer}>
+        <a href="#createTicketForm" className={styles.report}>
+          <i className="fas fa-bug" aria-hidden="true"></i>
+          {"Report a Bug"}
         </a>
-        {"\n        "}
       </div>
-      {"\n    "}
-    </div>
+    </aside>
   );
 }

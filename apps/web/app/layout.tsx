@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { Viewport } from "next";
 import { LanguageProvider } from "@/shared/i18n";
 import "@/shared/styles/tailwind.css";
+import "@/shared/styles/theme.css";
 import "@/shared/styles/avatar.css";
 export const viewport: Viewport = {
   width: "device-width",

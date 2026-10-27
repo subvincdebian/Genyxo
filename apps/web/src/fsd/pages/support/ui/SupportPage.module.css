@@ -1,0 +1,24 @@
+/* The Support route's root. Document-level styling (tokens, body margin) comes
+   from shared/styles/theme.css; everything else is scoped to this subtree. */
+.page {
+  min-height: 100dvh;
+  background:
+    radial-gradient(900px 420px at 50% -120px, var(--gx-accent-soft), transparent 70%),
+    var(--gx-bg);
+  color: var(--gx-text);
+  color-scheme: dark;
+  font-family: var(--gx-font);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+}
+
+:global([data-theme="light"]) .page {
+  color-scheme: light;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}

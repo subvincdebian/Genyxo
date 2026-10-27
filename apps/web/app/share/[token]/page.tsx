@@ -60,7 +60,7 @@ export default async function SharedChatPage({ params }: Props) {
   const chat = await loadSharedChat(token);
   if (!chat) notFound();
   const shared = new Date(chat.sharedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  return <div className="gx-share">
+  return <div className="gx-share gx-route-share">
     <header className="gx-share-bar">
       <Link href="/" className="gx-share-brand" aria-label="Genyxo home"><img src="/images/logo.svg" alt="" width={26} height={26} /><span>Genyxo</span></Link>
       <Link href="/chat" className="gx-share-cta">Try Genyxo</Link>

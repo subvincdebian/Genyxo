@@ -1,24 +1,6 @@
 /* Shared workspace geometry and interaction tokens. Sidebar survives route changes. */
-:root {
-  --ws-bg: #0d0f0f;
-  --ws-sidebar-bg: #000000;
-  --ws-panel: #191d1c;
-  --ws-text: #ececec;
-  --ws-muted: #a3a3a3;
-  --ws-border: rgba(255,255,255,.085);
-  --ws-hover: rgba(255,255,255,.055);
-  --ws-selection: rgba(255,255,255,.10);
-  --ws-accent: #b4b4b4;
-  --ws-danger: #f0897c;
-  --ws-glass: rgba(35,35,35,.94);
-  --ws-font: Arial, Helvetica, sans-serif;
-}
-[data-theme="light"] {
-  --ws-bg: #fafbf9; --ws-sidebar-bg: #f0f2ef; --ws-panel: #fff;
-  --ws-text: #1c2521; --ws-muted: #68736d; --ws-border: rgba(20,40,30,.13);
-  --ws-hover: rgba(20,40,30,.045); --ws-selection: rgba(20,40,30,.09);
-  --ws-accent: #525252; --ws-danger: #b83a2e; --ws-glass: rgba(248,250,247,.94);
-}
+:root { --ws-danger: #f0897c; }
+[data-theme="light"] { --ws-danger: #b83a2e; }
 .workspace-shell { display: grid; grid-template-columns: var(--ws-sidebar-width,280px) minmax(0,1fr); width: 100%; height: var(--app-height,100dvh); min-height: 0; overflow: hidden; color: var(--ws-text); background: var(--ws-bg); font-family: var(--ws-font); transition: grid-template-columns 260ms cubic-bezier(.2,.7,.2,1); }
 .workspace-shell.is-collapsed { grid-template-columns: 64px minmax(0,1fr); }
 .workspace-shell[data-resizing] { transition: none; cursor: col-resize; user-select: none; }
