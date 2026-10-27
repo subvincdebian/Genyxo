@@ -32,6 +32,7 @@ async function workspace(page: Page, stream?: (route: import("@playwright/test")
     if (path === "/chat/workspace") { await route.fulfill({ json: { conversations: [], projects: [{ id: 3, name: "Launch plan", pinnedAt: null }], preferences: { timezone: "UTC", timezoneInitialized: true }, capabilities: {} } }); return true; }
     if (path.startsWith("/chat/workspace/library")) { await route.fulfill({ json: { items: [{ id: 9, name: "Brief.md", type: "document", content: "# Brief\nShip it." }], folders: [], hasMore: false } }); return true; }
     if (path === "/chat/workspace/presets") { await route.fulfill({ json: { items: [{ id: 5, name: "Copy editor", description: "Tightens prose" }] } }); return true; }
+    if (path === "/integrations") { await route.fulfill({ json: { categories: [], encryptionAvailable: true, plugins: [{ id: "github", name: "GitHub", description: "Repositories and issues", status: "connected" }, { id: "notion", name: "Notion", description: "Pages", status: "available" }] } }); return true; }
     if (path === "/chat/stream" && stream) { await stream(route); return true; }
     return false;
   });
@@ -152,30 +153,29 @@ test("Edit on a failed answer puts the question back in the composer", async ({ 
   await expect(page.locator("#chatBox .user-message")).toHaveCount(0);
 });
 
-test("add menu filters, opens hover flyouts and attaches a sketch", async ({ page }) => {
+test("add menu filters, opens sub-pages and attaches a sketch", async ({ page }) => {
   await workspace(page);
   await page.locator("#plusBtn").click();
-  const menu = page.locator(".gx-plus-menu");
-  await expect(menu.locator(".gx-plus-item")).toHaveCount(8);
+  const palette = page.locator(".gx-cp");
+  await expect(palette.locator(".gx-cp-row")).toHaveCount(11);
   await page.keyboard.type("canvas");
-  await expect(menu.locator(".gx-plus-item")).toHaveCount(1);
-  await menu.locator(".gx-plus-search input").fill("");
+  await expect(palette.locator(".gx-cp-row")).toHaveCount(1);
+  await palette.locator(".gx-cp-search input").fill("");
 
-  // Flyouts open on hover beside their item; no "back" row exists.
-  await menu.locator(".ws-submenu-trigger", { hasText: "Project" }).hover();
-  const flyout = page.locator(".ws-submenu");
-  await expect(flyout).toBeVisible();
-  await expect(page.getByRole("button", { name: /back/i })).toHaveCount(0);
-  await flyout.locator(".gx-plus-item", { hasText: "Launch plan" }).click();
+  // Sub-lists replace the root list, with a back row on top.
+  await palette.locator(".gx-cp-row", { hasText: "Project" }).click();
+  await expect(palette.locator(".gx-cp-back")).toHaveText("Projects");
+  await palette.locator(".gx-cp-row", { hasText: "Launch plan" }).click();
   await expect(page.locator(".ws-toast")).toContainText("Working in Launch plan");
+  await expect(palette).toHaveCount(0);
 
   await page.locator("#plusBtn").click();
-  await menu.locator(".ws-submenu-trigger", { hasText: "From Library" }).hover();
-  await page.locator(".ws-submenu .gx-plus-item", { hasText: "Brief.md" }).click();
+  await palette.locator(".gx-cp-row", { hasText: "From Library" }).click();
+  await palette.locator(".gx-cp-row", { hasText: "Brief.md" }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { attachedFiles: File[] }).attachedFiles.map((file) => file.name))).toEqual(["Brief.md"]);
 
   await page.locator("#plusBtn").click();
-  await menu.locator(".gx-plus-item", { hasText: "Draw a sketch" }).click();
+  await palette.locator(".gx-cp-row", { hasText: "Draw" }).click();
   const surface = await page.locator(".gx-sketch-canvas").boundingBox();
   expect(surface).not.toBeNull();
   await page.mouse.move(surface!.x + 30, surface!.y + 30);
@@ -184,6 +184,145 @@ test("add menu filters, opens hover flyouts and attaches a sketch", async ({ pag
   await page.mouse.up();
   await page.getByRole("button", { name: "Attach sketch" }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { attachedFiles: File[] }).attachedFiles.length)).toBe(2);
+});
+
+test("@ mentions sit inline in the text, delete as a whole and ride along on send", async ({ page }) => {
+  const bodies: string[] = [];
+  await workspace(page, async (route) => { bodies.push(route.request().postData() || ""); await route.fulfill({ status: 200, headers: { "content-type": "text/event-stream" }, body: sse("Done.") }); });
+  const input = page.locator("#userInput");
+  await input.click();
+  await page.keyboard.type("Check @git");
+  const palette = page.locator(".gx-cp");
+  await expect(palette.locator(".gx-cp-row")).toHaveCount(1);
+  await page.keyboard.press("Enter");
+  await expect(palette).toHaveCount(0);
+  await expect(input).toHaveValue("Check @GitHub ");
+  await expect(page.locator(".gx-tok", { hasText: "GitHub" })).toBeVisible();
+
+  await page.keyboard.type("issues with @copy");
+  await expect(palette.locator(".gx-cp-row", { hasText: "Copy editor" })).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(input).toHaveValue("Check @GitHub issues with @Copy editor ");
+
+  // Backspace removes a mention in one go; typing it again brings it back.
+  await page.keyboard.press("Backspace");
+  await page.keyboard.press("Backspace");
+  await expect(input).toHaveValue("Check @GitHub issues with ");
+  await expect(page.locator(".gx-tok")).toHaveCount(1);
+  await page.keyboard.type("@copy");
+  await expect(palette.locator(".gx-cp-row", { hasText: "Copy editor" })).toBeVisible();
+  await page.keyboard.press("Enter");
+
+  // Escape closes the list and leaves the typed text alone.
+  await page.keyboard.type("@zz");
+  await expect(palette.locator(".gx-cp-empty")).toHaveText("No matches");
+  await page.keyboard.press("Escape");
+  await expect(palette).toHaveCount(0);
+  await expect(input).toHaveValue("Check @GitHub issues with @Copy editor @zz");
+  for (let index = 0; index < 4; index++) await page.keyboard.press("Backspace");
+
+  await page.keyboard.press("Enter");
+  await expect.poll(() => bodies.length).toBe(1);
+  const body = JSON.parse(bodies[0]);
+  expect(body.message).toBe("Check @GitHub issues with @Copy editor");
+  expect(body.presetId).toBe(5);
+  await expect(page.locator(".gx-tok")).toHaveCount(0);
+});
+
+test("the add menu search finds installed plugins and skills and inserts them at the caret", async ({ page }) => {
+  await workspace(page);
+  const input = page.locator("#userInput");
+  await input.fill("Ship it with");
+  await page.locator("#plusBtn").click();
+  await page.keyboard.type("git");
+  const palette = page.locator(".gx-cp");
+  await expect(palette.locator(".gx-cp-label", { hasText: "Plugins" })).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(input).toHaveValue("Ship it with @GitHub ");
+  await expect(page.locator(".gx-tok", { hasText: "GitHub" })).toBeVisible();
+});
+
+test("a long prompt moves the buttons below the text and can expand to full height", async ({ page }) => {
+  await workspace(page);
+  const form = page.locator("#chatForm");
+  const input = page.locator("#userInput");
+  await input.click();
+  await page.keyboard.type("Short");
+  await expect(form).not.toHaveClass(/is-multiline/);
+  await expect(page.locator(".gx-expand-btn")).toHaveCount(0);
+
+  await page.keyboard.press("Shift+Enter");
+  await expect(form).toHaveClass(/is-multiline/);
+  const text = await input.boundingBox(), plus = await page.locator("#plusBtn").boundingBox();
+  expect(plus!.y).toBeGreaterThan(text!.y + text!.height - 4);
+
+  // Expand shows from the second line on and stays put while more lines arrive.
+  const expand = page.locator(".gx-expand-btn");
+  await expect(expand).toBeVisible();
+  for (let index = 0; index < 8; index++) await page.keyboard.press("Shift+Enter");
+  await expect(expand).toBeVisible();
+  await expand.click();
+  await expect(form).toHaveClass(/is-expanded/);
+  await expect(page.locator(".welcome-text")).toHaveCSS("max-height", "0px");
+  await expect.poll(async () => (await input.boundingBox())!.height).toBeGreaterThan(300);
+  // It fills the free height without pushing the page into a scroll.
+  await page.waitForTimeout(700);
+  const box = (await form.boundingBox())!;
+  expect(box.y + box.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+  await expand.click();
+  await expect(form).not.toHaveClass(/is-expanded/);
+  await expect.poll(async () => (await input.boundingBox())!.height).toBeLessThan(150);
+
+  await input.fill("");
+  await expect(form).not.toHaveClass(/is-multiline/);
+});
+
+test("/ runs commands and opens nested lists", async ({ page }) => {
+  await workspace(page);
+  const input = page.locator("#userInput");
+  await input.click();
+  await page.keyboard.type("/");
+  const palette = page.locator(".gx-cp");
+  await expect(palette.locator(".gx-cp-row", { hasText: "Model" })).toBeVisible();
+  await page.keyboard.type("proj");
+  await page.keyboard.press("Enter");
+  await expect(palette.locator(".gx-cp-back")).toHaveText("Projects");
+  await expect(input).toHaveValue("/");
+  // Backspace on an empty filter goes back instead of deleting the "/".
+  await page.keyboard.press("Backspace");
+  await expect(palette.locator(".gx-cp-back")).toHaveCount(0);
+  await expect(input).toHaveValue("/");
+  await page.keyboard.type("canvas");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".gx-canvas")).toHaveClass(/is-open/);
+  await expect(input).toHaveValue("");
+});
+
+test("drafts survive a reload for 24 hours, per chat", async ({ page }) => {
+  await workspace(page);
+  const input = page.locator("#userInput");
+  await input.click();
+  await page.keyboard.type("Half-written idea @git");
+  await expect(page.locator(".gx-cp-row", { hasText: "GitHub" })).toBeVisible();
+  await page.keyboard.press("Enter");
+  await page.reload();
+  await expect(input).toHaveValue("Half-written idea @GitHub ");
+  const mention = page.locator(".gx-tok", { hasText: "GitHub" });
+  await expect(mention).toBeVisible();
+
+  // A mention is a link to its plugin page.
+  await mention.click();
+  await expect(page).toHaveURL(/\/plugins\/github$/);
+
+  // An expired draft is dropped.
+  await page.evaluate(() => {
+    const key = Object.keys(localStorage).find((name) => name.startsWith("genyxo:draft:"))!;
+    const draft = JSON.parse(localStorage.getItem(key)!);
+    localStorage.setItem(key, JSON.stringify({ ...draft, savedAt: Date.now() - 25 * 60 * 60 * 1000 }));
+  });
+  await page.goto("/chat");
+  await expect(input).toHaveValue("");
+  await expect(page.locator(".gx-tok")).toHaveCount(0);
 });
 
 test("voice conversation detects the spoken language, answers in it and returns to listening", async ({ page }) => {
