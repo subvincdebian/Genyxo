@@ -23,6 +23,13 @@ export class ChatProject {
   @Column({ type: "text", nullable: true })
   instructions!: string | null;
 
+  /** Sidebar glyph and tint (see project-appearance); null is the plain folder. */
+  @Column({ type: "varchar", length: 24, nullable: true })
+  icon!: string | null;
+
+  @Column({ type: "varchar", length: 16, nullable: true })
+  color!: string | null;
+
   @Column({ type: "json", nullable: true })
   files!: IAttachedFile[] | null;
 

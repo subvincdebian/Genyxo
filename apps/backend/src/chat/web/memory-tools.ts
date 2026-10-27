@@ -64,6 +64,9 @@ export async function runMemoryTool(
   userId: number,
   name: string,
   args: Record<string, any>,
+  // A project chat sees only its project's memory, so it remembers and
+  // forgets there too; outside a project this is the personal memory.
+  projectId: number | null = null,
 ) {
   try {
     if (name === "genyxo_remember") {
@@ -73,7 +76,7 @@ export async function runMemoryTool(
         .slice(0, 300);
       if (!fact)
         return { output: { error: "Invalid arguments: fact is required" } };
-      const { items } = await workspace.listMemory(userId, null);
+      const { items } = await workspace.listMemory(userId, projectId);
       if (
         items.some(
           (item: any) =>
@@ -81,7 +84,7 @@ export async function runMemoryTool(
         )
       )
         return { output: { saved: false, note: "Already remembered" } };
-      await workspace.saveMemory(userId, { content: fact });
+      await workspace.saveMemory(userId, { content: fact, projectId });
       return { output: { saved: true }, markdown: fence("saved", fact) };
     }
     if (name === "genyxo_forget") {
@@ -90,7 +93,7 @@ export async function runMemoryTool(
         .trim();
       if (!about)
         return { output: { error: "Invalid arguments: about is required" } };
-      const { items } = await workspace.listMemory(userId, null);
+      const { items } = await workspace.listMemory(userId, projectId);
       const words = about.split(/\s+/).filter((word) => word.length > 2);
       const matches = items.filter((item: any) => {
         const content = String(item.content).toLowerCase();

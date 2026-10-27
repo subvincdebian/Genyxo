@@ -47,6 +47,11 @@ import { CircuitBreakerService } from "../common/resilience/circuit-breaker.serv
 import { CIRCUIT_BREAKER_NAMES } from "../common/resilience/circuit-breaker.constants";
 import { WorkspaceService } from "./workspace/workspace.service";
 import { extractDocxText } from "./workspace/project-files";
+import {
+  PROJECT_COLORS,
+  PROJECT_ICONS,
+  projectAppearance,
+} from "./project-appearance";
 import { randomUUID } from "crypto";
 import { IntegrationToolsService } from "../integrations/integration-tools.service";
 import { describeActionFences } from "../integrations/action-fence";
@@ -708,11 +713,14 @@ export class ChatService {
   }
 
   async listProjects(userId: number) {
-    const projects = await this.projectRepository!.find({
-      where: { userId },
-      order: { updatedAt: "DESC" },
-      take: 50,
-    });
+    // Sorted in memory: project rows carry their files' extracted text, too
+    // wide for MySQL's sort buffer.
+    const projects = (await this.projectRepository!.find({ where: { userId } }))
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      )
+      .slice(0, 50);
     return projects.map((project) => ({
       id: project.id,
       name: project.name,
@@ -737,6 +745,8 @@ export class ChatService {
       removedFileIds?: (string | number)[];
       pinned?: boolean;
       presetId?: number | null;
+      icon?: string | null;
+      color?: string | null;
     },
     id?: number,
   ) {
@@ -808,6 +818,14 @@ export class ChatService {
     if (input.pinned !== undefined)
       project.pinnedAt = input.pinned ? project.pinnedAt || new Date() : null;
     if (input.presetId !== undefined) project.presetId = input.presetId;
+    try {
+      const icon = projectAppearance(input.icon, PROJECT_ICONS, "icon");
+      const color = projectAppearance(input.color, PROJECT_COLORS, "color");
+      if (icon !== undefined) project.icon = icon;
+      if (color !== undefined) project.color = color;
+    } catch (error) {
+      throw new BadRequestException((error as Error).message);
+    }
     return this.projectRepository!.save(project);
   }
 
@@ -1620,11 +1638,17 @@ export class ChatService {
           res.write(
             `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
           );
+          // Read afresh: the chat may have moved into or out of a project.
+          const scope = await this.conversationRepository.findOne({
+            where: { id: conversation.id, userId },
+            select: ["id", "projectId"],
+          });
           const done = await runMemoryTool(
             this.workspaceService!,
             userId,
             name,
             input,
+            scope?.projectId ?? null,
           );
           if (done.markdown) await emit(done.markdown);
           return done.output;

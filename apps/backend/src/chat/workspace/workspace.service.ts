@@ -275,8 +275,31 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
     const limit = Math.max(1, Math.min(100, Number(query.limit) || 50));
     const search =
       typeof query.search === "string" ? query.search.trim().slice(0, 200) : "";
+    // Everything but contextSummary: the list never needs it, and wide rows
+    // make the ORDER BY below spill out of MySQL's sort buffer.
     const qb = this.conversations
       .createQueryBuilder("c")
+      .select(
+        [
+          "id",
+          "publicId",
+          "title",
+          "pinnedAt",
+          "archivedAt",
+          "lastActivityAt",
+          "titleSource",
+          "titleVersion",
+          "titleStatus",
+          "titleAttempts",
+          "titleLeaseUntil",
+          "presetId",
+          "summaryThroughMessageId",
+          "projectId",
+          "userId",
+          "createdAt",
+          "updatedAt",
+        ].map((column) => `c.${column}`),
+      )
       .where("c.userId = :userId", { userId });
     if (query.archived !== "all")
       qb.andWhere(
@@ -410,12 +433,18 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
     return { success: true };
   }
   async listProjects(userId: number) {
-    return (
-      await this.projects.find({
-        where: { userId },
-        order: { pinnedAt: "DESC", updatedAt: "DESC", id: "DESC" },
-      })
-    ).map((row) => this.serializeProject(row));
+    // Sorted here, not by MySQL: a project's JSON files carry extracted text,
+    // and a row larger than the sort buffer fails the whole query.
+    const time = (value: Date | null) =>
+      value ? new Date(value).getTime() : 0;
+    return (await this.projects.find({ where: { userId } }))
+      .sort(
+        (a, b) =>
+          time(b.pinnedAt) - time(a.pinnedAt) ||
+          time(b.updatedAt) - time(a.updatedAt) ||
+          b.id - a.id,
+      )
+      .map((row) => this.serializeProject(row));
   }
   serializeProject(row: ChatProject) {
     return {

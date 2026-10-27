@@ -173,12 +173,37 @@ describe("memory tools", () => {
     });
     expect(store.saveMemory).toHaveBeenCalledWith(7, {
       content: "Writes C++ in CLion",
+      projectId: null,
     });
     expect(saved.markdown).toContain('"action":"saved"');
     const again = await runMemoryTool(store as any, 7, "genyxo_remember", {
       fact: "lives in kyiv",
     });
     expect(again.output).toEqual({ saved: false, note: "Already remembered" });
+  });
+
+  it("keeps a project chat's memory inside its project", async () => {
+    const store = workspace();
+    await runMemoryTool(
+      store as any,
+      7,
+      "genyxo_remember",
+      { fact: "Ships on Fridays" },
+      12,
+    );
+    expect(store.listMemory).toHaveBeenCalledWith(7, 12);
+    expect(store.saveMemory).toHaveBeenCalledWith(7, {
+      content: "Ships on Fridays",
+      projectId: 12,
+    });
+    await runMemoryTool(
+      store as any,
+      7,
+      "genyxo_forget",
+      { about: "Kyiv" },
+      12,
+    );
+    expect(store.listMemory).toHaveBeenLastCalledWith(7, 12);
   });
 
   it("forgets matching facts", async () => {
