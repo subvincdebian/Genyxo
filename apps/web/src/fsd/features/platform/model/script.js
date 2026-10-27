@@ -464,9 +464,7 @@ export default function initialize(scope, context) {
       renderBadge(data.count);
     });
     socket.on("new_notification", (n) => {
-      if (typeof showToast === "function") {
-        showToast(`${n.title}: ${n.message}`, "info");
-      }
+      showToast(`${n.title}: ${n.message}`, "info");
       scope.document.dispatchEvent(
         new CustomEvent("genyxo:notification", {
           detail: n,
@@ -1428,7 +1426,7 @@ export default function initialize(scope, context) {
           )
           .join(""),
       );
-      renderPagination(Math.ceil(data.total / 5), page);
+      renderPagination({ totalPages: Math.ceil(data.total / 5), currentPage: page });
     } catch (err) {
       console.error("Failed to load transactions", err);
     }

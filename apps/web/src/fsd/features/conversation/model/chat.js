@@ -1,10 +1,6 @@
 // Behavior migrated from chat.js; resources are owned by the React mount.
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 import { chatKeyFromPath, chatPath, isChatPath, rememberChatKeys, resolveChatKey } from "@/shared/lib/chat-url";
 export default function initialize(scope, context) {
   let currentChatId = null;
@@ -588,17 +584,20 @@ export default function initialize(scope, context) {
     }
     return "";
   }
+  const XML_ENTITIES = { lt: "<", gt: ">", amp: "&", quot: '"', apos: "'" };
   function docxXmlToText(xml) {
-    return xml
+    let text = xml
       .replace(/<w:tab\/>/g, "\t")
       .replace(/<w:br\/>/g, "\n")
-      .replace(/<\/w:p>/g, "\n")
-      .replace(/<[^>]+>/g, "")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&amp;/g, "&")
-      .replace(/&quot;/g, '"')
-      .replace(/&apos;/g, "'")
+      .replace(/<\/w:p>/g, "\n");
+    // Until none are left, so split tags cannot reassemble.
+    for (let previous; previous !== text; ) {
+      previous = text;
+      text = text.replace(/<[^<>]*>/g, "");
+    }
+    // One pass, so "&amp;lt;" stays the text "&lt;".
+    return text
+      .replace(/&(lt|gt|amp|quot|apos);/g, (_match, name) => XML_ENTITIES[name])
       .replace(/\n{3,}/g, "\n\n")
       .trim();
   }
@@ -1490,7 +1489,7 @@ export default function initialize(scope, context) {
     return `${markdown.replace(/\s*$/, "")}\n\`\`\``;
   }
   function normalizeLooseCodeMarkdown(markdown = "") {
-    if (!markdown || markdown.includes("```")) return markdown || "";
+    if (!markdown || markdown.includes("```")) return markdown;
     const match = markdown.match(
       /(^|\n)(\s*)(<!doctype\s+html|<html[\s>]|<style[\s>]|<script[\s>])/i,
     );

@@ -1,9 +1,5 @@
 // Behavior migrated from chat-inline1; resources are owned by the React mount.
 
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 export default function initialize(scope, context) {
   function setTheme(theme) {
     const root = scope.document.documentElement;

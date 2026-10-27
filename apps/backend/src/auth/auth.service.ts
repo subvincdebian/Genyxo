@@ -191,23 +191,20 @@ export class AuthService {
         "This email already has an account. Sign in with its original method.",
       );
 
-    if (!user) {
-      let referrerId: number | null = null;
-      if (referralCode) {
-        const referrer =
-          await this.usersService.findByReferralCode(referralCode);
-        referrerId = referrer ? referrer.id : null;
-      }
-
-      user = await this.usersService.create({
-        email,
-        name: `${profile.firstName} ${profile.lastName}`,
-        avatar: profile.picture,
-        isEmailVerified: true,
-        referrerId,
-        [`${provider}Id`]: profile.id,
-      });
+    let referrerId: number | null = null;
+    if (referralCode) {
+      const referrer = await this.usersService.findByReferralCode(referralCode);
+      referrerId = referrer ? referrer.id : null;
     }
+
+    user = await this.usersService.create({
+      email,
+      name: `${profile.firstName} ${profile.lastName}`,
+      avatar: profile.picture,
+      isEmailVerified: true,
+      referrerId,
+      [`${provider}Id`]: profile.id,
+    });
     return this.login(user);
   }
 }
