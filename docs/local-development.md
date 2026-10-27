@@ -2,11 +2,16 @@
 
 The local stack runs MySQL, Redis, the NestJS backend, the Next.js frontend and Mailpit next to any other Docker project. Host ports: frontend `3001`, backend `3000`, MySQL `3307`, Redis `6380`, Mailpit `8025`.
 
-```bash
-docker compose -f docker-compose.dev.yml -f docker-compose.local.yml up -d --build
-```
+There are two modes:
 
-Stop it with `down` instead of `up -d --build`. Data stays in the `mysql_dev_data` volume.
+| Command             | Frontend and backend run as                             | Use it when                                                                                                                            |
+| ------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run local:up`  | Compiled builds (`node server.js`, `node dist/main.js`) | Using the site. Pages open instantly and both containers idle near 0% CPU. Code edits need `npm run local:up` again (about 2 minutes). |
+| `npm run local:dev` | `next dev` and `nest --watch` with file polling         | Editing code with hot reload. Each page compiles on its first visit (several seconds) and polling keeps the CPU busy.                  |
+
+`npm run local:up` adds `docker-compose.fast.yml` on top of the dev and local files. Both modes share the same database and container names, so switching is just running the other command.
+
+Stop the stack with `npm run local:down`. Data stays in the `mysql_dev_data` volume.
 
 ## Accounts and email
 
@@ -17,8 +22,10 @@ Sign-up requires email verification. Locally every email is caught by Mailpit at
 Keys live only in `apps/backend/.env`, which is git-ignored. A value that starts with `your_` counts as "not configured". After editing the file, recreate the backend so it reads the new values:
 
 ```bash
-docker compose -f docker-compose.dev.yml -f docker-compose.local.yml up -d --force-recreate app
+npm run local:up -- --force-recreate app
 ```
+
+(Use `local:dev` instead of `local:up` in hot-reload mode.)
 
 ### OpenRouter (chat models)
 

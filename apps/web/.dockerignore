@@ -18,3 +18,6 @@ Dockerfile*
 test-results
 playwright-report
 *.tsbuildinfo
+test-results*
+tests-live
+playwright-report*
