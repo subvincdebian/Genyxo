@@ -68,7 +68,7 @@ test("generated images show inline, audio plays in a card and video appears when
   const video = page.locator('.gx-media-card[data-kind="video"]');
   await expect(video).toHaveAttribute("data-status", "pending");
   await expect(video).toContainText("Rendering video");
-  await page.screenshot({ path: "../../docs/design/chat-media.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/chat-media.png", animations: "disabled" });
   await expect(video).toHaveAttribute("data-status", "ready", { timeout: 20_000 });
   await expect(video.locator("video")).toHaveAttribute("src", `/api/chat/media/${VIDEO}`);
 });

@@ -33,7 +33,7 @@ test("Overview opens beside its trigger and repeated clicks close menus", async 
   await add.click(); await expect(menu).toBeVisible();
   await add.click(); await expect(menu).toHaveCount(0);
   await trigger.click();
-  await page.screenshot({ path: "../../docs/design/workspace-premium-controls.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/workspace-premium-controls.png", animations: "disabled" });
 });
 
 test("icon controls have accessible tooltips with an exit transition and hover-only motion", async ({ page }) => {
@@ -48,7 +48,7 @@ test("icon controls have accessible tooltips with an exit transition and hover-o
   await expect(icon).toHaveCSS("animation-name", "gi-spin-gear");
   await expect(icon).toHaveCSS("animation-iteration-count", "1");
   await expect(icon).toHaveCSS("animation-duration", "0.9s");
-  await page.screenshot({ path: "../../docs/design/workspace-premium-tooltip.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/workspace-premium-tooltip.png", animations: "disabled" });
   await page.mouse.move(1100, 750);
   await expect(tooltip).toHaveAttribute("data-state", "closed");
   await expect(tooltip).toHaveCount(0);
@@ -77,5 +77,5 @@ test("Overview and tooltips stay inside narrow and short viewports", async ({ pa
   const menu = page.getByRole("menu"), box = (await menu.boundingBox())!;
   expect(box.x).toBeGreaterThanOrEqual(8);
   expect(box.x + box.width).toBeLessThanOrEqual(312);
-  await page.screenshot({ path: "../../docs/design/workspace-premium-controls-mobile.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/workspace-premium-controls-mobile.png", animations: "disabled" });
 });

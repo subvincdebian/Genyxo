@@ -74,7 +74,7 @@ test("catalog mirrors the ChatGPT layout with categories, rows and category page
   const rows = await popular.getByRole("listitem").evaluateAll((items) => items.map((item) => item.getBoundingClientRect().top));
   expect(rows[0]).toBe(rows[1]);
   await expect(page.getByRole("region", { name: "New & noteworthy" }).getByText("No public API")).toBeVisible();
-  await page.screenshot({ path: "../../docs/design/plugins-catalog.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/plugins-catalog.png", animations: "disabled" });
 
   await page.getByRole("button", { name: "Developer tools", exact: true }).click();
   const crumbs = page.getByRole("navigation", { name: "Breadcrumb" });
@@ -99,7 +99,7 @@ test("a row opens the plugin page with breadcrumbs, banner prompts, apps and con
   await expect(page.locator(".pl-prompt")).toHaveCount(3);
   await expect(page.getByText("Linear plugin page text unique to linear.")).toBeVisible();
   await expect(page.getByRole("heading", { name: /Apps\s*1/ })).toBeVisible();
-  await page.screenshot({ path: "../../docs/design/plugin-page.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/plugin-page.png", animations: "disabled" });
   await page.getByRole("button", { name: "Connect", exact: true }).click();
   await expect(page).toHaveURL(/linear\.example\.com\/oauth\/authorize\?client_id=dcr/);
   expect(state.requests).toContain("POST /integrations/linear/authorize");
@@ -143,7 +143,7 @@ test("Manage opens plugin settings: Allow policy, account, uses, tools and data;
   expect(Math.abs(tileBox!.y + tileBox!.height / 2 - (logoBox!.y + logoBox!.height / 2))).toBeLessThan(1);
   await page.getByRole("searchbox", { name: "Search plugins" }).focus();
   expect(await page.getByRole("searchbox", { name: "Search plugins" }).evaluate((element) => getComputedStyle(element).outlineStyle)).toBe("none");
-  await page.screenshot({ path: "../../docs/design/plugins-installed.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/plugins-installed.png", animations: "disabled" });
   await page.getByRole("region", { name: "Popular" }).getByRole("button", { name: "Actions for Linear" }).click();
   const menu = page.getByRole("menu");
   await expect(menu.getByRole("menuitem")).toHaveText(["Try now", "Manage", "Delete"]);
@@ -160,7 +160,7 @@ test("Manage opens plugin settings: Allow policy, account, uses, tools and data;
   await page.getByRole("menuitemradio", { name: /Allow low-risk actions/ }).click();
   await expect(page.getByRole("button", { name: "Allow low-risk actions" })).toBeVisible();
   expect(state.policy).toBe("low-risk");
-  await page.screenshot({ path: "../../docs/design/plugin-settings.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/plugin-settings.png", animations: "disabled" });
 
   await page.getByRole("link", { name: "View details" }).click();
   await expect(page).toHaveURL(/\/plugins\/linear$/);
@@ -198,7 +198,7 @@ test("phone width keeps the catalog, plugin page and settings in one column", as
     expect(await page.locator(".pl-page").evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBeTruthy();
   }
   await page.goto("/plugins/linear");
-  await page.screenshot({ path: "../../docs/design/plugin-page-mobile.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/plugin-page-mobile.png", animations: "disabled" });
 });
 
 test("light theme keeps rows legible", async ({ page }) => {
@@ -211,7 +211,7 @@ test("light theme keeps rows legible", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole("button", { name: "Developer tools", exact: true }).click();
   await expect(page.locator(".pl-list .gx-logo-on-light").first()).toBeVisible();
-  await page.screenshot({ path: "../../docs/design/plugins-catalog-light.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/plugins-catalog-light.png", animations: "disabled" });
 });
 
 test("a proposed email is a confirm card that sends only after Confirm", async ({ page }) => {
@@ -243,7 +243,7 @@ test("a proposed email is a confirm card that sends only after Confirm", async (
   await expect(action.locator("dd").first()).toHaveText("anna@example.com");
   await expect(action.locator(".gx-action-body")).toContainText("The plan is attached.");
   expect(calls).toEqual([]);
-  await page.screenshot({ path: "../../docs/design/plugins-confirm-card.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/plugins-confirm-card.png", animations: "disabled" });
   await action.getByRole("button", { name: "Confirm" }).click();
   await expect(action).toHaveAttribute("data-status", "done");
   await expect(action.getByRole("link", { name: /Open/ })).toHaveAttribute("href", "https://mail.google.com/mail/u/0/#sent/m1");

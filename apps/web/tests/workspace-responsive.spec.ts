@@ -30,9 +30,9 @@ test("workspace fits phones, tablets, short screens and wide desktops", async ({
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/chat");
   await expect(page.locator("#userInput")).toBeEnabled();
-  await page.screenshot({ path: "../../docs/design/workspace-desktop.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/workspace-desktop.png", animations: "disabled" });
   await page.setViewportSize({ width: 390, height: 660 });
   await page.getByRole("button", { name: "Open navigation" }).click();
   await expect(page.locator(".workspace-sidebar")).toBeVisible();
-  await page.screenshot({ path: "../../docs/design/workspace-mobile.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/workspace-mobile.png", animations: "disabled" });
 });

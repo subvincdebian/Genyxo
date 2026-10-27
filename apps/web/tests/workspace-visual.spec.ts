@@ -42,8 +42,8 @@ test("workspace headers and navigation keep their own geometry", async ({ page }
   expect(Math.abs(expand.x + expand.width / 2 - newChat.x - newChat.width / 2)).toBeLessThan(1);
   await page.keyboard.press("Control+Shift+s");
   await expect(page.locator(".workspace-sidebar")).toHaveCSS("width", "280px");
-  await page.screenshot({ path: "../../docs/design/workspace-aligned-desktop.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/workspace-aligned-desktop.png", animations: "disabled" });
   await page.setViewportSize({ width: 390, height: 760 });
   await page.getByRole("button", { name: "Open navigation" }).click();
-  await page.screenshot({ path: "../../docs/design/workspace-aligned-mobile.png", animations: "disabled" });
+  await page.screenshot({ path: "test-results/design/workspace-aligned-mobile.png", animations: "disabled" });
 });
