@@ -1,84 +1,67 @@
-# Genyxo 🚀
+# Genyxo
 
-## Repository setup
+Commercial AI platform built for a client, with a web interface for chat and AI-service integrations.
 
-Application code lives in [`apps/backend`](apps/backend/README.md) and
-[`apps/web`](apps/web/README.md). The root package coordinates commands and
-Git tooling; each application owns its dependencies and lockfile.
-See [architecture and ownership rules](docs/architecture.md).
+[Website](https://genyxo.com) · [Frontend](apps/web) · [Backend](apps/backend) · [Architecture](docs/architecture.md)
 
-Run these commands from the repository root (Node.js 22+):
+## Project at a glance
+
+- Responsive web interface, chat interactions, localization and account screens.
+- React, TypeScript and Next.js frontend, migrated from HTML, CSS and vanilla JavaScript.
+- NestJS/TypeScript backend with MySQL, TypeORM, Redis and external AI APIs.
+- Existing frontend controllers are retained for some complex interactions; the migration is not fully declarative React throughout.
+
+## My contribution
+
+Built the backend and most of the frontend, with occasional frontend help from another developer. My work included two frontend redesigns, mobile layouts, chat improvements, localization and API error handling.
+
+The migration to React/Next.js and complex integrations involved AI-assisted development. My current career focus is junior frontend development with React, TypeScript and JavaScript.
+
+## Where to start reviewing
+
+| Area | Source |
+| --- | --- |
+| Routes and layouts | [`apps/web/app`](apps/web/app) |
+| Page composition and UI | [`apps/web/src/fsd`](apps/web/src/fsd) |
+| Feature behavior and API integration | [`features`](apps/web/src/fsd/features) |
+| Frontend checks | [`apps/web/tests`](apps/web/tests) |
+| API application | [`apps/backend`](apps/backend) |
+
+## Local development
+
+Requires **Node.js 22+**, npm, MySQL and Redis. Each application has its own dependencies and lockfile.
+
+From the repository root:
 
 ```sh
 npm ci
 npm run deps:install
 cp apps/backend/.env.example apps/backend/.env
 cp apps/web/.env.example apps/web/.env.local
+```
+
+Configure the environment files and database/cache services, then start the backend and frontend in separate terminals:
+
+```sh
 npm run start:dev
-# In a second terminal:
+```
+
+```sh
 npm run web:dev
 ```
 
-Configure MySQL and Redis before starting the backend. To start the Docker
-development stack, use `./scripts/dev.sh up` or `./scripts/dev.ps1 -Action up`.
+Default local ports: backend **3000**, frontend **3001**. For Docker setup, proxy configuration and migration notes, see the [frontend guide](apps/web/README.md), [backend guide](apps/backend/README.md) and [deployment guide](DEPLOYMENT.md).
+
+## Checks
 
 ```sh
 npm run check
-npm run check:compose
 npm run test:tooling
 npm test -- --runInBand
+npm run test:web
 npm run build
-npm run contracts:sync
 ```
 
+Frontend browser tests require Playwright Chromium. External OAuth, payments and AI generation require configured services and credentials; fixture-based tests do not verify those integrations. The frontend guide documents remaining demo behavior and migration limitations.
+
 Existing `frontend:*` commands remain aliases for `web:*` commands.
-Deployment commands are documented in [DEPLOYMENT.md](DEPLOYMENT.md).
-
-`check` also checks repository ownership, exact path casing and package/lockfile
-consistency. Infrastructure tests use Helm 3.19 and Bash; PowerShell launcher
-tests run when `pwsh` is available. Compose validation uses public example
-configuration and does not require a running Docker daemon.
-
-The repository does not publish npm packages or run semantic-release. Releases
-use the tested commit SHA for container images; deployment requirements and
-backup procedures are documented in [DEPLOYMENT.md](DEPLOYMENT.md).
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-Production-success?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/Frontend-Next.js_/_React_/_Tailwind-black?style=for-the-badge" alt="Frontend" />
-  <img src="https://img.shields.io/badge/Backend-NestJS-E0234E?style=for-the-badge&logo=nestjs" alt="Backend" />
-</p>
-
-**Genyxo** is a commercial web platform designed to provide seamless, centralized access to various advanced AI models. The platform combines a lightweight, high-performance frontend with a robust, scalable, enterprise-grade backend architecture.
-
-🌐 **Live Demo:** [genyxo.com](https://genyxo.com)
-
----
-
-## 🌟 Key Features
-
-- **Multi-Model AI Integration:** Unified interface to interact with diverse AI APIs efficiently.
-- **High-Performance Caching:** Integrated **Redis** layer for session management and quick API response caching to minimize latency.
-- **Robust Database Management:** Structured and safe data persistence handling user records, history, and analytics using **MySQL** and **TypeORM**.
-- **Frontend:** Next.js App Router and React with Tailwind CSS, organized by FSD layers. See [frontend setup and migration notes](apps/web/README.md).
-- **Secure Architecture:** Implemented secure REST API endpoints, input validation, and protected environment configuration.
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **Next.js & React:** App Router pages and React components with FSD layers.
-- **Tailwind CSS:** Utilities alongside the original responsive styles to preserve the design.
-- **TypeScript:** Shared state, APIs and React components; compatibility controllers retain existing complex interactions.
-
-### Backend
-
-- **NestJS:** Node.js framework leveraging TypeScript for building efficient and maintainable server-side applications.
-- **TypeORM:** Object-Relational Mapper used for secure, declarative database queries and schema migrations.
-
-### Infrastructure & Databases
-
-- **MySQL:** Relational database management system for persistent storage.
-- **Redis:** In-memory data structure store used as a high-speed database cache and session store.
