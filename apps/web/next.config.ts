@@ -48,7 +48,7 @@ const config: NextConfig = {
           {
             key: "Permissions-Policy",
             value:
-              "camera=(), microphone=(self), geolocation=(), browsing-topics=()",
+              "camera=(), microphone=(self), geolocation=(self), browsing-topics=()",
           },
           {
             key: "Content-Security-Policy",
@@ -59,6 +59,8 @@ const config: NextConfig = {
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
               "connect-src 'self' ws: wss: http: https:",
+              // The map library renders tiles in a worker it starts from a blob.
+              "worker-src 'self' blob:",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

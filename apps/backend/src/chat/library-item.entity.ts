@@ -19,7 +19,8 @@ export class ChatLibraryItem {
   name!: string;
 
   @Column({ length: 20 })
-  type!: "image" | "video" | "audio" | "document";
+  /** "place": a saved map place; content holds {lat, lng, address?, kind?}. */
+  type!: "image" | "video" | "audio" | "document" | "place";
 
   @Column({ type: "text", nullable: true })
   url!: string | null;

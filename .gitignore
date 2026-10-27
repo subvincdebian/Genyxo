@@ -81,3 +81,6 @@ apps/web/.env*
 
 *.tsbuildinfo
 /apps/web/.next-*preview/
+
+# Copied from node_modules at build time (apps/web/scripts/copy-map-worker.mjs).
+apps/web/public/vendor/maplibre/
