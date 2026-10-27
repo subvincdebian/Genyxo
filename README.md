@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/subvincdebian/subvincdebian/main/assets/repo-Genyxo.svg" alt="Genyxo project overview" width="100%" />
+
 # Genyxo
 
 Commercial AI platform built for a client, with a web interface for chat and AI-service integrations.
