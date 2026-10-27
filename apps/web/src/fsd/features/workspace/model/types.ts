@@ -8,6 +8,8 @@ export interface WorkspaceFile {
 }
 export interface WorkspaceConversation {
   id: number;
+  /** URL key (/c/<uuid>); the numeric id never appears in the address bar. */
+  publicId?: string | null;
   title: string;
   projectId: number | null;
   pinnedAt?: string | null;

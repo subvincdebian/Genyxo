@@ -8,6 +8,7 @@ import { MapCardsHost, MapsHome } from "@/widgets/maps";
 import { MemoryManager, ReplyNotifier, RichCardsHost, TaskPanel, ThinkingOrbs } from "@/widgets/chat";
 import { WorkspaceIcon, WorkspaceTooltip, lockWorkspaceScroll } from "@/shared/ui/workspace";
 import { useLanguage } from "@/shared/i18n";
+import { isChatPath } from "@/shared/lib/chat-url";
 import { ChatPage } from "./ChatPage";
 import { WorkspaceSearch } from "./WorkspaceSearch";
 import { WorkspaceProjectDialog } from "./WorkspaceProjectDialog";
@@ -178,8 +179,8 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
       {!isMobile && <div className="workspace-sidebar-resizer" role="separator" tabIndex={0} aria-orientation="vertical" aria-label={t("workspace.resize_sidebar", "Resize sidebar")} aria-valuemin={0} aria-valuemax={SIDEBAR.max} aria-valuenow={collapsed ? 0 : sidebarWidth} onPointerDown={startResize} onDoubleClick={() => setRail(!collapsed)} onKeyDown={resizeByKey}/>}
     </aside>
     <div className="workspace-main" inert={mobileOpen ? true : undefined}>
-      <ChatPage workspace isChatRoute={pathname === "/chat" || pathname === "/maps"}>{children}</ChatPage>
-      <CanvasPanel active={pathname === "/chat" || pathname === "/maps"}/>
+      <ChatPage workspace isChatRoute={isChatPath(pathname) || pathname === "/maps"}>{children}</ChatPage>
+      <CanvasPanel active={isChatPath(pathname) || pathname === "/maps"}/>
       <MapCardsHost/>
       <ThinkingOrbs/>
       <ReplyNotifier/>
@@ -187,7 +188,7 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
       <MemoryManager/>
       <TaskPanel/>
       {pathname === "/maps" && <MapsHome/>}
-      {preset && pathname === "/chat" && <div className="workspace-preset-badge"><WorkspaceIcon name="sparkles" size={14}/><span>{preset.name}</span><WorkspaceTooltip label={t("workspace.remove_preset", "Remove skill")} side="bottom"><button className="ws-icon-btn" onClick={() => { document.dispatchEvent(new CustomEvent("genyxo:workspace-preset", { detail: { presetId: null } })); setPreset(null); }} aria-label={t("workspace.remove_preset", "Remove skill")}><WorkspaceIcon name="close" size={14}/></button></WorkspaceTooltip></div>}
+      {preset && isChatPath(pathname) && <div className="workspace-preset-badge"><WorkspaceIcon name="sparkles" size={14}/><span>{preset.name}</span><WorkspaceTooltip label={t("workspace.remove_preset", "Remove skill")} side="bottom"><button className="ws-icon-btn" onClick={() => { document.dispatchEvent(new CustomEvent("genyxo:workspace-preset", { detail: { presetId: null } })); setPreset(null); }} aria-label={t("workspace.remove_preset", "Remove skill")}><WorkspaceIcon name="close" size={14}/></button></WorkspaceTooltip></div>}
     </div>
     {searchOpen && <WorkspaceSearch onClose={() => setSearchOpen(false)}/>}
     {projectId !== null && <WorkspaceProjectDialog project={projects.find((item) => item.id === projectId)} onClose={() => setProjectId(null)}/>}

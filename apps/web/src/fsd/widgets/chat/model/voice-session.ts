@@ -6,6 +6,7 @@
 // genyxo:answer-token / genyxo:answer-done events.
 
 import { getVoiceName } from "./voice-preferences";
+import { openChatId } from "@/shared/lib/chat-url";
 import { startLiveSession, type LiveSession } from "./live-engine";
 
 export type VoicePhase = "idle" | "listening" | "thinking" | "speaking";
@@ -311,10 +312,7 @@ const onDone = (event: Event) => {
 // record → transcribe → chat → speech pipeline below.
 let live: LiveSession | null = null;
 
-const currentConversationId = () => {
-  const id = Number(new URL(window.location.href).searchParams.get("id"));
-  return Number.isInteger(id) && id > 0 ? id : undefined;
-};
+const currentConversationId = () => openChatId();
 
 // Enough to name the reply language in the voice picker; Gemini itself follows the speaker.
 function guessLanguage(text: string) {

@@ -1,4 +1,6 @@
+import { randomUUID } from "crypto";
 import {
+  BeforeInsert,
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -17,6 +19,15 @@ import { Message } from "./message.entity";
 export class Conversation {
   @PrimaryGeneratedColumn()
   id!: number;
+
+  /**
+   * Unguessable key for chat URLs (/c/<uuid>), as in ChatGPT. The numeric id
+   * stays internal; every lookup by key is still scoped to the owner.
+   * Nullable so rows from before this column get a key on first read.
+   */
+  @Index("IDX_conversation_public_id", { unique: true })
+  @Column({ type: "char", length: 36, nullable: true })
+  publicId!: string | null;
 
   @Column({ default: "New Chat" })
   title!: string;
@@ -74,4 +85,9 @@ export class Conversation {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @BeforeInsert()
+  assignPublicId() {
+    this.publicId ||= randomUUID();
+  }
 }

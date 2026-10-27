@@ -86,6 +86,18 @@ export class WorkspaceController {
   ) {
     return this.workspace.listConversations(req.user.id, query);
   }
+  @Get("conversations/key/:key") resolveConversationKey(
+    @Request() req: AuthRequest,
+    @Param("key") key: string,
+  ) {
+    return this.workspace.resolveConversationKey(req.user.id, key);
+  }
+  @Get("conversations/:id/key") conversationKey(
+    @Request() req: AuthRequest,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.workspace.conversationKey(req.user.id, id);
+  }
   @Patch("conversations/:id") patchConversation(
     @Request() req: AuthRequest,
     @Param("id", ParseIntPipe) id: number,

@@ -1033,7 +1033,14 @@ export class ChatService {
   async getUserConversations(userId: number) {
     return this.conversationRepository.find({
       where: { userId },
-      select: ["id", "title", "projectId", "createdAt", "updatedAt"],
+      select: [
+        "id",
+        "publicId",
+        "title",
+        "projectId",
+        "createdAt",
+        "updatedAt",
+      ],
       order: { updatedAt: "DESC" },
       take: 100,
     });

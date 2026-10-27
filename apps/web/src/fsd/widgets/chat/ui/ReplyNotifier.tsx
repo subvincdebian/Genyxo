@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { useWorkspace } from "@/features/workspace";
+import { isChatPath } from "@/shared/lib/chat-url";
 import { WorkspaceIcon } from "@/shared/ui/workspace";
 
 const DISMISS_KEY = "genyxo:notify-asked";
@@ -82,7 +83,7 @@ export function ReplyNotifier() {
         recent.current.set(id, Date.now());
       }
       const { conversations: chats, selectedChatId: open, pathname: route } = live.current;
-      const viewing = !document.hidden && (route === "/chat" || route === "/maps") && (id === null || id === open);
+      const viewing = !document.hidden && (isChatPath(route) || route === "/maps") && (id === null || id === open);
       if (viewing) return;
       chime();
       if (id !== null) document.dispatchEvent(new CustomEvent("genyxo:reply-unread", { detail: { id } }));

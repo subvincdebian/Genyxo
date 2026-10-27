@@ -22,6 +22,9 @@ import { Message } from "../message.entity";
 import { GeneratedMedia } from "../media/generated-media.entity";
 import { WorkspaceKind, WorkspaceRecord } from "./workspace-record.entity";
 
+const CHAT_KEY =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 type Input = Record<string, any>;
 const PRESETS = [
   {
@@ -294,6 +297,7 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
       .getMany();
     const hasMore = items.length > limit;
     items.splice(limit);
+    await this.ensurePublicIds(items);
     const output = await Promise.all(
       items.map(async (item) => {
         if (!search) return item;
@@ -323,6 +327,42 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
       }),
     );
     return { items: output, hasMore };
+  }
+  /** Gives chats created before public keys existed a key on first read. */
+  private async ensurePublicIds(rows: Conversation[]) {
+    await Promise.all(
+      rows
+        .filter((row) => !row.publicId)
+        .map(async (row) => {
+          row.publicId = randomUUID();
+          await this.conversations.update(
+            { id: row.id, userId: row.userId },
+            { publicId: row.publicId, updatedAt: row.updatedAt },
+          );
+        }),
+    );
+  }
+  /** The chat behind a /c/<key> URL, only for its owner: anyone else gets 404. */
+  async resolveConversationKey(userId: number, key: string) {
+    const row = CHAT_KEY.test(key)
+      ? await this.conversations.findOne({
+          where: { publicId: key.toLowerCase(), userId },
+          select: ["id", "publicId", "projectId", "archivedAt"],
+        })
+      : null;
+    if (!row) throw new NotFoundException("Chat not found");
+    return {
+      id: row.id,
+      publicId: row.publicId,
+      projectId: row.projectId,
+      archived: Boolean(row.archivedAt),
+    };
+  }
+  /** The URL key of one of the user's chats, e.g. right after it was created. */
+  async conversationKey(userId: number, id: number) {
+    const row = await this.conversation(userId, id);
+    await this.ensurePublicIds([row]);
+    return { id: row.id, publicId: row.publicId };
   }
   async patchConversation(userId: number, id: number, input: Input) {
     const row = await this.conversation(userId, id);

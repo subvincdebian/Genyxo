@@ -5,6 +5,7 @@ import {
   API_BASE_URL as API_ORIGIN,
   SOCKET_URL as SOCKET_ORIGIN,
 } from "@/shared/config";
+import { chatKeyFromPath, chatPath, isChatPath, rememberChatKeys, resolveChatKey } from "@/shared/lib/chat-url";
 export default function initialize(scope, context) {
   let currentChatId = null;
   let conversations = [];
@@ -131,11 +132,10 @@ export default function initialize(scope, context) {
     pdf: "application/pdf",
     docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   };
-  function updateUrl(id, push = false) {
-    if (context.workspaceManaged && scope.window.location.pathname !== "/chat") return;
+  // Chats live at /c/<key>, never at their numeric id (see shared/lib/chat-url).
+  async function updateUrl(id, push = false) {
+    if (context.workspaceManaged && !isChatPath(scope.window.location.pathname)) return;
     try {
-      const url = new URL(scope.window.location.href);
-      const currentId = url.searchParams.get("id");
       const normalizedId =
         id !== null &&
         id !== undefined &&
@@ -143,12 +143,13 @@ export default function initialize(scope, context) {
         String(id) !== "null"
           ? String(id)
           : null;
-      if (currentId === normalizedId) return;
-      if (normalizedId) {
-        url.searchParams.set("id", normalizedId);
-      } else {
-        url.searchParams.delete("id");
-      }
+      const path = normalizedId ? await chatPath(Number(normalizedId)) : "/chat";
+      // The key arrives asynchronously; drop it if another chat opened meanwhile.
+      if (!path || String(currentChatId ?? null) !== String(normalizedId)) return;
+      const url = new URL(scope.window.location.href);
+      if (url.pathname === path && !url.searchParams.has("id")) return;
+      url.pathname = path;
+      url.searchParams.delete("id");
       const state = {
         chatId: normalizedId,
       };
@@ -1693,7 +1694,7 @@ export default function initialize(scope, context) {
     scope.listen(card, "click", () => openInCanvas(artifact.content, artifact.language));
     const content = botBubble.querySelector(".message-content");
     content?.appendChild(card);
-    if (autoOpen && scope.window.location.pathname === "/chat") openInCanvas(artifact.content, artifact.language);
+    if (autoOpen && isChatPath(scope.window.location.pathname)) openInCanvas(artifact.content, artifact.language);
   }
   function toggleReadAloud(text, item) {
     const synth = scope.window.speechSynthesis;
@@ -2123,6 +2124,7 @@ export default function initialize(scope, context) {
         if (!snapshot.ok) throw new Error("Unable to load workspace");
         const data = await snapshot.json();
         conversations = Array.isArray(data.conversations) ? data.conversations : [];
+        rememberChatKeys(conversations);
         projects = Array.isArray(data.projects) ? data.projects : [];
         setActiveProject(activeProjectId);
         publishWorkspaceState();
@@ -2978,7 +2980,7 @@ export default function initialize(scope, context) {
       if (requestViewRevision === chatViewRevision) {
         sendBtn.disabled = false;
         userInput.disabled = false;
-        if (scope.window.location.pathname === "/chat") userInput.focus();
+        if (isChatPath(scope.window.location.pathname)) userInput.focus();
       }
       updateComposerState();
       if (activeSendController === controller) activeSendController = null;
@@ -3115,8 +3117,16 @@ export default function initialize(scope, context) {
         return;
       }
       const urlParams = new URLSearchParams(scope.window.location.search);
-      const chatIdFromUrl = urlParams.get("id");
+      let chatIdFromUrl = urlParams.get("id");
       await loadConversations();
+      if (scope.window.location.pathname.startsWith("/c/")) {
+        // Someone else's (or a made-up) key resolves to nothing: never load it.
+        const key = chatKeyFromPath(scope.window.location.pathname);
+        const found = key ? await resolveChatKey(key) : null;
+        chatIdFromUrl = found ? String(found.id) : null;
+        if (!found)
+          scope.document.dispatchEvent(new CustomEvent("genyxo:workspace-notify", { detail: { message: "Chat not found", type: "error" } }));
+      }
       if (chatIdFromUrl && chatIdFromUrl !== "null") {
         await selectChat(chatIdFromUrl);
       } else if (

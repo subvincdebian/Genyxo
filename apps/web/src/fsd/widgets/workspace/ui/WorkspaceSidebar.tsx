@@ -31,6 +31,7 @@ import {
   WorkspaceSubmenu,
   WorkspaceTooltip,
 } from "@/shared/ui/workspace";
+import { isChatPath } from "@/shared/lib/chat-url";
 import { groupSidebarConversations } from "../model/sidebar-groups";
 import { sidebarCopy } from "../model/sidebar-copy";
 import "./WorkspaceSidebar.css";
@@ -530,7 +531,7 @@ export function WorkspaceSidebar({
   function newChat(projectId?: number) {
     closeMenu();
     workspace.startNewChat(projectId);
-    if (pathname !== "/chat") router.push("/chat");
+    if (!isChatPath(pathname)) router.push("/chat");
     onCloseMobile();
   }
   function selectChat(id: number) {
@@ -722,7 +723,7 @@ export function WorkspaceSidebar({
         className={`ws-sidebar-row ws-chat-row${pending.has(entityKey(entity)) ? " is-pending" : ""}`}
         data-workspace-chat={chat.id}
         data-workspace-active={
-          pathname === "/chat" && selectedChatId === chat.id && !archived
+          isChatPath(pathname) && selectedChatId === chat.id && !archived
             ? "true"
             : undefined
         }
@@ -755,7 +756,7 @@ export function WorkspaceSidebar({
               selectChat(chat.id);
             }}
             aria-current={
-              selectedChatId === chat.id && pathname === "/chat"
+              selectedChatId === chat.id && isChatPath(pathname)
                 ? "page"
                 : undefined
             }
@@ -1643,7 +1644,7 @@ export function WorkspaceSidebar({
         <ShareDialog
           chatId={shareChat.id}
           title={shareChat.title}
-          livePreview={pathname === "/chat" && selectedChatId === shareChat.id}
+          livePreview={isChatPath(pathname) && selectedChatId === shareChat.id}
           onClose={() => setShareChat(null)}
         />
       )}

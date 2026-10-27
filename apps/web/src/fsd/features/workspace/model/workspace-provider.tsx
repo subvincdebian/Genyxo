@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { cachedChatPath, chatKeyFromPath, chatPath, rememberChatKeys, resolveChatKey } from "@/shared/lib/chat-url";
 import { useGeneratingChats } from "./generating-chats";
 import { workspaceRequest, type WorkspaceConversation, type WorkspacePreferences, type WorkspaceProject, type WorkspaceSnapshot } from "./types";
 
@@ -72,6 +73,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         result.preferences = await workspaceRequest<WorkspacePreferences>("preferences", { method: "PATCH", body: JSON.stringify({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC" }) });
       }
       if (generation.current !== current || !mounted.current) return;
+      rememberChatKeys(result.conversations);
       setSnapshot({ ...result, preferences: { ...defaults, ...result.preferences }, capabilities: result.capabilities || {} });
       setConversationHasMore(hasMore);
       document.dispatchEvent(new CustomEvent("genyxo:workspace-data", { detail: result }));
@@ -94,8 +96,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         const encoded = localStorage.getItem("authToken")?.split(".")[1];
         if (encoded) { const payload = JSON.parse(atob(encoded.replace(/-/g, "+").replace(/_/g, "/"))); setUserId(Number(payload.id || payload.sub) || null); }
       } catch { /* Identity is still verified by the API; storage personalization is optional. */ }
-      selected.current = Number(new URL(location.href).searchParams.get("id")) || null;
+      // /c/<key> resolves only for the owner; the legacy ?id= link still loads
+      // through the owner-checked history API and is rewritten to its key.
+      const key = chatKeyFromPath(location.pathname);
+      selected.current = key ? null : Number(new URL(location.href).searchParams.get("id")) || null;
       setSelectedChatId(selected.current);
+      if (key) void resolveChatKey(key).then((found) => {
+        if (!found || !mounted.current || selected.current !== null) return;
+        selected.current = found.id;
+        setSelectedChatId(found.id);
+      });
       void refresh();
     });
     const updated = () => { void refresh(); };
@@ -128,6 +138,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     paging.current = true; setLoadingMore(true);
     try {
       const page = await workspaceRequest<{ items: WorkspaceConversation[]; hasMore: boolean }>(`conversations?offset=${snapshot.conversations.length}&limit=50`);
+      rememberChatKeys(page.items);
       setSnapshot((previous) => ({ ...previous, conversations: [...previous.conversations, ...page.items.filter((item) => !previous.conversations.some((existing) => existing.id === item.id))] }));
       count.current = snapshot.conversations.length + page.items.length;
       setConversationHasMore(page.hasMore);
@@ -139,7 +150,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     selected.current = id;
     setSelectedChatId(id); setActiveProjectId(projectId);
     document.dispatchEvent(new CustomEvent("genyxo:workspace-select", { detail: { id, projectId } }));
-    router.push(`/chat?id=${id}`);
+    const path = cachedChatPath(id);
+    if (path) router.push(path);
+    else void chatPath(id).then((found) => { if (selected.current === id) router.push(found || "/chat"); });
   }, [router, snapshot.conversations, setActiveProjectId]);
   const startNewChat = useCallback((projectId?: number) => {
     selected.current = null; setSelectedChatId(null); setActiveProjectId(projectId || null);

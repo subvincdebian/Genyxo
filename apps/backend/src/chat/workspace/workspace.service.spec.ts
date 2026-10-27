@@ -120,6 +120,23 @@ describe("Workspace ownership and shared context", () => {
     ).rejects.toBeInstanceOf(NotFoundException);
     expect(conversations.rows[0].pinnedAt).toBeUndefined();
   });
+  it("opens a chat by its URL key only for the owner", async () => {
+    const { publicId } = await service.conversationKey(1, 4);
+    expect(publicId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(conversations.rows[0].updatedAt).toEqual(new Date(0));
+    await expect(
+      service.resolveConversationKey(1, publicId!),
+    ).resolves.toMatchObject({ id: 4, publicId });
+    await expect(
+      service.resolveConversationKey(2, publicId!),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.conversationKey(2, 4)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(service.resolveConversationKey(1, "4")).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
   it("pins and archives without changing message activity", async () => {
     await service.patchConversation(1, 4, { pinned: true, archived: true });
     expect(conversations.rows[0].pinnedAt).toBeInstanceOf(Date);
