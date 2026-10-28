@@ -141,6 +141,22 @@ export class UsersService {
     return null;
   }
 
+  async getSessionVersion(id: number): Promise<number> {
+    // Never cache revocation state: a revoked JWT must fail on its next request.
+    const runner =
+      this.usersRepository.manager.connection.createQueryRunner("master");
+    try {
+      const user = await runner.manager.findOne(User, {
+        where: { id },
+        select: ["id", "sessionVersion"],
+      });
+      if (!user) throw new NotFoundException("User not found");
+      return user.sessionVersion;
+    } finally {
+      await runner.release();
+    }
+  }
+
   async findByVerificationToken(token: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { verificationToken: token },
@@ -410,11 +426,12 @@ export class UsersService {
   async getUserTransactions(
     userId: number,
     paginationQuery: PaginationQueryDto,
+    type?: TransactionType,
   ) {
     const { page = 1, limit = 10 } = paginationQuery;
 
     const [items, total] = await this.transactionRepository.findAndCount({
-      where: { userId },
+      where: { userId, ...(type ? { type } : {}) },
       select: [
         "id",
         "amount",

@@ -57,6 +57,30 @@ describe("Workspace ownership and shared context", () => {
   let projects: ReturnType<typeof repository>;
   let library: ReturnType<typeof repository>;
   let media: ReturnType<typeof repository>;
+  it("includes response preferences even when saved memory is disabled", async () => {
+    records.rows.push({
+      id: 91,
+      userId: 1,
+      kind: "preferences",
+      recordKey: "default",
+      data: {
+        memory: false,
+        customInstructions: "Prefer short examples",
+        responseLanguage: "uk",
+      },
+    });
+    records.rows.push({
+      id: 92,
+      userId: 1,
+      kind: "memory",
+      recordKey: "secret",
+      data: { content: "Do not include this memory" },
+    });
+    const context = await service.getAdditionalContext(1, 4, 7);
+    expect(context).toContain("Prefer short examples");
+    expect(context).toContain("Preferred response language: uk");
+    expect(context).not.toContain("Do not include this memory");
+  });
   beforeEach(() => {
     conversations = repository([
       {

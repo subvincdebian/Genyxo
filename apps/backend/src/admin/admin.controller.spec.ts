@@ -30,6 +30,7 @@ describe("Admin API authorization after removing legacy HTML", () => {
         {
           provide: UsersService,
           useValue: {
+            getSessionVersion: async () => 0,
             findAuthUserById: async (id: number) => ({
               id,
               email: "fixture@example.test",

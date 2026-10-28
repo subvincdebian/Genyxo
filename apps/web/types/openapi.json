@@ -268,9 +268,107 @@
     "/profile/transactions": {
       "get": {
         "operationId": "ProfileController_getTransactions",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["PURCHASE", "SPEND", "REFUND"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/usage": {
+      "get": {
+        "operationId": "ProfileController_usage",
+        "parameters": [
+          {
+            "name": "period",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [7, 30, 90],
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/security": {
+      "get": {
+        "operationId": "ProfileController_security",
         "parameters": [],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/password": {
+      "post": {
+        "operationId": "ProfileController_password",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/logout-all": {
+      "post": {
+        "operationId": "ProfileController_logoutAll",
+        "parameters": [],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -1247,6 +1345,25 @@
       "UpdateProfileDto": {
         "type": "object",
         "properties": {}
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "writeOnly": true
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128,
+            "writeOnly": true,
+            "description": "At most 72 UTF-8 bytes (bcrypt limit)."
+          }
+        },
+        "required": ["currentPassword", "newPassword"]
       },
       "ProjectDto": {
         "type": "object",

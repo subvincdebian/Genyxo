@@ -21,6 +21,9 @@ export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Column({ type: "int", default: 0, select: false })
+  sessionVersion!: number;
+
   @Column({ unique: true, type: "varchar", length: 255 })
   email!: string;
 

@@ -8,6 +8,7 @@ export interface JwtPayload {
   email: string;
   sub: number;
   role: string;
+  sessionVersion?: number;
 }
 
 @Injectable()
@@ -34,6 +35,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user) {
       throw new UnauthorizedException("Unauthorized access");
+    }
+
+    if (
+      (payload.sessionVersion ?? 0) !==
+      (await this.usersService.getSessionVersion(payload.sub))
+    ) {
+      throw new UnauthorizedException("Session expired. Please sign in again.");
     }
 
     return {

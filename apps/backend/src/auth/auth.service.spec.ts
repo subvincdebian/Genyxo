@@ -133,6 +133,7 @@ describe("AuthService", () => {
           token === account.verificationToken ? account : null,
         ),
       findOneByEmail: jest.fn().mockResolvedValue(account),
+      getSessionVersion: jest.fn().mockResolvedValue(0),
       save: jest.fn().mockImplementation(async (value) => value),
     };
     const jwt = { sign: jest.fn().mockReturnValue("signed-token") };
