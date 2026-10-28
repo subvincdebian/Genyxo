@@ -47,6 +47,24 @@ async function signIn(page: Page, request: APIRequestContext) {
   ).toBeVisible();
   return account.access_token as string;
 }
+async function choose(page: Page, label: string, value: string) {
+  const names: Record<string, string> = {
+    uk: "Українська",
+    en: "English",
+    PURCHASE: "Purchases",
+    profile: "Profile",
+    personalization: "Personalization",
+    appearance: "Appearance",
+    security: "Security",
+    billing: "Credits & billing",
+    usage: "Usage",
+    referrals: "Referrals",
+  };
+  await page.getByRole("combobox", { name: label, exact: true }).click();
+  await page
+    .getByRole("option", { name: names[value] || value, exact: true })
+    .click();
+}
 test.describe.configure({ mode: "serial" });
 test.beforeAll(async ({ request }) => {
   const response = await request.post(`${backend}/auth/register`, {
@@ -168,9 +186,7 @@ test("personalization persists and unsaved navigation preserves the draft", asyn
   await page
     .getByLabel("Custom instructions", { exact: true })
     .fill("Use practical examples and short paragraphs.");
-  await page
-    .getByLabel("Response language", { exact: true })
-    .selectOption("uk");
+  await choose(page, "Response language", "uk");
   await page.getByRole("switch", { name: "Use saved memories" }).click();
   await page.getByRole("button", { name: "Save preferences" }).click();
   await expect(page.getByRole("status")).toContainText("Preferences saved");
@@ -225,7 +241,7 @@ test("fractional usage, filtering and pagination reflect the real ledger", async
     .getByRole("link", { name: "Credits & billing", exact: true })
     .click();
   await expect(page.getByRole("table").locator("tbody tr")).toHaveCount(10);
-  await page.getByLabel("Filter transactions").selectOption("PURCHASE");
+  await choose(page, "Filter transactions", "PURCHASE");
   await expect(
     page.getByText("11 transactions", { exact: true }),
   ).toBeVisible();
@@ -233,6 +249,28 @@ test("fractional usage, filtering and pagination reflect the real ledger", async
   await expect(page.getByRole("table").locator("tbody tr")).toHaveCount(1);
   await page.getByRole("link", { name: "Usage", exact: true }).click();
   await expect(page.getByRole("main")).toContainText("0.75");
+  const chart = page.locator('main svg[tabindex="0"]');
+  await expect(chart).toBeVisible();
+  const chartBox = await chart.boundingBox();
+  await chart.hover({
+    position: { x: Math.max(1, chartBox!.width - 18), y: 50 },
+  });
+  await expect(page.getByRole("tooltip")).toBeVisible();
+  const metric = page.getByRole("combobox", {
+    name: "Chart metric",
+    exact: true,
+  });
+  expect((await metric.boundingBox())!.height).toBeLessThan(60);
+  const stat = page
+    .getByText("Credits used", { exact: true })
+    .locator("..")
+    .locator("strong");
+  expect(
+    await stat.evaluate((el) =>
+      parseFloat(getComputedStyle(el.querySelector("span")!).fontSize),
+    ),
+  ).toBeGreaterThanOrEqual(23);
+
   await page.getByRole("button", { name: "7d", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "7d", exact: true }),
@@ -300,7 +338,7 @@ test("mobile, light theme, reduced motion and all sections remain usable", async
     "usage",
     "referrals",
   ]) {
-    await page.getByLabel("Settings", { exact: true }).selectOption(section);
+    await choose(page, "Settings", section);
     await expect(page.locator("main h1")).toBeVisible();
     await expect
       .poll(() =>
@@ -308,15 +346,15 @@ test("mobile, light theme, reduced motion and all sections remain usable", async
       )
       .toBe(true);
   }
-  await page.getByLabel("Settings", { exact: true }).selectOption("appearance");
-  await page.getByRole("radio", { name: "Light", exact: true }).check();
+  await choose(page, "Settings", "appearance");
+  await page.getByRole("radio", { name: "Light", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await page.getByLabel("Interface language").selectOption("uk");
+  await choose(page, "Interface language", "uk");
   await expect(page.locator("html")).toHaveAttribute("lang", "uk");
   await expect(page.locator("main h1")).toHaveText("Зовнішній вигляд");
-  await page.getByLabel("Мова інтерфейсу").selectOption("en");
-  await page.getByRole("radio", { name: "Dark", exact: true }).check();
-  await page.getByLabel("Settings", { exact: true }).selectOption("profile");
+  await choose(page, "Мова інтерфейсу", "en");
+  await page.getByRole("radio", { name: "Dark", exact: true }).click();
+  await choose(page, "Settings", "profile");
   await expect(
     page.getByRole("button", { name: /AI requests · 30 days/ }),
   ).toContainText("2");
@@ -335,12 +373,12 @@ test("mobile, light theme, reduced motion and all sections remain usable", async
     JSON.stringify(states),
   );
   await page.getByRole("link", { name: "Appearance", exact: true }).click();
-  await page.getByRole("radio", { name: "Light", exact: true }).check();
+  await page.getByRole("radio", { name: "Light", exact: true }).click();
   await page.screenshot({
     path: testInfo.outputPath("appearance-light.png"),
     fullPage: true,
   });
-  await page.getByRole("radio", { name: "Dark", exact: true }).check();
+  await page.getByRole("radio", { name: "Dark", exact: true }).click();
   await page.getByRole("link", { name: "Usage", exact: true }).click();
   await expect(page.getByRole("main")).toContainText("0.75");
   await page.screenshot({
@@ -404,6 +442,106 @@ test("all public navbar routes use the same account menu without pointer rings",
     await expect(menu).not.toBeVisible();
   }
   expect(errors).toEqual([]);
+});
+
+test("active sessions distinguish devices and revoke only the chosen token", async ({
+  page,
+  request,
+}) => {
+  const current = await signIn(page, request);
+  const other = (await login(request)).access_token;
+  await request.get(`${backend}/profile`, {
+    headers: {
+      Authorization: `Bearer ${other}`,
+      "user-agent":
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Version/18.0 Mobile Safari/604.1",
+    },
+  });
+  const headers = { Authorization: `Bearer ${current}` };
+  const result = await request.get(`${backend}/profile/sessions`, { headers });
+  expect(result.ok()).toBeTruthy();
+  const sessions = await result.json();
+  expect(
+    sessions.some((session: { current: boolean }) => session.current),
+  ).toBe(true);
+  const phone = sessions.find(
+    (session: { userAgent: string; current: boolean }) =>
+      session.userAgent.includes("iPhone") && !session.current,
+  );
+  expect(phone).toBeTruthy();
+  await page.getByRole("link", { name: "Security", exact: true }).click();
+  await expect(page.getByText("Your account, protected")).toHaveCount(0);
+  await page
+    .getByRole("button")
+    .filter({ has: page.locator("svg") })
+    .count();
+  await page
+    .getByRole("button", { name: "Active sessions", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Active sessions", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("Safari · iOS", { exact: true })).toBeVisible();
+  const revoked = await request.post(
+    `${backend}/profile/sessions/${phone.id}/revoke`,
+    { headers },
+  );
+  expect(revoked.ok()).toBeTruthy();
+  expect(
+    (
+      await request.get(`${backend}/profile`, {
+        headers: { Authorization: `Bearer ${other}` },
+      })
+    ).status(),
+  ).toBe(401);
+  expect((await request.get(`${backend}/profile`, { headers })).status()).toBe(
+    200,
+  );
+  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Sign-in methods", exact: true }),
+  ).toBeVisible();
+});
+
+test("appearance persists, updates chat and leaves the home page untouched", async ({
+  page,
+  request,
+}) => {
+  await signIn(page, request);
+  await page.getByRole("link", { name: "Appearance", exact: true }).click();
+  await page.getByLabel("Accent", { exact: true }).fill("#6671e8");
+  await page.getByLabel("Interface font size", { exact: true }).fill("17");
+  await page.getByLabel("Code font size", { exact: true }).fill("15");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--gx-accent")
+          .trim(),
+      ),
+    )
+    .toBe("#6671e8");
+  await page.goto("/chat");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--gx-ui-size")
+          .trim(),
+      ),
+    )
+    .toBe("17px");
+  await page.goto("/");
+  expect(
+    await page.evaluate(() => document.documentElement.dataset.gxAppearance),
+  ).toBeUndefined();
+  await page.goto("/profile#appearance");
+  await expect(
+    page.getByLabel("Interface font size", { exact: true }),
+  ).toHaveValue("17");
+  await page
+    .getByRole("button", { name: "Reset appearance", exact: true })
+    .click();
 });
 
 test("sign out everywhere revokes independently issued sessions", async ({

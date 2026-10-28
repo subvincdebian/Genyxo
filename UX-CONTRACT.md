@@ -116,3 +116,9 @@ Opening an item shows a full-screen modal viewer:
 "Ask about this file" starts a new chat with the file attached through `genyxo:composer-draft` (`detail.files`). It sends only because the person typed the question there; the dock actions only fill the composer. Closing returns focus to the tile of the item last shown.
 
 Verification: `workspace.service.spec.ts` (index once, hidden after delete), `workspace.controller.spec.ts`, `library-viewer.spec.ts` (masonry order, viewer controls, zoom, favorite, keyboard, focus return, ask-with-attachment, phone fit), `workspace-pages.spec.ts`.
+
+## Active account sessions
+
+Authenticated HTTP requests and notification handshakes register the SHA-256 token identifier, expiry, JWT issue time, device user agent and server-observed address. Raw bearer tokens are never stored. Every token check reads individual revocation from the primary database; the account session version still provides bulk revocation. Login JWTs have unique jti values, including logins in the same second. Session listing and revocation always scope by the authenticated owner. Single-session revocation disconnects that session's sockets; global revocation disconnects the account room. Current-device sign-out also revokes its token before clearing the browser cache (local cleanup still occurs if the network fails). Older tokens are registered lazily on their next authenticated request, so unavailable historic device data is never invented.
+
+The security screen opens a dedicated active-session view with a back action and keyboard-accessible controls. Current sessions are identified explicitly; other devices can be signed out independently.

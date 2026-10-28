@@ -71,6 +71,7 @@ export function Action({
   disabled = false,
   type = "button",
   busy = false,
+  label,
 }: {
   children: ReactNode;
   onClick?: () => void;
@@ -79,6 +80,7 @@ export function Action({
   disabled?: boolean;
   type?: "button" | "submit";
   busy?: boolean;
+  label?: string;
 }) {
   return (
     <button
@@ -87,6 +89,7 @@ export function Action({
       onClick={onClick}
       disabled={disabled || busy}
       aria-busy={busy}
+      aria-label={label}
     >
       {busy && <span className={styles.spinner} aria-hidden="true" />}
       <span>{children}</span>

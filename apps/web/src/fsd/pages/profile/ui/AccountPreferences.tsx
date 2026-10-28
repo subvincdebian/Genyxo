@@ -1,6 +1,7 @@
 "use client";
+import { Select } from "@/shared/ui/Select";
 import { useEffect, useState, type FormEvent } from "react";
-import { LANGUAGE_NAMES, LANGUAGES, useLanguage } from "@/shared/i18n";
+import { LANGUAGE_NAMES, LANGUAGES } from "@/shared/i18n";
 import { WorkspaceIcon } from "@/shared/ui/workspace";
 import { workspaceRequest } from "@/features/workspace";
 import { useAccountResource, type Preferences } from "../model/account";
@@ -45,7 +46,11 @@ function PreferencesForm({
 }) {
   const { text } = useAccountText();
   const [saved, setSaved] = useState(initial);
-  const [draft, setDraft] = useState(initial);
+  const [draft, setDraft] = useState({
+    ...initial,
+    responseLanguage:
+      initial.responseLanguage === "ru" ? "auto" : initial.responseLanguage,
+  });
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
@@ -129,7 +134,7 @@ function PreferencesForm({
               "You can always ask for another language in a chat.",
             )}
           >
-            <select
+            <Select
               aria-label={text("response_language", "Response language")}
               value={draft.responseLanguage || "auto"}
               disabled={busy}
@@ -143,8 +148,7 @@ function PreferencesForm({
                   {LANGUAGE_NAMES[lang]}
                 </option>
               ))}
-              <option value="ru">Русский</option>
-            </select>
+            </Select>
           </Row>
           <div className={styles.instructions}>
             <div className={styles.instructionsTitle}>
@@ -215,7 +219,7 @@ function PreferencesForm({
               "Used for scheduled tasks and dates in your workspace.",
             )}
           >
-            <select
+            <Select
               aria-label={text("timezone", "Time zone")}
               value={draft.timezone}
               disabled={busy}
@@ -226,7 +230,7 @@ function PreferencesForm({
                   {zone.replaceAll("_", " ")}
                 </option>
               ))}
-            </select>
+            </Select>
           </Row>
         </div>
       </Section>
@@ -279,125 +283,4 @@ export function applyAccountTheme(theme: Theme) {
   else document.documentElement.removeAttribute("data-theme");
 }
 
-export function AccountAppearance() {
-  const { text } = useAccountText();
-  const { lang, changeLanguage } = useLanguage();
-  const [theme, setTheme] = useState<Theme>("system");
-  const [changing, setChanging] = useState(false);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    const selected = saved === "dark" || saved === "light" ? saved : "system";
-    queueMicrotask(() => setTheme(selected));
-  }, []);
-  async function language(value: string) {
-    setChanging(true);
-    setError("");
-    if (!(await changeLanguage(value)))
-      setError(
-        text("language_error", "The language couldn’t be loaded. Try again."),
-      );
-    setChanging(false);
-  }
-  return (
-    <>
-      <Section
-        title={text("theme", "Color theme")}
-        description={text(
-          "theme_help",
-          "Choose your view. System follows your device’s appearance.",
-        )}
-      >
-        <fieldset className={styles.themeGrid}>
-          <legend className={styles.srOnly}>
-            {text("theme", "Color theme")}
-          </legend>
-          {(["light", "dark", "system"] as const).map((option) => (
-            <label
-              key={option}
-              className={`${styles.themeOption} ${theme === option ? styles.themeSelected : ""}`}
-            >
-              <input
-                className={styles.srOnly}
-                type="radio"
-                name="account-theme"
-                value={option}
-                checked={theme === option}
-                onChange={() => {
-                  setTheme(option);
-                  applyAccountTheme(option);
-                }}
-              />
-              <span
-                className={`${styles.themePreview} ${styles[`preview_${option}`]}`}
-                aria-hidden="true"
-              >
-                <span className={styles.previewSidebar}>
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span className={styles.previewContent}>
-                  <i />
-                  <i />
-                  <i />
-                  <b />
-                </span>
-                <span className={styles.themeCheck}>
-                  <WorkspaceIcon name="check" size={14} />
-                </span>
-              </span>
-              <span className={styles.themeLabel}>
-                {text(
-                  option,
-                  option === "light"
-                    ? "Light"
-                    : option === "dark"
-                      ? "Dark"
-                      : "System",
-                )}
-                <span className={styles.radioDot} />
-              </span>
-            </label>
-          ))}
-        </fieldset>
-      </Section>
-      <Section title={text("language_region", "Language & region")}>
-        <div className={styles.group}>
-          <Row
-            title={text("interface_language", "Interface language")}
-            description={text(
-              "device_setting",
-              "Saved in this browser. Applies across Genyxo.",
-            )}
-          >
-            <select
-              aria-label={text("interface_language", "Interface language")}
-              value={lang}
-              disabled={changing}
-              onChange={(event) => void language(event.target.value)}
-            >
-              {LANGUAGES.map((value) => (
-                <option key={value} value={value}>
-                  {LANGUAGE_NAMES[value]}
-                </option>
-              ))}
-            </select>
-          </Row>
-        </div>
-      </Section>
-      <p className={styles.footnote}>
-        <WorkspaceIcon name="info" size={16} />
-        {text(
-          "motion_help",
-          "Animations follow your device’s reduced motion preference.",
-        )}
-      </p>
-      {error && (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      )}
-    </>
-  );
-}
+export { AccountAppearance } from "./AccountAppearance";

@@ -15,6 +15,7 @@ const workspace = [".workspace-shell"];
 // Marker classes per stylesheet. Route markers come from `RouteScope`
 // (src/fsd/shared/ui/route-scope.tsx); the workspace uses its shell element.
 const routeStylesheets = {
+  "src/fsd/shared/ui/appearance.css": [...workspace, ".account-appearance-scope"],
   "src/fsd/shared/styles/style.css": [
     ...workspace,
     ".gx-route-home",

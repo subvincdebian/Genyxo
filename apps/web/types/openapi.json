@@ -363,6 +363,66 @@
         "tags": ["Profile"]
       }
     },
+    "/profile/logout": {
+      "post": {
+        "operationId": "ProfileController_logout",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/sessions": {
+      "get": {
+        "operationId": "ProfileController_sessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
+    "/profile/sessions/{id}/revoke": {
+      "post": {
+        "operationId": "ProfileController_revokeSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "tags": ["Profile"]
+      }
+    },
     "/profile/logout-all": {
       "post": {
         "operationId": "ProfileController_logoutAll",

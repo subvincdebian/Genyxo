@@ -1,4 +1,5 @@
 "use client";
+import { AnimatedNumber } from "@/shared/ui/AnimatedNumber";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { WorkspaceDialog, WorkspaceIcon } from "@/shared/ui/workspace";
 import {
@@ -25,8 +26,6 @@ export function AccountOverview({
   const [selectedPhoto, setSelectedPhoto] = useState<File | undefined>();
   const photoInput = useRef<HTMLInputElement>(null);
   const usage = useAccountResource<Usage>("profile/usage?period=30");
-  const number = (value: number) =>
-    new Intl.NumberFormat(lang, { maximumFractionDigits: 2 }).format(value);
   return (
     <>
       <div className={styles.identity}>
@@ -73,21 +72,29 @@ export function AccountOverview({
         <button onClick={() => navigate("billing")}>
           <span>{text("available_credits", "Available credits")}</span>
           <strong>
-            {number(Number(account.credits))}
+            <AnimatedNumber value={Number(account.credits)} locale={lang} />
             <WorkspaceIcon name="chevron" size={17} />
           </strong>
         </button>
         <button onClick={() => navigate("usage")}>
           <span>{text("used_30", "Credits used · 30 days")}</span>
           <strong>
-            {usage.data ? number(usage.data.totalCredits) : "—"}
+            {usage.data ? (
+              <AnimatedNumber value={usage.data.totalCredits} locale={lang} />
+            ) : (
+              "—"
+            )}
             <WorkspaceIcon name="chevron" size={17} />
           </strong>
         </button>
         <button onClick={() => navigate("usage")}>
           <span>{text("requests_30", "AI requests · 30 days")}</span>
           <strong>
-            {usage.data ? number(usage.data.requests) : "—"}
+            {usage.data ? (
+              <AnimatedNumber value={usage.data.requests} locale={lang} />
+            ) : (
+              "—"
+            )}
             <WorkspaceIcon name="chevron" size={17} />
           </strong>
         </button>

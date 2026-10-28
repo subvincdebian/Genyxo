@@ -1,0 +1,101 @@
+html[data-gx-appearance] .workspace-shell {
+  font-size: var(--gx-ui-size);
+}
+html[data-gx-appearance]
+  .workspace-shell
+  :is(
+    .message-content,
+    .message-text,
+    .markdown-body,
+    .ws-sidebar-inner,
+    .input-wrapper textarea
+  ) {
+  font-size: var(--gx-ui-size) !important;
+  font-weight: 450;
+}
+html[data-gx-appearance] .workspace-shell :is(pre, pre code, .code-block code) {
+  font-size: var(--gx-code-size) !important;
+}
+html[data-gx-diff="markers"] .workspace-shell :is(ins, del) {
+  background: transparent !important;
+  border-left: 3px solid currentColor;
+  padding-left: 8px;
+}
+html[data-gx-diff="markers"] .workspace-shell ins::before {
+  content: "+ ";
+}
+html[data-gx-diff="markers"] .workspace-shell del::before {
+  content: "− ";
+}
+html[data-gx-motion="on"]
+  :is(.workspace-shell, .account-appearance-scope, .ws-menu, .ws-dialog)
+  *,
+html[data-gx-motion="on"] :is(.ws-menu, .ws-dialog) {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-gx-appearance]
+  .workspace-shell
+  :is(
+    button,
+    input,
+    textarea,
+    select,
+    .ws-row-title,
+    .ws-expanded-label,
+    .ws-sidebar-menu-item,
+    .message-text,
+    .message-content,
+    .markdown-body
+  ) {
+  font-size: var(--gx-ui-size) !important;
+}
+html[data-gx-appearance]
+  .workspace-shell
+  :is(pre, pre code, pre span, .code-block code) {
+  font-size: var(--gx-code-size) !important;
+}
+html[data-gx-appearance]
+  :is(.workspace-shell, .account-appearance-scope)
+  :is(.primary, .credits-cta, .upgrade-full-btn) {
+  color: var(--gx-on-accent) !important;
+}
+html[data-gx-appearance] :is(.workspace-shell, .account-appearance-scope) ins {
+  color: var(--gx-accent);
+}
+
+html[data-gx-appearance] .workspace-shell #chatBox .message-text {
+  font-size: var(--gx-ui-size) !important;
+  font-weight: 450 !important;
+}
+html[data-gx-appearance] .workspace-shell #chatBox .message-text pre {
+  background: var(--gx-surface-2) !important;
+}
+html[data-gx-appearance]
+  .workspace-shell
+  #chatBox
+  .message-text
+  pre
+  :is(code, span) {
+  font-size: var(--gx-code-size) !important;
+}
+.workspace-shell .gx-diff-line {
+  display: inline-block;
+  min-width: 100%;
+}
+.workspace-shell .gx-diff-add {
+  background: var(--gx-accent-soft);
+  color: var(--gx-accent);
+}
+.workspace-shell .gx-diff-remove {
+  background: #df51481a;
+  color: #f08880;
+}
+html[data-gx-diff="markers"]
+  .workspace-shell
+  :is(.gx-diff-add, .gx-diff-remove) {
+  background: transparent;
+  color: inherit;
+}

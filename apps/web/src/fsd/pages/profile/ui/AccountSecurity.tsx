@@ -11,12 +11,32 @@ import {
 import { Action, Row, Section, State, useAccountText } from "./account-ui";
 import styles from "./ProfilePage.module.css";
 
-export function AccountSecurity({ account }: { account: Account }) {
+export function AccountSecurity({
+  account,
+  showSessions = false,
+  onSessionsChange,
+}: {
+  account: Account;
+  showSessions?: boolean;
+  onSessionsChange?: (value: boolean) => void;
+}) {
   const { text } = useAccountText();
   const resource = useAccountResource<Security>("profile/security");
   const [dialog, setDialog] = useState<"password" | "logout" | "all" | null>(
     null,
   );
+  const sessions = useAccountResource<
+    Array<{
+      id: string;
+      userAgent: string;
+      ip: string;
+      createdAt: string;
+      lastUsedAt: string;
+      current: boolean;
+    }>
+  >("profile/sessions");
+
+  const [revoking, setRevoking] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function revoke() {
@@ -45,90 +65,133 @@ export function AccountSecurity({ account }: { account: Account }) {
       >
         {resource.data && (
           <>
-            <div className={styles.securityIntro}>
-              <span className={styles.securityEmblem}>
-                <WorkspaceIcon name="lock" size={28} />
-              </span>
-              <div>
-                <h2>{text("security_intro", "Your account, protected")}</h2>
-                <p>
-                  {text(
-                    "security_intro_help",
-                    "Manage how you sign in and where you stay signed in.",
+            {!showSessions && (
+              <>
+                <Section title={text("sign_in_methods", "Sign-in methods")}>
+                  <div className={styles.group}>
+                    <Row
+                      title={text("email", "Email address")}
+                      description={account.email}
+                    >
+                      <span className={styles.badge}>
+                        <WorkspaceIcon
+                          name={resource.data.emailVerified ? "check" : "info"}
+                          size={14}
+                        />
+                        {resource.data.emailVerified
+                          ? text("verified", "Verified")
+                          : text("not_verified", "Not verified")}
+                      </span>
+                    </Row>
+                    <Row
+                      title={text("password", "Password")}
+                      description={
+                        resource.data.hasPassword
+                          ? text(
+                              "password_help",
+                              "Use a unique password to keep your account secure.",
+                            )
+                          : text(
+                              "provider_password",
+                              "Your sign-in provider manages your password.",
+                            )
+                      }
+                    >
+                      {resource.data.hasPassword && (
+                        <Action onClick={() => setDialog("password")}>
+                          {text("change_password", "Change password")}
+                        </Action>
+                      )}
+                    </Row>
+                    {resource.data.providers.map((provider) => (
+                      <Row
+                        key={provider}
+                        title={provider}
+                        description={text(
+                          "connected_signin",
+                          "Connected sign-in provider",
+                        )}
+                      >
+                        <span className={styles.muted}>
+                          {text("connected", "Connected")}
+                        </span>
+                      </Row>
+                    ))}
+                  </div>
+                </Section>
+              </>
+            )}
+            {showSessions && (
+              <div className={styles.sessionView}>
+                <Section
+                  title={text("devices", "Devices")}
+                  description={text(
+                    "active_sessions_help",
+                    "Review your signed-in devices and end sessions you do not recognize.",
                   )}
-                </p>
-              </div>
-            </div>
-            <Section title={text("sign_in_methods", "Sign-in methods")}>
-              <div className={styles.group}>
-                <Row
-                  title={text("email", "Email address")}
-                  description={account.email}
                 >
-                  <span className={styles.badge}>
-                    <WorkspaceIcon
-                      name={resource.data.emailVerified ? "check" : "info"}
-                      size={14}
-                    />
-                    {resource.data.emailVerified
-                      ? text("verified", "Verified")
-                      : text("not_verified", "Not verified")}
-                  </span>
-                </Row>
-                <Row
-                  title={text("password", "Password")}
-                  description={
-                    resource.data.hasPassword
-                      ? text(
-                          "password_help",
-                          "Use a unique password to keep your account secure.",
-                        )
-                      : text(
-                          "provider_password",
-                          "Your sign-in provider manages your password.",
-                        )
-                  }
-                >
-                  {resource.data.hasPassword && (
-                    <Action onClick={() => setDialog("password")}>
-                      {text("change_password", "Change password")}
-                    </Action>
-                  )}
-                </Row>
-                {resource.data.providers.map((provider) => (
-                  <Row
-                    key={provider}
-                    title={provider}
-                    description={text(
-                      "connected_signin",
-                      "Connected sign-in provider",
-                    )}
-                  >
-                    <span className={styles.muted}>
-                      {text("connected", "Connected")}
-                    </span>
-                  </Row>
-                ))}
+                  <div className={styles.group}>
+                    <State
+                      loading={sessions.loading}
+                      error={sessions.error}
+                      retry={sessions.refresh}
+                    >
+                      {sessions.data?.map((session) => (
+                        <Row
+                          key={session.id}
+                          title={deviceName(session.userAgent)}
+                          description={`${new Date(session.lastUsedAt).toLocaleString()}${session.ip ? ` · IP ${session.ip}` : ""}`}
+                        >
+                          <div className={styles.sessionAction}>
+                            {session.current && (
+                              <span className={styles.sessionCurrent}>
+                                {text("current_session", "Current session")}
+                              </span>
+                            )}
+                            <Action
+                              disabled={session.current || Boolean(revoking)}
+                              busy={revoking === session.id}
+                              onClick={() => {
+                                setRevoking(session.id);
+                                setError("");
+                                void accountRequest(
+                                  `profile/sessions/${session.id}/revoke`,
+                                  { method: "POST" },
+                                )
+                                  .then(() => sessions.refresh())
+                                  .catch((failure) => setError(failure.message))
+                                  .finally(() => setRevoking(null));
+                              }}
+                            >
+                              {text("sign_out", "Sign out")}
+                            </Action>
+                          </div>
+                        </Row>
+                      ))}
+                    </State>
+                  </div>
+                </Section>
               </div>
-            </Section>
+            )}
             <Section title={text("sessions", "Sessions")}>
               <div className={styles.group}>
-                <Row
-                  title={text("this_session", "This browser")}
-                  description={text(
-                    "this_session_help",
-                    "You’re currently signed in here.",
-                  )}
-                >
-                  <Action
-                    onClick={() => {
-                      setError("");
-                      setDialog("logout");
-                    }}
+                {!showSessions && (
+                  <Row
+                    title={text("active_sessions", "Active sessions")}
+                    description={text(
+                      "active_sessions_help",
+                      "Review your signed-in devices and end sessions you do not recognize.",
+                    )}
                   >
-                    {text("sign_out", "Sign out")}
-                  </Action>
-                </Row>
+                    <Action
+                      label={text("active_sessions", "Active sessions")}
+                      onClick={() => onSessionsChange?.(true)}
+                    >
+                      {sessions.data?.length ?? "—"}
+                      <WorkspaceIcon name="chevron" size={16} />
+                    </Action>
+                  </Row>
+                )}
                 <Row
                   title={text("all_sessions", "Sign out everywhere")}
                   description={text(
@@ -148,19 +211,14 @@ export function AccountSecurity({ account }: { account: Account }) {
                 </Row>
               </div>
             </Section>
-            <p className={styles.footnote}>
-              <WorkspaceIcon name="help" size={16} />
-              {text(
-                "email_change_help",
-                "Need to change your sign-in email?",
-              )}{" "}
-              <a href="/support">
-                {text("contact_support", "Contact support")}
-              </a>
-            </p>
           </>
         )}
       </State>
+      {error && !dialog && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
       {dialog === "password" && (
         <PasswordDialog onClose={() => setDialog(null)} />
       )}
@@ -325,4 +383,28 @@ function PasswordDialog({ onClose }: { onClose: () => void }) {
       </form>
     </WorkspaceDialog>
   );
+}
+
+function deviceName(agent: string) {
+  const browser = /Edg\//.test(agent)
+    ? "Edge"
+    : /Firefox\//.test(agent)
+      ? "Firefox"
+      : /Chrome\//.test(agent)
+        ? "Chrome"
+        : /Safari\//.test(agent)
+          ? "Safari"
+          : "Browser";
+  const os = /iPhone|iPad/.test(agent)
+    ? "iOS"
+    : /Android/.test(agent)
+      ? "Android"
+      : /Windows/.test(agent)
+        ? "Windows"
+        : /Macintosh|Mac OS/.test(agent)
+          ? "macOS"
+          : /Linux/.test(agent)
+            ? "Linux"
+            : "Unknown device";
+  return `${browser} · ${os}`;
 }

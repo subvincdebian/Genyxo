@@ -1,4 +1,6 @@
 "use client";
+import { AppearanceSync } from "@/shared/ui/AppearanceSync";
+import { Select } from "@/shared/ui/Select";
 import { useEffect, useRef, useState } from "react";
 import { WorkspaceDialog, WorkspaceIcon } from "@/shared/ui/workspace";
 import { AvatarNavbar } from "@/entities/session";
@@ -79,6 +81,7 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [securityView, setSecurityView] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const searchInput = useRef<HTMLInputElement>(null);
   const current = sections.find((item) => item.id === active)!;
@@ -139,6 +142,7 @@ export function ProfilePage() {
     setDirty(false);
     setPending(null);
     setSaved(false);
+    setSecurityView(false);
     if (destination === "signout") {
       signOut();
       return;
@@ -162,7 +166,8 @@ export function ProfilePage() {
       .includes(search.toLocaleLowerCase(lang)),
   );
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} account-appearance-scope`}>
+      <AppearanceSync />
       <a
         href="#account-content"
         className={styles.skip}
@@ -241,21 +246,32 @@ export function ProfilePage() {
             <kbd>{shortcut}</kbd>
           </label>
           <nav className={styles.navigation}>
-            {visible.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                data-group-break={item.id === "billing" ? "" : undefined}
-                aria-disabled={saving}
-                aria-current={active === item.id ? "page" : undefined}
-                onClick={(event) => {
-                  event.preventDefault();
-                  navigate(item.id);
-                }}
-              >
-                <AccountNavIcon section={item.id} />
-                <span>{labels(item.id, item.title)}</span>
-              </a>
+            {visible.map((item, index) => (
+              <div key={item.id}>
+                {(index === 0 || item.id === "billing") && (
+                  <p className={styles.navGroup}>
+                    {text(
+                      item.id === "billing"
+                        ? "group_activity"
+                        : "group_personal",
+                      item.id === "billing" ? "Account & activity" : "Personal",
+                    )}
+                  </p>
+                )}
+                <a
+                  href={`#${item.id}`}
+                  data-group-break={item.id === "billing" ? "" : undefined}
+                  aria-disabled={saving}
+                  aria-current={active === item.id ? "page" : undefined}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigate(item.id);
+                  }}
+                >
+                  <AccountNavIcon section={item.id} />
+                  <span>{labels(item.id, item.title)}</span>
+                </a>
+              </div>
             ))}
             {!visible.length && (
               <p className={styles.hint}>
@@ -284,7 +300,7 @@ export function ProfilePage() {
           <label htmlFor="account-section">
             {text("settings", "Settings")}
           </label>
-          <select
+          <Select
             id="account-section"
             disabled={saving}
             value={active}
@@ -295,14 +311,31 @@ export function ProfilePage() {
                 {labels(item.id, item.title)}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <main id="account-content" className={styles.main} tabIndex={-1}>
           <div className={styles.pageHeading}>
+            {active === "security" && securityView && (
+              <div className={styles.sessionBack}>
+                <Action onClick={() => setSecurityView(false)}>
+                  <WorkspaceIcon name="arrow-left" size={17} />
+                  {text("back", "Back")}
+                </Action>
+              </div>
+            )}
             <h1 tabIndex={-1} ref={heading}>
-              {labels(current.id, current.title)}
+              {active === "security" && securityView
+                ? text("active_sessions", "Active sessions")
+                : labels(current.id, current.title)}
             </h1>
-            <p>{text(`${current.id}_description`, current.description)}</p>
+            <p>
+              {active === "security" && securityView
+                ? text(
+                    "active_sessions_help",
+                    "Review your signed-in devices and end sessions you do not recognize.",
+                  )
+                : text(`${current.id}_description`, current.description)}
+            </p>
           </div>
           <div key={active} className={styles.content}>
             <State
@@ -327,7 +360,11 @@ export function ProfilePage() {
                   )}
                   {active === "appearance" && <AccountAppearance />}
                   {active === "security" && (
-                    <AccountSecurity account={account.data} />
+                    <AccountSecurity
+                      account={account.data}
+                      showSessions={securityView}
+                      onSessionsChange={setSecurityView}
+                    />
                   )}
                   {active === "billing" && (
                     <AccountBilling account={account.data} />

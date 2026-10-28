@@ -110,6 +110,7 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
   page,
 }) => {
   await authenticate(page);
+  await page.addInitScript(() => localStorage.setItem("genyxo.appearance", JSON.stringify({ uiSize: 17, codeSize: 15 })));
   let payload: unknown;
   await mockApi(page, async (route, path) => {
     // The workspace sidebar lists chats from /chat/workspace; the new chat appears after the stream.
@@ -126,7 +127,7 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
         conversationTitle: "Test conversation",
       },
       {
-        token: 'Hello **React** <img src=x onerror="window.__unsafe=true">',
+        token: 'Hello **React** <img src=x onerror="window.__unsafe=true">\n\n```diff\n+Added <script>alert(1)</script>\n-Removed\n```',
         conversationId: 42,
       },
       { status: "done", messageId: 11, creditBalance: 149 },
@@ -151,6 +152,15 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
   await page.locator("#sendBtn").click();
   await expect(page.locator("#chatBox")).toContainText("Hello React");
   await expect(page.locator("#sidebar")).toContainText("Test conversation");
+  await expect(page.locator("#chatBox .message-text").last()).toHaveCSS("font-size", "17px");
+  const added = page.locator("#chatBox .gx-diff-add").first();
+  await expect(added).toHaveCSS("font-size", "15px");
+  await expect(added).toContainText("Added <script>alert(1)</script>");
+  await page.evaluate(() => {
+    localStorage.setItem("genyxo.appearance", JSON.stringify({ uiSize: 17, codeSize: 15, diff: "markers" }));
+    document.dispatchEvent(new Event("genyxo:appearance"));
+  });
+  await expect(added).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   await expect(page).toHaveURL(new RegExp(`/c/${chatKey(42)}$`));
   expect(payload).toMatchObject({
     message: "Test message",

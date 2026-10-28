@@ -1,4 +1,7 @@
 "use client";
+import { ModelLogo } from "@/shared/ui/ModelLogo";
+import { AnimatedNumber } from "@/shared/ui/AnimatedNumber";
+import { Select } from "@/shared/ui/Select";
 import { useId, useState } from "react";
 import { WorkspaceIcon } from "@/shared/ui/workspace";
 import {
@@ -57,7 +60,7 @@ export function AccountBilling({ account }: { account: Account }) {
           "Your credit purchases, AI usage and refunds.",
         )}
         action={
-          <select
+          <Select
             aria-label={text("filter_history", "Filter transactions")}
             value={filter}
             onChange={(event) => {
@@ -69,7 +72,7 @@ export function AccountBilling({ account }: { account: Account }) {
             <option value="PURCHASE">{text("purchases", "Purchases")}</option>
             <option value="SPEND">{text("usage", "Usage")}</option>
             <option value="REFUND">{text("refunds", "Refunds")}</option>
-          </select>
+          </Select>
         }
       >
         <div className={styles.group}>
@@ -104,16 +107,18 @@ export function AccountBilling({ account }: { account: Account }) {
                           <td>
                             <div className={styles.transactionName}>
                               <span className={styles.transactionIcon}>
-                                <WorkspaceIcon
-                                  name={
-                                    item.type === "PURCHASE"
-                                      ? "wallet"
-                                      : item.type === "REFUND"
-                                        ? "arrow-left"
-                                        : "bolt"
-                                  }
-                                  size={18}
-                                />
+                                {item.type === "SPEND" ? (
+                                  <ModelLogo model={item.description || "AI"} />
+                                ) : (
+                                  <WorkspaceIcon
+                                    name={
+                                      item.type === "PURCHASE"
+                                        ? "wallet"
+                                        : "arrow-left"
+                                    }
+                                    size={18}
+                                  />
+                                )}
                               </span>
                               <span>
                                 <strong>
@@ -256,15 +261,27 @@ export function AccountUsage({ account }: { account: Account }) {
             <div className={styles.usageStats}>
               <div>
                 <span>{text("credits_used", "Credits used")}</span>
-                <strong key={period}>{number(usage.data.totalCredits)}</strong>
+                <strong key={period}>
+                  <AnimatedNumber
+                    value={usage.data.totalCredits}
+                    locale={lang}
+                  />
+                </strong>
               </div>
               <div>
                 <span>{text("ai_requests", "AI requests")}</span>
-                <strong>{number(usage.data.requests)}</strong>
+                <strong>
+                  <AnimatedNumber value={usage.data.requests} locale={lang} />
+                </strong>
               </div>
               <div>
                 <span>{text("remaining_balance", "Available now")}</span>
-                <strong>{number(Number(account.credits))}</strong>
+                <strong>
+                  <AnimatedNumber
+                    value={Number(account.credits)}
+                    locale={lang}
+                  />
+                </strong>
               </div>
             </div>
             <Section
@@ -318,7 +335,7 @@ export function AccountUsage({ account }: { account: Account }) {
                     <div className={styles.modelRow} key={model.name}>
                       <div>
                         <span className={styles.transactionIcon}>
-                          <WorkspaceIcon name="sparkles" size={17} />
+                          <ModelLogo model={model.name} />
                         </span>
                         <strong>{model.name}</strong>
                         <span className={styles.modelTotal}>
@@ -326,13 +343,6 @@ export function AccountUsage({ account }: { account: Account }) {
                           <small>{text("credits", "credits")}</small>
                         </span>
                       </div>
-                      <span className={styles.modelTrack}>
-                        <span
-                          style={{
-                            width: `${(usage.data!.totalCredits ? model.credits / usage.data!.totalCredits : 0) * 100}%`,
-                          }}
-                        />
-                      </span>
                     </div>
                   ))
                 )}
@@ -349,6 +359,7 @@ function UsageChart({ usage }: { usage: Usage }) {
   const { text, lang } = useAccountText();
   const id = useId();
   const [active, setActive] = useState(usage.days.length - 1);
+  const [hovering, setHovering] = useState(false);
   const [metric, setMetric] = useState<"credits" | "requests">(
     usage.totalCredits ? "credits" : "requests",
   );
@@ -358,7 +369,7 @@ function UsageChart({ usage }: { usage: Usage }) {
       : text("requests", "requests");
   const max = Math.max(1, ...usage.days.map((day) => day[metric]));
   const x = (index: number) =>
-    12 + (index / Math.max(1, usage.days.length - 1)) * 776;
+    52 + (index / Math.max(1, usage.days.length - 1)) * 736;
   const y = (credits: number) => 184 - (credits / max) * 160;
   const line = usage.days
     .map((day, index) => `${index ? "L" : "M"} ${x(index)} ${y(day[metric])}`)
@@ -371,9 +382,9 @@ function UsageChart({ usage }: { usage: Usage }) {
       timeZone: "UTC",
     }).format(new Date(`${value}T00:00:00Z`));
   return (
-    <div className={styles.chart}>
+    <div className={styles.chart} style={{ position: "relative" }}>
       <div className={styles.chartMetric}>
-        <select
+        <Select
           aria-label={text("chart_metric", "Chart metric")}
           value={metric}
           onChange={(event) =>
@@ -382,7 +393,7 @@ function UsageChart({ usage }: { usage: Usage }) {
         >
           <option value="credits">{text("credits", "Credits")}</option>
           <option value="requests">{text("ai_requests", "AI requests")}</option>
-        </select>
+        </Select>
       </div>
       <div className={styles.chartReadout} aria-live="polite">
         <span>{date(selected.date)}</span>
@@ -393,8 +404,31 @@ function UsageChart({ usage }: { usage: Usage }) {
       </div>
       <svg
         viewBox="0 0 800 210"
-        role="img"
-        aria-label={text("credit_usage", "Credit usage")}
+        role="group"
+        tabIndex={0}
+        aria-label={`${text("credit_usage", "Credit usage")}. ${date(selected.date)}: ${selected[metric]} ${unit}`}
+        onFocus={() => setHovering(true)}
+        onBlur={() => setHovering(false)}
+        onPointerLeave={() => setHovering(false)}
+        onKeyDown={(event) => {
+          if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+            event.preventDefault();
+            setHovering(true);
+            setActive((old) =>
+              event.key === "Home"
+                ? 0
+                : event.key === "End"
+                  ? usage.days.length - 1
+                  : Math.max(
+                      0,
+                      Math.min(
+                        usage.days.length - 1,
+                        old + (event.key === "ArrowRight" ? 1 : -1),
+                      ),
+                    ),
+            );
+          }
+        }}
         preserveAspectRatio="none"
       >
         <defs>
@@ -403,17 +437,30 @@ function UsageChart({ usage }: { usage: Usage }) {
             <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
           </linearGradient>
         </defs>
-        {[24, 104, 184].map((position) => (
-          <line
-            key={position}
-            x1="12"
-            x2="788"
-            y1={position}
-            y2={position}
-            className={styles.chartGrid}
-          />
+        {[0, 0.25, 0.5, 0.75, 1].map((fraction) => (
+          <g key={fraction}>
+            <line
+              x1="52"
+              x2="788"
+              y1={y(max * fraction)}
+              y2={y(max * fraction)}
+              className={styles.chartGrid}
+            />
+            <text
+              x="42"
+              y={y(max * fraction) + 4}
+              textAnchor="end"
+              fill="var(--gx-muted)"
+              fontSize="10"
+            >
+              {new Intl.NumberFormat(lang, {
+                maximumFractionDigits: 2,
+                notation: "compact",
+              }).format(max * fraction)}
+            </text>
+          </g>
         ))}
-        <path d={`${line} L 788 184 L 12 184 Z`} fill={`url(#${id})`} />
+        <path d={`${line} L 788 184 L 52 184 Z`} fill={`url(#${id})`} />
         <path
           d={line}
           fill="none"
@@ -445,7 +492,14 @@ function UsageChart({ usage }: { usage: Usage }) {
             width={776 / Math.max(1, usage.days.length - 1)}
             height="210"
             fill="transparent"
-            onPointerEnter={() => setActive(index)}
+            onPointerEnter={() => {
+              setActive(index);
+              setHovering(true);
+            }}
+            onPointerDown={() => {
+              setActive(index);
+              setHovering(true);
+            }}
           />
         ))}
       </svg>
@@ -453,19 +507,23 @@ function UsageChart({ usage }: { usage: Usage }) {
         <span>{date(usage.days[0].date)}</span>
         <span>{date(usage.days.at(-1)!.date)}</span>
       </div>
-      <label className={styles.chartScrubber}>
-        <span className={styles.srOnly}>
-          {text("chart_day", "Explore daily usage")}
-        </span>
-        <input
-          type="range"
-          min="0"
-          max={usage.days.length - 1}
-          value={active}
-          aria-valuetext={`${date(selected.date)}: ${selected[metric]} ${unit}`}
-          onChange={(event) => setActive(Number(event.target.value))}
-        />
-      </label>
+      {hovering && (
+        <div
+          role="tooltip"
+          className={styles.chartTooltip}
+          style={{
+            left: `${Math.max(14, Math.min(86, (x(active) / 800) * 100))}%`,
+          }}
+        >
+          {date(selected.date)}
+          <strong>
+            {new Intl.NumberFormat(lang, { maximumFractionDigits: 2 }).format(
+              selected[metric],
+            )}{" "}
+            {unit}
+          </strong>
+        </div>
+      )}
     </div>
   );
 }
@@ -511,16 +569,20 @@ export function AccountReferrals() {
             <div>
               <span>{text("referral_balance", "Referral balance")}</span>
               <strong>
-                {new Intl.NumberFormat(lang, {
-                  style: "currency",
-                  currency: "USD",
-                }).format(resource.data.balance)}
+                <AnimatedNumber
+                  value={Number(resource.data.balance)}
+                  locale={lang}
+                  currency="USD"
+                />
               </strong>
             </div>
             <div>
               <span>{text("people_invited", "People invited")}</span>
               <strong>
-                {new Intl.NumberFormat(lang).format(resource.data.invitedCount)}
+                <AnimatedNumber
+                  value={resource.data.invitedCount}
+                  locale={lang}
+                />
               </strong>
             </div>
           </div>

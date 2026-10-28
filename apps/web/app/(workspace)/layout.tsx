@@ -1,3 +1,4 @@
+import { AppearanceSync } from "@/shared/ui/AppearanceSync";
 import type { ReactNode } from "react";
 import { WorkspaceLayout } from "@/pages/chat";
 import "@/shared/styles/chat.css";
@@ -19,7 +20,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Inter+Tight:wght@500..700&display=swap"
         precedence="default"
       />
-      <WorkspaceLayout>{children}</WorkspaceLayout>
+      <AppearanceSync /><WorkspaceLayout>{children}</WorkspaceLayout>
     </>
   );
 }

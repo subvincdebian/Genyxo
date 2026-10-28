@@ -979,6 +979,7 @@ export default function initialize(scope, context) {
   }
   function highlightCode(code, language = "") {
     const html = escapeHtml(code);
+    if (language === "diff" || language === "patch") return html.split("\n").map(line => `<span class="gx-diff-line${line.startsWith("+") ? " gx-diff-add" : line.startsWith("-") ? " gx-diff-remove" : ""}">${line || " "}</span>`).join("\n");
     const keywords =
       /\b(const|let|var|function|return|if|else|for|while|class|new|async|await|try|catch|import|from|export|default|type|interface|extends|public|private|protected|static|void|int|float|double|char|bool|true|false|null|undefined|def|self|print|echo|SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|TABLE)\b/;
     const builtins =
