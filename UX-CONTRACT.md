@@ -1,5 +1,15 @@
 # Workspace interaction contract
 
+## Account settings extension
+
+`/profile` uses hash-linked sections and explicit saves for profile and personalization. Unsaved edits prompt before leaving; failed requests preserve drafts and provide retry. A pending save blocks section navigation. Avatar uploads are validated, centre-cropped and compressed locally before persistence. Email remains a verified sign-in identity; changes go through Support. Unsupported card management, device inventories, MFA and passkeys are never simulated.
+
+Profile identity, balances, referral links and ledger pages come from authenticated owner-scoped APIs. The transaction filter is server-side with bounded pagination; usage aggregates approved SPEND entries into 7/30/90 UTC days and exports those same rows to CSV. No extrapolated percentages or synthetic graph points are displayed. Zero-cost requests remain visible as requests. Ledger precision is decimal; previously truncated amounts cannot be reconstructed.
+
+Password changes verify the current credential, reject bcrypt-equivalent credentials and revoke every session. Revocation versions are stored in MySQL and checked on the primary on each HTTP authentication and socket connection. Existing notification sockets disconnect when sessions are revoked. The app confirms sign-out; successful password changes and global sign-out return to sign-in. Personal instructions and response language use the workspace preference record and enter chat context independently of memory.
+
+Verification: `tests-profile/account.spec.ts` uses a disposable account and real local MySQL/Mailpit, covers reload persistence, offline save recovery, filtered pagination, fractional usage, reduced motion, mobile fit, language/theme selection, and session revocation. `scripts/verify-profile-migration.ts` proves preservation against isolated MySQL tables and blocks a lossy rollback.
+
 Scope: `/chat`, `/library`, `/plugins`, `/scheduled`. Existing marketing/authentication have their own maintained behavior. The shared workspace layout preserves sidebar DOM, scroll and composer drafts across section navigation.
 
 ## Canonical UI Map

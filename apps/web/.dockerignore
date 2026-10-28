@@ -1,5 +1,6 @@
 node_modules
 .next
+.next-*
 .git
 .gitignore
 .env
@@ -20,4 +21,5 @@ playwright-report
 *.tsbuildinfo
 test-results*
 tests-live
+tests-profile
 playwright-report*
