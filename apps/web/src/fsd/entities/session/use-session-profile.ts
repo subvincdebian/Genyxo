@@ -1,7 +1,13 @@
 "use client";
 import { useSyncExternalStore } from "react";
 
-export type SessionProfile = { name: string; email: string; avatar: string; credits: string } | null;
+export type SessionProfile = {
+  name: string;
+  email: string;
+  avatar: string;
+  credits: string;
+  role?: string;
+} | null;
 
 let cachedKey = "";
 let cachedProfile: SessionProfile = null;
@@ -12,9 +18,19 @@ function read(): SessionProfile {
     const email = localStorage.getItem("userEmail") || "";
     const avatar = localStorage.getItem("userAvatar") || "";
     const credits = localStorage.getItem("userCredits") || "";
-    const key = [name, email, avatar, credits].join("\u0000");
+    const role = localStorage.getItem("userRole") || "";
+    const key = [name, email, avatar, credits, role].join("\u0000");
     // useSyncExternalStore needs a stable snapshot between unchanged reads.
-    if (key !== cachedKey || !cachedProfile) { cachedKey = key; cachedProfile = { name: name || email.split("@")[0] || "", email, avatar, credits }; }
+    if (key !== cachedKey || !cachedProfile) {
+      cachedKey = key;
+      cachedProfile = {
+        name: name || email.split("@")[0] || "",
+        email,
+        avatar,
+        credits,
+        role,
+      };
+    }
     return cachedProfile;
   } catch {
     return null;

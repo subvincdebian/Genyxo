@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { WorkspaceDialog, WorkspaceIcon } from "@/shared/ui/workspace";
+import { AvatarNavbar } from "@/entities/session";
 import { useLocalizedMetadata } from "@/shared/i18n";
-import { useAccountResource, type Account } from "../model/account";
+import { signOut, useAccountResource, type Account } from "../model/account";
 import { AccountOverview } from "./AccountOverview";
 import {
   AccountAppearance,
@@ -16,7 +17,7 @@ import {
   AccountReferrals,
   AccountUsage,
 } from "./AccountActivity";
-import { Action, Avatar, State, useAccountText } from "./account-ui";
+import { Action, AccountNavIcon, State, useAccountText } from "./account-ui";
 import styles from "./ProfilePage.module.css";
 
 const sections = [
@@ -138,6 +139,10 @@ export function ProfilePage() {
     setDirty(false);
     setPending(null);
     setSaved(false);
+    if (destination === "signout") {
+      signOut();
+      return;
+    }
     if (destination.startsWith("/")) {
       location.assign(destination);
       return;
@@ -200,6 +205,19 @@ export function ProfilePage() {
             <WorkspaceIcon name="arrow-left" size={17} />
             <span>{text("back_chat", "Back to chat")}</span>
           </a>
+          {account.data && (
+            <AvatarNavbar
+              profile={account.data}
+              disabled={saving}
+              onNavigate={(url) =>
+                navigate(url.startsWith("/profile#") ? url.split("#")[1] : url)
+              }
+              onSignOut={() => {
+                if (dirty) navigate("signout");
+                else signOut();
+              }}
+            />
+          )}
         </div>
       </header>
       <div className={styles.layout}>
@@ -208,9 +226,6 @@ export function ProfilePage() {
           aria-label={text("settings_navigation", "Settings navigation")}
         >
           <div className={styles.sidebarIntro}>
-            <span className={styles.eyebrow}>
-              {text("your_workspace", "YOUR WORKSPACE")}
-            </span>
             <h2>{text("settings", "Settings")}</h2>
           </div>
           <label className={styles.search}>
@@ -238,9 +253,8 @@ export function ProfilePage() {
                   navigate(item.id);
                 }}
               >
-                <WorkspaceIcon name={item.icon} size={19} />
+                <AccountNavIcon section={item.id} />
                 <span>{labels(item.id, item.title)}</span>
-                {active === item.id && <span className={styles.navIndicator} />}
               </a>
             ))}
             {!visible.length && (
@@ -250,24 +264,6 @@ export function ProfilePage() {
             )}
           </nav>
           <div className={styles.sidebarBottom}>
-            {account.data && (
-              <button
-                className={styles.balanceShortcut}
-                disabled={saving}
-                onClick={() => navigate("billing")}
-              >
-                <span>
-                  <WorkspaceIcon name="gem" size={17} />
-                  {text("credit_balance", "Credit balance")}
-                </span>
-                <strong>
-                  {new Intl.NumberFormat(lang, {
-                    maximumFractionDigits: 2,
-                  }).format(Number(account.data.credits))}
-                  <WorkspaceIcon name="chevron" size={16} />
-                </strong>
-              </button>
-            )}
             <a
               className={styles.supportLink}
               href="/support"
@@ -282,18 +278,6 @@ export function ProfilePage() {
               {text("help_support", "Help & support")}
               <WorkspaceIcon name="external" size={14} />
             </a>
-            {account.data && (
-              <div className={styles.sidebarIdentity}>
-                <Avatar
-                  name={account.data.name || account.data.email}
-                  src={account.data.avatar}
-                />
-                <span>
-                  {account.data.name || account.data.email.split("@")[0]}
-                  <small>{text("personal_account", "Personal account")}</small>
-                </span>
-              </div>
-            )}
           </div>
         </aside>
         <div className={styles.mobileNavigation}>
@@ -315,16 +299,6 @@ export function ProfilePage() {
         </div>
         <main id="account-content" className={styles.main} tabIndex={-1}>
           <div className={styles.pageHeading}>
-            <span className={styles.eyebrow}>
-              {text(
-                active === "billing" || active === "usage"
-                  ? "account_activity"
-                  : "account_settings",
-                active === "billing" || active === "usage"
-                  ? "ACCOUNT ACTIVITY"
-                  : "ACCOUNT SETTINGS",
-              )}
-            </span>
             <h1 tabIndex={-1} ref={heading}>
               {labels(current.id, current.title)}
             </h1>

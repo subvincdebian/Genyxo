@@ -130,18 +130,4 @@ export function cacheAccount(account: Account) {
   }
 }
 
-export function signOut() {
-  for (const key of [
-    "authToken",
-    "userName",
-    "userEmail",
-    "userAvatar",
-    "userCredits",
-    "userRole",
-    "userId",
-  ])
-    localStorage.removeItem(key);
-  document.dispatchEvent(new Event("genyxo:session"));
-  // A full navigation also tears down any legacy controller and socket state.
-  window.location.replace(new URL("/sign-in", window.location.origin).href);
-}
+export { signOutSession as signOut } from "@/entities/session";

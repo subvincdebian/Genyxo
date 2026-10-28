@@ -214,6 +214,7 @@ export default function initialize(scope, context) {
     scope.document.dispatchEvent(new Event("genyxo:session"));
   }
   function renderBadge(count) {
+    scope.document.dispatchEvent(new CustomEvent("genyxo:unread-count", { detail: { count } }));
     if (!notificationBadge) return;
     const numericCount = parseInt(count, 10) || 0;
     if (numericCount > 0) {
@@ -1047,7 +1048,7 @@ export default function initialize(scope, context) {
   function handleLoginButtonClick(e) {
     e.stopPropagation();
     if (token) {
-      profilePanel.classList.toggle("show");
+      profilePanel?.classList.toggle("show");
     } else {
       openLoginModal();
     }
@@ -1125,7 +1126,7 @@ export default function initialize(scope, context) {
   function toggleProfilePanel() {
     const profilePanel = scope.document.getElementById("profilePanel");
     if (profilePanel) {
-      profilePanel.classList.toggle("show");
+      profilePanel?.classList.toggle("show");
     }
   }
   function stopPolling() {
@@ -1241,7 +1242,7 @@ export default function initialize(scope, context) {
     scope.window.addEventListener("click", (e) => {
       if (
         !e.target.closest(".profile-container") &&
-        profilePanel.classList.contains("show")
+        profilePanel?.classList.contains("show")
       ) {
         profilePanel.classList.remove("show");
       }

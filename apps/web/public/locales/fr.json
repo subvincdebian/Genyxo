@@ -648,6 +648,9 @@
     "status_partially_paid": "Partiellement payée",
     "purchase": "Achat de crédits",
     "spend": "Utilisation de l’IA",
-    "refund": "Remboursement"
+    "refund": "Remboursement",
+    "edit_name": "Modifier le nom",
+    "profile_menu": "Menu du profil",
+    "admin_dashboard": "Administration"
   }
 }

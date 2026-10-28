@@ -202,6 +202,10 @@ const icons: Record<string, ReactNode> = {
     <path d="M3 10h14" />
     <path className="gi-meridian" d="M10 3c1.9 2 2.8 4.5 2.8 7s-.9 5-2.8 7c-1.9-2-2.8-4.5-2.8-7S8.1 5 10 3Z" />
   </>,
+  mail: <>
+    <rect x="3" y="4.5" width="14" height="11" rx="2" />
+    <path d="m3.5 5.5 6.5 5 6.5-5" />
+  </>,
   bell: <>
     <path className="gi-ring" d="M5 13.5V9a5 5 0 0 1 10 0v4.5l1.5 2h-13l1.5-2Z" />
     <path d="M8.3 17.5a1.8 1.8 0 0 0 3.4 0" />

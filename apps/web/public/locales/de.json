@@ -648,6 +648,9 @@
     "status_partially_paid": "Teilweise bezahlt",
     "purchase": "Credit-Kauf",
     "spend": "KI-Nutzung",
-    "refund": "Erstattung"
+    "refund": "Erstattung",
+    "edit_name": "Name bearbeiten",
+    "profile_menu": "Profilmenü",
+    "admin_dashboard": "Administration"
   }
 }

@@ -43,7 +43,7 @@ async function signIn(page: Page, request: APIRequestContext) {
   }, account.access_token);
   await page.reload();
   await expect(
-    page.getByRole("button", { name: "Edit profile", exact: true }),
+    page.getByRole("button", { name: "Edit name", exact: true }),
   ).toBeVisible();
   return account.access_token as string;
 }
@@ -90,10 +90,29 @@ test("profile edits and uploaded avatars persist in the database", async ({
   request,
 }) => {
   const token = await signIn(page, request);
-  await page.getByRole("button", { name: "Edit profile", exact: true }).click();
+  await page.getByRole("button", { name: "Edit name", exact: true }).click();
   const dialog = page.getByRole("dialog");
+  await expect(dialog.getByLabel("Email address")).toHaveCount(0);
+  await expect(dialog.getByLabel("Upload photo", { exact: true })).toHaveCount(
+    0,
+  );
   await dialog.getByLabel("Display name").fill("Profile QA Updated");
-  await dialog.getByLabel("Upload photo", { exact: true }).setInputFiles({
+  await dialog.getByRole("button", { name: "Save changes" }).click();
+  await expect(dialog).not.toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Profile QA Updated" }),
+  ).toBeVisible();
+  // Avatar activation opens the native picker directly, then previews the chosen image.
+  await expect(page.getByText("Account ID", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Personal account", { exact: true })).toHaveCount(
+    0,
+  );
+  const picker = page.waitForEvent("filechooser");
+  await page.getByRole("button", { name: "Upload photo", exact: true }).click();
+  await (
+    await picker
+  ).setFiles({
     name: "avatar.png",
     mimeType: "image/png",
     buffer: Buffer.from(
@@ -101,12 +120,34 @@ test("profile edits and uploaded avatars persist in the database", async ({
       "base64",
     ),
   });
-  await dialog.getByRole("button", { name: "Save changes" }).click();
-  await expect(dialog).not.toBeVisible();
-  await page.reload();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Save changes" })
+    .click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await page.getByRole("button", { name: "Profile menu" }).click();
+  await expect(page.getByRole("menu")).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Profile QA Updated" }),
-  ).toBeVisible();
+    page.getByRole("menuitem", { name: "Profile", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(
+    page.getByRole("menuitem", { name: "Notifications", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).not.toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Profile menu" }),
+  ).toBeFocused();
+  await page.setViewportSize({ width: 1440, height: 550 });
+  const sidebar = page.getByRole("complementary");
+  await sidebar
+    .getByRole("link", { name: "Help & support" })
+    .scrollIntoViewIfNeeded();
+  expect(
+    await sidebar.evaluate((el) => el.getBoundingClientRect().bottom),
+  ).toBeLessThanOrEqual(551);
+  await page.setViewportSize({ width: 1440, height: 1000 });
   const profile = await (
     await request.get(`${backend}/profile`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -306,6 +347,63 @@ test("mobile, light theme, reduced motion and all sections remain usable", async
     path: testInfo.outputPath("usage-desktop.png"),
     fullPage: true,
   });
+});
+
+test("all public navbar routes use the same account menu without pointer rings", async ({
+  page,
+  request,
+}) => {
+  const token = await signIn(page, request);
+  const profile = await (
+    await request.get(`${backend}/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  ).json();
+  await page.evaluate((account) => {
+    for (const [key, value] of Object.entries({
+      userName: account.name,
+      userEmail: account.email,
+      userAvatar: account.avatar,
+      userCredits: String(account.credits),
+      userRole: account.role,
+    }))
+      localStorage.setItem(key, String(value || ""));
+    document.dispatchEvent(new Event("genyxo:session"));
+  }, profile);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  for (const route of [
+    "/",
+    "/chat",
+    "/support",
+    "/policies/faq",
+    "/policies/policies",
+    "/policies/privacy-policy",
+    "/policies/terms-of-service",
+    "/notifications",
+  ]) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    const avatar = page.getByRole("button", {
+      name: "Profile menu",
+      exact: true,
+    });
+    await expect(avatar).toBeEnabled();
+    await avatar.click();
+    const menu = page.getByRole("menu");
+    await expect(menu).toBeVisible();
+    await expect(
+      menu.getByRole("menuitem", { name: "Profile", exact: true }),
+    ).toBeVisible();
+    await expect(
+      menu.getByRole("menuitem", { name: "Sign out", exact: true }),
+    ).toBeVisible();
+    expect(
+      await avatar.evaluate((button) => getComputedStyle(button).boxShadow),
+    ).toBe("none");
+    await page.keyboard.press("Escape");
+    await expect(menu).not.toBeVisible();
+  }
+  expect(errors).toEqual([]);
 });
 
 test("sign out everywhere revokes independently issued sessions", async ({

@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { WorkspaceDialog, WorkspaceIcon } from "@/shared/ui/workspace";
 import {
   accountRequest,
@@ -21,7 +21,9 @@ export function AccountOverview({
   navigate: (section: string) => void;
 }) {
   const { text, lang } = useAccountText();
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState<"name" | "photo" | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<File | undefined>();
+  const photoInput = useRef<HTMLInputElement>(null);
   const usage = useAccountResource<Usage>("profile/usage?period=30");
   const number = (value: number) =>
     new Intl.NumberFormat(lang, { maximumFractionDigits: 2 }).format(value);
@@ -29,24 +31,43 @@ export function AccountOverview({
     <>
       <div className={styles.identity}>
         <div className="gx:flex gx:items-center gx:gap-5 gx:min-w-0">
-          <Avatar
-            large
-            name={account.name || account.email}
-            src={account.avatar}
+          <button
+            className={styles.avatarEdit}
+            aria-label={text("upload_photo", "Upload photo")}
+            title={text("upload_photo", "Upload photo")}
+            onClick={() => photoInput.current?.click()}
+          >
+            <Avatar
+              large
+              name={account.name || account.email}
+              src={account.avatar}
+            />
+            <span className={styles.avatarOverlay}>
+              <WorkspaceIcon name="image" size={24} />
+            </span>
+          </button>
+          <input
+            ref={photoInput}
+            type="file"
+            hidden
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className={styles.srOnly}
+            tabIndex={-1}
+            aria-label={text("upload_photo", "Upload photo")}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                setSelectedPhoto(file);
+                setEditing("photo");
+              }
+              event.target.value = "";
+            }}
           />
           <div className={styles.identityText}>
             <h2>{account.name || account.email.split("@")[0]}</h2>
             <p>{account.email}</p>
-            <span className={styles.identityTag}>
-              <span />
-              {text("personal_account", "Personal account")}
-            </span>
           </div>
         </div>
-        <Action primary onClick={() => setEditing(true)}>
-          <WorkspaceIcon name="edit" size={16} />
-          {text("edit_profile", "Edit profile")}
-        </Action>
       </div>
       <div className={styles.overviewStats}>
         <button onClick={() => navigate("billing")}>
@@ -74,7 +95,17 @@ export function AccountOverview({
       <Section title={text("account_details", "Account details")}>
         <div className={styles.group}>
           <Row title={text("name", "Display name")}>
-            <span>{account.name || "—"}</span>
+            <span className={styles.editableValue}>
+              {account.name || "—"}
+              <button
+                className={styles.iconButton}
+                aria-label={text("edit_name", "Edit name")}
+                title={text("edit_name", "Edit name")}
+                onClick={() => setEditing("name")}
+              >
+                <WorkspaceIcon name="edit" size={18} />
+              </button>
+            </span>
           </Row>
           <Row
             title={text("email", "Email address")}
@@ -82,18 +113,21 @@ export function AccountOverview({
           >
             <span className={styles.breakText}>{account.email}</span>
           </Row>
-          <Row title={text("account_id", "Account ID")}>
-            <span className={styles.mono}>#{account.id}</span>
-          </Row>
         </div>
       </Section>
       {editing && (
         <ProfileEditor
           account={account}
-          onClose={() => setEditing(false)}
+          mode={editing}
+          initialFile={selectedPhoto}
+          onClose={() => {
+            setEditing(null);
+            setSelectedPhoto(undefined);
+          }}
           onSaved={() => {
             onUpdated();
-            setEditing(false);
+            setEditing(null);
+            setSelectedPhoto(undefined);
           }}
         />
       )}
@@ -103,10 +137,14 @@ export function AccountOverview({
 
 function ProfileEditor({
   account,
+  mode,
+  initialFile,
   onClose,
   onSaved,
 }: {
   account: Account;
+  mode: "name" | "photo";
+  initialFile?: File;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -128,6 +166,15 @@ function ProfileEditor({
     else onClose();
   };
 
+  const initialRead = useRef(false);
+  useEffect(() => {
+    if (initialFile && !initialRead.current) {
+      initialRead.current = true;
+      void readImage(initialFile);
+    }
+    // The selected file belongs to this editor instance; subsequent uploads use the input.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   async function readImage(file?: File) {
     if (!file || processing || busy) return;
     setError("");
@@ -183,7 +230,10 @@ function ProfileEditor({
   async function save(event: FormEvent) {
     event.preventDefault();
     if (busy || processing) return;
-    if (name.trim().length < 2 || name.trim().length > 50) {
+    if (
+      mode === "name" &&
+      (name.trim().length < 2 || name.trim().length > 50)
+    ) {
       setError(text("name_error", "Use 2–50 characters for your name."));
       nameInput.current?.focus();
       return;
@@ -193,7 +243,9 @@ function ProfileEditor({
     try {
       await accountRequest("profile/update", {
         method: "POST",
-        body: JSON.stringify({ name: name.trim(), avatar }),
+        body: JSON.stringify(
+          mode === "name" ? { name: name.trim() } : { avatar },
+        ),
       });
       cacheAccount({ ...account, name: name.trim(), avatar });
       onSaved();
@@ -208,78 +260,92 @@ function ProfileEditor({
   }
   return (
     <WorkspaceDialog
-      title={text("edit_profile", "Edit profile")}
+      title={
+        mode === "name"
+          ? text("edit_name", "Edit name")
+          : text("profile_photo", "Profile photo")
+      }
       onClose={close}
       className={styles.dialog}
     >
       <form onSubmit={save} noValidate className={styles.form}>
-        <div
-          className={`${styles.dropzone} ${dragging ? styles.dragging : ""}`}
-          onDragOver={(event) => {
-            event.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(event) => {
-            event.preventDefault();
-            setDragging(false);
-            void readImage(event.dataTransfer.files[0]);
-          }}
-        >
-          <Avatar large name={name || account.email} src={avatar} />
-          <div>
-            <strong>{text("profile_photo", "Profile photo")}</strong>
-            <p>{text("photo_help", "Drop an image here, or choose a file.")}</p>
-            <div className="gx:flex gx:flex-wrap gx:gap-2">
-              <Action
-                onClick={() => fileInput.current?.click()}
-                disabled={processing || busy}
-                busy={processing}
-              >
-                <WorkspaceIcon name="upload" size={16} />
-                {text("upload_photo", "Upload photo")}
-              </Action>
-              {avatar && (
-                <button
-                  type="button"
-                  className={styles.textButton}
-                  disabled={busy || processing}
-                  onClick={() => setAvatar("")}
-                >
-                  {text("remove", "Remove")}
-                </button>
-              )}
+        {mode === "photo" && (
+          <>
+            <div
+              className={`${styles.dropzone} ${dragging ? styles.dragging : ""}`}
+              onDragOver={(event) => {
+                event.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(event) => {
+                event.preventDefault();
+                setDragging(false);
+                void readImage(event.dataTransfer.files[0]);
+              }}
+            >
+              <Avatar large name={name || account.email} src={avatar} />
+              <div>
+                <strong>{text("profile_photo", "Profile photo")}</strong>
+                <p>
+                  {text("photo_help", "Drop an image here, or choose a file.")}
+                </p>
+                <div className="gx:flex gx:flex-wrap gx:gap-2">
+                  <Action
+                    onClick={() => fileInput.current?.click()}
+                    disabled={processing || busy}
+                    busy={processing}
+                  >
+                    <WorkspaceIcon name="upload" size={16} />
+                    {text("upload_photo", "Upload photo")}
+                  </Action>
+                  {avatar && (
+                    <button
+                      type="button"
+                      className={styles.textButton}
+                      disabled={busy || processing}
+                      onClick={() => setAvatar("")}
+                    >
+                      {text("remove", "Remove")}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <input
+                ref={fileInput}
+                type="file"
+                hidden
+                className={styles.srOnly}
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                aria-label={text("upload_photo", "Upload photo")}
+                tabIndex={-1}
+                onChange={(event) => void readImage(event.target.files?.[0])}
+              />
             </div>
-          </div>
-          <input
-            ref={fileInput}
-            type="file"
-            className={styles.srOnly}
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            aria-label={text("upload_photo", "Upload photo")}
-            tabIndex={-1}
-            onChange={(event) => void readImage(event.target.files?.[0])}
-          />
-        </div>
-        <p className={styles.hint}>
-          {text(
-            "photo_limit",
-            "PNG, JPG, WebP or GIF. Up to 5 MB. Cropped to a square.",
-          )}
-        </p>
-        <label className={styles.field}>
-          {text("name", "Display name")}
-          <input
-            ref={nameInput}
-            value={name}
-            maxLength={50}
-            autoComplete="name"
-            disabled={busy}
-            onChange={(event) => setName(event.target.value)}
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? "profile-edit-error" : undefined}
-          />
-        </label>
+            <p className={styles.hint}>
+              {text(
+                "photo_limit",
+                "PNG, JPG, WebP or GIF. Up to 5 MB. Cropped to a square.",
+              )}
+            </p>
+          </>
+        )}
+        {mode === "name" && (
+          <label className={styles.field}>
+            {text("name", "Display name")}
+            <input
+              ref={nameInput}
+              autoFocus
+              value={name}
+              maxLength={50}
+              autoComplete="name"
+              disabled={busy}
+              onChange={(event) => setName(event.target.value)}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "profile-edit-error" : undefined}
+            />
+          </label>
+        )}
         {error && (
           <p id="profile-edit-error" className={styles.error} role="alert">
             {error}

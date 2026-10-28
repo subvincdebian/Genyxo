@@ -630,6 +630,9 @@
     "status_partially_paid": "Partially paid",
     "purchase": "Credit purchase",
     "spend": "AI usage",
-    "refund": "Refund"
+    "refund": "Refund",
+    "edit_name": "Edit name",
+    "profile_menu": "Profile menu",
+    "admin_dashboard": "Admin dashboard"
   }
 }

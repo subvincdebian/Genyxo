@@ -1,6 +1,5 @@
-/* Signed-in header avatar, shared by every page header. A clean circle with
-   no plate or ring at rest; hover adds a soft accent ring instead of scaling,
-   because scaling a raster avatar makes it look soft. */
+/* Signed-in header avatar, shared by every page header. A clean circle without decorative rings. Keyboard focus is separate from
+   pointer hover and does not scale raster images. */
 #loginBtn.profile-toggle-btn,
 html.auth-active #loginBtn.chat-auth-btn {
   width: 38px !important;
@@ -15,12 +14,7 @@ html.auth-active #loginBtn.chat-auth-btn {
   transform: none !important;
   transition: box-shadow 200ms ease !important;
 }
-#loginBtn.profile-toggle-btn:hover,
-#loginBtn.profile-toggle-btn:focus-visible,
-html.auth-active #loginBtn.chat-auth-btn:hover {
-  box-shadow: 0 0 0 3px rgba(94, 224, 196, 0.38) !important;
-  transform: none !important;
-}
+#loginBtn.profile-toggle-btn:focus-visible { outline: 2px solid var(--gx-text-2); outline-offset: 3px; }
 #loginBtn.profile-toggle-btn #navAvatar,
 html.auth-active #loginBtn #navAvatar {
   display: block !important;
@@ -34,3 +28,5 @@ html.auth-active #loginBtn #navAvatar {
   transform: none !important;
   background: #1f2323;
 }
+
+.gx-account-avatar, .ws-footer-menu:hover .gx-account-avatar { box-shadow: none !important; transform: none !important; }
