@@ -71,6 +71,15 @@ export class NotificationsGateway
       )
         return client.disconnect();
 
+      const sessionId = await this.usersService.trackSession(
+        Number(userId),
+        token,
+        payload,
+        client.handshake.headers["user-agent"] || "",
+        client.handshake.address || "",
+      );
+      if (!sessionId) return client.disconnect();
+      await client.join(`session_${sessionId}`);
       if (userId) {
         const [, unreadCount] = await Promise.all([
           client.join(`user_${userId}`),
@@ -82,6 +91,14 @@ export class NotificationsGateway
           (await this.usersService.getSessionVersion(Number(userId)))
         )
           return client.disconnect();
+        if (
+          !(await this.usersService.trackSession(
+            Number(userId),
+            token,
+            payload,
+          ))
+        )
+          return client.disconnect();
         client.emit("unread_count_update", { count: unreadCount });
       }
     } catch (_error) {
@@ -91,6 +108,10 @@ export class NotificationsGateway
 
   handleDisconnect(client: Socket) {
     this.logger.debug?.(`Socket ${client.id} disconnected`);
+  }
+
+  revokeSession(id: string) {
+    this.server?.in(`session_${id}`).disconnectSockets(true);
   }
 
   revokeSessions(userId: number) {

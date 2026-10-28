@@ -30,6 +30,7 @@ describe("Admin API authorization after removing legacy HTML", () => {
         {
           provide: UsersService,
           useValue: {
+            trackSession: async () => "fixture-session",
             getSessionVersion: async () => 0,
             findAuthUserById: async (id: number) => ({
               id,

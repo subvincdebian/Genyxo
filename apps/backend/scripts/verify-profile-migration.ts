@@ -1,6 +1,7 @@
 import { DataSource } from "typeorm";
 import source from "../src/database/data-source";
 import { AccountSessions1791936000009 } from "../src/database/migrations/1791936000009-AccountSessions";
+import { ActiveSessions1791936000010 } from "../src/database/migrations/1791936000010-ActiveSessions";
 import { strict as assert } from "node:assert";
 
 async function main() {
@@ -51,8 +52,36 @@ async function main() {
       await assert.rejects(() => migration.down(runner), /fractional entries/);
       await runner.query("DELETE FROM transactions WHERE id = 4");
       await migration.down(runner);
+      const sessions = new ActiveSessions1791936000010();
+      await sessions.up(runner);
+      await runner.query("INSERT INTO users (id) VALUES (1)");
+      await runner.query(
+        "INSERT INTO auth_sessions (id,userId,createdAt,lastUsedAt,expiresAt) VALUES (?,1,UTC_TIMESTAMP(),UTC_TIMESTAMP(),DATE_ADD(UTC_TIMESTAMP(), INTERVAL 7 DAY))",
+        ["a".repeat(64)],
+      );
+      await runner.query(
+        "UPDATE auth_sessions SET revokedAt=UTC_TIMESTAMP() WHERE userId=1",
+      );
+      assert.equal(
+        Number(
+          (
+            await runner.query(
+              "SELECT COUNT(*) n FROM auth_sessions WHERE revokedAt IS NULL",
+            )
+          )[0].n,
+        ),
+        0,
+      );
+      await runner.query("DELETE FROM users WHERE id=1");
+      assert.equal(
+        Number(
+          (await runner.query("SELECT COUNT(*) n FROM auth_sessions"))[0].n,
+        ),
+        0,
+      );
+      await sessions.down(runner);
       console.log(
-        "Profile migration: existing values preserved, fractional credits stored, lossy rollback blocked, integer rollback passed.",
+        "Profile migration: existing values preserved, fractional credits stored, lossy rollback blocked, integer rollback passed; session revocation and cascade passed.",
       );
     } finally {
       await runner.release();

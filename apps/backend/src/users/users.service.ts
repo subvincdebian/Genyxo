@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { randomInt } from "crypto";
+import { AuthSession } from "./auth-session.entity";
+import { createHash, randomInt } from "crypto";
 import { RedisCacheService } from "../common/redis-cache.service";
 import { User } from "./user.entity";
 import { Role } from "./role.enum";
@@ -33,6 +34,85 @@ export class UsersService {
     private transactionRepository: Repository<Transaction>,
     private redisCache: RedisCacheService,
   ) {}
+
+  async trackSession(
+    userId: number,
+    token: string,
+    payload: { iat?: number; exp?: number; sessionVersion?: number },
+    agent = "",
+    ip = "",
+  ) {
+    const id = createHash("sha256").update(token).digest("hex");
+    const runner =
+      this.usersRepository.manager.connection.createQueryRunner("master");
+    try {
+      await runner.connect();
+      const now = new Date();
+      await runner.manager
+        .createQueryBuilder()
+        .insert()
+        .into(AuthSession)
+        .values({
+          id,
+          userId,
+          sessionVersion: payload.sessionVersion ?? 0,
+          userAgent: agent.slice(0, 512),
+          ip: ip.slice(0, 64),
+          createdAt: new Date(
+            (payload.iat || Math.floor(Date.now() / 1000)) * 1000,
+          ),
+          lastUsedAt: now,
+          expiresAt: new Date(
+            (payload.exp || Math.floor(Date.now() / 1000)) * 1000,
+          ),
+          revokedAt: null,
+        })
+        .orIgnore()
+        .execute();
+      const session = await runner.manager.findOneBy(AuthSession, {
+        id,
+        userId,
+      });
+      if (!session || session.revokedAt || session.expiresAt <= now)
+        return null;
+      if (now.getTime() - session.lastUsedAt.getTime() > 60000)
+        await runner.manager.update(
+          AuthSession,
+          { id, userId },
+          { lastUsedAt: now },
+        );
+      return id;
+    } finally {
+      await runner.release();
+    }
+  }
+  async listSessions(userId: number, currentId?: string) {
+    const version = await this.getSessionVersion(userId);
+    const rows = await this.usersRepository.manager
+      .getRepository(AuthSession)
+      .createQueryBuilder("s")
+      .where(
+        "s.userId = :userId AND s.sessionVersion = :version AND s.revokedAt IS NULL AND s.expiresAt > :now",
+        { userId, version, now: new Date() },
+      )
+      .orderBy("s.lastUsedAt", "DESC")
+      .getMany();
+    return rows.map(({ id, userAgent, ip, createdAt, lastUsedAt }) => ({
+      id,
+      userAgent,
+      ip,
+      createdAt,
+      lastUsedAt,
+      current: id === currentId,
+    }));
+  }
+  async revokeSession(userId: number, id: string) {
+    const result = await this.usersRepository.manager
+      .getRepository(AuthSession)
+      .update({ id, userId }, { revokedAt: new Date() });
+    if (!result.affected) throw new NotFoundException("Session not found");
+    return { status: "success" };
+  }
 
   async findOneByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({

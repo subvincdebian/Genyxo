@@ -778,8 +778,11 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
       libraryView: "grid",
       memory: true,
       customInstructions: "",
-      responseLanguage: "auto",
       ...(row?.data || {}),
+      responseLanguage:
+        row?.data.responseLanguage === "ru"
+          ? "auto"
+          : row?.data.responseLanguage || "auto",
       timezoneInitialized: Boolean(row?.data.timezone),
     };
   }
@@ -811,9 +814,7 @@ export class WorkspaceService implements OnModuleInit, OnModuleDestroy {
     }
     if (input.responseLanguage !== undefined) {
       if (
-        !["auto", "en", "uk", "es", "de", "fr", "ru"].includes(
-          input.responseLanguage,
-        )
+        !["auto", "en", "uk", "es", "de", "fr"].includes(input.responseLanguage)
       )
         throw new BadRequestException("Invalid response language");
       data.responseLanguage = input.responseLanguage;

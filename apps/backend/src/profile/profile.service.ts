@@ -26,6 +26,10 @@ export class ProfileService {
     private readonly notifications: NotificationsGateway,
   ) {}
 
+  disconnectSession(id: string) {
+    this.notifications.revokeSession(id);
+  }
+
   async security(userId: number) {
     const user = await this.users.findOne({
       where: { id: userId },

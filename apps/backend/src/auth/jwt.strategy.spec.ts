@@ -39,4 +39,38 @@ describe("persistent account session revocation", () => {
     version = 3;
     await expect(strategy.validate(payload)).rejects.toThrow("Session expired");
   });
+  it("checks individual token revocation before authorizing a request", async () => {
+    const trackSession = jest.fn().mockResolvedValue("session-hash");
+    const guarded = new JwtStrategy(
+      new ConfigService({ JWT_SECRET: "test-only-secret" }),
+      { ...users, trackSession } as unknown as UsersService,
+    );
+    const payload = {
+      sub: 1,
+      email: "account@example.test",
+      role: "user",
+      sessionVersion: 0,
+      iat: 1,
+      exp: 9999999999,
+    };
+    const request = {
+      headers: { authorization: "Bearer test-token", "user-agent": "Firefox" },
+      ip: "127.0.0.1",
+    };
+    await expect(guarded.validate(request, payload)).resolves.toMatchObject({
+      id: 1,
+      sessionId: "session-hash",
+    });
+    expect(trackSession).toHaveBeenCalledWith(
+      1,
+      "test-token",
+      payload,
+      "Firefox",
+      "127.0.0.1",
+    );
+    trackSession.mockResolvedValueOnce(null);
+    await expect(guarded.validate(request, payload)).rejects.toThrow(
+      "Session revoked",
+    );
+  });
 });

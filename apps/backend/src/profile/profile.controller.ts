@@ -1,4 +1,5 @@
 import {
+  Param,
   Controller,
   Get,
   Post,
@@ -113,6 +114,29 @@ export class ProfileController {
       body.currentPassword,
       body.newPassword,
     );
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Post("logout")
+  async logout(@Request() req) {
+    await this.usersService.revokeSession(req.user.id, req.user.sessionId);
+    this.profileService.disconnectSession(req.user.sessionId);
+    return { status: "success" };
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("sessions")
+  sessions(@Request() req) {
+    return this.usersService.listSessions(req.user.id, req.user.sessionId);
+  }
+  @UseGuards(AuthGuard("jwt"))
+  @Post("sessions/:id/revoke")
+  async revokeSession(@Request() req, @Param("id") id: string) {
+    if (!/^[a-f0-9]{64}$/.test(id))
+      throw new BadRequestException("Invalid session");
+    await this.usersService.revokeSession(req.user.id, id);
+    this.profileService.disconnectSession(id);
+    return { status: "success" };
   }
 
   @UseGuards(AuthGuard("jwt"))

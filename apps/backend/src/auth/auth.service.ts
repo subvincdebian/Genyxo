@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import { UsersService } from "../users/users.service";
 import { EmailService } from "../email/email.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -48,6 +48,7 @@ export class AuthService {
       sub: user.id,
       role: user.role,
       sessionVersion,
+      jti: randomUUID(),
     };
     return {
       access_token: this.jwtService.sign(payload),
