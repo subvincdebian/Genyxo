@@ -22,8 +22,9 @@ function database(action: "seed" | "cleanup") {
     stdio: "pipe",
   });
 }
-async function login(request: APIRequestContext) {
+async function login(request: APIRequestContext, headers?: Record<string, string>) {
   const response = await request.post(`${backend}/auth/login`, {
+    headers,
     data: { email, password },
   });
   expect(response.ok()).toBeTruthy();
@@ -56,6 +57,9 @@ async function choose(page: Page, label: string, value: string) {
     personalization: "Personalization",
     appearance: "Appearance",
     security: "Security",
+    voice: "Voice",
+    keyboard: "Keyboard",
+    archive: "Archived chats",
     billing: "Credits & billing",
     usage: "Usage",
     referrals: "Referrals",
@@ -334,6 +338,9 @@ test("mobile, light theme, reduced motion and all sections remain usable", async
     "personalization",
     "appearance",
     "security",
+    "voice",
+    "keyboard",
+    "archive",
     "billing",
     "usage",
     "referrals",
@@ -450,7 +457,7 @@ test("active sessions distinguish devices and revoke only the chosen token", asy
   request,
 }) => {
   const current = await signIn(page, request);
-  const other = (await login(request)).access_token;
+  const other = (await login(request, { "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Version/18.0 Mobile Safari/604.1" })).access_token;
   await request.get(`${backend}/profile`, {
     headers: {
       Authorization: `Bearer ${other}`,

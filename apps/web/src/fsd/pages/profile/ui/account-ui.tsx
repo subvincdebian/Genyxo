@@ -42,14 +42,19 @@ export function Row({
   description,
   children,
   icon,
+  leading,
+  id,
 }: {
   title: string;
   description?: string;
   children?: ReactNode;
   icon?: string;
+  leading?: ReactNode;
+  id?: string;
 }) {
   return (
-    <div className={styles.row}>
+    <div id={id} className={styles.row}>
+      {leading && <span className={styles.rowIcon}>{leading}</span>}
       {icon && (
         <span className={styles.rowIcon}>
           <WorkspaceIcon name={icon} />
@@ -215,6 +220,24 @@ export function AccountNavIcon({ section }: { section: string }) {
       <>
         <rect x="3" y="5" width="18" height="14" rx="3" />
         <path d="M3 10h18M7 15h4" />
+      </>
+    ),
+    voice: (
+      <>
+        <rect x="9" y="2" width="6" height="13" rx="3" />
+        <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-3 0h6" />
+      </>
+    ),
+    keyboard: (
+      <>
+        <rect x="2" y="5" width="20" height="14" rx="3" />
+        <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 15h8" />
+      </>
+    ),
+    archive: (
+      <>
+        <rect x="3" y="3" width="18" height="5" rx="1.5" />
+        <path d="M5 8v13h14V8m-10 4h6" />
       </>
     ),
     usage: <path d="M4 3v17h17M8 15v-4m5 4V6m5 9V9" />,

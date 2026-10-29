@@ -5,6 +5,8 @@
 // handles barge-in; the server only issues a single-use token whose model,
 // voice, instructions and tools are fixed.
 
+import { getAudioSettings, routeAudioOutput, subscribeAudioSettings } from "@/shared/lib/audio-settings";
+
 export type LivePhase = "listening" | "thinking" | "speaking";
 export type LiveFile = { name: string; language: string; content: string };
 export type LiveHooks = {
@@ -54,13 +56,14 @@ type ServerMessage = {
 
 export async function startLiveSession(stream: MediaStream, session: { token: string; model: string; url: string }, hooks: LiveHooks): Promise<LiveSession> {
   const audio = new AudioContext();
+  await routeAudioOutput(audio).catch(() => {});
   if (audio.state === "suspended") await audio.resume().catch(() => {});
   // Served as a static file: the site CSP does not allow worklets from blob: URLs.
   await audio.audioWorklet.addModule("/worklets/genyxo-pcm.js");
 
   const source = audio.createMediaStreamSource(stream);
   const gain = audio.createGain();
-  gain.gain.value = MIC_GAIN;
+  gain.gain.value = MIC_GAIN * getAudioSettings().microphone;
   const micMeter = audio.createAnalyser();
   micMeter.fftSize = 512;
   const pcm = new AudioWorkletNode(audio, "genyxo-pcm");
@@ -70,7 +73,15 @@ export async function startLiveSession(stream: MediaStream, session: { token: st
   gain.connect(pcm).connect(sink).connect(audio.destination);
   const speaker = audio.createAnalyser();
   speaker.fftSize = 512;
-  speaker.connect(audio.destination);
+  const outputVolume = audio.createGain();
+  outputVolume.gain.value = getAudioSettings().speaker;
+  speaker.connect(outputVolume).connect(audio.destination);
+  const releaseAudio = subscribeAudioSettings(() => {
+    const settings = getAudioSettings();
+    gain.gain.setTargetAtTime(MIC_GAIN * settings.microphone, audio.currentTime, .02);
+    outputVolume.gain.setTargetAtTime(settings.speaker, audio.currentTime, .02);
+    void routeAudioOutput(audio).catch(() => {});
+  });
 
   const socket = new WebSocket(`${session.url}?access_token=${encodeURIComponent(session.token)}`);
   let ready = false;
@@ -147,6 +158,7 @@ export async function startLiveSession(stream: MediaStream, session: { token: st
   const stop = () => {
     if (closed) return;
     closed = true;
+    releaseAudio();
     cancelAnimationFrame(frame);
     window.clearTimeout(thinkingTimer);
     stopPlayback();

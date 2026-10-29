@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import type { Viewport } from "next";
 import { LanguageProvider } from "@/shared/i18n";
 import { AppearanceSync } from "@/shared/ui/AppearanceSync";
+import { InteractionSync } from "@/shared/ui/InteractionSync";
+import { DeviceIdentity } from "@/shared/ui/DeviceIdentity";
 import "@/shared/styles/tailwind.css";
 import "@/shared/styles/theme.css";
 import "@/shared/styles/avatar.css";
@@ -19,6 +21,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <LanguageProvider>
+          <DeviceIdentity />
+          <InteractionSync />
           <AppearanceSync />
           {children}
         </LanguageProvider>

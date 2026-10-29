@@ -119,6 +119,14 @@ export function WorkspaceSidebar({
     moveChatId?: number;
   } | null>(null);
   const [confirmation, setConfirmation] = useState<Entity | null>(null);
+  useEffect(() => {
+    const remove = () => {
+      const chat = conversations.find(item => item.id === selectedChatId);
+      if (chat) { setDeleteError(""); setConfirmation({ kind: "chat", item: chat }); }
+    };
+    document.addEventListener("genyxo:shortcut-delete", remove);
+    return () => document.removeEventListener("genyxo:shortcut-delete", remove);
+  }, [conversations, selectedChatId]);
   const [shareChat, setShareChat] = useState<WorkspaceConversation | null>(
     null,
   );

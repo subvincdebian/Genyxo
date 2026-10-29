@@ -1,4 +1,6 @@
 // Behavior migrated from chat.js; resources are owned by the React mount.
+import { getAudioSettings, microphoneConstraints, subscribeAudioSettings } from "@/shared/lib/audio-settings";
+import { getInteractions, matchesShortcut, subscribeInteractions } from "@/shared/lib/interaction-settings";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import { chatKeyFromPath, chatPath, isChatPath, rememberChatKeys, resolveChatKey } from "@/shared/lib/chat-url";
@@ -2738,7 +2740,8 @@ export default function initialize(scope, context) {
       userInput.focus();
     }
   }
-  async function sendMessage() {
+  async function sendMessage(background = false) {
+    let navigateInBackground = background === true;
     const requestViewRevision = chatViewRevision;
     // A skill or map places mentioned with "@" in the React composer go with this message.
     const composer = { presetId: undefined, places: undefined, mode: undefined };
@@ -2871,7 +2874,10 @@ export default function initialize(scope, context) {
             if (!jsonStr || jsonStr === "[DONE]") continue;
             try {
               const data = JSON.parse(jsonStr);
-              if (data.conversationId) responseConversationId = data.conversationId;
+              if (data.conversationId) {
+                responseConversationId = data.conversationId;
+                if (navigateInBackground) { navigateInBackground = false; scope.document.dispatchEvent(new CustomEvent("genyxo:shortcut-background-ready")); }
+              }
               if (data.error) {
                 const failure = new Error(data.error);
                 // The server undoes an unanswered turn; null means it removed the new chat.
@@ -3192,9 +3198,9 @@ export default function initialize(scope, context) {
     scope.listen(userInput, "input", adjustHeight);
     scope.listen(userInput, "scroll", updateComposerScrollbar);
     scope.listen(userInput, "keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
+      if (matchesShortcut(e, "send") || matchesShortcut(e, "backgroundSend")) {
         e.preventDefault();
-        sendMessage();
+        sendMessage(matchesShortcut(e, "backgroundSend"));
       }
     });
   }
@@ -3203,6 +3209,9 @@ export default function initialize(scope, context) {
   updateComposerScrollbar();
   const voiceBtn = scope.document.getElementById("voiceBtn");
   const dictationStatus = scope.document.getElementById("dictationStatus");
+  const syncDictation = () => { if (voiceBtn) voiceBtn.hidden = !getInteractions().settings.dictationEnabled; if (!getInteractions().settings.dictationEnabled) stopDictation(); };
+  syncDictation();
+  scope.cleanup(subscribeInteractions(syncDictation));
   const SpeechRecognition = scope.window.SpeechRecognition || scope.window.webkitSpeechRecognition;
   // Signed-in dictation records the microphone and lets Gemini transcribe it,
   // so any language works; the browser recognizer stays as the guest fallback.
@@ -3266,11 +3275,11 @@ export default function initialize(scope, context) {
     };
     stopDictation = stop;
     scope.listen(voiceBtn, "click", async () => {
-      if (busy) return;
+      if (busy || !getInteractions().settings.dictationEnabled) return;
       if (recorder && recorder.state !== "inactive") { stop(); return; }
       if (!context.token) { context.showToast?.("Sign in to use dictation.", "info"); return; }
       try {
-        micStream = await scope.window.navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+        micStream = await scope.window.navigator.mediaDevices.getUserMedia({ audio: microphoneConstraints() });
       } catch {
         dictationStatus.textContent = "Microphone permission was denied";
         context.showToast?.("Allow microphone access to dictate.", "error");
@@ -3280,7 +3289,9 @@ export default function initialize(scope, context) {
       micContext = new scope.window.AudioContext();
       if (micContext.state === "suspended") await micContext.resume().catch(() => {});
       const gain = micContext.createGain();
-      gain.gain.value = 1.8;
+      gain.gain.value = 1.8 * getAudioSettings().microphone;
+      const unsubscribeGain = subscribeAudioSettings(() => { if (micContext) gain.gain.setTargetAtTime(1.8 * getAudioSettings().microphone, micContext.currentTime, .02); });
+      micContext.addEventListener("statechange", () => { if (!micContext || micContext.state === "closed") unsubscribeGain(); });
       const destination = micContext.createMediaStreamDestination();
       micContext.createMediaStreamSource(micStream).connect(gain);
       gain.connect(destination);

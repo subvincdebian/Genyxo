@@ -1,5 +1,6 @@
 // Behavior migrated from script.js; resources are owned by the React mount.
 import { io } from "socket.io-client";
+import { receiveRemoteInteractions } from "@/shared/lib/interaction-settings";
 import confetti from "canvas-confetti";
 import {
   API_BASE_URL as API_ORIGIN,
@@ -461,6 +462,7 @@ export default function initialize(scope, context) {
         new CustomEvent("genyxo:notifications-resync"),
       );
     });
+    socket.on("interaction_settings", (data) => receiveRemoteInteractions(data.userId, data.settings));
     socket.on("unread_count_update", (data) => {
       renderBadge(data.count);
     });

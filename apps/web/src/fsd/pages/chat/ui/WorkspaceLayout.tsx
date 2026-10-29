@@ -1,5 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { matchesShortcut } from "@/shared/lib/interaction-settings";
+import { ShortcutHelp } from "@/shared/ui/ShortcutHelp";
 import { usePathname } from "next/navigation";
 import { WorkspaceProvider, useWorkspace } from "@/features/workspace";
 import { WorkspaceSidebar } from "@/widgets/workspace/ui/WorkspaceSidebar";
@@ -22,13 +24,14 @@ const storeSidebar = (key: string, value: string) => { try { localStorage.setIte
 
 function WorkspaceFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { startNewChat, projects } = useWorkspace();
+  const { startNewChat, projects, conversations, selectChat, selectedChatId } = useWorkspace();
   const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR.fallback);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [projectId, setProjectId] = useState<number | null>(null);
   const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
   const [preset, setPreset] = useState<{ presetId: number; name: string } | null>(null);
@@ -114,11 +117,22 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
     const notify = (e: Event) => setToast((e as CustomEvent).detail);
     const presetEvent = (e: Event) => setPreset((e as CustomEvent).detail.presetId ? (e as CustomEvent).detail : null);
     const resetPreset = () => setPreset(null);
+    const backgroundReady = () => startNewChat();
     const keydown = (event: KeyboardEvent) => {
-      if (event.isComposing || event.defaultPrevented || document.querySelector("dialog[open]")) return;
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); setSearchOpen((open) => !open); }
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.code === "KeyS") { event.preventDefault(); toggle(); }
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.code === "KeyO") { event.preventDefault(); startNewChat(); }
+      if (event.isComposing || event.defaultPrevented || document.documentElement.dataset.gxShortcutRecording || document.querySelector("dialog[open]")) return;
+      if (matchesShortcut(event, "search")) { event.preventDefault(); setSearchOpen(open => !open); }
+      else if (matchesShortcut(event, "sidebar")) { event.preventDefault(); toggle(); }
+      else if (matchesShortcut(event, "new")) { event.preventDefault(); startNewChat(); }
+      else if (matchesShortcut(event, "focus")) { event.preventDefault(); document.getElementById("userInput")?.focus(); }
+      else if (matchesShortcut(event, "attach")) { event.preventDefault(); document.getElementById("fileInput")?.click(); }
+      else if (matchesShortcut(event, "effort")) { event.preventDefault(); document.getElementById("customModelSelect")?.click(); }
+      else if (matchesShortcut(event, "help")) { event.preventDefault(); setShortcutsOpen(true); }
+      else if (matchesShortcut(event, "delete")) { event.preventDefault(); if (selectedChatId) document.dispatchEvent(new CustomEvent("genyxo:shortcut-delete")); }
+      else {
+        const recent = conversations.filter(chat => !chat.archivedAt).slice().sort((a, b) => new Date(b.lastActivityAt || b.updatedAt || b.createdAt).getTime() - new Date(a.lastActivityAt || a.updatedAt || a.createdAt).getTime() || b.id - a.id).slice(0, 9);
+        const index = Array.from({ length: 9 }, (_, i) => i).find(i => matchesShortcut(event, `recent${i + 1}`));
+        if (index !== undefined && recent[index]) { event.preventDefault(); selectChat(recent[index].id); }
+      }
     };
     document.addEventListener("genyxo:workspace-toggle", toggleEvent);
     document.addEventListener("genyxo:workspace-project", projectEvent);
@@ -126,6 +140,7 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
     document.addEventListener("genyxo:workspace-preset", presetEvent);
     document.addEventListener("genyxo:workspace-new", resetPreset);
     document.addEventListener("genyxo:workspace-select", resetPreset);
+    document.addEventListener("genyxo:shortcut-background-ready", backgroundReady);
     document.addEventListener("keydown", keydown);
     return () => {
       document.removeEventListener("genyxo:workspace-toggle", toggleEvent);
@@ -134,9 +149,10 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
       document.removeEventListener("genyxo:workspace-preset", presetEvent);
       document.removeEventListener("genyxo:workspace-new", resetPreset);
       document.removeEventListener("genyxo:workspace-select", resetPreset);
+      document.removeEventListener("genyxo:shortcut-background-ready", backgroundReady);
       document.removeEventListener("keydown", keydown);
     };
-  }, [toggle, startNewChat]);
+  }, [toggle, startNewChat, conversations, selectedChatId, selectChat]);
   useEffect(() => { queueMicrotask(() => setMobileOpen(false)); }, [pathname]);
   useEffect(() => {
     const resize = () => { setIsMobile(innerWidth < 768); if (innerWidth >= 768) setMobileOpen(false); };
@@ -190,6 +206,7 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
       {pathname === "/maps" && <MapsHome/>}
       {preset && isChatPath(pathname) && <div className="workspace-preset-badge"><WorkspaceIcon name="sparkles" size={14}/><span>{preset.name}</span><WorkspaceTooltip label={t("workspace.remove_preset", "Remove skill")} side="bottom"><button className="ws-icon-btn" onClick={() => { document.dispatchEvent(new CustomEvent("genyxo:workspace-preset", { detail: { presetId: null } })); setPreset(null); }} aria-label={t("workspace.remove_preset", "Remove skill")}><WorkspaceIcon name="close" size={14}/></button></WorkspaceTooltip></div>}
     </div>
+    {shortcutsOpen && <ShortcutHelp onClose={() => setShortcutsOpen(false)} />}
     {searchOpen && <WorkspaceSearch onClose={() => setSearchOpen(false)}/>}
     {projectId !== null && <WorkspaceProjectDialog project={projects.find((item) => item.id === projectId)} onClose={() => setProjectId(null)}/>}
     <div className="ws-toast-region" aria-live="polite" aria-atomic="true">{toast && <div className={`ws-toast ws-toast-${toast.type}`}><WorkspaceIcon name={toast.type === "error" ? "info" : "check"} size={17}/>{toast.message}<WorkspaceTooltip label={t("workspace.dismiss", "Dismiss")} side="bottom"><button className="ws-icon-btn" onClick={() => setToast(null)} aria-label={t("workspace.dismiss", "Dismiss")}><WorkspaceIcon name="close" size={16}/></button></WorkspaceTooltip></div>}</div>

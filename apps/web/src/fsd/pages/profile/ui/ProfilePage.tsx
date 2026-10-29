@@ -12,6 +12,9 @@ import { useLocalizedMetadata } from "@/shared/i18n";
 import { signOut, useAccountResource, type Account } from "../model/account";
 import { AccountOverview } from "./AccountOverview";
 import { AccountAppearance, AccountPreferences } from "./AccountPreferences";
+import { AccountCollection } from "./AccountCollections";
+import { AccountVoice } from "./AccountVoice";
+import { AccountKeyboard } from "./AccountKeyboard";
 import { AccountSecurity } from "./AccountSecurity";
 import {
   AccountBilling,
@@ -45,6 +48,24 @@ const sections = [
     icon: "lock",
     title: "Security",
     description: "Keep your account and access in your hands.",
+  },
+  {
+    id: "voice",
+    icon: "mic",
+    title: "Voice",
+    description: "Your devices, your voice, your conversations.",
+  },
+  {
+    id: "keyboard",
+    icon: "keyboard",
+    title: "Keyboard",
+    description: "Make every action feel familiar.",
+  },
+  {
+    id: "archive",
+    icon: "archive",
+    title: "Archived chats",
+    description: "Your conversations, kept for later.",
   },
   {
     id: "billing",
@@ -84,7 +105,43 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [securityView, setSecurityView] = useState(false);
+  const [securityView, setSecurityView] = useState<
+    "sessions" | "history" | null
+  >(null);
+  const securityTransition = useRef<Animation | null>(null);
+  const securityRevision = useRef(0);
+  function changeSecurityView(view: "sessions" | "history" | null) {
+    const revision = ++securityRevision.current;
+    securityTransition.current?.cancel();
+    const commit = () => {
+      if (revision !== securityRevision.current) return;
+      setSecurityView(view);
+      window.scrollTo({ top: 0, behavior: "instant" });
+      requestAnimationFrame(() =>
+        heading.current?.focus({ preventScroll: true }),
+      );
+    };
+    const content = document.querySelector<HTMLElement>(
+      "[data-settings-content]",
+    );
+    const motion = document.documentElement.dataset.gxMotion;
+    const reduced =
+      motion === "on" ||
+      (motion !== "off" &&
+        matchMedia("(prefers-reduced-motion: reduce)").matches);
+    if (!content || reduced) {
+      commit();
+      return;
+    }
+    securityTransition.current = content.animate(
+      [
+        { opacity: 1, transform: "translateY(0)" },
+        { opacity: 0, transform: "translateY(-4px)" },
+      ],
+      { duration: 120, easing: "ease-out" },
+    );
+    void securityTransition.current.finished.then(commit).catch(() => {});
+  }
   const heading = useRef<HTMLHeadingElement>(null);
   const searchInput = useRef<HTMLInputElement>(null);
   const current = sections.find((item) => item.id === active)!;
@@ -132,6 +189,8 @@ export function ProfilePage() {
     return () => document.removeEventListener("keydown", keyboard);
   }, []);
   function navigate(destination: string, discard = false) {
+    securityRevision.current++;
+    securityTransition.current?.cancel();
     if (saving) return;
     if (destination === active) return;
     if (dirty && !discard) {
@@ -141,7 +200,7 @@ export function ProfilePage() {
     setDirty(false);
     setPending(null);
     setSaved(false);
-    setSecurityView(false);
+    setSecurityView(null);
     if (destination === "signout") {
       signOut();
       return;
@@ -385,7 +444,7 @@ export function ProfilePage() {
           <div className={styles.pageHeading}>
             {active === "security" && securityView && (
               <div className={styles.sessionBack}>
-                <Action onClick={() => setSecurityView(false)}>
+                <Action onClick={() => changeSecurityView(null)}>
                   <WorkspaceIcon name="arrow-left" size={17} />
                   {text("back", "Back")}
                 </Action>
@@ -393,19 +452,30 @@ export function ProfilePage() {
             )}
             <h1 tabIndex={-1} ref={heading}>
               {active === "security" && securityView
-                ? text("active_sessions", "Active sessions")
+                ? securityView === "history"
+                  ? text("security_history", "Security history")
+                  : text("active_sessions", "Active sessions")
                 : labels(current.id, current.title)}
             </h1>
             <p>
               {active === "security" && securityView
-                ? text(
-                    "active_sessions_help",
-                    "Review your signed-in devices and end sessions you do not recognize.",
-                  )
+                ? securityView === "history"
+                  ? text(
+                      "security_history_description",
+                      "Your sign-in history, grouped by date.",
+                    )
+                  : text(
+                      "active_sessions_help",
+                      "Review your signed-in devices and end sessions you do not recognize.",
+                    )
                 : text(`${current.id}_description`, current.description)}
             </p>
           </div>
-          <div key={active} className={styles.content}>
+          <div
+            key={`${active}:${securityView}`}
+            data-settings-content
+            className={styles.content}
+          >
             <State
               loading={account.loading}
               error={account.error}
@@ -427,11 +497,20 @@ export function ProfilePage() {
                     <AccountPreferences onDirty={setDirty} onBusy={setSaving} />
                   )}
                   {active === "appearance" && <AccountAppearance />}
-                  {active === "security" && (
+                  {active === "voice" && <AccountVoice />}
+                  {active === "keyboard" && <AccountKeyboard />}
+                  {active === "archive" && <AccountCollection kind="archive" />}
+                  {active === "security" && securityView === "history" && (
+                    <AccountCollection kind="history" />
+                  )}
+                  {active === "security" && securityView !== "history" && (
                     <AccountSecurity
                       account={account.data}
-                      showSessions={securityView}
-                      onSessionsChange={setSecurityView}
+                      showSessions={securityView === "sessions"}
+                      onSessionsChange={(value) =>
+                        changeSecurityView(value ? "sessions" : null)
+                      }
+                      onHistory={() => changeSecurityView("history")}
                     />
                   )}
                   {active === "billing" && (

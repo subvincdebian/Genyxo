@@ -5,6 +5,8 @@
 // The chat controller sends each turn and reports streamed tokens through
 // genyxo:answer-token / genyxo:answer-done events.
 
+import { getInteractions } from "@/shared/lib/interaction-settings";
+import { getAudioSettings, microphoneConstraints, routeAudioOutput, subscribeAudioSettings } from "@/shared/lib/audio-settings";
 import { getVoiceName } from "./voice-preferences";
 import { openChatId } from "@/shared/lib/chat-url";
 import { startLiveSession, type LiveSession } from "./live-engine";
@@ -25,6 +27,7 @@ const END_SILENCE_MS = 700;
 const MIN_SPEECH_MS = 350;
 const MAX_PHRASE_MS = 30000;
 
+let releaseAudioSettings: (() => void) | null = null;
 let stream: MediaStream | null = null;
 let audio: AudioContext | null = null;
 let input: AnalyserNode | null = null;
@@ -157,7 +160,7 @@ async function finishPhrase() {
     const { text, language } = await api<{ text: string; language: string }>("transcribe", { audio: await blobToBase64(blob), mimeType: blob.type || "audio/webm", sessionLanguage: snapshot.language || undefined, locales: browserLocales() });
     if (current !== turn || !snapshot.active) return;
     if (!text) { listen(); return; }
-    set({ transcript: text, language: language || snapshot.language });
+    set({ transcript: text, language: getInteractions().settings.callLanguage === "auto" ? language || snapshot.language : getInteractions().settings.callLanguage });
     send(text);
   } catch (error) {
     set({ error: error instanceof Error ? error.message : "Could not understand that." });
@@ -330,7 +333,7 @@ async function startLive() {
   try {
     // On the Maps page the call knows where the user is and can search the map.
     const location = window.genyxoMaps?.location?.() || undefined;
-    const session = await api<{ token: string; model: string; url: string }>("live", { voice: getVoiceName(), conversationId: currentConversationId(), locales: browserLocales(), location });
+    const session = await api<{ token: string; model: string; url: string }>("live", { voice: getVoiceName(), callLanguage: getInteractions().settings.callLanguage, conversationId: currentConversationId(), locales: browserLocales(), location });
     if (!snapshot.active || !stream) return true;
     let userText = "";
     const started = await startLiveSession(stream, session, {
@@ -358,12 +361,12 @@ export async function startVoice() {
   if (!token()) { notify("Sign in to talk with the model.", "info"); return; }
   if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") { notify("Voice conversation is not supported in this browser."); return; }
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    stream = await navigator.mediaDevices.getUserMedia({ audio: microphoneConstraints() });
   } catch {
     notify("Allow microphone access to talk with the model.");
     return;
   }
-  set({ ...idle, active: true, language: "" });
+  set({ ...idle, active: true, language: getInteractions().settings.callLanguage === "auto" ? "" : getInteractions().settings.callLanguage });
   if (await startLive()) return;
   if (!snapshot.active) return;
   audio = new AudioContext();
@@ -371,7 +374,7 @@ export async function startVoice() {
   if (audio.state === "suspended") await audio.resume().catch(() => {});
   const source = audio.createMediaStreamSource(stream);
   const gain = audio.createGain();
-  gain.gain.value = MIC_GAIN;
+  gain.gain.value = MIC_GAIN * getAudioSettings().microphone;
   input = audio.createAnalyser();
   input.fftSize = 512;
   destination = audio.createMediaStreamDestination();
@@ -380,7 +383,16 @@ export async function startVoice() {
   gain.connect(destination);
   output = audio.createAnalyser();
   output.fftSize = 512;
-  output.connect(audio.destination);
+  const outputVolume = audio.createGain();
+  outputVolume.gain.value = getAudioSettings().speaker;
+  output.connect(outputVolume).connect(audio.destination);
+  await routeAudioOutput(audio).catch(() => {});
+  releaseAudioSettings = subscribeAudioSettings(() => {
+    if (!audio) return;
+    gain.gain.setTargetAtTime(MIC_GAIN * getAudioSettings().microphone, audio.currentTime, .02);
+    outputVolume.gain.setTargetAtTime(getAudioSettings().speaker, audio.currentTime, .02);
+    void routeAudioOutput(audio).catch(() => {});
+  });
   document.addEventListener("genyxo:answer-token", onToken);
   document.addEventListener("genyxo:answer-done", onDone);
   loop();
@@ -388,6 +400,7 @@ export async function startVoice() {
 }
 
 export function stopVoice() {
+  releaseAudioSettings?.(); releaseAudioSettings = null;
   live?.stop();
   live = null;
   turn += 1;

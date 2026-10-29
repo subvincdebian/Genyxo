@@ -247,6 +247,9 @@ const icons: Record<string, ReactNode> = {
     <circle className="gi-dot gi-dot-3" cx="12.25" cy="10" r=".9" fill="currentColor" stroke="none" />
   </>,
   stop: <rect className="gi-pop" x="5.5" y="5.5" width="9" height="9" rx="2" fill="currentColor" stroke="none" />,
+  chat: <path d="M5 3.5h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8L3 17V5.5a2 2 0 0 1 2-2Z" />,
+  restore: <><path d="M3.5 11.5v4A1.5 1.5 0 0 0 5 17h10a1.5 1.5 0 0 0 1.5-1.5v-4M7 3.5 10 1l3 2.5M10 1v10" /><path d="M3.5 11.5h3l1.5 2h4l1.5-2h3" /></>,
+  volume: <><path d="M8 6H4v8h4l4 3V3L8 6Z" /><path className="gi-draw" pathLength={1} d="M14.5 6.5a5 5 0 0 1 0 7m2-9a8 8 0 0 1 0 11" /></>,
 };
 
 export const genyxoIconNames = Object.keys(icons);

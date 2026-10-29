@@ -204,9 +204,9 @@ html[data-gx-tone="dark"] :is(.logo-icon, .ws-brand-mark img) {
   filter: brightness(0) invert(1) !important;
 }
 html[data-gx-appearance] .workspace-shell #creditsBtn {
-  background: var(--gx-surface-2);
-  border-color: var(--gx-border-strong);
-  color: var(--gx-text);
+  background: var(--gx-surface-2) !important;
+  border-color: var(--gx-border-strong) !important;
+  color: var(--gx-text) !important;
 }
 html[data-gx-appearance] .workspace-shell #creditsBtn #creditBalance {
   color: var(--gx-text) !important;
@@ -223,3 +223,5 @@ html[data-gx-appearance]
   background: var(--gx-bg) !important;
   border-color: var(--gx-border) !important;
 }
+/* Dictation preferences apply even when legacy composer button styles set display. */
+#voiceBtn[hidden] { display: none !important; }

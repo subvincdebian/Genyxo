@@ -9,16 +9,20 @@ import {
   type Security,
 } from "../model/account";
 import { Action, Row, Section, State, useAccountText } from "./account-ui";
+import { DeviceIcon, deviceDetails } from "@/shared/ui/DeviceIcon";
+
 import styles from "./ProfilePage.module.css";
 
 export function AccountSecurity({
   account,
   showSessions = false,
   onSessionsChange,
+  onHistory,
 }: {
   account: Account;
   showSessions?: boolean;
   onSessionsChange?: (value: boolean) => void;
+  onHistory?: () => void;
 }) {
   const { text } = useAccountText();
   const resource = useAccountResource<Security>("profile/security");
@@ -33,10 +37,12 @@ export function AccountSecurity({
       createdAt: string;
       lastUsedAt: string;
       current: boolean;
+      legacy?: boolean;
     }>
   >("profile/sessions");
 
   const [revoking, setRevoking] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function revoke() {
@@ -123,54 +129,140 @@ export function AccountSecurity({
             )}
             {showSessions && (
               <div className={styles.sessionView}>
-                <Section
-                  title={text("devices", "Devices")}
-                  description={text(
-                    "active_sessions_help",
-                    "Review your signed-in devices and end sessions you do not recognize.",
-                  )}
-                >
-                  <div className={styles.group}>
-                    <State
-                      loading={sessions.loading}
-                      error={sessions.error}
-                      retry={sessions.refresh}
-                    >
-                      {sessions.data?.map((session) => (
-                        <Row
-                          key={session.id}
-                          title={deviceName(session.userAgent)}
-                          description={`${new Date(session.lastUsedAt).toLocaleString()}${session.ip ? ` · IP ${session.ip}` : ""}`}
-                        >
-                          <div className={styles.sessionAction}>
-                            {session.current && (
-                              <span className={styles.sessionCurrent}>
-                                {text("current_session", "Current session")}
-                              </span>
-                            )}
-                            <Action
-                              disabled={session.current || Boolean(revoking)}
-                              busy={revoking === session.id}
-                              onClick={() => {
-                                setRevoking(session.id);
-                                setError("");
-                                void accountRequest(
-                                  `profile/sessions/${session.id}/revoke`,
-                                  { method: "POST" },
-                                )
-                                  .then(() => sessions.refresh())
-                                  .catch((failure) => setError(failure.message))
-                                  .finally(() => setRevoking(null));
-                              }}
+                {[
+                  {
+                    legacy: false,
+                    title: text("devices", "Devices"),
+                    description: text(
+                      "active_sessions_help",
+                      "Review your signed-in devices and end sessions you do not recognize.",
+                    ),
+                  },
+                  ...(sessions.data?.some(
+                    (session) =>
+                      session.legacy && !dismissed.includes(session.id),
+                  )
+                    ? [
+                        {
+                          legacy: true,
+                          title: text("earlier_signins", "Earlier sign-ins"),
+                          description: text(
+                            "earlier_signins_help",
+                            "These older sign-ins have no device ID. They stay separate so you can review and sign out of each one safely.",
+                          ),
+                        },
+                      ]
+                    : []),
+                ].map((group) => (
+                  <Section
+                    key={String(group.legacy)}
+                    title={group.title}
+                    description={group.description}
+                  >
+                    <div className={styles.group}>
+                      <State
+                        loading={sessions.loading}
+                        error={sessions.error}
+                        retry={sessions.refresh}
+                      >
+                        {sessions.data
+                          ?.filter(
+                            (session) =>
+                              Boolean(session.legacy) === group.legacy &&
+                              !dismissed.includes(session.id),
+                          )
+                          .map((session) => (
+                            <Row
+                              key={session.id}
+                              id={`session-${session.id}`}
+                              title={deviceDetails(session.userAgent).name}
+                              leading={<DeviceIcon agent={session.userAgent} />}
+                              description={`${new Date(session.lastUsedAt).toLocaleString()}${session.ip ? ` · IP ${session.ip}` : ""}`}
                             >
-                              {text("sign_out", "Sign out")}
-                            </Action>
-                          </div>
-                        </Row>
-                      ))}
-                    </State>
-                  </div>
-                </Section>
+                              <div className={styles.sessionAction}>
+                                {session.current && (
+                                  <span className={styles.sessionCurrent}>
+                                    {text("current_session", "Current session")}
+                                  </span>
+                                )}
+                                <Action
+                                  disabled={
+                                    session.current || Boolean(revoking)
+                                  }
+                                  busy={revoking === session.id}
+                                  onClick={() => {
+                                    setRevoking(session.id);
+                                    setError("");
+                                    void accountRequest(
+                                      `profile/sessions/${session.id}/revoke`,
+                                      { method: "POST" },
+                                    )
+                                      .then(async () => {
+                                        const row = document.getElementById(
+                                          `session-${session.id}`,
+                                        );
+                                        const motion =
+                                          document.documentElement.dataset
+                                            .gxMotion;
+                                        const reduced =
+                                          motion === "on" ||
+                                          (motion !== "off" &&
+                                            matchMedia(
+                                              "(prefers-reduced-motion: reduce)",
+                                            ).matches);
+                                        if (row && !reduced) {
+                                          const geometry =
+                                            getComputedStyle(row);
+                                          await row
+                                            .animate(
+                                              [
+                                                {
+                                                  height: `${row.getBoundingClientRect().height}px`,
+                                                  opacity: 1,
+                                                  paddingTop:
+                                                    geometry.paddingTop,
+                                                  paddingBottom:
+                                                    geometry.paddingBottom,
+                                                  minHeight: "0",
+                                                  overflow: "hidden",
+                                                },
+                                                {
+                                                  height: "0",
+                                                  opacity: 0,
+                                                  paddingTop: "0",
+                                                  paddingBottom: "0",
+                                                  minHeight: "0",
+                                                  overflow: "hidden",
+                                                },
+                                              ],
+                                              {
+                                                duration: 180,
+                                                easing: "ease-in-out",
+                                                fill: "forwards",
+                                              },
+                                            )
+                                            .finished.catch(() => {});
+                                        }
+                                        setDismissed((previous) => [
+                                          ...previous,
+                                          session.id,
+                                        ]);
+                                      })
+                                      .catch((failure) =>
+                                        setError(failure.message),
+                                      )
+                                      .finally(() => setRevoking(null));
+                                  }}
+                                >
+                                  {text("sign_out", "Sign out")}
+                                </Action>
+                              </div>
+                            </Row>
+                          ))}
+                      </State>
+                    </div>
+                  </Section>
+                ))}
               </div>
             )}
             <Section title={text("sessions", "Sessions")}>
@@ -187,7 +279,25 @@ export function AccountSecurity({
                       label={text("active_sessions", "Active sessions")}
                       onClick={() => onSessionsChange?.(true)}
                     >
-                      {sessions.data?.length ?? "—"}
+                      {sessions.data?.filter(
+                        (session) => !dismissed.includes(session.id),
+                      ).length ?? "—"}
+                      <WorkspaceIcon name="chevron" size={16} />
+                    </Action>
+                  </Row>
+                )}
+                {!showSessions && (
+                  <Row
+                    title={text("security_history", "Security history")}
+                    description={text(
+                      "security_history_help",
+                      "Review when and where you signed in.",
+                    )}
+                  >
+                    <Action
+                      label={text("security_history", "Security history")}
+                      onClick={onHistory}
+                    >
                       <WorkspaceIcon name="chevron" size={16} />
                     </Action>
                   </Row>
@@ -383,28 +493,4 @@ function PasswordDialog({ onClose }: { onClose: () => void }) {
       </form>
     </WorkspaceDialog>
   );
-}
-
-function deviceName(agent: string) {
-  const browser = /Edg\//.test(agent)
-    ? "Edge"
-    : /Firefox\//.test(agent)
-      ? "Firefox"
-      : /Chrome\//.test(agent)
-        ? "Chrome"
-        : /Safari\//.test(agent)
-          ? "Safari"
-          : "Browser";
-  const os = /iPhone|iPad/.test(agent)
-    ? "iOS"
-    : /Android/.test(agent)
-      ? "Android"
-      : /Windows/.test(agent)
-        ? "Windows"
-        : /Macintosh|Mac OS/.test(agent)
-          ? "macOS"
-          : /Linux/.test(agent)
-            ? "Linux"
-            : "Unknown device";
-  return `${browser} · ${os}`;
 }

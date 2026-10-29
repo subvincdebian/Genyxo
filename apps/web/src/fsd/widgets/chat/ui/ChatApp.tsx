@@ -1,5 +1,6 @@
 "use client";
-import type { ReactNode, SyntheticEvent } from "react";
+import { useSyncExternalStore, type ReactNode, type SyntheticEvent } from "react";
+import { getInteractions, getServerInteractions, subscribeInteractions } from "@/shared/lib/interaction-settings";
 import { AvatarNavbar } from "@/entities/session";
 import { WelcomeGreeting } from "./WelcomeGreeting";
 import { ComposerPlusMenu } from "./ComposerPlusMenu";
@@ -23,6 +24,7 @@ export function ChatApp({
   isChatRoute?: boolean;
   children?: ReactNode;
 }) {
+  const { settings: interactionSettings } = useSyncExternalStore(subscribeInteractions, getInteractions, getServerInteractions);
   return (
     <div className={`app-container${workspace ? " workspace-chat-app" : ""}${!isChatRoute ? " workspace-other-route" : ""}`} id="app">
       {"\n        "}
@@ -973,7 +975,7 @@ export function ChatApp({
                   </div>
                   {"\n\n                                "}
                   <span id="dictationStatus" className="dictation-status" role="status" aria-live="polite"></span>
-                  <button disabled={!ready} type="button" className="voice-btn" id="voiceBtn" aria-label="Dictate a message" title="Dictate a message">
+                  <button hidden={!interactionSettings.dictationEnabled} disabled={!ready} type="button" className="voice-btn" id="voiceBtn" aria-label="Dictate a message" title="Dictate a message">
                     {workspace ? <WorkspaceIcon name="mic" /> : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 10.5v1a6.5 6.5 0 0 0 13 0v-1M12 18v3.5m-4 0h8"/></svg>}
                   </button>
                   {workspace && <VoiceControls />}

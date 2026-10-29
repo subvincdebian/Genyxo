@@ -1,0 +1,213 @@
+.collections {
+  display: grid;
+  gap: 32px;
+}
+.date {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.list {
+  border: 1px solid var(--gx-border);
+  border-radius: 18px;
+  background: var(--gx-surface);
+  overflow: hidden;
+}
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  animation: arrive 220ms ease both;
+}
+.entry + .entry {
+  border-top: 1px solid var(--gx-border);
+}
+.entryText {
+  flex: 1;
+  min-width: 0;
+}
+.entryText strong,
+.chatLink {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gx-text);
+}
+.entryText p {
+  margin: 7px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--gx-muted);
+  overflow-wrap: anywhere;
+}
+.chatLink {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.chatLink:hover {
+  text-decoration: underline;
+}
+.device {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: var(--gx-muted);
+}
+.empty {
+  display: grid;
+  place-items: center;
+  padding: 44px 24px;
+  color: var(--gx-muted);
+  border: 1px solid var(--gx-border);
+  border-radius: 18px;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.controls button[role="switch"]:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.range {
+  width: 180px;
+  max-width: 100%;
+  accent-color: var(--gx-accent);
+}
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--gx-muted);
+}
+.volume output {
+  min-width: 38px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.meter {
+  display: flex;
+  gap: clamp(1px, 0.3vw, 3px);
+  align-items: center;
+  height: 32px;
+  flex: 1;
+  min-width: 120px;
+}
+.meter i {
+  display: block;
+  flex: 1;
+  height: 22px;
+  border-radius: 3px;
+  background: var(--gx-border);
+  transition: background 90ms;
+}
+.meter i[data-lit="true"] {
+  background: var(--gx-accent);
+}
+.test {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+}
+.note {
+  color: var(--gx-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.shortcut {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--gx-muted);
+  padding: 10px 12px;
+  cursor: pointer;
+  min-width: 115px;
+  justify-content: flex-end;
+}
+.shortcut:hover,
+.shortcut:focus-visible {
+  background: var(--gx-hover);
+  color: var(--gx-text);
+}
+.shortcut[data-recording="true"] {
+  color: var(--gx-accent);
+  background: var(--gx-hover);
+}
+.shortcut kbd {
+  font: inherit;
+  font-size: 13px;
+}
+.recording {
+  color: var(--gx-accent);
+  font-size: 13px;
+}
+.voiceChoices {
+  display: grid;
+  gap: 4px;
+  max-height: 50dvh;
+  overflow: auto;
+}
+.voiceChoice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--gx-text);
+  text-align: left;
+  cursor: pointer;
+}
+.voiceChoice:hover,
+.voiceChoice[aria-pressed="true"] {
+  background: var(--gx-hover);
+}
+.voiceChoice small {
+  color: var(--gx-muted);
+  margin-left: auto;
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 600px) {
+  .entry {
+    padding: 20px 16px;
+    gap: 12px;
+  }
+  .range {
+    width: 135px;
+  }
+  .test {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry {
+    animation: none;
+  }
+  .meter i {
+    transition: none;
+  }
+}
+:global(html[data-gx-motion="on"]) .entry {
+  animation: none;
+}
