@@ -12,6 +12,7 @@ import { createHash, randomBytes, randomUUID } from "crypto";
 import { UsersService } from "../users/users.service";
 import { EmailService } from "../email/email.service";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { requestDevice } from "./device";
 
 @Injectable()
 export class AuthService {
@@ -41,7 +42,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: any) {
+  async login(user: any, request?: any) {
     const sessionVersion = await this.usersService.getSessionVersion(user.id);
     const payload = {
       email: user.email,
@@ -49,9 +50,20 @@ export class AuthService {
       role: user.role,
       sessionVersion,
       jti: randomUUID(),
+      ...(requestDevice(request) ? { deviceId: requestDevice(request) } : {}),
     };
+    const token = this.jwtService.sign(payload);
+    if (request)
+      await this.usersService.trackSession(
+        user.id,
+        token,
+        this.jwtService.decode(token),
+        request.headers?.["user-agent"] || "",
+        request.ip || "",
+        requestDevice(request),
+      );
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: token,
       user: {
         id: user.id,
         email: user.email,
@@ -182,6 +194,7 @@ export class AuthService {
     profile: any,
     provider: "google" | "facebook",
     referralCode?: string,
+    request?: any,
   ) {
     if (!profile.email || typeof profile.email !== "string")
       throw new BadRequestException(
@@ -191,7 +204,7 @@ export class AuthService {
       throw new ForbiddenException("Google email address is not verified.");
     const email = profile.email.trim().toLowerCase();
     let user = await this.usersService.findByOAuthId(provider, profile.id);
-    if (user) return this.login(user);
+    if (user) return this.login(user, request);
     user = await this.usersService.findOneByEmail(email);
     if (user)
       throw new ConflictException(
@@ -212,6 +225,6 @@ export class AuthService {
       referrerId,
       [`${provider}Id`]: profile.id,
     });
-    return this.login(user);
+    return this.login(user, request);
   }
 }

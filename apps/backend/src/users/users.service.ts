@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Logger } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AuthSession } from "./auth-session.entity";
@@ -41,6 +46,7 @@ export class UsersService {
     payload: { iat?: number; exp?: number; sessionVersion?: number },
     agent = "",
     ip = "",
+    deviceId?: string,
   ) {
     const id = createHash("sha256").update(token).digest("hex");
     const runner =
@@ -55,6 +61,7 @@ export class UsersService {
         .values({
           id,
           userId,
+          deviceId: deviceId || null,
           sessionVersion: payload.sessionVersion ?? 0,
           userAgent: agent.slice(0, 512),
           ip: ip.slice(0, 64),
@@ -75,6 +82,17 @@ export class UsersService {
       });
       if (!session || session.revokedAt || session.expiresAt <= now)
         return null;
+      // Older signed tokens acquire an installation identity once. Never reassign a known device.
+      if (!session.deviceId && deviceId)
+        await runner.manager
+          .createQueryBuilder()
+          .update(AuthSession)
+          .set({ deviceId })
+          .where("id = :id AND userId = :userId AND deviceId IS NULL", {
+            id,
+            userId,
+          })
+          .execute();
       if (now.getTime() - session.lastUsedAt.getTime() > 60000)
         await runner.manager.update(
           AuthSession,
@@ -97,14 +115,90 @@ export class UsersService {
       )
       .orderBy("s.lastUsedAt", "DESC")
       .getMany();
-    return rows.map(({ id, userAgent, ip, createdAt, lastUsedAt }) => ({
-      id,
-      userAgent,
-      ip,
-      createdAt,
-      lastUsedAt,
-      current: id === currentId,
-    }));
+    const devices = new Map<string, AuthSession>();
+    const current = rows.find((row) => row.id === currentId);
+    const currentKey = current?.deviceId || current?.id;
+    for (const row of rows) {
+      const key = row.deviceId || row.id;
+      const previous = devices.get(key);
+      if (!previous) devices.set(key, row);
+      else if (row.id === currentId)
+        devices.set(key, { ...row, lastUsedAt: previous.lastUsedAt });
+    }
+    return [...devices.entries()].map(
+      ([key, { id, deviceId, userAgent, ip, createdAt, lastUsedAt }]) => ({
+        id,
+        userAgent,
+        ip,
+        createdAt,
+        lastUsedAt,
+        current: key === currentKey,
+        legacy: !deviceId,
+      }),
+    );
+  }
+  async securityHistory(userId: number, cursor?: string) {
+    const query = this.usersRepository.manager
+      .getRepository(AuthSession)
+      .createQueryBuilder("s")
+      .where("s.userId = :userId", { userId });
+    if (cursor) {
+      try {
+        const value = JSON.parse(Buffer.from(cursor, "base64url").toString());
+        if (
+          !/^[a-f0-9]{64}$/.test(value.id) ||
+          !Number.isFinite(Date.parse(value.date))
+        )
+          throw new Error();
+        query.andWhere(
+          "(s.createdAt < :date OR (s.createdAt = :date AND s.id < :id))",
+          { date: new Date(value.date), id: value.id },
+        );
+      } catch {
+        throw new BadRequestException("Invalid history cursor");
+      }
+    }
+    const rows = await query
+      .orderBy("s.createdAt", "DESC")
+      .addOrderBy("s.id", "DESC")
+      .take(16)
+      .getMany();
+    const page = rows.slice(0, 15);
+    const last = page.at(-1);
+    return {
+      items: page.map(({ id, userAgent, ip, createdAt }) => ({
+        id,
+        userAgent,
+        ip,
+        createdAt,
+      })),
+      nextCursor:
+        rows.length > 15 && last
+          ? Buffer.from(
+              JSON.stringify({
+                date: last.createdAt.toISOString(),
+                id: last.id,
+              }),
+            ).toString("base64url")
+          : null,
+    };
+  }
+  async revokeDevice(userId: number, id: string) {
+    const repo = this.usersRepository.manager.getRepository(AuthSession);
+    const session = await repo.findOneBy({ id, userId });
+    if (!session) throw new NotFoundException("Session not found");
+    const rows = await repo.findBy(
+      session.deviceId
+        ? { userId, deviceId: session.deviceId }
+        : { userId, id },
+    );
+    await repo.update(
+      session.deviceId
+        ? { userId, deviceId: session.deviceId }
+        : { userId, id },
+      { revokedAt: new Date() },
+    );
+    return rows.map((row) => row.id);
   }
   async revokeSession(userId: number, id: string) {
     const result = await this.usersRepository.manager
@@ -112,6 +206,54 @@ export class UsersService {
       .update({ id, userId }, { revokedAt: new Date() });
     if (!result.affected) throw new NotFoundException("Session not found");
     return { status: "success" };
+  }
+  async interactionSettings(userId: number) {
+    const rows = await this.usersRepository.manager.query(
+      "SELECT settings FROM user_interaction_settings WHERE userId = ?",
+      [userId],
+    );
+    const value = rows[0]?.settings;
+    return typeof value === "string" ? JSON.parse(value) : value || {};
+  }
+  async updateInteractionSettings(
+    userId: number,
+    patch: Record<string, unknown>,
+  ) {
+    const shortcuts = patch.shortcuts;
+    if (shortcuts) {
+      const ids = [
+        "focus",
+        "send",
+        "backgroundSend",
+        "effort",
+        "attach",
+        "delete",
+        "new",
+        "help",
+        "search",
+        "sidebar",
+        ...Array.from({ length: 9 }, (_, i) => `recent${i + 1}`),
+      ];
+      for (const [id, value] of Object.entries(
+        shortcuts as Record<string, any>,
+      )) {
+        if (
+          !ids.includes(id) ||
+          !value ||
+          typeof value.enabled !== "boolean" ||
+          typeof value.binding !== "string" ||
+          !/^(?:(?:Ctrl|Alt|Shift)\+)*(?:Key[A-Z]|Digit[1-9]|Enter|Escape|Backspace|Delete|Space|Slash|Arrow(?:Up|Down|Left|Right))$/.test(
+            value.binding,
+          )
+        )
+          throw new BadRequestException("Invalid keyboard shortcut");
+      }
+    }
+    await this.usersRepository.manager.query(
+      "INSERT INTO user_interaction_settings (userId, settings) VALUES (?, ?) ON DUPLICATE KEY UPDATE settings = JSON_MERGE_PATCH(settings, VALUES(settings))",
+      [userId, JSON.stringify(patch)],
+    );
+    return this.interactionSettings(userId);
   }
 
   async findOneByEmail(email: string): Promise<User | null> {

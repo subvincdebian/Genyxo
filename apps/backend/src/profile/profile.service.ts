@@ -29,6 +29,17 @@ export class ProfileService {
   disconnectSession(id: string) {
     this.notifications.revokeSession(id);
   }
+  async updateInteractionSettings(
+    userId: number,
+    patch: Record<string, unknown>,
+  ) {
+    const settings = await this.userService.updateInteractionSettings(
+      userId,
+      patch,
+    );
+    this.notifications.sendInteractionSettings(userId, settings);
+    return settings;
+  }
 
   async security(userId: number) {
     const user = await this.users.findOne({

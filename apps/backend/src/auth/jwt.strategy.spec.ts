@@ -67,6 +67,7 @@ describe("persistent account session revocation", () => {
       payload,
       "Firefox",
       "127.0.0.1",
+      undefined,
     );
     trackSession.mockResolvedValueOnce(null);
     await expect(guarded.validate(request, payload)).rejects.toThrow(

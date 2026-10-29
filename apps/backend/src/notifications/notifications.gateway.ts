@@ -7,6 +7,7 @@ import {
 import { Server, Socket } from "socket.io";
 import { forwardRef, Inject, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { requestDevice } from "../auth/device";
 import { NotificationsService } from "./notifications.service";
 import { UsersService } from "../users/users.service";
 
@@ -77,6 +78,7 @@ export class NotificationsGateway
         payload,
         client.handshake.headers["user-agent"] || "",
         client.handshake.address || "",
+        payload.deviceId || requestDevice(client.handshake),
       );
       if (!sessionId) return client.disconnect();
       await client.join(`session_${sessionId}`);
@@ -120,6 +122,11 @@ export class NotificationsGateway
 
   sendUnreadCount(userId: number, count: number) {
     this.server.to(`user_${userId}`).emit("unread_count_update", { count });
+  }
+  sendInteractionSettings(userId: number, settings: unknown) {
+    this.server
+      ?.to(`user_${userId}`)
+      .emit("interaction_settings", { userId, settings });
   }
 
   sendNotificationToUser(userId: number, data: any) {

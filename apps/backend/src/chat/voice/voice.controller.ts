@@ -72,6 +72,7 @@ export class VoiceController {
     return this.live.createSession(req.user.id, {
       location: body.location,
       voice: body.voice,
+      callLanguage: body.callLanguage,
       conversationId: body.conversationId,
       locales: body.locales,
       country: countryFromHeaders(req.headers || {}),

@@ -130,6 +130,31 @@ export class LiveMapsToolDto {
 }
 
 export class LiveSessionDto {
+  @IsOptional()
+  @IsIn([
+    "auto",
+    "en",
+    "uk",
+    "es",
+    "de",
+    "fr",
+    "it",
+    "pt",
+    "pl",
+    "ja",
+    "ko",
+    "zh",
+    "ar",
+    "hi",
+    "tr",
+    "nl",
+    "sv",
+    "cs",
+    "ro",
+    "id",
+    "vi",
+  ])
+  callLanguage?: string;
   /** Shared on the Maps page: the call gets the map tools. */
   @IsOptional()
   @ValidateNested()

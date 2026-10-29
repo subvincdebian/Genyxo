@@ -11,6 +11,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
     private authService: AuthService,
   ) {
     super({
+      passReqToCallback: true,
       clientID: configService.get<string>("FACEBOOK_APP_ID")!,
       clientSecret: configService.get<string>("FACEBOOK_APP_SECRET")!,
       callbackURL:
@@ -22,6 +23,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
   }
 
   async validate(
+    request: any,
     accessToken: string,
     refreshToken: string,
     profile: any,
@@ -38,7 +40,12 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
       id: id,
     };
 
-    const result = await this.authService.validateOAuthLogin(user, "facebook");
+    const result = await this.authService.validateOAuthLogin(
+      user,
+      "facebook",
+      undefined,
+      request,
+    );
     done(null, result);
   }
 }

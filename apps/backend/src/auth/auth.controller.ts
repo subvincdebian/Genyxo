@@ -77,12 +77,12 @@ export class AuthController {
   @ApiResponse({ status: 200, description: "JWT access token returned" })
   @ApiResponse({ status: 401, description: "Invalid credentials" })
   @Post("login")
-  async login(@Body() body: LoginDto) {
+  async login(@Body() body: LoginDto, @Req() req) {
     const user = await this.authService.validateUser(body.email, body.password);
     if (!user) {
       throw new UnauthorizedException("Invalid credentials");
     }
-    return this.authService.login(user);
+    return this.authService.login(user, req);
   }
 
   @Throttle({ default: { limit: 3, ttl: 60000 } })

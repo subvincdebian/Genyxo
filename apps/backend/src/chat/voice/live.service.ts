@@ -87,7 +87,7 @@ export class LiveVoiceService {
 
   private async instruction(
     userId: number,
-    signals: LanguageSignals,
+    signals: LanguageSignals & { callLanguage?: string },
     conversationId?: number,
   ) {
     const [preferred, history] = await Promise.all([
@@ -96,7 +96,9 @@ export class LiveVoiceService {
     ]);
     return [
       "You are Genyxo, the voice of a multi-model AI chat, on a live voice call with the user.",
-      "Always reply in the language the user is speaking right now, with natural pronunciation for that language. Never switch languages on your own and never translate the user's words unless asked.",
+      signals.callLanguage && signals.callLanguage !== "auto"
+        ? `The user selected ${languageName(signals.callLanguage)} for this voice call. Speak in ${languageName(signals.callLanguage)} from your very first response, with natural pronunciation. Keep this language unless the user explicitly asks to change it.`
+        : "Always reply in the language the user is speaking right now, with natural pronunciation for that language. Never switch languages on your own and never translate the user's words unless asked.",
       preferred.length
         ? `If you cannot tell which language the user speaks, use ${languageName(preferred[0])}. This user usually speaks ${preferred.map(languageName).join(", ")}.`
         : "",
@@ -113,6 +115,7 @@ export class LiveVoiceService {
   async createSession(
     userId: number,
     input: LanguageSignals & {
+      callLanguage?: string;
       voice?: string;
       conversationId?: number;
       location?: { lat: number; lng: number; accuracy?: number };

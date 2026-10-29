@@ -3,6 +3,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ConfigService } from "@nestjs/config";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { UsersService } from "../users/users.service";
+import { requestDevice } from "./device";
 
 export interface JwtPayload {
   email: string;
@@ -11,6 +12,7 @@ export interface JwtPayload {
   sessionVersion?: number;
   iat?: number;
   exp?: number;
+  deviceId?: string;
 }
 
 @Injectable()
@@ -62,6 +64,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
               payload,
               request.headers?.["user-agent"] || "",
               request.ip || "",
+              payload.deviceId || requestDevice(request),
             )
           : null;
       if (!tracked)

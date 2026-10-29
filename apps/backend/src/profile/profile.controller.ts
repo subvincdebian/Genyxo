@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { UsersService } from "../users/users.service";
+import { InteractionSettingsDto } from "./dto/interaction-settings.dto";
 import { TransactionsQueryDto } from "./dto/transactions-query.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import {
@@ -130,12 +131,35 @@ export class ProfileController {
     return this.usersService.listSessions(req.user.id, req.user.sessionId);
   }
   @UseGuards(AuthGuard("jwt"))
+  @Get("security-history")
+  securityHistory(@Request() req, @Query("cursor") cursor?: string) {
+    if (cursor && cursor.length > 512)
+      throw new BadRequestException("Invalid history cursor");
+    return this.usersService.securityHistory(req.user.id, cursor);
+  }
+  @UseGuards(AuthGuard("jwt"))
+  @Get("interaction-settings")
+  interactionSettings(@Request() req) {
+    return this.usersService.interactionSettings(req.user.id);
+  }
+  @UseGuards(AuthGuard("jwt"))
+  @Post("interaction-settings")
+  updateInteractionSettings(
+    @Request() req,
+    @Body() body: InteractionSettingsDto,
+  ) {
+    return this.profileService.updateInteractionSettings(req.user.id, {
+      ...body,
+    });
+  }
+  @UseGuards(AuthGuard("jwt"))
   @Post("sessions/:id/revoke")
   async revokeSession(@Request() req, @Param("id") id: string) {
     if (!/^[a-f0-9]{64}$/.test(id))
       throw new BadRequestException("Invalid session");
-    await this.usersService.revokeSession(req.user.id, id);
-    this.profileService.disconnectSession(id);
+    const ids = await this.usersService.revokeDevice(req.user.id, id);
+    for (const sessionId of ids)
+      this.profileService.disconnectSession(sessionId);
     return { status: "success" };
   }
 
