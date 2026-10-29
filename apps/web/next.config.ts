@@ -14,6 +14,8 @@ const legacyPages = [
 ];
 const policyPages = ["policies", "privacy-policy", "terms-of-service", "faq"];
 const config: NextConfig = {
+  distDir: process.env.GENYXO_NEXT_DIST_DIR || ".next",
+  devIndicators: false,
   output: "standalone",
   outputFileTracingRoot: import.meta.dirname,
   poweredByHeader: false,
@@ -46,7 +48,7 @@ const config: NextConfig = {
           {
             key: "Permissions-Policy",
             value:
-              "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+              "camera=(), microphone=(self), geolocation=(self), browsing-topics=()",
           },
           {
             key: "Content-Security-Policy",
@@ -57,6 +59,8 @@ const config: NextConfig = {
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
               "connect-src 'self' ws: wss: http: https:",
+              // The map library renders tiles in a worker it starts from a blob.
+              "worker-src 'self' blob:",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -66,31 +70,30 @@ const config: NextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return {
-      beforeFiles: [
-        { source: "/index.html", destination: "/" },
+  async redirects() {
+    return [
+        { source: "/index.html", destination: "/", permanent: true },
         ...legacyPages.map((page) => ({
           source: `/${page}.html`,
           destination: `/${page}`,
+          permanent: true,
         })),
         ...policyPages.flatMap((page) => [
           {
             source: `/policies/${page}.html`,
             destination: `/policies/${page}`,
+            permanent: true,
           },
-          { source: `/${page}.html`, destination: `/policies/${page}` },
+          { source: `/${page}.html`, destination: `/policies/${page}`, permanent: true },
         ]),
-        { source: "/gate.html", destination: "/admin" },
-        { source: "/admin.html", destination: "/admin" },
+        { source: "/gate.html", destination: "/admin", permanent: true },
+        { source: "/admin.html", destination: "/admin", permanent: true },
         {
           source: "/are-you-sure-you-want-to-admin/panel",
           destination: "/admin",
+          permanent: true,
         },
-      ],
-      afterFiles: [],
-      fallback: [],
-    };
+      ];
   },
 };
 export default bundleAnalyzer(config);

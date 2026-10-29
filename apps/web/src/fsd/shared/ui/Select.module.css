@@ -1,0 +1,125 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 40px;
+  max-width: 100%;
+  padding: 9px 13px;
+  border: 1px solid var(--gx-border-strong);
+  border-radius: 12px;
+  background: var(--gx-surface-2);
+  color: var(--gx-text);
+  font: 500 13px/1.5 var(--gx-font);
+  cursor: pointer;
+}
+.trigger > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trigger:focus-visible {
+  outline: 2px solid var(--gx-accent);
+  outline-offset: 3px;
+}
+.popup {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 200;
+  padding: 6px;
+  border: 1px solid var(--gx-border-strong);
+  border-radius: 16px;
+  background: var(--gx-elevated);
+  color: var(--gx-text);
+  box-shadow: var(--gx-shadow-lg);
+  font: 500 13px/1.5 var(--gx-font);
+  outline: none;
+  animation: enter 150ms ease-out both;
+  box-sizing: border-box;
+}
+.list {
+  max-height: 276px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gx-border-strong) transparent;
+}
+.popup input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--gx-border);
+  border-radius: 10px;
+  background: var(--gx-bg);
+  color: inherit;
+  font: inherit;
+  margin-bottom: 6px;
+}
+.list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  min-height: 40px;
+  text-align: left;
+  border: 0;
+  border-radius: 10px;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.list button[data-active="true"],
+.list button:hover {
+  background: var(--gx-hover);
+}
+.list button[aria-selected="true"] {
+  font-weight: 600;
+}
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--select-offset, -4px)) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .popup {
+    animation: none;
+  }
+}
+
+.trigger > svg {
+  width: 15px;
+  height: 15px;
+  transform: rotate(90deg);
+  flex-shrink: 0;
+}
+.popup {
+  max-height: calc(100dvh - 16px);
+  overflow: hidden;
+}
+.list {
+  max-height: min(276px, calc(100dvh - 86px));
+}
+
+.popup[data-state="closed"] {
+  animation: exit 150ms ease-in both;
+  pointer-events: none;
+}
+@keyframes exit {
+  to {
+    opacity: 0;
+    transform: translateY(var(--select-offset, -4px)) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .popup[data-state] {
+    animation: none;
+  }
+}
+
+.popup[data-side="top"] {
+  --select-offset: 4px;
+}

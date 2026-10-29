@@ -9,15 +9,16 @@ import { initializeChatInline3 as initialize7 } from "@/features/chat";
 import { initializeChatInline4 as initialize8 } from "@/features/chat";
 export default function initialize(scope) {
   const context = scope.context;
+  context.workspaceManaged = Boolean(document.querySelector(".workspace-shell"));
   initialize0(scope, context);
   initialize1(scope, context);
   initialize2(scope, context);
   initialize3(scope, context);
   initialize4(scope, context);
   initialize5(scope, context);
-  initialize6(scope, context);
+  if (!context.workspaceManaged) initialize6(scope, context);
   initialize7(scope, context);
-  initialize8(scope, context);
+  if (!context.workspaceManaged) initialize8(scope, context);
   scope.register("chat-0", function (event) {
     context.toggleSidebar();
   });
@@ -67,12 +68,27 @@ export default function initialize(scope) {
     scope.window.location.href = "index.html#products";
   });
   scope.register("chat-16", function (event) {
+    const model = document.getElementById("modelSelect");
+    if (model) {
+      model.value = "openai/dall-e-3";
+      model.dispatchEvent(new Event("change"));
+    }
     context.setInput("Generate a futuristic image");
   });
   scope.register("chat-17", function (event) {
+    const model = document.getElementById("modelSelect");
+    if (model) {
+      model.value = "google/gemini-3.5-flash-lite";
+      model.dispatchEvent(new Event("change"));
+    }
     context.setInput("Write a Python script");
   });
   scope.register("chat-18", function (event) {
+    const model = document.getElementById("modelSelect");
+    if (model) {
+      model.value = "kling-video";
+      model.dispatchEvent(new Event("change"));
+    }
     context.setInput("Create a short video");
   });
   scope.register("chat-19", function (event) {

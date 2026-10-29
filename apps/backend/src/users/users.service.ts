@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { randomBytes } from "crypto";
+import { AuthSession } from "./auth-session.entity";
+import { createHash, randomInt } from "crypto";
 import { RedisCacheService } from "../common/redis-cache.service";
 import { User } from "./user.entity";
 import { Role } from "./role.enum";
@@ -18,8 +19,8 @@ const REFERRAL_REWARDS: Record<number, number> = {
   2: 1, // AI Explorer
   3: 2.5, // Pro Creator
   4: 5, // AI Master
-  5: 10, // Unlimited Power
-  6: 22, // AI Titan
+  5: 10, // Power Credits
+  6: 22, // Titan Credits
 };
 
 @Injectable()
@@ -33,6 +34,85 @@ export class UsersService {
     private transactionRepository: Repository<Transaction>,
     private redisCache: RedisCacheService,
   ) {}
+
+  async trackSession(
+    userId: number,
+    token: string,
+    payload: { iat?: number; exp?: number; sessionVersion?: number },
+    agent = "",
+    ip = "",
+  ) {
+    const id = createHash("sha256").update(token).digest("hex");
+    const runner =
+      this.usersRepository.manager.connection.createQueryRunner("master");
+    try {
+      await runner.connect();
+      const now = new Date();
+      await runner.manager
+        .createQueryBuilder()
+        .insert()
+        .into(AuthSession)
+        .values({
+          id,
+          userId,
+          sessionVersion: payload.sessionVersion ?? 0,
+          userAgent: agent.slice(0, 512),
+          ip: ip.slice(0, 64),
+          createdAt: new Date(
+            (payload.iat || Math.floor(Date.now() / 1000)) * 1000,
+          ),
+          lastUsedAt: now,
+          expiresAt: new Date(
+            (payload.exp || Math.floor(Date.now() / 1000)) * 1000,
+          ),
+          revokedAt: null,
+        })
+        .orIgnore()
+        .execute();
+      const session = await runner.manager.findOneBy(AuthSession, {
+        id,
+        userId,
+      });
+      if (!session || session.revokedAt || session.expiresAt <= now)
+        return null;
+      if (now.getTime() - session.lastUsedAt.getTime() > 60000)
+        await runner.manager.update(
+          AuthSession,
+          { id, userId },
+          { lastUsedAt: now },
+        );
+      return id;
+    } finally {
+      await runner.release();
+    }
+  }
+  async listSessions(userId: number, currentId?: string) {
+    const version = await this.getSessionVersion(userId);
+    const rows = await this.usersRepository.manager
+      .getRepository(AuthSession)
+      .createQueryBuilder("s")
+      .where(
+        "s.userId = :userId AND s.sessionVersion = :version AND s.revokedAt IS NULL AND s.expiresAt > :now",
+        { userId, version, now: new Date() },
+      )
+      .orderBy("s.lastUsedAt", "DESC")
+      .getMany();
+    return rows.map(({ id, userAgent, ip, createdAt, lastUsedAt }) => ({
+      id,
+      userAgent,
+      ip,
+      createdAt,
+      lastUsedAt,
+      current: id === currentId,
+    }));
+  }
+  async revokeSession(userId: number, id: string) {
+    const result = await this.usersRepository.manager
+      .getRepository(AuthSession)
+      .update({ id, userId }, { revokedAt: new Date() });
+    if (!result.affected) throw new NotFoundException("Session not found");
+    return { status: "success" };
+  }
 
   async findOneByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({
@@ -50,6 +130,10 @@ export class UsersService {
         "isEmailVerified",
         "googleId",
         "facebookId",
+        "verificationToken",
+        "verificationExpires",
+        "resetPasswordToken",
+        "resetPasswordExpires",
       ],
     });
   }
@@ -60,6 +144,26 @@ export class UsersService {
     return this.usersRepository.findOne({
       where: { email },
       select: ["id", "googleId"],
+    });
+  }
+
+  async findByOAuthId(
+    provider: "google" | "facebook",
+    id: string,
+  ): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: provider === "google" ? { googleId: id } : { facebookId: id },
+      select: [
+        "id",
+        "email",
+        "role",
+        "name",
+        "credits",
+        "avatar",
+        "googleId",
+        "facebookId",
+        "isEmailVerified",
+      ],
     });
   }
 
@@ -117,6 +221,22 @@ export class UsersService {
     return null;
   }
 
+  async getSessionVersion(id: number): Promise<number> {
+    // Never cache revocation state: a revoked JWT must fail on its next request.
+    const runner =
+      this.usersRepository.manager.connection.createQueryRunner("master");
+    try {
+      const user = await runner.manager.findOne(User, {
+        where: { id },
+        select: ["id", "sessionVersion"],
+      });
+      if (!user) throw new NotFoundException("User not found");
+      return user.sessionVersion;
+    } finally {
+      await runner.release();
+    }
+  }
+
   async findByVerificationToken(token: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { verificationToken: token },
@@ -129,6 +249,20 @@ export class UsersService {
         "avatar",
         "isEmailVerified",
         "verificationToken",
+        "verificationExpires",
+      ],
+    });
+  }
+
+  async findByResetToken(token: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: { resetPasswordToken: token },
+      select: [
+        "id",
+        "email",
+        "password",
+        "resetPasswordToken",
+        "resetPasswordExpires",
       ],
     });
   }
@@ -140,12 +274,8 @@ export class UsersService {
     const size = 10; // Длина 10 символов как в Grass
 
     let code = "";
-    const bytes = randomBytes(size);
-
-    for (let i = 0; i < size; i++) {
-      // Используем остаток от деления байта на длину алфавита
-      code += alphabet[bytes[i] % alphabet.length];
-    }
+    // randomInt is uniform; a byte modulo the alphabet favours early letters.
+    for (let i = 0; i < size; i++) code += alphabet[randomInt(alphabet.length)];
 
     // Проверка на уникальность в БД
     const existing = await this.usersRepository.findOne({
@@ -376,11 +506,12 @@ export class UsersService {
   async getUserTransactions(
     userId: number,
     paginationQuery: PaginationQueryDto,
+    type?: TransactionType,
   ) {
     const { page = 1, limit = 10 } = paginationQuery;
 
     const [items, total] = await this.transactionRepository.findAndCount({
-      where: { userId },
+      where: { userId, ...(type ? { type } : {}) },
       select: [
         "id",
         "amount",

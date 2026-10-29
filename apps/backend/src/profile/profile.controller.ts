@@ -1,4 +1,5 @@
 import {
+  Param,
   Controller,
   Get,
   Post,
@@ -6,18 +7,33 @@ import {
   UseGuards,
   Request,
   Query,
+  BadRequestException,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { UsersService } from "../users/users.service";
-import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
+import { TransactionsQueryDto } from "./dto/transactions-query.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
-import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
+import { ProfileService } from "./profile.service";
+import { ChangePasswordDto } from "./dto/account-security.dto";
+import { TransactionType } from "../transactions/transaction.entity";
 
 @ApiTags("Profile")
 @ApiBearerAuth("JWT-auth")
 @Controller("profile")
 export class ProfileController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private profileService: ProfileService,
+  ) {}
 
   @UseGuards(AuthGuard("jwt"))
   @ApiOperation({ summary: "Get current authenticated user profile" })
@@ -61,8 +77,71 @@ export class ProfileController {
   @Get("transactions")
   async getTransactions(
     @Request() req,
-    @Query() paginationQuery: PaginationQueryDto,
+    @Query() paginationQuery: TransactionsQueryDto,
   ) {
-    return this.usersService.getUserTransactions(req.user.id, paginationQuery);
+    const type = paginationQuery.type;
+    if (type && !Object.values(TransactionType).includes(type))
+      throw new BadRequestException("Invalid transaction type");
+    return this.usersService.getUserTransactions(
+      req.user.id,
+      paginationQuery,
+      type,
+    );
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("usage")
+  @ApiQuery({ name: "period", required: false, enum: [7, 30, 90] })
+  usage(
+    @Request() req,
+    @Query("period", new DefaultValuePipe(30), ParseIntPipe) period: number,
+  ) {
+    return this.profileService.usage(req.user.id, period);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("security")
+  security(@Request() req) {
+    return this.profileService.security(req.user.id);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post("password")
+  password(@Request() req, @Body() body: ChangePasswordDto) {
+    return this.profileService.changePassword(
+      req.user.id,
+      body.currentPassword,
+      body.newPassword,
+    );
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Post("logout")
+  async logout(@Request() req) {
+    await this.usersService.revokeSession(req.user.id, req.user.sessionId);
+    this.profileService.disconnectSession(req.user.sessionId);
+    return { status: "success" };
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("sessions")
+  sessions(@Request() req) {
+    return this.usersService.listSessions(req.user.id, req.user.sessionId);
+  }
+  @UseGuards(AuthGuard("jwt"))
+  @Post("sessions/:id/revoke")
+  async revokeSession(@Request() req, @Param("id") id: string) {
+    if (!/^[a-f0-9]{64}$/.test(id))
+      throw new BadRequestException("Invalid session");
+    await this.usersService.revokeSession(req.user.id, id);
+    this.profileService.disconnectSession(id);
+    return { status: "success" };
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Post("logout-all")
+  logoutAll(@Request() req) {
+    return this.profileService.revokeSessions(req.user.id);
   }
 }

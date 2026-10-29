@@ -5,23 +5,19 @@
 # ==========================================
 
 # ------------------------------------------
-# Stage 1: Dependencies Cache
+# Stage 1: Dependencies and Application Builder
+# One stage, so node_modules is stored once instead of being copied
+# into a second layer. The npm cache mount keeps downloaded packages
+# between builds without adding them to any image layer.
 # ------------------------------------------
-FROM node:22-alpine AS dependencies
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 RUN apk add --no-cache libc6-compat
 
 COPY package*.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci --prefer-offline --no-audit --no-fund
 
-# ------------------------------------------
-# Stage 2: Application Builder
-# ------------------------------------------
-FROM node:22-alpine AS builder
-WORKDIR /app
-
-COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -34,7 +30,7 @@ ENV NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
 RUN npm run build
 
 # ------------------------------------------
-# Stage 3: Minimal Production Runner
+# Stage 2: Minimal Production Runner
 # ------------------------------------------
 FROM node:22-alpine AS runner
 WORKDIR /app

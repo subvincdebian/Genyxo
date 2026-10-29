@@ -3,18 +3,21 @@ import {
   UnauthorizedException,
   BadRequestException,
   ConflictException,
-  Logger,
+  ForbiddenException,
+  ServiceUnavailableException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
-import { randomUUID } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import { UsersService } from "../users/users.service";
 import { EmailService } from "../email/email.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
+  private tokenHash(token: string) {
+    return createHash("sha256").update(token).digest("hex");
+  }
 
   constructor(
     private usersService: UsersService,
@@ -34,12 +37,19 @@ export class AuthService {
       throw new UnauthorizedException("Please verify your email first.");
     }
 
-    const { password, ...result } = user;
+    const { password: _password, ...result } = user;
     return result;
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id, role: user.role };
+    const sessionVersion = await this.usersService.getSessionVersion(user.id);
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      role: user.role,
+      sessionVersion,
+      jti: randomUUID(),
+    };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -54,7 +64,7 @@ export class AuthService {
   }
 
   async register(createUserDto: CreateUserDto) {
-    const { referralCode, ...userData } = createUserDto;
+    const { referralCode } = createUserDto;
     const [existingUser, referrer] = await Promise.all([
       this.usersService.findRegistrationConflict(createUserDto.email),
       referralCode
@@ -73,7 +83,7 @@ export class AuthService {
 
     const referrerId = referrer ? referrer.id : null;
 
-    const verificationToken = randomUUID();
+    const verificationToken = randomBytes(32).toString("hex");
 
     const newUser = await this.usersService.create({
       email: createUserDto.email,
@@ -81,12 +91,20 @@ export class AuthService {
       name: createUserDto.name,
       referrerId,
       isEmailVerified: false,
-      verificationToken: verificationToken,
+      verificationToken: this.tokenHash(verificationToken),
+      verificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
 
-    await this.emailService
-      .sendVerificationEmail(newUser.email, verificationToken)
-      .catch(() => this.logger.error("Failed to send verification email"));
+    try {
+      await this.emailService.sendVerificationEmail(
+        newUser.email,
+        verificationToken,
+      );
+    } catch {
+      throw new ServiceUnavailableException(
+        "Account created, but the verification email could not be sent. Please request another email.",
+      );
+    }
 
     return {
       message: "Registration successful. Please check your email to verify.",
@@ -94,14 +112,70 @@ export class AuthService {
   }
 
   async verifyEmail(token: string) {
-    const user = await this.usersService.findByVerificationToken(token);
-    if (!user) throw new BadRequestException("Invalid or expired token");
+    const user =
+      (await this.usersService.findByVerificationToken(
+        this.tokenHash(token),
+      )) || (await this.usersService.findByVerificationToken(token));
+    if (
+      !user ||
+      (user.verificationExpires &&
+        user.verificationExpires.getTime() < Date.now())
+    )
+      throw new BadRequestException("Invalid or expired token");
 
     user.isEmailVerified = true;
     user.verificationToken = null;
+    user.verificationExpires = null;
     await this.usersService.save(user);
 
     return this.login(user);
+  }
+
+  async resendVerification(email: string) {
+    const user = await this.usersService.findOneByEmail(
+      email.trim().toLowerCase(),
+    );
+    if (user && !user.isEmailVerified) {
+      const token = randomBytes(32).toString("hex");
+      user.verificationToken = this.tokenHash(token);
+      user.verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await this.usersService.save(user);
+      await this.emailService.sendVerificationEmail(user.email, token);
+    }
+    return {
+      message: "If this address needs verification, an email has been sent.",
+    };
+  }
+
+  async requestPasswordReset(email: string) {
+    const user = await this.usersService.findOneByEmail(
+      email.trim().toLowerCase(),
+    );
+    if (user?.password) {
+      const token = randomBytes(32).toString("hex");
+      user.resetPasswordToken = this.tokenHash(token);
+      user.resetPasswordExpires = new Date(Date.now() + 30 * 60 * 1000);
+      await this.usersService.save(user);
+      await this.emailService.sendPasswordResetEmail(user.email, token);
+    }
+    return { message: "If an account exists, a reset link has been sent." };
+  }
+
+  async resetPassword(token: string, password: string) {
+    const user = await this.usersService.findByResetToken(
+      this.tokenHash(token),
+    );
+    if (
+      !user ||
+      !user.resetPasswordExpires ||
+      user.resetPasswordExpires.getTime() < Date.now()
+    )
+      throw new BadRequestException("Invalid or expired reset link");
+    user.password = await bcrypt.hash(password, 12);
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await this.usersService.save(user);
+    return { message: "Password updated. You can sign in now." };
   }
 
   async validateOAuthLogin(
@@ -109,30 +183,35 @@ export class AuthService {
     provider: "google" | "facebook",
     referralCode?: string,
   ) {
-    let user = await this.usersService.findOneByEmail(profile.email);
+    if (!profile.email || typeof profile.email !== "string")
+      throw new BadRequestException(
+        "This provider did not share an email address.",
+      );
+    if (provider === "google" && profile.emailVerified !== true)
+      throw new ForbiddenException("Google email address is not verified.");
+    const email = profile.email.trim().toLowerCase();
+    let user = await this.usersService.findByOAuthId(provider, profile.id);
+    if (user) return this.login(user);
+    user = await this.usersService.findOneByEmail(email);
+    if (user)
+      throw new ConflictException(
+        "This email already has an account. Sign in with its original method.",
+      );
 
-    if (!user) {
-      let referrerId: number | null = null;
-      if (referralCode) {
-        const referrer =
-          await this.usersService.findByReferralCode(referralCode);
-        referrerId = referrer ? referrer.id : null;
-      }
-
-      user = await this.usersService.create({
-        email: profile.email,
-        name: `${profile.firstName} ${profile.lastName}`,
-        avatar: profile.picture,
-        isEmailVerified: true,
-        referrerId,
-        [`${provider}Id`]: profile.id,
-      });
-    } else {
-      if (!user[`${provider}Id`]) {
-        user[`${provider}Id`] = profile.id;
-        await this.usersService.save(user);
-      }
+    let referrerId: number | null = null;
+    if (referralCode) {
+      const referrer = await this.usersService.findByReferralCode(referralCode);
+      referrerId = referrer ? referrer.id : null;
     }
+
+    user = await this.usersService.create({
+      email,
+      name: `${profile.firstName} ${profile.lastName}`,
+      avatar: profile.picture,
+      isEmailVerified: true,
+      referrerId,
+      [`${provider}Id`]: profile.id,
+    });
     return this.login(user);
   }
 }

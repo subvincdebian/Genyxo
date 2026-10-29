@@ -1,0 +1,123 @@
+/* Motion for shared/ui/genyxo-icons.tsx. Parts rest in their drawn shape; a
+   one-shot sequence plays while the owning control is hovered or focused. */
+.gi { overflow: visible; flex-shrink: 0; }
+.gi * { transform-box: fill-box; transform-origin: center; vector-effect: non-scaling-stroke; }
+.gi-rotate-down { transform: rotate(90deg); }
+.gi .gi-hand, .gi .gi-hand-short { transform-box: view-box; transform-origin: 10px 10px; }
+.gi .gi-gear, .gi .gi-turn { transform-origin: center; }
+.gi .gi-pen { transform-origin: 20% 80%; }
+.gi .gi-lid { transform-origin: 85% 100%; }
+.gi .gi-book-tilt { transform-origin: 50% 100%; }
+.gi .gi-flap { transform-origin: 0 50%; }
+.gi .gi-bar { transform-origin: 50% 100%; }
+.gi .gi-shackle { transform-origin: 85% 100%; }
+.gi .gi-ring { transform-origin: 50% 0; }
+
+/* Animations attach only while the owner is hovered, so leaving and
+   re-entering replays the motion from the start. */
+@media (hover: hover) and (pointer: fine) {
+  :is(button, a, label, summary, [role="menuitem"], [role="tab"], [role="option"], .gi-hover):hover .gi .gi-pen,
+  :is(button, a, [role="menuitem"]):focus-visible .gi .gi-pen { animation: gi-write 700ms cubic-bezier(.4, 0, .2, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-underline { animation: gi-draw-in 520ms 120ms ease-out both; stroke-dasharray: 1; }
+  :is(button, a, label, [role="menuitem"], [role="option"], .gi-hover):hover .gi .gi-lens { animation: gi-lens 640ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-divider { animation: gi-divider 620ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-hand { animation: gi-spin-full 900ms cubic-bezier(.65, 0, .35, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-hand-short { animation: gi-spin-quarter 900ms cubic-bezier(.65, 0, .35, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-book { animation: gi-lift 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-book-tilt { animation: gi-tilt-book 680ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-prongs { animation: gi-plug 640ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-cord { animation: gi-cord 640ms ease-in-out; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-dot { animation: gi-dot 620ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-dot-2 { animation-delay: 70ms; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-dot-3 { animation-delay: 140ms; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-line { animation: gi-line 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-line-2 { animation-delay: 60ms; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-line-3 { animation-delay: 120ms; }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-star { animation: gi-twinkle 720ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-star-small { animation: gi-twinkle 720ms 140ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-spin { animation: gi-spin-quarter 480ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], [role="option"], .gi-hover):hover .gi .gi-draw { animation: gi-draw-in 460ms ease-out both; stroke-dasharray: 1; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-nudge { animation: gi-nudge 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-nudge-back { animation: gi-nudge-back 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-nudge-diag { animation: gi-nudge-diag 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-fly { animation: gi-fly 620ms cubic-bezier(.5, 0, .2, 1); }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-sun { animation: gi-sun 760ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-hills { animation: gi-hills 760ms ease-in-out; }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-rec { animation: gi-rec 900ms ease-in-out; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-bracket-l { animation: gi-bracket-l 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-bracket-r { animation: gi-bracket-r 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-slash { animation: gi-slash 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-bar { animation: gi-bar 640ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-bar-2 { animation-delay: 80ms; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-bar-3 { animation-delay: 160ms; }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-flap { animation: gi-flap 620ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-text { animation: gi-draw-in 520ms ease-out both; stroke-dasharray: 6 6; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-head { animation: gi-lift 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-gear { animation: gi-spin-gear 900ms cubic-bezier(.65, 0, .35, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-lid { animation: gi-lid 620ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-bounce { animation: gi-bounce 620ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-capsule { animation: gi-capsule 700ms ease-in-out; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-back { animation: gi-back 520ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-drop { animation: gi-drop 620ms cubic-bezier(.5, 0, .2, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-tilt { animation: gi-tilt 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-beat { animation: gi-beat 720ms ease-in-out; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-pop { animation: gi-pop 520ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-rise { animation: gi-rise 560ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-tile { animation: gi-pop 520ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-tile-2 { animation-delay: 60ms; }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-tile-3 { animation-delay: 120ms; }
+  :is(button, a, label, [role="menuitem"], [role="tab"], .gi-hover):hover .gi .gi-tile-4 { animation-delay: 180ms; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-knob-1 { animation: gi-knob-1 700ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-knob-2 { animation: gi-knob-2 700ms cubic-bezier(.34, 1.56, .64, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-turn { animation: gi-turn 820ms cubic-bezier(.65, 0, .35, 1); }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-meridian { animation: gi-meridian 900ms ease-in-out; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-ring { animation: gi-ring 760ms ease-in-out; }
+  :is(button, a, label, [role="menuitem"], .gi-hover):hover .gi .gi-shackle { animation: gi-shackle 640ms cubic-bezier(.34, 1.56, .64, 1); }
+}
+
+@keyframes gi-write { 0%, 100% { transform: none; } 25% { transform: translate(-1.2px, 1.2px) rotate(-6deg); } 50% { transform: translate(.8px, -.4px) rotate(3deg); } 75% { transform: translate(-.6px, .6px) rotate(-2deg); } }
+@keyframes gi-draw-in { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes gi-lens { 0%, 100% { transform: none; } 40% { transform: scale(1.14) rotate(-10deg); } 70% { transform: scale(.97) rotate(4deg); } }
+@keyframes gi-divider { 0%, 100% { transform: none; } 45% { transform: translateX(2.5px); } 75% { transform: translateX(-.6px); } }
+@keyframes gi-spin-full { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes gi-spin-quarter { from { transform: rotate(0); } to { transform: rotate(90deg); } }
+@keyframes gi-spin-gear { from { transform: rotate(0); } to { transform: rotate(120deg); } }
+@keyframes gi-lift { 0%, 100% { transform: none; } 45% { transform: translateY(-1.6px); } 75% { transform: translateY(.4px); } }
+@keyframes gi-tilt-book { 0%, 100% { transform: none; } 45% { transform: rotate(9deg); } 75% { transform: rotate(-2deg); } }
+@keyframes gi-plug { 0%, 100% { transform: none; } 45% { transform: translateY(1.6px); } 75% { transform: translateY(-.4px); } }
+@keyframes gi-cord { 0%, 100% { transform: none; } 50% { transform: scaleY(1.25); } }
+@keyframes gi-dot { 0%, 100% { transform: none; } 45% { transform: translateY(-2px); } }
+@keyframes gi-line { 0%, 100% { transform: none; } 45% { transform: scaleX(.6); } 75% { transform: scaleX(1.05); } }
+@keyframes gi-twinkle { 0%, 100% { transform: none; } 40% { transform: scale(1.22) rotate(18deg); } 70% { transform: scale(.94) rotate(-4deg); } }
+@keyframes gi-nudge { 0%, 100% { transform: none; } 45% { transform: translateX(2px); } 75% { transform: translateX(-.4px); } }
+@keyframes gi-nudge-back { 0%, 100% { transform: none; } 45% { transform: translateX(-2px); } 75% { transform: translateX(.4px); } }
+@keyframes gi-nudge-diag { 0%, 100% { transform: none; } 45% { transform: translate(1.6px, -1.6px); } }
+@keyframes gi-fly { 0% { transform: none; opacity: 1; } 45% { transform: translateY(-6px); opacity: 0; } 46% { transform: translateY(6px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes gi-sun { 0%, 100% { transform: none; } 50% { transform: translateY(-1.8px) scale(1.2); } }
+@keyframes gi-hills { 0%, 100% { transform: none; } 50% { transform: translateY(.8px); } }
+@keyframes gi-rec { 0%, 100% { opacity: 1; } 30% { opacity: .15; } 60% { opacity: 1; } 80% { opacity: .3; } }
+@keyframes gi-bracket-l { 0%, 100% { transform: none; } 45% { transform: translateX(-1.8px); } }
+@keyframes gi-bracket-r { 0%, 100% { transform: none; } 45% { transform: translateX(1.8px); } }
+@keyframes gi-slash { 0%, 100% { transform: none; } 45% { transform: rotate(14deg); } }
+@keyframes gi-bar { 0%, 100% { transform: none; } 40% { transform: scaleY(.35); } 75% { transform: scaleY(1.12); } }
+@keyframes gi-flap { 0%, 100% { transform: none; } 45% { transform: skewY(-9deg) translateY(-.6px); } }
+@keyframes gi-spin-turn { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes gi-lid { 0%, 100% { transform: none; } 45% { transform: translateY(-1.6px) rotate(-12deg); } 75% { transform: rotate(2deg); } }
+@keyframes gi-bounce { 0%, 100% { transform: none; } 35% { transform: translateY(-2.4px); } 65% { transform: translateY(.6px); } }
+@keyframes gi-capsule { 0%, 100% { transform: none; } 25% { transform: scaleY(.88); } 50% { transform: scaleY(1.06); } 75% { transform: scaleY(.95); } }
+@keyframes gi-back { 0%, 100% { transform: none; } 45% { transform: translate(-1.4px, -1.4px); } }
+@keyframes gi-drop { 0% { transform: none; opacity: 1; } 45% { transform: translateY(5px); opacity: 0; } 46% { transform: translateY(-5px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes gi-tilt { 0%, 100% { transform: none; } 40% { transform: rotate(-14deg); } 70% { transform: rotate(5deg); } }
+@keyframes gi-beat { 0%, 100% { transform: none; } 20% { transform: scale(1.18); } 40% { transform: scale(.96); } 60% { transform: scale(1.1); } }
+@keyframes gi-pop { 0%, 100% { transform: none; } 45% { transform: scale(1.22); } 75% { transform: scale(.95); } }
+@keyframes gi-rise { 0%, 100% { transform: none; } 45% { transform: translateY(-1.4px); } }
+@keyframes gi-knob-1 { 0%, 100% { transform: none; } 50% { transform: translateX(6px); } }
+@keyframes gi-knob-2 { 0%, 100% { transform: none; } 50% { transform: translateX(-6px); } }
+@keyframes gi-turn { 0%, 100% { transform: none; } 50% { transform: rotateY(180deg); } }
+@keyframes gi-meridian { 0%, 100% { transform: none; } 50% { transform: scaleX(-1); } }
+@keyframes gi-ring { 0%, 100% { transform: none; } 15% { transform: rotate(14deg); } 30% { transform: rotate(-12deg); } 45% { transform: rotate(8deg); } 60% { transform: rotate(-5deg); } }
+@keyframes gi-shackle { 0%, 100% { transform: none; } 45% { transform: translateY(-2px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gi * { animation: none !important; }
+}

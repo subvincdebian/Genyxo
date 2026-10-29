@@ -1,4 +1,9 @@
 export { ChatApp } from "./ui/ChatApp";
+export { ThinkingOrbs } from "./ui/ThinkingOrbs";
+export { ReplyNotifier } from "./ui/ReplyNotifier";
+export { RichCardsHost } from "./ui/RichCards";
+export { MemoryManager } from "./ui/MemoryManager";
+export { TaskPanel } from "./ui/TaskPanel";
 export { ChatLangModal } from "./ui/ChatLangModal";
 export { ChatSeoContent } from "./ui/ChatSeoContent";
 export { ChatSearchChatsModal } from "./ui/ChatSearchChatsModal";

@@ -29,7 +29,11 @@
     ".next/types/**/*.ts",
     "**/*.js",
     "**/*.jsx",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    ".next-workspace/types/**/*.ts",
+    ".next-workspace/dev/types/**/*.ts",
+    ".next-workspace-build/types/**/*.ts",
+    ".next-workspace-build/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules", "scripts", ".tmp"]
 }

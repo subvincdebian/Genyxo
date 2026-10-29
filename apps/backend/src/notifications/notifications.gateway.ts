@@ -8,6 +8,7 @@ import { Server, Socket } from "socket.io";
 import { forwardRef, Inject, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { NotificationsService } from "./notifications.service";
+import { UsersService } from "../users/users.service";
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
@@ -47,6 +48,7 @@ export class NotificationsGateway
     private jwtService: JwtService,
     @Inject(forwardRef(() => NotificationsService))
     private notificationsService: NotificationsService,
+    private usersService: UsersService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -62,11 +64,41 @@ export class NotificationsGateway
 
       const userId = payload.sub || payload.id;
 
+      if (
+        !userId ||
+        (payload.sessionVersion ?? 0) !==
+          (await this.usersService.getSessionVersion(Number(userId)))
+      )
+        return client.disconnect();
+
+      const sessionId = await this.usersService.trackSession(
+        Number(userId),
+        token,
+        payload,
+        client.handshake.headers["user-agent"] || "",
+        client.handshake.address || "",
+      );
+      if (!sessionId) return client.disconnect();
+      await client.join(`session_${sessionId}`);
       if (userId) {
         const [, unreadCount] = await Promise.all([
           client.join(`user_${userId}`),
           this.notificationsService.getUnreadCount(Number(userId)),
         ]);
+        // Covers a revocation racing the asynchronous room join.
+        if (
+          (payload.sessionVersion ?? 0) !==
+          (await this.usersService.getSessionVersion(Number(userId)))
+        )
+          return client.disconnect();
+        if (
+          !(await this.usersService.trackSession(
+            Number(userId),
+            token,
+            payload,
+          ))
+        )
+          return client.disconnect();
         client.emit("unread_count_update", { count: unreadCount });
       }
     } catch (_error) {
@@ -76,6 +108,14 @@ export class NotificationsGateway
 
   handleDisconnect(client: Socket) {
     this.logger.debug?.(`Socket ${client.id} disconnected`);
+  }
+
+  revokeSession(id: string) {
+    this.server?.in(`session_${id}`).disconnectSockets(true);
+  }
+
+  revokeSessions(userId: number) {
+    this.server?.in(`user_${userId}`).disconnectSockets(true);
   }
 
   sendUnreadCount(userId: number, count: number) {

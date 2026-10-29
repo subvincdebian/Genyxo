@@ -13,7 +13,7 @@ export default function initialize(scope, context) {
   let verificationRequest = null;
   let currentProduct = null;
   const urlParams = new URLSearchParams(scope.window.location.search);
-  const tokenFromUrl = urlParams.get("token");
+  const tokenFromUrl = urlParams.get("token") || (scope.window.location.hash.startsWith("#auth-token=") ? scope.window.location.hash.slice(12) : null);
   const refCode = urlParams.get("referralCode") || urlParams.get("ref");
   if (tokenFromUrl) {
     localStorage.setItem("authToken", tokenFromUrl);
@@ -26,6 +26,14 @@ export default function initialize(scope, context) {
     const cleanUrl =
       scope.window.location.origin + scope.window.location.pathname;
     scope.window.history.replaceState({}, scope.document.title, cleanUrl);
+  }
+  if (tokenFromUrl) {
+    const returnTo = sessionStorage.getItem("authReturnTo");
+    sessionStorage.removeItem("authReturnTo");
+    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//") && !returnTo.startsWith("/\\")) {
+      scope.window.location.replace(returnTo);
+      return () => {};
+    }
   }
   let token = localStorage.getItem("authToken");
   scope.window.token = token;
@@ -76,40 +84,46 @@ export default function initialize(scope, context) {
     {
       id: 1,
       price: "$3.99",
-      image: "./images/startai.jpg",
+      image: "/images/startai.jpg",
       alt: "StartAI Pack",
     },
     {
       id: 2,
       price: "$9.99",
-      image: "./images/aiexplorer.jpg",
+      image: "/images/aiexplorer.jpg",
       alt: "AI Explorer Pack",
     },
     {
       id: 3,
       price: "$24.99",
-      image: "./images/procreatorai.jpg",
+      image: "/images/procreatorai.jpg",
       alt: "Pro Creator AI Pack",
     },
     {
       id: 4,
       price: "$49.99",
-      image: "./images/aimaster.jpg",
+      image: "/images/aimaster.jpg",
       alt: "AI Master Pack",
     },
     {
       id: 5,
       price: "$99.99",
-      image: "./images/unlimitedpower.jpg",
-      alt: "Unlimited Power Pack",
+      image: "/images/unlimitedpower.jpg",
+      alt: "Power Credits Pack",
     },
     {
       id: 6,
       price: "$219.99",
-      image: "./images/aititan.jpg",
-      alt: "AI Titan Pack",
+      image: "/images/aititan.jpg",
+      alt: "Titan Credits Pack",
     },
   ];
+  if (token && checkoutModal) {
+    const pendingPack = Number(sessionStorage.getItem("pendingAuthPack"));
+    sessionStorage.removeItem("pendingAuthPack");
+    const product = products.find((item) => item.id === pendingPack);
+    if (product) queueMicrotask(() => openCheckout(product));
+  }
   const SVG_ICONS = {
     check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
     bolt: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
@@ -140,6 +154,7 @@ export default function initialize(scope, context) {
       );
     }
     localStorage.setItem("userCredits", numericAmount);
+    scope.document.dispatchEvent(new Event("genyxo:credits"));
   }
   function updateUIState(isLoggedIn, userData = null) {
     const userName = userData?.name || userData?.email || "User";
@@ -199,6 +214,7 @@ export default function initialize(scope, context) {
     scope.document.dispatchEvent(new Event("genyxo:session"));
   }
   function renderBadge(count) {
+    scope.document.dispatchEvent(new CustomEvent("genyxo:unread-count", { detail: { count } }));
     if (!notificationBadge) return;
     const numericCount = parseInt(count, 10) || 0;
     if (numericCount > 0) {
@@ -337,7 +353,12 @@ export default function initialize(scope, context) {
         const user = await response.json();
         localStorage.setItem("userName", user.name || "");
         localStorage.setItem("userEmail", user.email || "");
-        if (user.avatar) localStorage.setItem("userAvatar", user.avatar);
+        try {
+          if (user.avatar) localStorage.setItem("userAvatar", user.avatar);
+          else localStorage.removeItem("userAvatar");
+        } catch {
+          // A large animated avatar may not fit browser storage.
+        }
         if (user.role) localStorage.setItem("userRole", user.role);
         updateUIState(true, user);
         updateAdminDashboardVisibility();
@@ -365,16 +386,20 @@ export default function initialize(scope, context) {
         localStorage.setItem("userEmail", user.email);
         localStorage.setItem("userId", user.id);
         if (user.name) localStorage.setItem("userName", user.name);
-        if (user.avatar) localStorage.setItem("userAvatar", user.avatar);
+        try {
+          if (user.avatar) localStorage.setItem("userAvatar", user.avatar);
+          else localStorage.removeItem("userAvatar");
+        } catch {
+          // A large animated avatar may not fit browser storage.
+        }
         updateUIState(true, user);
-      } else {
+      } else if (res.status === 401 || res.status === 403) {
         localStorage.removeItem("authToken");
         updateUIState(false);
       }
     } catch (e) {
+      // A dropped request (navigation, offline, server restart) keeps the session.
       console.error("Profile fetch error", e);
-      localStorage.removeItem("authToken");
-      updateUIState(false);
     }
   }
   function showToast(message, type = "success", duration = 3000) {
@@ -440,9 +465,7 @@ export default function initialize(scope, context) {
       renderBadge(data.count);
     });
     socket.on("new_notification", (n) => {
-      if (typeof showToast === "function") {
-        showToast(`${n.title}: ${n.message}`, "info");
-      }
+      showToast(`${n.title}: ${n.message}`, "info");
       scope.document.dispatchEvent(
         new CustomEvent("genyxo:notification", {
           detail: n,
@@ -626,18 +649,8 @@ export default function initialize(scope, context) {
     loginForm.style.display = "block";
   }
   function openLoginModal() {
-    const loginFormEl = scope.document.getElementById("loginForm");
-    const signupFormEl = scope.document.getElementById("signupForm");
-    if (!loginModal || !loginFormEl || !signupFormEl) {
-      scope.window.location.href = "index.html#login";
-      return;
-    }
-    loginModal.style.display = "flex";
-    scope.document.body.style.overflow = "hidden";
-    if (logoutContainer) {
-      logoutContainer.style.display = "none";
-    }
-    showLoginForm();
+    const next = `${scope.window.location.pathname}${scope.window.location.search}${scope.window.location.hash}`;
+    scope.window.location.assign(`/sign-in?next=${encodeURIComponent(next)}`);
   }
   function closeLoginModal() {
     loginModal.style.display = "none";
@@ -651,6 +664,7 @@ export default function initialize(scope, context) {
   }
   async function processPayment() {
     if (!token) {
+      if (currentProduct) sessionStorage.setItem("pendingAuthPack", String(currentProduct.id));
       checkoutModal.style.display = "none";
       openLoginModal();
       return;
@@ -872,6 +886,7 @@ export default function initialize(scope, context) {
       }
     });
   }
+  scope.onReady(() => initProductsEventListeners());
   function loadProducts() {
     const productsGrid = scope.document.getElementById("productsGrid");
     if (!productsGrid) return;
@@ -1033,7 +1048,7 @@ export default function initialize(scope, context) {
   function handleLoginButtonClick(e) {
     e.stopPropagation();
     if (token) {
-      profilePanel.classList.toggle("show");
+      profilePanel?.classList.toggle("show");
     } else {
       openLoginModal();
     }
@@ -1111,7 +1126,7 @@ export default function initialize(scope, context) {
   function toggleProfilePanel() {
     const profilePanel = scope.document.getElementById("profilePanel");
     if (profilePanel) {
-      profilePanel.classList.toggle("show");
+      profilePanel?.classList.toggle("show");
     }
   }
   function stopPolling() {
@@ -1227,7 +1242,7 @@ export default function initialize(scope, context) {
     scope.window.addEventListener("click", (e) => {
       if (
         !e.target.closest(".profile-container") &&
-        profilePanel.classList.contains("show")
+        profilePanel?.classList.contains("show")
       ) {
         profilePanel.classList.remove("show");
       }
@@ -1261,21 +1276,35 @@ export default function initialize(scope, context) {
     const burger = scope.document.getElementById("burger");
     const mobileMenu = scope.document.getElementById("mobileMenu");
     const overlay = scope.document.getElementById("menuOverlay");
+    const closeButton = scope.document.getElementById("closeMobileMenu");
     if (!burger || !mobileMenu || !overlay) return;
     function closeMenu() {
       burger.classList.remove("active");
       mobileMenu.classList.remove("active");
       overlay.classList.remove("active");
+      burger.setAttribute("aria-expanded", "false");
     }
     scope.listen(burger, "click", () => {
-      burger.classList.toggle("active");
-      mobileMenu.classList.toggle("active");
-      overlay.classList.toggle("active");
+      const open = !mobileMenu.classList.contains("active");
+      burger.classList.toggle("active", open);
+      mobileMenu.classList.toggle("active", open);
+      overlay.classList.toggle("active", open);
+      burger.setAttribute("aria-expanded", String(open));
+      if (open) closeButton?.focus();
     });
     scope.document.querySelectorAll(".mobile-menu a").forEach((link) => {
       scope.listen(link, "click", closeMenu);
     });
     scope.listen(overlay, "click", closeMenu);
+    if (closeButton) scope.listen(closeButton, "click", () => { closeMenu(); burger.focus(); });
+    scope.listen(scope.document, "keydown", (event) => {
+      if (event.key === "Escape" && mobileMenu.classList.contains("active")) {
+        closeMenu();
+        burger.focus();
+      }
+    });
+    const desktopNav = scope.window.matchMedia("(min-width: 901px)");
+    scope.listen(desktopNav, "change", () => { if (desktopNav.matches) closeMenu(); });
   }
   const copyAffBtn = scope.document.getElementById("copyAffBtn");
   if (copyAffBtn) {
@@ -1398,7 +1427,7 @@ export default function initialize(scope, context) {
           )
           .join(""),
       );
-      renderPagination(Math.ceil(data.total / 5), page);
+      renderPagination({ totalPages: Math.ceil(data.total / 5), currentPage: page });
     } catch (err) {
       console.error("Failed to load transactions", err);
     }
@@ -1611,7 +1640,7 @@ export default function initialize(scope, context) {
       name: "Gemini Pro",
       company: "Google",
       creator: "Google",
-      icon: "./images/google-gemini.svg",
+      icon: "/images/google-gemini.svg",
       desc: "Google's most powerful model for complex logical tasks, coding, and analyzing large texts.",
     },
     {
@@ -1619,7 +1648,7 @@ export default function initialize(scope, context) {
       name: "Gemini Flash",
       company: "Google",
       creator: "Google",
-      icon: "./images/google-gemini.svg",
+      icon: "/images/google-gemini.svg",
       desc: "A lightweight and lightning-fast model. Perfect for everyday tasks.",
     },
     {
@@ -1627,7 +1656,7 @@ export default function initialize(scope, context) {
       name: "Gemini Flash-Lite",
       company: "Google",
       creator: "Google",
-      icon: "./images/google-gemini.svg",
+      icon: "/images/google-gemini.svg",
       desc: "Google's fastest model. Perfect for quick answers.",
     },
     {
@@ -1635,7 +1664,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-5.1",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "a highly efficient AI model by OpenAI that introduces adaptive reasoning, allowing it to dynamically shift between a fast, lightweight chat mode and a deep, stepwise thinking mode",
     },
     {
@@ -1643,7 +1672,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-5",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "OpenAI's flagship multimodal AI model family, featuring advanced deep reasoning, significantly reduced hallucination rates, and native integration for text, images, and audio.",
     },
     {
@@ -1651,7 +1680,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-5 Mini",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "OpenAI's lightweight, efficiency-focused AI model. It is designed to deliver high-speed text and image processing, tool use, and strong coding capabilities at a fraction of the cost and latency of flagship models, making it ideal for high-volume tasks and multi-agent workflows.",
     },
     {
@@ -1659,7 +1688,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-4.1",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "high-speed, cost-effective AI model family by OpenAI. The series includes the flagship model, a low-latency Mini, and an exceptionally cheap Nano.",
     },
     {
@@ -1667,7 +1696,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-4 Mini",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "OpenAI’s fastest, most cost-effective small AI model. Designed for high-volume, low-latency tasks, it combines advanced textual intelligence and multimodal reasoning (text + image input) with massive affordability, making it ideal for apps, chatbots, and focused workflows.",
     },
     {
@@ -1675,7 +1704,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-o1",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "a cutting-edge AI model by OpenAI with exceptional reasoning capabilities.",
     },
     {
@@ -1683,7 +1712,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-o3 Reasoning",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "a highly advanced AI model by OpenAI designed for complex reasoning tasks.",
     },
     {
@@ -1691,7 +1720,7 @@ export default function initialize(scope, context) {
       name: "ChatGPT-4o",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/chatgpt-icon.svg",
+      icon: "/images/chatgpt-icon.svg",
       desc: "the latest flagship AI model by OpenAI with enhanced multimodal capabilities.",
     },
     {
@@ -1699,7 +1728,7 @@ export default function initialize(scope, context) {
       name: "Claude Sonnet 4.6",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "the latest flagship AI model by Anthropic with improved reasoning and safety features.",
     },
     {
@@ -1707,7 +1736,7 @@ export default function initialize(scope, context) {
       name: "Claude Sonnet 4.5",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "a highly capable AI model by Anthropic designed for complex tasks.",
     },
     {
@@ -1715,7 +1744,7 @@ export default function initialize(scope, context) {
       name: "Claude Opus 4.6",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "highly advanced, agentic reasoning model released by Anthropic. It is celebrated for its industry-leading capabilities in complex knowledge work, deep research, and multi-step tasks.",
     },
     {
@@ -1723,7 +1752,7 @@ export default function initialize(scope, context) {
       name: "Claude Opus 4.5",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "Anthropic's flagship frontier AI model designed for complex reasoning, long-horizon agent workflows, and professional software engineering.",
     },
     {
@@ -1731,7 +1760,7 @@ export default function initialize(scope, context) {
       name: "Claude Haiku 4.5",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "Anthropic's flagship compact AI model. Designed for extreme speed and cost-efficiency, it matches the coding and reasoning capabilities of previous heavyweight models (like Sonnet 4) at a fraction of the cost.",
     },
     {
@@ -1739,7 +1768,7 @@ export default function initialize(scope, context) {
       name: "Claude Haiku 3",
       company: "Anthropic",
       creator: "Anthropic",
-      icon: "./images/claude-ai.svg",
+      icon: "/images/claude-ai.svg",
       desc: "Anthropic's fastest and most compact AI model. It is specifically designed for ultra-low-latency, high-volume, and cost-efficient tasks like batch processing, rapid text summarization, and responsive customer support.",
     },
     {
@@ -1747,7 +1776,7 @@ export default function initialize(scope, context) {
       name: "DALL-E Image",
       company: "OpenAI",
       creator: "OpenAI",
-      icon: "./images/dalle-text.png",
+      icon: "/images/dalle-text.png",
       desc: "A model for creating images based on text descriptions.",
     },
     {
@@ -1755,16 +1784,8 @@ export default function initialize(scope, context) {
       name: "Kling Video",
       company: "Kuaishou Technology",
       creator: "Kuaishou Technology",
-      icon: "./images/kling-video.svg",
+      icon: "/images/kling-video.svg",
       desc: "the latest flagship AI model by Kuaishou Technology with enhanced multimodal capabilities.",
-    },
-    {
-      id: "arcee",
-      name: "Arcee",
-      company: "Arcee",
-      creator: "Arcee",
-      icon: "./images/arcee-ai.svg",
-      desc: "the latest flagship AI model by Arcee with enhanced multimodal capabilities.",
     },
   ];
   const quickActionsData = [
@@ -1980,7 +2001,6 @@ export default function initialize(scope, context) {
         resultsState.appendChild(item);
       });
     });
-    initProductsEventListeners();
   });
   function openCategoryModal(type) {
     const modal = scope.document.getElementById("categoryModal");

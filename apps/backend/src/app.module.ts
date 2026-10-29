@@ -75,8 +75,9 @@ import { QueuesModule } from "./queues/queues.module";
     }),
     MailerModule.forRoot({
       transport: {
-        host: "smtp.zoho.eu",
-        port: 587,
+        // SMTP_HOST/SMTP_PORT point local development at a mail catcher.
+        host: process.env.SMTP_HOST || "smtp.zoho.eu",
+        port: Number(process.env.SMTP_PORT || 587),
         secure: false,
         ...(process.env.VERCEL
           ? {}
@@ -84,10 +85,14 @@ import { QueuesModule } from "./queues/queues.module";
         connectionTimeout: 10000,
         greetingTimeout: 10000,
         socketTimeout: 15000,
-        auth: {
-          user: "info@genyxo.com",
-          pass: process.env.ZOHO_APP_PASSWORD,
-        },
+        ...(process.env.SMTP_HOST
+          ? {}
+          : {
+              auth: {
+                user: "info@genyxo.com",
+                pass: process.env.ZOHO_APP_PASSWORD,
+              },
+            }),
       },
       defaults: {
         from: '"Genyxo Support" <info@genyxo.com>',

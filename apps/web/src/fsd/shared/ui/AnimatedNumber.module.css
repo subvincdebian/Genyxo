@@ -1,0 +1,31 @@
+.number {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.slot {
+  display: inline-block;
+  overflow: clip;
+  vertical-align: bottom;
+}
+.slot > span {
+  display: inline-block;
+}
+.rolling {
+  animation: roll 110ms ease-out;
+}
+@keyframes roll {
+  from {
+    transform: translateY(45%);
+    opacity: 0.55;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rolling {
+    animation: none;
+  }
+}

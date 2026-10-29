@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { authenticate, mockApi, user, token } from "./fixtures";
+import { authenticate, chatKey, mockApi, user, token } from "./fixtures";
 
 test("admin preserves populated table cells, pagination and sanitized user content", async ({
   page,
@@ -64,26 +64,32 @@ test("admin preserves populated table cells, pagination and sanitized user conte
   await expect(page.locator("#nextUserBtn")).toBeDisabled();
 });
 
-test("catalogue, checkout, guest authentication forms and search actions", async ({
+test("catalogue, checkout, guest authentication forms and pack disclosure", async ({
   page,
 }) => {
   await mockApi(page);
   await page.goto("/");
   await expect(page.locator(".product-card")).toHaveCount(6);
+  await expect(page.locator(".product-card:visible")).toHaveCount(3);
   await page.locator(".buy-btn").first().click();
   await expect(page.locator("#checkoutModal")).toBeVisible();
   await expect(page.locator("#checkoutName")).toHaveText("Start AI");
   await expect(page.locator("#checkoutCredits")).toHaveText("750");
   await page.locator("#closeCheckout").click();
   await page.locator("#loginBtn").click();
-  await expect(page.locator("#loginForm")).toBeVisible();
-  await page.locator("#showSignup").click();
-  await expect(page.locator("#signupForm")).toBeVisible();
-  await page.locator("#showLogin").click();
-  await expect(page.locator("#loginForm")).toBeVisible();
-  await page.locator("#closeLogin").click();
-  await page.locator(".search-input").fill("Gemini");
-  await expect(page.locator("#searchResultsDropdown")).toBeVisible();
+  // The submit button is enabled once the page has hydrated; typing earlier is lost.
+  await expect(page.locator(".gx-auth-submit")).toBeEnabled();
+  await expect(page).toHaveURL(/\/sign-in\?/);
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await page.getByRole("button", { name: "Create an account" }).click();
+  await expect(page.getByRole("heading", { name: "Create your workspace" })).toBeVisible();
+  await page.getByRole("button", { name: /Back to sign in/ }).click();
+  await page.goto("/");
+  await page.locator(".gx-view-packs").click();
+  await expect(page.locator(".product-card:visible")).toHaveCount(6);
+  await expect(page.locator(".gx-view-packs")).toHaveAttribute("aria-expanded", "true");
+  await page.locator(".gx-view-packs").click();
+  await expect(page.locator(".product-card:visible")).toHaveCount(3);
 });
 
 test("checkout uses the language dictionary and supports older translated credit labels", async ({
@@ -94,8 +100,9 @@ test("checkout uses the language dictionary and supports older translated credit
   await page.goto("/");
   await expect(page.locator(".product-card")).toHaveCount(6);
   await expect(page.locator("#productsGrid")).not.toContainText("undefined");
+  await page.locator(".gx-view-packs").click();
   await page.locator('.buy-btn[data-id="6"]').click();
-  await expect(page.locator("#checkoutName")).toHaveText("AI Titan");
+  await expect(page.locator("#checkoutName")).toHaveText("Titan Credits");
   await expect(page.locator("#checkoutCredits")).toHaveText(/^\d+$/);
 });
 
@@ -103,8 +110,14 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
   page,
 }) => {
   await authenticate(page);
+  await page.addInitScript(() => localStorage.setItem("genyxo.appearance", JSON.stringify({ uiSize: 17, codeSize: 15 })));
   let payload: unknown;
   await mockApi(page, async (route, path) => {
+    // The workspace sidebar lists chats from /chat/workspace; the new chat appears after the stream.
+    if (path === "/chat/workspace") {
+      await route.fulfill({ json: { conversations: payload ? [{ id: 42, title: "Test conversation", lastActivityAt: new Date().toISOString() }] : [], projects: [], preferences: { timezone: "UTC", timezoneInitialized: true }, capabilities: {} } });
+      return true;
+    }
     if (path !== "/chat/stream") return false;
     payload = route.request().postDataJSON();
     const events = [
@@ -114,7 +127,7 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
         conversationTitle: "Test conversation",
       },
       {
-        token: 'Hello **React** <img src=x onerror="window.__unsafe=true">',
+        token: 'Hello **React** <img src=x onerror="window.__unsafe=true">\n\n```diff\n+Added <script>alert(1)</script>\n-Removed\n```',
         conversationId: 42,
       },
       { status: "done", messageId: 11, creditBalance: 149 },
@@ -138,8 +151,17 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
   await page.locator("#userInput").fill("Test message");
   await page.locator("#sendBtn").click();
   await expect(page.locator("#chatBox")).toContainText("Hello React");
-  await expect(page.locator("#historyList")).toContainText("Test conversation");
-  await expect(page).toHaveURL(/id=42/);
+  await expect(page.locator("#sidebar")).toContainText("Test conversation");
+  await expect(page.locator("#chatBox .message-text").last()).toHaveCSS("font-size", "17px");
+  const added = page.locator("#chatBox .gx-diff-add").first();
+  await expect(added).toHaveCSS("font-size", "15px");
+  await expect(added).toContainText("Added <script>alert(1)</script>");
+  await page.evaluate(() => {
+    localStorage.setItem("genyxo.appearance", JSON.stringify({ uiSize: 17, codeSize: 15, diff: "markers" }));
+    document.dispatchEvent(new Event("genyxo:appearance"));
+  });
+  await expect(added).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(page).toHaveURL(new RegExp(`/c/${chatKey(42)}$`));
   expect(payload).toMatchObject({
     message: "Test message",
     files: [
@@ -188,10 +210,12 @@ test("login establishes one session and checkout uses its current Bearer token",
   });
   await page.goto("/");
   await page.locator("#loginBtn").click();
-  await page.locator("#loginEmail").fill(user.email);
-  await page.locator("#loginPassword").fill("FixturePassword1!");
-  await page.getByRole("button", { name: "Sign In", exact: true }).click();
-  await expect(page.locator("#loginModal")).not.toBeVisible();
+  // The submit button is enabled once the page has hydrated; typing earlier is lost.
+  await expect(page.locator(".gx-auth-submit")).toBeEnabled();
+  await page.locator("#gx-auth-email").fill(user.email);
+  await page.locator("#gx-auth-password").fill("FixturePassword1!");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/(?:#home)?$/);
   await expect(page.locator("#navUsername")).toHaveText(user.name);
   expect(loginRequests).toBe(1);
   await page.evaluate(() => window.AppI18n?.changeLanguage("uk"));
@@ -227,35 +251,30 @@ test("registration opens verification only on success and includes the referral 
   });
   await page.goto("/");
   await page.locator("#loginBtn").click();
-  await page.locator("#showSignup").click();
-  await page.locator("#signupName").fill(user.name);
-  await page.locator("#signupEmail").fill(user.email);
-  await page.locator("#signupPassword").fill("FixturePassword1!");
-  await page.locator("#signupConfirmPassword").fill("FixturePassword1!");
-  await page.getByRole("button", { name: "Register", exact: true }).click();
-  await expect(page.locator("#toast-container")).toContainText(
-    "already exists",
-  );
-  await expect(page.locator("#verifyEmailModal")).not.toBeVisible();
+  // The submit button is enabled once the page has hydrated; typing earlier is lost.
+  await expect(page.locator(".gx-auth-submit")).toBeEnabled();
+  await page.getByRole("button", { name: "Create an account" }).click();
+  await page.locator("#gx-auth-name").fill("Test User");
+  await page.locator("#gx-auth-email").fill(user.email);
+  await page.locator("#gx-auth-password").fill("FixturePassword1!");
+  await page.locator("#gx-auth-confirm").fill("FixturePassword1!");
+  await page.getByRole("button", { name: "Create account", exact: true }).click();
+  await expect(page.locator("#gx-auth-email-error")).toContainText("already exists");
   status = 201;
-  await page.getByRole("button", { name: "Register", exact: true }).click();
-  await expect(page.locator("#verifyEmailModal")).toBeVisible();
+  await page.getByRole("button", { name: "Create account", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Check your inbox" })).toBeVisible();
   expect(registrationBody).toEqual({
-    name: user.name,
+    name: "Test User",
     email: user.email,
     password: "FixturePassword1!",
     referralCode: "REFERRAL",
   });
 });
 
-test("dismissed verification cannot establish a session from a pending poll", async ({
+test("registration never signs in with an unverified password", async ({
   page,
 }) => {
-  let requested = false;
-  let release = () => {};
-  const pending = new Promise<void>((resolve) => {
-    release = resolve;
-  });
+  let loginRequests = 0;
   await mockApi(page, async (route, path) => {
     if (path === "/auth/register") {
       await route.fulfill({
@@ -265,34 +284,24 @@ test("dismissed verification cannot establish a session from a pending poll", as
       return true;
     }
     if (path === "/auth/login") {
-      requested = true;
-      await pending;
-      await route
-        .fulfill({ json: { access_token: token, user } })
-        .catch(() => {});
+      loginRequests++;
+      await route.fulfill({ json: { access_token: token, user } });
       return true;
     }
     return false;
   });
   await page.goto("/");
   await page.locator("#loginBtn").click();
-  await page.locator("#showSignup").click();
-  await page.clock.install();
-  await page.locator("#signupName").fill(user.name);
-  await page.locator("#signupEmail").fill(user.email);
-  await page.locator("#signupPassword").fill("FixturePassword1!");
-  await page.locator("#signupConfirmPassword").fill("FixturePassword1!");
-  await page.getByRole("button", { name: "Register", exact: true }).click();
-  await expect(page.locator("#verifyEmailModal")).toBeVisible();
-  try {
-    await page.clock.runFor(7000);
-    await expect.poll(() => requested).toBe(true);
-    await page.locator("#verifyEmailModal").click({ position: { x: 5, y: 5 } });
-    await expect(page.locator("#verifyEmailModal")).not.toBeVisible();
-  } finally {
-    release();
-  }
-  await page.clock.runFor(100);
+  // The submit button is enabled once the page has hydrated; typing earlier is lost.
+  await expect(page.locator(".gx-auth-submit")).toBeEnabled();
+  await page.getByRole("button", { name: "Create an account" }).click();
+  await page.locator("#gx-auth-name").fill("Test User");
+  await page.locator("#gx-auth-email").fill(user.email);
+  await page.locator("#gx-auth-password").fill("FixturePassword1!");
+  await page.locator("#gx-auth-confirm").fill("FixturePassword1!");
+  await page.getByRole("button", { name: "Create account", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Check your inbox" })).toBeVisible();
+  expect(loginRequests).toBe(0);
   expect(
     await page.evaluate(() => localStorage.getItem("authToken")),
   ).toBeNull();
@@ -393,7 +402,7 @@ test("support sends the current DTO and preserves a draft on server failure", as
   await page.goto("/support.html");
   await page.locator("#ticketSubject").fill("Payment issue");
   await page.locator("#ticketMessage").fill("Please check my payment.");
-  await page.locator("#ticketPriority").selectOption("HIGH");
+  await page.getByRole("radio", { name: "High" }).check();
   await page.getByRole("button", { name: "Submit Ticket" }).click();
   await expect(
     page.locator("#createTicketForm").getByRole("alert"),
