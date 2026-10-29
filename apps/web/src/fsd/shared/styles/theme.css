@@ -1,4 +1,4 @@
-/* Genyxo design tokens. The one stylesheet with document-level rules: the root
+/* Genyxo design tokens. Base document rules; saved appearance overrides live in shared/ui/appearance.css. The root
    layout imports it, every page reads the --gx-* tokens, and route styles live
    in CSS Modules or gated route stylesheets (scripts/postcss-route-scope.cjs). */
 

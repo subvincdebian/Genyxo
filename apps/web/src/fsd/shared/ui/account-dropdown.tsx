@@ -64,7 +64,7 @@ export function AccountDropdown({
     ["/profile#profile", "user", t("account.profile", "Profile")],
     ["/notifications", "bell", t("menu.notifications", "Notifications")],
     ["/support", "help", t("account.help_support", "Help & support")],
-    ["/profile#appearance", "globe", t("menu.language", "Language")],
+    ["/profile#language", "globe", t("menu.language", "Language")],
     ["mailto:info@genyxo.com", "mail", t("menu.contact", "Contact us")],
   ];
   const content = (

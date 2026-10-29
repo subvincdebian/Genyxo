@@ -13,7 +13,7 @@
   -webkit-font-smoothing: antialiased;
 }
 
-:global([data-theme="light"]) .page {
+:global([data-gx-tone="light"]) .page {
   color-scheme: light;
 }
 

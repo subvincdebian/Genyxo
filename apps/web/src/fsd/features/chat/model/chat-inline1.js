@@ -1,49 +1,9 @@
-// Behavior migrated from chat-inline1; resources are owned by the React mount.
-
+// Legacy controller entry points delegate to the shared theme owner.
+import { setWorkspaceTheme, syncSiteTheme } from "@/shared/lib/theme";
 export default function initialize(scope, context) {
-  function setTheme(theme) {
-    const root = scope.document.documentElement;
-    const isSystemDark = scope.window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    scope.document
-      .querySelectorAll(".submenu-item")
-      .forEach((el) => el.classList.remove("active"));
-    if (theme === "system") {
-      localStorage.removeItem("theme");
-      if (isSystemDark) {
-        root.removeAttribute("data-theme");
-      } else {
-        root.setAttribute("data-theme", "light");
-      }
-      scope.document.getElementById("theme-system")?.classList.add("active");
-    } else if (theme === "dark") {
-      localStorage.setItem("theme", "dark");
-      root.removeAttribute("data-theme");
-      scope.document.getElementById("theme-dark")?.classList.add("active");
-    } else if (theme === "light") {
-      localStorage.setItem("theme", "light");
-      root.setAttribute("data-theme", "light");
-      scope.document.getElementById("theme-light")?.classList.add("active");
-    }
-  }
-  function initTheme() {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else {
-      setTheme("system");
-    }
-  }
-  scope.listen(
-    scope.window.matchMedia("(prefers-color-scheme: dark)"),
-    "change",
-    (e) => {
-      if (!localStorage.getItem("theme")) {
-        setTheme("system");
-      }
-    },
-  );
+  const setTheme = (value) =>
+    setWorkspaceTheme(value === "dark" || value === "light" ? value : "your");
+  const initTheme = () => syncSiteTheme();
   initTheme();
   Object.defineProperty(context, "setTheme", {
     configurable: true,

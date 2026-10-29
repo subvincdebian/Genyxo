@@ -472,7 +472,10 @@
     "choose": "Auswählen",
     "open": "Öffnen",
     "close": "Schließen",
-    "save_changes": "Änderungen speichern"
+    "save_changes": "Änderungen speichern",
+    "sidebar": {
+      "your_theme": "Dein Design"
+    }
   },
   "account": {
     "loading": "Dein Konto wird geladen…",

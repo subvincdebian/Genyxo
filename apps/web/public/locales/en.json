@@ -454,7 +454,10 @@
     "close": "Close",
     "new_memory": "New memory",
     "remember": "Remember",
-    "save_changes": "Save changes"
+    "save_changes": "Save changes",
+    "sidebar": {
+      "your_theme": "Your theme"
+    }
   },
   "account": {
     "loading": "Loading your account…",

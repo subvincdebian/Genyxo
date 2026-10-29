@@ -229,7 +229,7 @@
   padding: 7px 12px;
   border-radius: 10px;
   background: var(--gx-gradient);
-  color: #062a24;
+  color: var(--gx-on-accent);
   font-size: 13px;
   font-weight: 620;
   text-decoration: none;
@@ -283,7 +283,7 @@
   padding: 1px 6px;
   border-radius: 999px;
   background: var(--gx-accent);
-  color: #062a24;
+  color: var(--gx-on-accent);
   font-size: 11.5px;
   font-weight: 700;
   text-align: center;
@@ -291,7 +291,7 @@
 
 .logout,
 .logout > i {
-  color: #f0897c;
+  color: var(--gx-danger, #f0897c);
 }
 
 @keyframes panel-in {
@@ -321,4 +321,8 @@
     left: 16px;
     width: auto;
   }
+}
+
+:global([data-gx-tone="light"]) .brand img {
+  filter: brightness(0);
 }

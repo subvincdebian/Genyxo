@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { readWorkspaceTheme, setWorkspaceTheme, type WorkspaceTheme } from "@/shared/lib/theme";
 import { usePathname, useRouter } from "next/navigation";
 import {
   useCallback,
@@ -158,7 +159,7 @@ export function WorkspaceSidebar({
   const [archiveHasMore, setArchiveHasMore] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [indicator, setIndicator] = useState<CSSProperties>({ opacity: 0 });
-  const [theme, setTheme] = useState("system");
+  const [theme, setTheme] = useState<WorkspaceTheme>("your");
   const prefs = { ...preferences, ...preferencePatch };
   const visibleChats = conversations
     .map((chat) => ({ ...chat, ...chatPatches[chat.id] }))
@@ -248,11 +249,14 @@ export function WorkspaceSidebar({
     };
   }, []);
   useEffect(() => {
-    try {
-      setTheme(localStorage.getItem("theme") || "system");
-    } catch {
-      /* Current session theme still works. */
-    }
+    const sync = () => setTheme(readWorkspaceTheme());
+    sync();
+    document.addEventListener("genyxo:workspace-theme", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      document.removeEventListener("genyxo:workspace-theme", sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
   useEffect(() => {
     if (editingIdentity) {
@@ -610,22 +614,8 @@ export function WorkspaceSidebar({
     setArchive(true);
     void loadArchive();
   }
-  function applyTheme(value: string) {
-    setTheme(value);
-    try {
-      if (value === "system") localStorage.removeItem("theme");
-      else localStorage.setItem("theme", value);
-    } catch {
-      /* Theme still applies to the current session. */
-    }
-    const dark =
-      value === "dark" ||
-      (value === "system" &&
-        matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.setAttribute(
-      "data-theme",
-      dark ? "dark" : "light",
-    );
+  function applyTheme(value: WorkspaceTheme) {
+    setWorkspaceTheme(value);
     closeMenu();
   }
   async function deleteEntity() {
@@ -1510,7 +1500,7 @@ export function WorkspaceSidebar({
               <>
                 {menuLink(label("history"), "/profile#transactions", "clock")}
                 <WorkspaceSubmenu label={label("theme")} icon="settings">
-                  {(["system", "dark", "light"] as const).map((value) => (
+                  {(["your", "dark", "light"] as const).map((value) => (
                     <button
                       type="button"
                       key={value}
@@ -1519,7 +1509,7 @@ export function WorkspaceSidebar({
                       className="ws-sidebar-menu-item"
                       onClick={() => applyTheme(value)}
                     >
-                      <span>{label(value)}</span>
+                      <span>{value === "your" ? t("workspace.sidebar.your_theme", "Your theme") : label(value)}</span>
                       {theme === value && (
                         <WorkspaceIcon name="check" size={15} />
                       )}

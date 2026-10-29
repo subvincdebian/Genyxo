@@ -56,7 +56,12 @@ test.beforeEach(async ({ page }) => {
     });
     return true;
   });
-  await page.addInitScript(() => localStorage.setItem("theme", "dark"));
+  await page.addInitScript(() => {
+    if (!sessionStorage.getItem("appearance-fixture-ready")) {
+      localStorage.setItem("theme", "dark");
+      sessionStorage.setItem("appearance-fixture-ready", "true");
+    }
+  });
 });
 
 test("appearance controls collapse, reset all settings and use inline switches", async ({
@@ -623,4 +628,197 @@ test("sidebar hover controls and drag resizing persist without easing behind the
   await expect(expand).toHaveCSS("opacity", "1");
   await sidebar.hover();
   await expect(expand).toHaveCSS("opacity", "1");
+});
+
+test("workspace theme overrides preserve Your theme across routes and reloads", async ({
+  page,
+}) => {
+  await page.goto("/chat");
+  await expect(page.locator(".workspace-shell")).toBeVisible();
+  const saved = {
+    ...defaultAppearance,
+    light: {
+      ...defaultAppearance.light,
+      background: "#2e3440",
+      foreground: "#f3f5f4",
+      accent: "#88c0d0",
+    },
+    dark: {
+      ...defaultAppearance.dark,
+      background: "#2e3440",
+      accent: "#88c0d0",
+    },
+  };
+  await page.evaluate((value) => {
+    localStorage.setItem("genyxo.appearance", JSON.stringify(value));
+    localStorage.setItem("theme", "light");
+    document.dispatchEvent(new Event("genyxo:theme"));
+  }, saved);
+  const open = async () => {
+    await page.getByRole("button", { name: "Menu", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Theme", exact: true }).click();
+  };
+  const background = () =>
+    page
+      .locator(".workspace-shell")
+      .evaluate((element) => getComputedStyle(element).backgroundColor);
+  await expect.poll(background).toBe("rgb(46, 52, 64)");
+  await open();
+  await expect(
+    page.getByRole("menuitemradio", { name: "Your theme", exact: true }),
+  ).toHaveAttribute("aria-checked", "true");
+  await expect(
+    page.getByRole("menuitemradio", { name: "System", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("menuitemradio", { name: "Dark", exact: true }).click();
+  await expect.poll(background).toBe("rgb(12, 13, 13)");
+  expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(
+    "light",
+  );
+  expect(
+    await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("genyxo.appearance")!),
+    ),
+  ).toEqual(saved);
+  await page.reload();
+  await expect.poll(background).toBe("rgb(12, 13, 13)");
+  await open();
+  await expect(
+    page.getByRole("menuitemradio", { name: "Dark", exact: true }),
+  ).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("menuitemradio", { name: "Light", exact: true }).click();
+  await expect.poll(background).toBe("rgb(248, 250, 249)");
+  await page.goto("/profile#appearance");
+  await expect(
+    page.getByRole("heading", { name: "Appearance", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("radio", { name: "Light", exact: true }),
+  ).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(46, 52, 64)",
+  );
+  await page.goto("/chat");
+  await expect.poll(background).toBe("rgb(248, 250, 249)");
+  await open();
+  await expect(
+    page.getByRole("menuitemradio", { name: "Light", exact: true }),
+  ).toHaveAttribute("aria-checked", "true");
+  await page
+    .getByRole("menuitemradio", { name: "Your theme", exact: true })
+    .click();
+  await expect.poll(background).toBe("rgb(46, 52, 64)");
+  await page.reload();
+  await expect.poll(background).toBe("rgb(46, 52, 64)");
+});
+
+test("custom theme contrast reaches credits, notifications and support while Home stays static", async ({
+  page,
+}) => {
+  await page.goto("/chat");
+  await expect(page.locator("#creditBalance")).toHaveText("150");
+  await page.evaluate((value) => {
+    const custom = {
+      ...value,
+      light: {
+        ...value.light,
+        background: "#2e3440",
+        foreground: "#f3f5f4",
+        accent: "#88c0d0",
+      },
+    };
+    localStorage.setItem("genyxo.appearance", JSON.stringify(custom));
+    localStorage.setItem("theme", "light");
+    document.dispatchEvent(new Event("genyxo:theme"));
+  }, defaultAppearance);
+  const credit = await page.locator("#creditBalance").evaluate((element) => ({
+    text: getComputedStyle(element).color,
+    background: getComputedStyle(element.closest("button")!).backgroundColor,
+  }));
+  const hex = (rgb: string) =>
+    "#" +
+    rgb
+      .match(/[\d.]+/g)!
+      .slice(0, 3)
+      .map((value) => Math.round(Number(value)).toString(16).padStart(2, "0"))
+      .join("");
+  expect(
+    contrastRatio(hex(credit.text), hex(credit.background)),
+  ).toBeGreaterThanOrEqual(4.5);
+  await page.goto("/notifications");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(46, 52, 64)",
+  );
+  await expect(
+    page.getByRole("heading", { name: "Your Notifications", exact: true }),
+  ).toHaveCSS("color", "rgb(243, 245, 244)");
+  await expect(
+    page.getByText("No notifications yet.", { exact: true }),
+  ).toBeVisible();
+  await page.goto("/support");
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(46, 52, 64)",
+  );
+  await expect(page.locator("html")).toHaveAttribute("data-gx-tone", "dark");
+  // Dark accent colors need a readable action label across every gradient stop.
+  await page.evaluate(() => {
+    const value = JSON.parse(localStorage.getItem("genyxo.appearance")!);
+    value.light.accent = "#474747";
+    localStorage.setItem("genyxo.appearance", JSON.stringify(value));
+    document.dispatchEvent(new Event("genyxo:appearance"));
+  });
+  const action = await page
+    .getByRole("button", { name: "Submit Ticket", exact: true })
+    .evaluate((element) => ({
+      text: getComputedStyle(element).color,
+      stops:
+        getComputedStyle(element).backgroundImage.match(/rgb\([^)]*\)/g) || [],
+    }));
+  expect(action.stops.length).toBeGreaterThan(0);
+  for (const stop of action.stops)
+    expect(contrastRatio(hex(action.text), hex(stop))).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  await page.goto("/");
+  await expect(page.locator("html")).not.toHaveAttribute("data-gx-appearance");
+  expect(
+    await page.evaluate(() =>
+      document.documentElement.style.getPropertyValue("--gx-bg"),
+    ),
+  ).toBe("");
+  expect(
+    await page.evaluate(() =>
+      document.documentElement.style.getPropertyValue("--darker-color"),
+    ),
+  ).toBe("");
+});
+
+test("Language in the shared profile menu expands and focuses interface language", async ({
+  page,
+}) => {
+  await page.goto("/profile#profile");
+  await page.getByRole("button", { name: "Profile menu", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Language", exact: true }).click();
+  await expect(page).toHaveURL(/#language$/);
+  const control = page.getByRole("combobox", {
+    name: "Interface language",
+    exact: true,
+  });
+  await expect(
+    page.getByRole("button", { name: "Additionally", exact: true }),
+  ).toHaveAttribute("aria-expanded", "true");
+  await expect(control).toBeFocused();
+  await expect(control).toBeInViewport();
+  await page.getByRole("button", { name: "Profile menu", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Language", exact: true }).click();
+  await expect(control).toBeFocused();
+  await page.goto("/notifications");
+  await page.getByRole("button", { name: "Profile menu", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Language", exact: true }).click();
+  await expect(page).toHaveURL(/\/profile#language$/);
+  await expect(control).toBeFocused();
+  await expect(control).toBeInViewport();
 });

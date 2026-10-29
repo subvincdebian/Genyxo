@@ -15,7 +15,6 @@ const workspace = [".workspace-shell"];
 // Marker classes per stylesheet. Route markers come from `RouteScope`
 // (src/fsd/shared/ui/route-scope.tsx); the workspace uses its shell element.
 const routeStylesheets = {
-  "src/fsd/shared/ui/appearance.css": [...workspace, ".account-appearance-scope"],
   "src/fsd/shared/styles/style.css": [
     ...workspace,
     ".gx-route-home",
@@ -59,6 +58,7 @@ const rootStylesheets = [
   "src/fsd/shared/styles/tailwind.css",
   "src/fsd/shared/styles/theme.css",
   "src/fsd/shared/styles/avatar.css",
+  "src/fsd/shared/ui/appearance.css",
 ];
 
 // Keyframe names are global and cannot be gated. The workspace's copies of
@@ -90,7 +90,8 @@ function scanTopLevel(selector, visit) {
   }
 }
 
-const legacyPseudoElement = /^:(?:before|after|first-line|first-letter)(?![\w-])/i;
+const legacyPseudoElement =
+  /^:(?:before|after|first-line|first-letter)(?![\w-])/i;
 
 // Appends the gate to the subject compound, ahead of any pseudo-element.
 function gateSelector(selector, gate) {

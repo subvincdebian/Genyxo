@@ -1,6 +1,5 @@
 "use client";
 import { useSettingsSidebar } from "../model/use-settings-sidebar";
-import { AppearanceSync } from "@/shared/ui/AppearanceSync";
 import { Select } from "@/shared/ui/Select";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
@@ -12,12 +11,7 @@ import { AvatarNavbar } from "@/entities/session";
 import { useLocalizedMetadata } from "@/shared/i18n";
 import { signOut, useAccountResource, type Account } from "../model/account";
 import { AccountOverview } from "./AccountOverview";
-import {
-  AccountAppearance,
-  AccountPreferences,
-  applyAccountTheme,
-  type Theme,
-} from "./AccountPreferences";
+import { AccountAppearance, AccountPreferences } from "./AccountPreferences";
 import { AccountSecurity } from "./AccountSecurity";
 import {
   AccountBilling,
@@ -73,7 +67,10 @@ const sections = [
 ] as const;
 type SectionId = (typeof sections)[number]["id"];
 const sectionFromHash = () =>
-  sections.find((item) => item.id === location.hash.slice(1))?.id || "profile";
+  location.hash === "#language"
+    ? "appearance"
+    : sections.find((item) => item.id === location.hash.slice(1))?.id ||
+      "profile";
 
 export function ProfilePage() {
   useLocalizedMetadata("profile.title", "profile.description");
@@ -93,20 +90,12 @@ export function ProfilePage() {
   const current = sections.find((item) => item.id === active)!;
   const labels = (id: string, fallback: string) => text(id, fallback);
   useEffect(() => {
-    const selection = (localStorage.getItem("theme") || "system") as Theme;
-    applyAccountTheme(selection);
-    const media = matchMedia("(prefers-color-scheme: dark)");
-    const syncTheme = () => {
-      if (!localStorage.getItem("theme")) applyAccountTheme("system");
-    };
-    media.addEventListener("change", syncTheme);
     queueMicrotask(() => {
       setActive(sectionFromHash());
       setCollapsed(
         localStorage.getItem("genyxo.settings.sidebarCollapsed") === "true",
       );
     });
-    return () => media.removeEventListener("change", syncTheme);
   }, []);
   useEffect(() => {
     const sync = () => {
@@ -162,9 +151,19 @@ export function ProfilePage() {
       return;
     }
     const next =
-      sections.find((item) => item.id === destination)?.id || "profile";
-    history.pushState(null, "", `#${next}`);
+      destination === "language"
+        ? "appearance"
+        : sections.find((item) => item.id === destination)?.id || "profile";
+    history.pushState(
+      null,
+      "",
+      `#${destination === "language" ? "language" : next}`,
+    );
     setActive(next);
+    if (destination === "language") {
+      document.dispatchEvent(new Event("genyxo:focus-language"));
+      return;
+    }
     window.scrollTo({ top: 0, behavior: "instant" });
     requestAnimationFrame(() =>
       heading.current?.focus({ preventScroll: true }),
@@ -177,7 +176,6 @@ export function ProfilePage() {
   );
   return (
     <div className={`${styles.page} account-appearance-scope`}>
-      <AppearanceSync />
       <a
         href="#account-content"
         className={styles.skip}

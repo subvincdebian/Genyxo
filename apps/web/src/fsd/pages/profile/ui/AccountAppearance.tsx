@@ -23,6 +23,8 @@ import {
 } from "@/shared/ui/workspace";
 import { Action, Row, Section, useAccountText } from "./account-ui";
 import { applyAccountTheme, type Theme } from "./AccountPreferences";
+import { readAccountTheme } from "@/shared/lib/theme";
+import { useLanguageFocus } from "../model/use-language-focus";
 import styles from "./ProfilePage.module.css";
 
 export function AccountAppearance() {
@@ -38,16 +40,28 @@ export function AccountAppearance() {
     null,
   );
   const importButton = useRef<HTMLButtonElement>(null);
+  const languageRow = useRef<HTMLDivElement>(null);
+  useLanguageFocus(expanded, setExpanded, languageRow);
   useEffect(() => {
     const media = matchMedia("(prefers-color-scheme: dark)");
     queueMicrotask(() => {
       setValue(readAppearance());
-      setMode((localStorage.getItem("theme") || "system") as Theme);
+      setMode(readAccountTheme());
       setSystemDark(media.matches);
     });
     const sync = () => setSystemDark(media.matches);
+    const preferences = () => {
+      setMode(readAccountTheme());
+      setValue(readAppearance());
+    };
     media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
+    document.addEventListener("genyxo:theme", preferences);
+    window.addEventListener("storage", preferences);
+    return () => {
+      media.removeEventListener("change", sync);
+      document.removeEventListener("genyxo:theme", preferences);
+      window.removeEventListener("storage", preferences);
+    };
   }, []);
   const light = mode === "light" || (mode === "system" && !systemDark);
   const key = light ? "light" : "dark";
@@ -424,28 +438,30 @@ export function AccountAppearance() {
                 />
               </Row>
             </div>
-            <Section title={text("language_region", "Language & region")}>
-              <div className={styles.group}>
-                <Row title={text("interface_language", "Interface language")}>
-                  <Select
-                    aria-label={text(
-                      "interface_language",
-                      "Interface language",
-                    )}
-                    value={lang}
-                    onChange={(event) =>
-                      void changeLanguage(event.target.value)
-                    }
-                  >
-                    {LANGUAGES.map((language) => (
-                      <option key={language} value={language}>
-                        {LANGUAGE_NAMES[language]}
-                      </option>
-                    ))}
-                  </Select>
-                </Row>
-              </div>
-            </Section>
+            <div ref={languageRow} className={styles.languageTarget}>
+              <Section title={text("language_region", "Language & region")}>
+                <div className={styles.group}>
+                  <Row title={text("interface_language", "Interface language")}>
+                    <Select
+                      aria-label={text(
+                        "interface_language",
+                        "Interface language",
+                      )}
+                      value={lang}
+                      onChange={(event) =>
+                        void changeLanguage(event.target.value)
+                      }
+                    >
+                      {LANGUAGES.map((language) => (
+                        <option key={language} value={language}>
+                          {LANGUAGE_NAMES[language]}
+                        </option>
+                      ))}
+                    </Select>
+                  </Row>
+                </div>
+              </Section>
+            </div>
           </div>
         </div>
       </div>

@@ -268,19 +268,9 @@ function PreferencesForm({
   );
 }
 
-export type Theme = "system" | "light" | "dark";
-export function applyAccountTheme(theme: Theme) {
-  try {
-    if (theme === "system") localStorage.removeItem("theme");
-    else localStorage.setItem("theme", theme);
-  } catch {
-    /* Theme works without persistence. */
-  }
-  const light =
-    theme === "light" ||
-    (theme === "system" && !matchMedia("(prefers-color-scheme: dark)").matches);
-  if (light) document.documentElement.dataset.theme = "light";
-  else document.documentElement.removeAttribute("data-theme");
-}
+export {
+  setAccountTheme as applyAccountTheme,
+  type Theme,
+} from "@/shared/lib/theme";
 
 export { AccountAppearance } from "./AccountAppearance";

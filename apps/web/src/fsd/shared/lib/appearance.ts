@@ -122,6 +122,17 @@ export function saveAppearance(value: Appearance) {
   localStorage.setItem("genyxo.appearance", JSON.stringify(value));
   document.dispatchEvent(new Event("genyxo:appearance"));
 }
+const legacyAliases: Record<string, string> = {
+  "--primary-color": "var(--gx-accent)",
+  "--dark-color": "var(--gx-surface)",
+  "--darker-color": "var(--gx-bg)",
+  "--glass-light": "var(--gx-hover)",
+  "--glass-border": "var(--gx-border)",
+  "--text-light": "var(--gx-text)",
+  "--text-gray": "var(--gx-text-2)",
+  "--text-dark": "var(--gx-on-accent)",
+  "--accent": "var(--gx-accent)",
+};
 export function applyAppearance(value: Appearance) {
   const root = document.documentElement;
   const light = root.dataset.theme === "light";
@@ -130,7 +141,28 @@ export function applyAppearance(value: Appearance) {
   root.dataset.gxMotion = value.motion;
   root.dataset.gxDiff = value.diff;
   const foreground = readableColor(chosen.foreground, chosen.background, 4.5);
+  root.dataset.gxTone =
+    contrastRatio("#000000", chosen.background) >
+    contrastRatio("#ffffff", chosen.background)
+      ? "light"
+      : "dark";
+  const surface = (fraction: number) => {
+    const result = mixColor(chosen.background, foreground, fraction);
+    return contrastRatio(foreground, result) >= 4.5
+      ? result
+      : chosen.background;
+  };
+  const elevated = surface(0.9);
+  const onAccent =
+    contrastRatio("#ffffff", chosen.accent) >
+    contrastRatio("#000000", chosen.accent)
+      ? "#ffffff"
+      : "#000000";
+  const candidate = mixColor(chosen.accent, "#ffffff", 0.6);
+  const gradientEnd =
+    contrastRatio(onAccent, candidate) >= 4.5 ? candidate : chosen.accent;
   const vars: Record<string, string> = {
+    ...legacyAliases,
     "--gx-hover": `color-mix(in srgb, ${foreground} 7%, transparent)`,
     "--gx-active": `color-mix(in srgb, ${foreground} 11%, transparent)`,
     "--gx-border": `color-mix(in srgb, ${foreground} 12%, transparent)`,
@@ -160,21 +192,25 @@ export function applyAppearance(value: Appearance) {
       chosen.background,
       4.5,
     ),
-    "--gx-on-accent":
-      contrastRatio("#ffffff", chosen.accent) >
-      contrastRatio("#13251c", chosen.accent)
-        ? "#ffffff"
-        : "#13251c",
+    "--gx-on-accent": onAccent,
+    "--gx-danger": readableColor("#f0897c", elevated, 7),
+    "--gx-warning": readableColor("#e9c046", elevated, 7),
+    "--gx-info": readableColor("#7fb0ff", elevated, 7),
     "--gx-accent": chosen.accent,
     "--gx-accent-strong": chosen.accent,
+    "--gx-accent-hover": mixColor(
+      chosen.accent,
+      onAccent === "#ffffff" ? "#000000" : "#ffffff",
+      0.9,
+    ),
     "--gx-mint": chosen.accent,
     "--gx-accent-soft": `color-mix(in srgb, ${chosen.accent} 14%, transparent)`,
     "--gx-accent-glow": `color-mix(in srgb, ${chosen.accent} 32%, transparent)`,
     "--gx-bg": chosen.background,
     "--gx-sidebar": `color-mix(in srgb, ${chosen.background} 94%, black)`,
-    "--gx-surface": `color-mix(in srgb, ${chosen.background} 96%, ${chosen.foreground})`,
-    "--gx-surface-2": `color-mix(in srgb, ${chosen.background} 92%, ${chosen.foreground})`,
-    "--gx-elevated": `color-mix(in srgb, ${chosen.background} 90%, ${chosen.foreground})`,
+    "--gx-surface": surface(0.96),
+    "--gx-surface-2": surface(0.92),
+    "--gx-elevated": elevated,
     "--gx-text": foreground,
     "--gx-text-2": readableColor(
       mixColor(
@@ -182,7 +218,7 @@ export function applyAppearance(value: Appearance) {
         chosen.background,
         (70 + value.contrast * 0.2) / 100,
       ),
-      chosen.background,
+      elevated,
       4.5,
     ),
     "--gx-muted": readableColor(
@@ -191,13 +227,13 @@ export function applyAppearance(value: Appearance) {
         chosen.background,
         (45 + value.contrast * 0.25) / 100,
       ),
-      chosen.background,
+      elevated,
       4.5,
     ),
     "--gx-glass": chosen.opaqueWindows
       ? chosen.background
       : `color-mix(in srgb, ${chosen.background} 94%, transparent)`,
-    "--gx-gradient": `linear-gradient(135deg, ${chosen.accent}, color-mix(in srgb, ${chosen.accent} 60%, white))`,
+    "--gx-gradient": `linear-gradient(135deg, ${chosen.accent}, ${gradientEnd})`,
     "--gx-ui-size": `${value.uiSize}px`,
     "--gx-code-size": `${value.codeSize}px`,
   };
@@ -208,6 +244,8 @@ export function clearAppearance() {
   const root = document.documentElement;
   for (const key of Array.from(root.style))
     if (key.startsWith("--gx-")) root.style.removeProperty(key);
+  for (const key of Object.keys(legacyAliases)) root.style.removeProperty(key);
+  delete root.dataset.gxTone;
   delete root.dataset.gxAppearance;
   delete root.dataset.gxMotion;
   delete root.dataset.gxDiff;

@@ -99,7 +99,7 @@
   margin-top: 12px;
   border-radius: 999px;
   background: var(--gx-mint);
-  color: #04120e;
+  color: var(--gx-on-accent, #04120e);
   font-weight: 600;
 }
 .menu .item {

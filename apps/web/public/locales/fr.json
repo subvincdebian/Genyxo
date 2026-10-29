@@ -472,7 +472,10 @@
     "choose": "Choisir",
     "open": "Ouvrir",
     "close": "Fermer",
-    "save_changes": "Enregistrer les modifications"
+    "save_changes": "Enregistrer les modifications",
+    "sidebar": {
+      "your_theme": "Votre thème"
+    }
   },
   "account": {
     "loading": "Chargement du compte…",
