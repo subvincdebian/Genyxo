@@ -106,6 +106,19 @@ export function Select({
     const place = () => {
       if (!trigger.current || !menu.current) return;
       const box = trigger.current.getBoundingClientRect();
+      // A viewport-clamped menu looks detached once its trigger has scrolled
+      // away. Dismiss without restoring focus (which would scroll it back).
+      if (
+        box.bottom <= 0 ||
+        box.top >= innerHeight ||
+        box.right <= 0 ||
+        box.left >= innerWidth ||
+        !box.width ||
+        !box.height
+      ) {
+        close(false);
+        return;
+      }
       const width = Math.min(Math.max(box.width, 220), innerWidth - 16);
       const height = menu.current.offsetHeight;
       const above =
@@ -154,11 +167,17 @@ export function Select({
     const observer = new ResizeObserver(place);
     observer.observe(trigger.current!);
     observer.observe(menu.current);
+    // Also covers references hidden by a scrolling/clipping ancestor.
+    const visibility = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) close(false);
+    });
+    visibility.observe(trigger.current!);
     document.addEventListener("pointerdown", outside);
     document.addEventListener("scroll", scroll, true);
     window.addEventListener("resize", place);
     return () => {
       observer.disconnect();
+      visibility.disconnect();
       document.removeEventListener("pointerdown", outside);
       document.removeEventListener("scroll", scroll, true);
       window.removeEventListener("resize", place);

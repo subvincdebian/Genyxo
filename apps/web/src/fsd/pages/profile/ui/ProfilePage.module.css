@@ -2996,12 +2996,14 @@
   transform: none;
 }
 .sidebarToggle,
-.layoutCollapsed .sidebarToggle,
 .sidebar:focus-within .sidebarToggle {
   opacity: 0;
 }
 .sidebarFrame:hover .sidebarToggle,
 .sidebarFrame:has(:focus-visible) .sidebarToggle {
+  opacity: 1;
+}
+.layoutCollapsed .sidebarFrame .sidebarToggle {
   opacity: 1;
 }
 .sidebarResize {

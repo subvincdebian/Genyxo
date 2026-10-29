@@ -503,6 +503,13 @@ test("language select stays attached while scrolling and animates dismissal", as
 }, info) => {
   await page.goto("/profile#appearance");
   await page.getByRole("button", { name: "Additionally", exact: true }).click();
+  await page
+    .locator("#additional-appearance")
+    .evaluate((element) =>
+      Promise.all(
+        element.getAnimations().map((animation) => animation.finished),
+      ),
+    );
   const trigger = page.getByRole("combobox", {
     name: "Interface language",
     exact: true,
@@ -523,7 +530,17 @@ test("language select stays attached while scrolling and animates dismissal", as
     );
   };
   await expect.poll(gap).toBeLessThanOrEqual(8);
-  await page.mouse.wheel(0, -120);
+  const initial = (await trigger.boundingBox())!;
+  const delta = Math.max(
+    1,
+    Math.min(40, (page.viewportSize()!.height - initial.y) / 2),
+  );
+  await page.mouse.move(600, 300);
+  await page.mouse.wheel(0, -delta);
+  await expect
+    .poll(async () => (await trigger.boundingBox())!.y)
+    .toBeGreaterThan(initial.y + delta / 2);
+  await expect(list).toBeVisible();
   await expect.poll(gap).toBeLessThanOrEqual(8);
   await page.screenshot({
     path: info.outputPath("anchored-select.png"),
@@ -533,6 +550,28 @@ test("language select stays attached while scrolling and animates dismissal", as
   await expect(list).toHaveCount(0);
   await expect(page.locator('[popover][data-state="closed"]')).toHaveCount(0);
   await expect(trigger).toBeFocused();
+
+  // A large scroll moves the trigger below the viewport; its menu must not float
+  // against the viewport edge after the reference itself disappears.
+  await trigger.click();
+  await expect(list).toBeVisible();
+  await page.mouse.move(600, 300);
+  await page.mouse.wheel(0, -1000);
+  await expect
+    .poll(async () => (await trigger.boundingBox())!.y)
+    .toBeGreaterThan(page.viewportSize()!.height);
+  await page.screenshot({ path: info.outputPath("offscreen-select.png") });
+  await expect(list).toHaveCount(0);
+  await expect(page.locator('[popover][data-state="closed"]')).toHaveCount(0);
+  // Closing a detached menu must not focus/scroll the page back to its trigger.
+  expect((await trigger.boundingBox())!.y).toBeGreaterThan(
+    page.viewportSize()!.height,
+  );
+  await trigger.scrollIntoViewIfNeeded();
+  await trigger.click();
+  await expect(list).toBeVisible();
+  await expect.poll(gap).toBeLessThanOrEqual(8);
+  await page.keyboard.press("Escape");
 });
 
 test("sidebar hover controls and drag resizing persist without easing behind the pointer", async ({
@@ -578,7 +617,10 @@ test("sidebar hover controls and drag resizing persist without easing behind the
     exact: true,
   });
   await page.getByRole("heading", { name: "Appearance", exact: true }).hover();
-  await expect(expand).toHaveCSS("opacity", "0");
+  await expect(expand).toHaveCSS("opacity", "1");
+  await page.reload();
+  await page.getByRole("heading", { name: "Appearance", exact: true }).hover();
+  await expect(expand).toHaveCSS("opacity", "1");
   await sidebar.hover();
   await expect(expand).toHaveCSS("opacity", "1");
 });
