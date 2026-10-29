@@ -8,6 +8,9 @@ import {
   type Appearance,
   type Palette,
 } from "@/shared/lib/appearance";
+import { createPortal } from "react-dom";
+import { copyText } from "@/shared/lib/clipboard";
+import { useTopLayer } from "@/shared/lib/top-layer";
 import { exportTheme, importTheme } from "@/shared/lib/theme-codec";
 import { transitionTheme } from "@/shared/lib/theme-transition";
 import { useLanguage, LANGUAGES, LANGUAGE_NAMES } from "@/shared/i18n";
@@ -49,10 +52,9 @@ export function AccountAppearance() {
   const light = mode === "light" || (mode === "system" && !systemDark);
   const key = light ? "light" : "dark";
   const palette = value[key];
-  const advancedDirty =
-    (
-      ["uiSize", "codeSize", "motion", "separate", "contrast", "diff"] as const
-    ).some((field) => value[field] !== defaultAppearance[field]) ||
+  const appearanceDirty =
+    JSON.stringify(value) !== JSON.stringify(defaultAppearance) ||
+    mode !== "system" ||
     lang !== "en";
   const notify = (message: string) => setToast({ message, id: Date.now() });
   function update(patch: Partial<Appearance>, source?: HTMLElement | null) {
@@ -96,7 +98,9 @@ export function AccountAppearance() {
   }
   async function copy() {
     try {
-      await navigator.clipboard.writeText(exportTheme(value, key));
+      await copyText(
+        exportTheme(readAppearance(), key, { mode, language: lang }),
+      );
       setError("");
       notify(text("theme_copied", "Theme copied"));
     } catch {
@@ -135,7 +139,7 @@ export function AccountAppearance() {
                     option,
                     option[0].toUpperCase() + option.slice(1),
                   )}
-                  side="bottom"
+                  side="top"
                 >
                   <button
                     type="button"
@@ -187,7 +191,7 @@ export function AccountAppearance() {
             <div className={styles.themeActions}>
               <WorkspaceTooltip
                 label={text("import_theme", "Import theme")}
-                side="bottom"
+                side="top"
               >
                 <button
                   ref={importButton}
@@ -201,7 +205,7 @@ export function AccountAppearance() {
               </WorkspaceTooltip>
               <WorkspaceTooltip
                 label={text("copy_theme", "Copy theme")}
-                side="bottom"
+                side="top"
               >
                 <button
                   type="button"
@@ -271,17 +275,15 @@ export function AccountAppearance() {
         </button>
         <button
           type="button"
-          className={`${styles.additionalReset} ${advancedDirty ? styles.additionalResetVisible : ""}`}
-          aria-hidden={!advancedDirty}
-          tabIndex={advancedDirty ? 0 : -1}
+          className={`${styles.additionalReset} ${appearanceDirty ? styles.additionalResetVisible : ""}`}
+          aria-hidden={!appearanceDirty}
+          tabIndex={appearanceDirty ? 0 : -1}
           onClick={() => {
-            update({
-              uiSize: defaultAppearance.uiSize,
-              codeSize: defaultAppearance.codeSize,
-              motion: defaultAppearance.motion,
-              separate: defaultAppearance.separate,
-              contrast: defaultAppearance.contrast,
-              diff: defaultAppearance.diff,
+            transitionTheme(() => {
+              setValue(defaultAppearance);
+              saveAppearance(defaultAppearance);
+              setMode("system");
+              applyAccountTheme("system");
             });
             void changeLanguage("en");
           }}
@@ -460,10 +462,12 @@ export function AccountAppearance() {
             transitionTheme(() => {
               setValue(next.appearance);
               saveAppearance(next.appearance);
-              if (next.variant) {
-                setMode(next.variant);
-                applyAccountTheme(next.variant);
+              const nextMode = next.mode || next.variant;
+              if (nextMode) {
+                setMode(nextMode);
+                applyAccountTheme(nextMode);
               }
+              if (next.language) void changeLanguage(next.language);
               setError("");
             }, importButton.current);
             notify(text("theme_imported", "Theme imported"));
@@ -528,7 +532,7 @@ function ThemeImportDialog({
           rows={3}
           maxLength={20000}
           value={source}
-          placeholder="codex-theme-v1:{…}"
+          placeholder="genyxo-theme"
           aria-invalid={!!error}
           aria-describedby={error ? "theme-import-error" : undefined}
           onChange={(event) => {
@@ -563,6 +567,8 @@ function ThemeToast({
 }) {
   const { text } = useAccountText();
   const [closing, setClosing] = useState(false);
+  const layer = useRef<HTMLDivElement>(null);
+  useTopLayer(layer, true);
   const close = useRef(onClose);
   useEffect(() => {
     close.current = onClose;
@@ -576,14 +582,16 @@ function ThemeToast({
     const timer = setTimeout(() => close.current(), 180);
     return () => clearTimeout(timer);
   }, [closing]);
-  return (
+  return createPortal(
     <div
+      ref={layer}
+      popover="manual"
       role="status"
       className={`${styles.themeToast} ${closing ? styles.themeToastClosing : ""}`}
     >
       <WorkspaceIcon name="check" size={18} />
       <span>{message}</span>
-      <WorkspaceTooltip side="bottom" label={text("dismiss", "Dismiss")}>
+      <WorkspaceTooltip side="top" label={text("dismiss", "Dismiss")}>
         <button
           type="button"
           aria-label={text("dismiss", "Dismiss")}
@@ -592,6 +600,7 @@ function ThemeToast({
           <WorkspaceIcon name="close" size={15} />
         </button>
       </WorkspaceTooltip>
-    </div>
+    </div>,
+    document.body,
   );
 }

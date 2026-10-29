@@ -42,15 +42,19 @@ test("icon controls have accessible tooltips with an exit transition and hover-o
   await settings.hover();
   const tooltip = page.getByRole("tooltip", { name: "Integration settings", exact: true });
   await expect(tooltip).toBeVisible();
-  await expect(settings).toHaveAttribute("aria-describedby", await tooltip.getAttribute("id") as string);
+  const tooltipId = await tooltip.getAttribute("id");
+  await expect(settings).toHaveAttribute("aria-describedby", tooltipId as string);
   // Genyxo icons play one short sequence per hover and return to their drawn shape.
   const icon = settings.locator(".gi-gear");
   await expect(icon).toHaveCSS("animation-name", "gi-spin-gear");
   await expect(icon).toHaveCSS("animation-iteration-count", "1");
   await expect(icon).toHaveCSS("animation-duration", "0.9s");
+  const transition = await tooltip.evaluate(element => getComputedStyle(element).transitionDuration);
+  expect(transition.split(",").some(duration => Number.parseFloat(duration) > 0)).toBe(true);
   await page.screenshot({ path: "test-results/design/workspace-premium-tooltip.png", animations: "disabled" });
   await page.mouse.move(1100, 750);
-  await expect(tooltip).toHaveAttribute("data-state", "closed");
+  // Closing hints leave the accessibility tree immediately, then unmount after motion.
+  await expect(page.locator(`[id="${tooltipId}"]`)).toHaveCount(0);
   await expect(tooltip).toHaveCount(0);
   await expect(icon).toHaveCSS("animation-name", "none");
   await page.emulateMedia({ reducedMotion: "reduce" });

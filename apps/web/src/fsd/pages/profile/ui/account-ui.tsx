@@ -1,7 +1,7 @@
 "use client";
 import { type ReactNode } from "react";
 import { Avatar as SharedAvatar } from "@/shared/ui/Avatar";
-import { WorkspaceIcon } from "@/shared/ui/workspace";
+import { WorkspaceIcon, WorkspaceTooltip } from "@/shared/ui/workspace";
 import { useLanguage } from "@/shared/i18n";
 import { AccountError } from "../model/account";
 import styles from "./ProfilePage.module.css";
@@ -82,7 +82,7 @@ export function Action({
   busy?: boolean;
   label?: string;
 }) {
-  return (
+  const button = (
     <button
       type={type}
       className={`${styles.button} ${primary ? styles.primary : ""} ${danger ? styles.danger : ""}`}
@@ -94,6 +94,13 @@ export function Action({
       {busy && <span className={styles.spinner} aria-hidden="true" />}
       <span>{children}</span>
     </button>
+  );
+  return label ? (
+    <WorkspaceTooltip label={label} side="bottom">
+      {button}
+    </WorkspaceTooltip>
+  ) : (
+    button
   );
 }
 export function State({

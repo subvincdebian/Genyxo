@@ -692,6 +692,7 @@
     "theme_paste_error": "Collez un code de thème valide ou un JSON Genyxo de moins de 20 Ko.",
     "custom": "Personnalisé",
     "expand_sidebar": "Développer la barre latérale",
-    "collapse_sidebar": "Réduire la barre latérale"
+    "collapse_sidebar": "Réduire la barre latérale",
+    "resize_sidebar": "Redimensionner la barre latérale"
   }
 }

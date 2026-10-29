@@ -129,9 +129,9 @@ html[data-gx-appearance][data-gx-diff="markers"]
   color: inherit;
 }
 html:has(.account-appearance-scope) .ws-tooltip {
-  background: var(--gx-text);
-  color: var(--gx-bg);
-  border-color: transparent;
+  background: var(--gx-elevated);
+  color: var(--gx-text);
+  border-color: var(--gx-border-strong);
   font-weight: 550;
 }
 html[data-gx-appearance]

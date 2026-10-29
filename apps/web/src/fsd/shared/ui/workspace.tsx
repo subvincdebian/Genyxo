@@ -1,6 +1,8 @@
 "use client";
 import { cloneElement, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useTopLayer } from "@/shared/lib/top-layer";
+import tooltipStyles from "./Tooltip.module.css";
 import { useLanguage } from "@/shared/i18n";
 import { GenyxoIcon, hasGenyxoIcon } from "./genyxo-icons";
 
@@ -148,7 +150,7 @@ export function WorkspaceMenu({ children, onClose, anchor, trigger, positionTarg
   }}>{children}</div>, document.querySelector("dialog[open]") || document.body);
 }
 
-export function WorkspaceTooltip({ label, shortcut, children, side = "right", disabled = false }: { label: string; shortcut?: string; children: ReactElement; side?: "right" | "bottom"; disabled?: boolean }) {
+export function WorkspaceTooltip({ label, shortcut, children, side = "right", disabled = false }: { label: string; shortcut?: string; children: ReactElement; side?: "right" | "bottom" | "top"; disabled?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const tip = useRef<HTMLSpanElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -158,6 +160,7 @@ export function WorkspaceTooltip({ label, shortcut, children, side = "right", di
   const child = children as ReactElement<{ "aria-describedby"?: string; "aria-expanded"?: boolean; "aria-haspopup"?: boolean | string }>;
   const enabled = !disabled && !(child.props["aria-expanded"] && child.props["aria-haspopup"]);
   const [position, setPosition] = useState<CSSProperties>({ visibility: "hidden" });
+  useTopLayer(tip, !!anchor && enabled);
   const cancelTimer = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; };
   const hide = () => {
     cancelTimer(); setVisible(false);
@@ -175,8 +178,9 @@ export function WorkspaceTooltip({ label, shortcut, children, side = "right", di
     // position shrinks to fit, and the entrance animation scales it down.
     tip.current.style.left = "0px";
     const box = { width: tip.current.offsetWidth, height: tip.current.offsetHeight };
-    let x = side === "bottom" ? anchor.left + (anchor.width - box.width) / 2 : anchor.right + 8;
-    let y = side === "bottom" ? anchor.bottom + 7 : anchor.top + (anchor.height - box.height) / 2;
+    let x = side !== "right" ? anchor.left + (anchor.width - box.width) / 2 : anchor.right + 8;
+    let y = side === "top" ? anchor.top - box.height - 7 : side === "bottom" ? anchor.bottom + 7 : anchor.top + (anchor.height - box.height) / 2;
+    if (y < 8) y = anchor.bottom + 7;
     if (side === "right" && x + box.width > innerWidth - 8) { x = anchor.left + (anchor.width - box.width) / 2; y = anchor.bottom + 7; }
     if (y + box.height > innerHeight - 8) y = anchor.top - box.height - 7;
     const next = { left: Math.max(8, Math.min(x, innerWidth - box.width - 8)), top: Math.max(8, Math.min(y, innerHeight - box.height - 8)) };
@@ -202,9 +206,9 @@ export function WorkspaceTooltip({ label, shortcut, children, side = "right", di
     return () => { document.removeEventListener("keydown", escape); window.removeEventListener("resize", dismiss); document.removeEventListener("scroll", dismiss, true); };
   }, [visible]);
   const description = [child.props["aria-describedby"], visible && enabled ? id : undefined].filter(Boolean).join(" ") || undefined;
-  return <span ref={ref} className="ws-tooltip-owner" onMouseEnter={open} onMouseLeave={hide} onFocus={(event) => { if ((event.target as HTMLElement).matches(":focus-visible")) open(); }} onBlur={hide} onPointerDownCapture={hide}>
+  return <span ref={ref} className={`ws-tooltip-owner ${tooltipStyles.owner}`} onMouseEnter={open} onMouseLeave={hide} onFocus={(event) => { if ((event.target as HTMLElement).matches(":focus-visible")) open(); }} onBlur={hide} onPointerDownCapture={hide}>
     {cloneElement(child, { "aria-describedby": description })}
-    {anchor && enabled && createPortal(<span ref={tip} id={id} role="tooltip" data-state={visible ? "open" : "closed"} className="ws-tooltip" style={position}>{label}{shortcut && <kbd>{shortcut}</kbd>}</span>, document.querySelector("dialog[open]") || document.body)}
+    {anchor && enabled && createPortal(<span ref={tip} id={id} role="tooltip" aria-hidden={!visible} popover="manual" data-state={visible ? "open" : "closed"} className={`ws-tooltip ${tooltipStyles.tip}`} style={position}>{label}{shortcut && <kbd>{shortcut}</kbd>}</span>, document.querySelector("dialog[open]") || document.body)}
   </span>;
 }
 

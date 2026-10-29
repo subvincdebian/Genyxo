@@ -1,7 +1,8 @@
 "use client";
+import { useSettingsSidebar } from "../model/use-settings-sidebar";
 import { AppearanceSync } from "@/shared/ui/AppearanceSync";
 import { Select } from "@/shared/ui/Select";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   WorkspaceDialog,
   WorkspaceIcon,
@@ -81,6 +82,7 @@ export function ProfilePage() {
   const [active, setActive] = useState<SectionId>("profile");
   const [search, setSearch] = useState("");
   const [collapsed, setCollapsed] = useState(false);
+  const sidebarSize = useSettingsSidebar(collapsed, setCollapsed);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
@@ -234,116 +236,136 @@ export function ProfilePage() {
         </div>
       </header>
       <div
-        className={`${styles.layout} ${collapsed ? styles.layoutCollapsed : ""}`}
+        className={`${styles.layout} ${collapsed ? styles.layoutCollapsed : ""} ${sidebarSize.resizing ? styles.layoutResizing : ""}`}
+        style={
+          {
+            "--account-sidebar-width": `${sidebarSize.width}px`,
+          } as CSSProperties
+        }
       >
-        <aside
-          className={styles.sidebar}
-          aria-label={text("settings_navigation", "Settings navigation")}
-        >
-          <div className={styles.sidebarIntro}>
-            <h2>{text("settings", "Settings")}</h2>
-            <WorkspaceTooltip
-              label={text(
-                collapsed ? "expand_sidebar" : "collapse_sidebar",
-                collapsed ? "Expand sidebar" : "Collapse sidebar",
-              )}
-              side="bottom"
-            >
-              <button
-                type="button"
-                className={styles.sidebarToggle}
-                aria-label={text(
+        <div className={styles.sidebarFrame}>
+          <aside
+            className={styles.sidebar}
+            aria-label={text("settings_navigation", "Settings navigation")}
+          >
+            <div className={styles.sidebarIntro}>
+              <h2>{text("settings", "Settings")}</h2>
+              <WorkspaceTooltip
+                label={text(
                   collapsed ? "expand_sidebar" : "collapse_sidebar",
                   collapsed ? "Expand sidebar" : "Collapse sidebar",
                 )}
-                aria-expanded={!collapsed}
-                aria-controls="settings-sections"
-                onClick={() => {
-                  setCollapsed(!collapsed);
-                  localStorage.setItem(
-                    "genyxo.settings.sidebarCollapsed",
-                    String(!collapsed),
-                  );
-                }}
+                side="bottom"
               >
-                <WorkspaceIcon name="panel" size={20} />
-              </button>
-            </WorkspaceTooltip>
-          </div>
-          <label className={styles.search}>
-            <WorkspaceIcon name="search" size={17} />
-            <input
-              ref={searchInput}
-              type="search"
-              placeholder={text("search_settings", "Search settings")}
-              aria-label={text("search_settings", "Search settings")}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </label>
-          <nav id="settings-sections" className={styles.navigation}>
-            {visible.map((item, index) => (
-              <div key={item.id}>
-                {(index === 0 || item.id === "billing") && (
-                  <p className={styles.navGroup}>
-                    {text(
-                      item.id === "billing"
-                        ? "group_activity"
-                        : "group_personal",
-                      item.id === "billing" ? "Account & activity" : "Personal",
-                    )}
-                  </p>
-                )}
-                <WorkspaceTooltip
-                  disabled={!collapsed}
-                  label={labels(item.id, item.title)}
+                <button
+                  type="button"
+                  className={styles.sidebarToggle}
+                  aria-label={text(
+                    collapsed ? "expand_sidebar" : "collapse_sidebar",
+                    collapsed ? "Expand sidebar" : "Collapse sidebar",
+                  )}
+                  aria-expanded={!collapsed}
+                  aria-controls="settings-sections"
+                  onClick={() => {
+                    setCollapsed(!collapsed);
+                    localStorage.setItem(
+                      "genyxo.settings.sidebarCollapsed",
+                      String(!collapsed),
+                    );
+                  }}
                 >
-                  <a
-                    href={`#${item.id}`}
-                    aria-label={labels(item.id, item.title)}
-                    data-group-break={item.id === "billing" ? "" : undefined}
-                    aria-disabled={saving}
-                    aria-current={active === item.id ? "page" : undefined}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      navigate(item.id);
-                    }}
+                  <WorkspaceIcon name="panel" size={20} />
+                </button>
+              </WorkspaceTooltip>
+            </div>
+            <label className={styles.search}>
+              <WorkspaceIcon name="search" size={17} />
+              <input
+                ref={searchInput}
+                type="search"
+                placeholder={text("search_settings", "Search settings")}
+                aria-label={text("search_settings", "Search settings")}
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </label>
+            <nav id="settings-sections" className={styles.navigation}>
+              {visible.map((item, index) => (
+                <div key={item.id}>
+                  {(index === 0 || item.id === "billing") && (
+                    <p className={styles.navGroup}>
+                      {text(
+                        item.id === "billing"
+                          ? "group_activity"
+                          : "group_personal",
+                        item.id === "billing"
+                          ? "Account & activity"
+                          : "Personal",
+                      )}
+                    </p>
+                  )}
+                  <WorkspaceTooltip
+                    disabled={!collapsed}
+                    label={labels(item.id, item.title)}
                   >
-                    <AccountNavIcon section={item.id} />
-                    <span>{labels(item.id, item.title)}</span>
-                  </a>
-                </WorkspaceTooltip>
-              </div>
-            ))}
-            {!visible.length && (
-              <p className={styles.hint}>
-                {text("no_settings", "No matching settings")}
-              </p>
-            )}
-          </nav>
-          <div className={styles.sidebarBottom}>
-            <WorkspaceTooltip
-              disabled={!collapsed}
-              label={text("help_support", "Help & support")}
-            >
-              <a
-                className={styles.supportLink}
-                aria-label={text("help_support", "Help & support")}
-                href="/support"
-                onClick={(event) => {
-                  if (dirty) {
-                    event.preventDefault();
-                    navigate("/support");
-                  }
-                }}
+                    <a
+                      href={`#${item.id}`}
+                      aria-label={labels(item.id, item.title)}
+                      data-group-break={item.id === "billing" ? "" : undefined}
+                      aria-disabled={saving}
+                      aria-current={active === item.id ? "page" : undefined}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        navigate(item.id);
+                      }}
+                    >
+                      <AccountNavIcon section={item.id} />
+                      <span>{labels(item.id, item.title)}</span>
+                    </a>
+                  </WorkspaceTooltip>
+                </div>
+              ))}
+              {!visible.length && (
+                <p className={styles.hint}>
+                  {text("no_settings", "No matching settings")}
+                </p>
+              )}
+            </nav>
+            <div className={styles.sidebarBottom}>
+              <WorkspaceTooltip
+                disabled={!collapsed}
+                label={text("help_support", "Help & support")}
               >
-                <WorkspaceIcon name="help" size={18} />
-                <span>{text("help_support", "Help & support")}</span>
-                <WorkspaceIcon name="external" size={14} />
-              </a>
-            </WorkspaceTooltip>
-          </div>
-        </aside>
+                <a
+                  className={styles.supportLink}
+                  aria-label={text("help_support", "Help & support")}
+                  href="/support"
+                  onClick={(event) => {
+                    if (dirty) {
+                      event.preventDefault();
+                      navigate("/support");
+                    }
+                  }}
+                >
+                  <WorkspaceIcon name="help" size={18} />
+                  <span>{text("help_support", "Help & support")}</span>
+                  <WorkspaceIcon name="external" size={14} />
+                </a>
+              </WorkspaceTooltip>
+            </div>
+          </aside>
+          <div
+            className={styles.sidebarResize}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={text("resize_sidebar", "Resize settings sidebar")}
+            aria-valuemin={64}
+            aria-valuemax={360}
+            aria-valuenow={collapsed ? 64 : sidebarSize.width}
+            tabIndex={0}
+            {...sidebarSize.resizeProps}
+          />
+        </div>
         <div className={styles.mobileNavigation}>
           <label htmlFor="account-section">
             {text("settings", "Settings")}

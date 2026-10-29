@@ -17,44 +17,66 @@ function hex(value: unknown): string {
   return value;
 }
 
-/** Keep Codex's portable colors/fonts, plus Genyxo's settings for a lossless round trip. */
-export function exportTheme(value: Appearance, variant: "light" | "dark") {
-  const palette = value[variant];
-  return (
-    "codex-theme-v1:" +
-    JSON.stringify({
-      codeThemeId: palette.codeThemeId || palette.preset.toLowerCase(),
-      theme: {
-        accent: palette.accent,
-        accentSource: "custom",
-        contrast: value.contrast,
-        fonts: palette.fonts || { code: null, ui: "Inter" },
-        ink: palette.foreground,
-        opaqueWindows: palette.opaqueWindows ?? false,
-        semanticColors: palette.semanticColors || {
-          diffAdded: "#69c967",
-          diffRemoved: "#ff7e78",
-          skill: "#c2a1ff",
-        },
-        surface: palette.background,
-      },
-      variant,
-      genyxo: value,
-    })
+export type ThemeMode = "light" | "dark" | "system";
+/** A versioned, complete snapshot; safe to paste into another browser/account. */
+export function exportTheme(
+  value: Appearance,
+  variant: "light" | "dark",
+  options?: { mode?: ThemeMode; language?: string },
+) {
+  return JSON.stringify(
+    {
+      format: "genyxo-theme",
+      version: 1,
+      appearance: parseAppearance(value),
+      mode: options?.mode || variant,
+      ...(options?.language ? { language: options.language } : {}),
+    },
+    null,
+    2,
   );
 }
 
 export function importTheme(
   source: string,
   current: Appearance,
-): { appearance: Appearance; variant?: "light" | "dark" } {
+): {
+  appearance: Appearance;
+  variant?: "light" | "dark";
+  mode?: ThemeMode;
+  language?: string;
+} {
   if (!source.trim() || source.length > 20000)
     throw Error("Invalid theme length");
   const input = source.trim();
-  const prefixed = input.startsWith("codex-theme-v1:");
-  const data = record(
-    JSON.parse(prefixed ? input.slice("codex-theme-v1:".length) : input),
+  const prefix = ["genyxo-theme:", "codex-theme-v1:"].find((prefix) =>
+    input.startsWith(prefix),
   );
+  const data = record(JSON.parse(prefix ? input.slice(prefix.length) : input));
+  if (data.format === "genyxo-theme") {
+    if (
+      data.version !== 1 ||
+      !["system", "light", "dark"].includes(String(data.mode))
+    )
+      throw Error("Invalid theme version or mode");
+    const appearance = record(data.appearance);
+    for (const mode of ["light", "dark"] as const) {
+      const p = record(appearance[mode]);
+      hex(p.accent);
+      hex(p.background);
+      hex(p.foreground);
+    }
+    if (
+      data.language !== undefined &&
+      !["en", "uk", "de", "es", "fr"].includes(String(data.language))
+    )
+      throw Error("Invalid language");
+    return {
+      appearance: parseAppearance(appearance),
+      mode: data.mode as ThemeMode,
+      ...(typeof data.language === "string" ? { language: data.language } : {}),
+    };
+  }
   // Backwards compatibility with previously exported Genyxo JSON files.
   if (data.light && data.dark && !data.theme) {
     for (const mode of ["light", "dark"] as const) {

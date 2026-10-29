@@ -3,11 +3,13 @@ import {
   Children,
   isValidElement,
   useId,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { useTopLayer } from "@/shared/lib/top-layer";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/shared/i18n";
 import { WorkspaceIcon } from "./workspace";
@@ -38,9 +40,17 @@ export function Select({
     .filter(isValidElement)
     .map((child) => child.props as Option);
   const [open, setOpen] = useState(false);
+  const [present, setPresent] = useState(false);
+  const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
-  const [position, setPosition] = useState({ left: 0, top: 0, width: 220 });
+  const [position, setPosition] = useState({
+    left: 0,
+    top: 0,
+    width: 220,
+    visibility: "hidden" as "hidden" | "visible",
+    transformOrigin: "top right",
+  });
   const trigger = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
   const uid = useId();
@@ -52,10 +62,34 @@ export function Select({
       .toLocaleLowerCase()
       .includes(query.toLocaleLowerCase()),
   );
-  const close = () => {
+  useTopLayer(menu, present);
+  useEffect(
+    () => () => {
+      if (closing.current) clearTimeout(closing.current);
+    },
+    [],
+  );
+  const close = (restore = true) => {
     setOpen(false);
+    if (restore) trigger.current?.focus({ preventScroll: true });
+    if (closing.current) clearTimeout(closing.current);
+    closing.current = setTimeout(() => {
+      setPresent(false);
+      setQuery("");
+    }, 150);
+  };
+  const show = () => {
+    if (closing.current) clearTimeout(closing.current);
     setQuery("");
-    trigger.current?.focus({ preventScroll: true });
+    setActive(
+      Math.max(
+        0,
+        options.findIndex((option) => String(option.value) === String(value)),
+      ),
+    );
+    setPosition((old) => ({ ...old, visibility: "hidden" }));
+    setPresent(true);
+    setOpen(true);
   };
   const choose = (index: number) => {
     const option = visible[index];
@@ -68,33 +102,66 @@ export function Select({
     }
   };
   useLayoutEffect(() => {
-    if (!open) return;
-    const box = trigger.current!.getBoundingClientRect();
-    const width = Math.min(Math.max(box.width, 220), innerWidth - 16);
-    setPosition({
-      left: Math.max(8, Math.min(box.right - width, innerWidth - width - 8)),
-      top: Math.max(
+    if (!open || !menu.current) return;
+    const place = () => {
+      if (!trigger.current || !menu.current) return;
+      const box = trigger.current.getBoundingClientRect();
+      const width = Math.min(Math.max(box.width, 220), innerWidth - 16);
+      const height = menu.current.offsetHeight;
+      const above =
+        box.bottom + height + 6 > innerHeight - 8 &&
+        box.top > innerHeight - box.bottom;
+      const left = Math.max(
         8,
-        box.bottom + 310 > innerHeight ? box.top - 300 : box.bottom + 6,
-      ),
-      width,
-    });
-    const search = menu.current?.querySelector<HTMLInputElement>("input");
-    if (search) search.focus();
-    else menu.current?.focus();
+        Math.min(box.right - width, innerWidth - width - 8),
+      );
+      const top = Math.max(
+        8,
+        Math.min(
+          above ? box.top - height - 6 : box.bottom + 6,
+          innerHeight - height - 8,
+        ),
+      );
+      setPosition((old) =>
+        old.left === left &&
+        old.top === top &&
+        old.width === width &&
+        old.visibility === "visible"
+          ? old
+          : {
+              left,
+              top,
+              width,
+              visibility: "visible",
+              transformOrigin: above ? "bottom right" : "top right",
+            },
+      );
+    };
+    place();
+    const search = menu.current.querySelector<HTMLInputElement>("input");
+    if (search) search.focus({ preventScroll: true });
+    else menu.current.focus({ preventScroll: true });
     const outside = (event: PointerEvent) => {
       if (
         !menu.current?.contains(event.target as Node) &&
         !trigger.current?.contains(event.target as Node)
       )
-        setOpen(false);
+        close(false);
     };
-    const resize = () => setOpen(false);
+    const scroll = (event: Event) => {
+      if (!menu.current?.contains(event.target as Node)) place();
+    };
+    const observer = new ResizeObserver(place);
+    observer.observe(trigger.current!);
+    observer.observe(menu.current);
     document.addEventListener("pointerdown", outside);
-    window.addEventListener("resize", resize);
+    document.addEventListener("scroll", scroll, true);
+    window.addEventListener("resize", place);
     return () => {
+      observer.disconnect();
       document.removeEventListener("pointerdown", outside);
-      window.removeEventListener("resize", resize);
+      document.removeEventListener("scroll", scroll, true);
+      window.removeEventListener("resize", place);
     };
   }, [open]);
   const keyboard = (event: React.KeyboardEvent) => {
@@ -120,7 +187,7 @@ export function Select({
       if (event.target instanceof HTMLInputElement && event.key === " ") return;
       event.preventDefault();
       choose(active);
-    } else if (event.key === "Tab") setOpen(false);
+    } else if (event.key === "Tab") close(false);
   };
   return (
     <>
@@ -135,23 +202,12 @@ export function Select({
         aria-haspopup="listbox"
         disabled={disabled}
         className={styles.trigger}
-        onClick={() => {
-          setQuery("");
-          setActive(
-            Math.max(
-              0,
-              options.findIndex(
-                (option) => String(option.value) === String(value),
-              ),
-            ),
-          );
-          setOpen(!open);
-        }}
+        onClick={() => (open ? close() : show())}
         onKeyDown={(event) => {
           if (["ArrowDown", "ArrowUp"].includes(event.key)) {
             event.preventDefault();
-            setOpen(true);
-          } else if (event.key === "Escape") setOpen(false);
+            show();
+          } else if (event.key === "Escape") close();
         }}
       >
         <span>
@@ -161,15 +217,22 @@ export function Select({
         </span>
         <WorkspaceIcon name="chevron-down" size={15} />
       </button>
-      {open &&
+      {present &&
         createPortal(
           <div
             ref={menu}
             id={uid}
             className={styles.popup}
+            popover="manual"
+            data-state={open ? "open" : "closed"}
+            data-side={
+              position.transformOrigin.startsWith("bottom") ? "top" : "bottom"
+            }
+            inert={!open}
+            aria-hidden={!open}
             style={position}
             tabIndex={-1}
-            role="listbox"
+            role={open ? "listbox" : undefined}
             aria-label={label}
             aria-activedescendant={`${uid}-${active}`}
             onKeyDown={keyboard}

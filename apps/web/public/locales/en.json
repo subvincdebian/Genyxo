@@ -674,6 +674,7 @@
     "theme_paste_error": "Paste a valid theme code or Genyxo JSON under 20 KB.",
     "custom": "Custom",
     "expand_sidebar": "Expand sidebar",
-    "collapse_sidebar": "Collapse sidebar"
+    "collapse_sidebar": "Collapse sidebar",
+    "resize_sidebar": "Resize settings sidebar"
   }
 }

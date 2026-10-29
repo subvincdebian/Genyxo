@@ -1,7 +1,11 @@
 "use client";
 import { AnimatedNumber } from "@/shared/ui/AnimatedNumber";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { WorkspaceDialog, WorkspaceIcon } from "@/shared/ui/workspace";
+import {
+  WorkspaceDialog,
+  WorkspaceIcon,
+  WorkspaceTooltip,
+} from "@/shared/ui/workspace";
 import {
   accountRequest,
   cacheAccount,
@@ -104,14 +108,18 @@ export function AccountOverview({
           <Row title={text("name", "Display name")}>
             <span className={styles.editableValue}>
               {account.name || "—"}
-              <button
-                className={styles.iconButton}
-                aria-label={text("edit_name", "Edit name")}
-                title={text("edit_name", "Edit name")}
-                onClick={() => setEditing("name")}
+              <WorkspaceTooltip
+                label={text("edit_name", "Edit name")}
+                side="bottom"
               >
-                <WorkspaceIcon name="edit" size={18} />
-              </button>
+                <button
+                  className={styles.iconButton}
+                  aria-label={text("edit_name", "Edit name")}
+                  onClick={() => setEditing("name")}
+                >
+                  <WorkspaceIcon name="edit" size={18} />
+                </button>
+              </WorkspaceTooltip>
             </span>
           </Row>
           <Row

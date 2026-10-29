@@ -174,6 +174,7 @@ export function AccountBilling({ account }: { account: Account }) {
                   </span>
                   <div>
                     <Action
+                      label={text("previous", "Previous page")}
                       disabled={page <= 1}
                       onClick={() => setPage((value) => Math.max(1, value - 1))}
                     >
@@ -186,6 +187,7 @@ export function AccountBilling({ account }: { account: Account }) {
                       {page} / {Math.max(1, history.data.meta.totalPages)}
                     </span>
                     <Action
+                      label={text("next", "Next page")}
                       disabled={page >= history.data.meta.totalPages}
                       onClick={() => setPage((value) => value + 1)}
                     >

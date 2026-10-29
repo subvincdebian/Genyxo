@@ -692,6 +692,7 @@
     "theme_paste_error": "Pega un código de tema válido o JSON de Genyxo de menos de 20 KB.",
     "custom": "Personalizado",
     "expand_sidebar": "Expandir barra lateral",
-    "collapse_sidebar": "Contraer barra lateral"
+    "collapse_sidebar": "Contraer barra lateral",
+    "resize_sidebar": "Cambiar el ancho de la barra lateral"
   }
 }

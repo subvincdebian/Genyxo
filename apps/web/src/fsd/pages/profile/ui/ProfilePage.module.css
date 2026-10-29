@@ -2964,3 +2964,86 @@
     animation-duration: 1ms;
   }
 }
+
+/* Floating feedback is viewport-bound, independent of the animated content. */
+.themeToast {
+  inset: auto;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50vw;
+  margin: 0;
+  width: max-content;
+  z-index: 2147483000;
+}
+.sidebarFrame {
+  position: sticky;
+  top: 73px;
+  height: calc(100dvh - 73px);
+  min-width: 0;
+}
+.sidebarFrame .sidebar {
+  position: relative;
+  top: auto;
+  height: 100%;
+}
+.layout:not(.layoutCollapsed) {
+  grid-template-columns: var(--account-sidebar-width, 232px) minmax(0, 1fr);
+}
+.layoutCollapsed .sidebarFrame {
+  width: 64px;
+  transform: translateX(calc(0px - var(--account-edge)));
+}
+.layoutCollapsed .sidebar {
+  transform: none;
+}
+.sidebarToggle,
+.layoutCollapsed .sidebarToggle,
+.sidebar:focus-within .sidebarToggle {
+  opacity: 0;
+}
+.sidebarFrame:hover .sidebarToggle,
+.sidebarFrame:has(:focus-visible) .sidebarToggle {
+  opacity: 1;
+}
+.sidebarResize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -5px;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 2;
+}
+.sidebarResize::after {
+  content: "";
+  position: absolute;
+  inset: 0 4px;
+  background: var(--gx-border-strong);
+  opacity: 0;
+  transition: opacity 140ms;
+}
+.sidebarFrame:hover .sidebarResize::after,
+.sidebarResize:focus-visible::after {
+  opacity: 1;
+}
+.layoutResizing,
+.layoutResizing .sidebar {
+  transition: none !important;
+}
+.layoutResizing {
+  user-select: none;
+  cursor: col-resize;
+}
+@media (max-width: 1080px) {
+  .layout {
+    --account-edge: 28px;
+  }
+}
+@media (max-width: 760px) {
+  .sidebarFrame {
+    display: none;
+  }
+  .layout:not(.layoutCollapsed) {
+    display: block;
+  }
+}

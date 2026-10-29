@@ -692,6 +692,7 @@
     "theme_paste_error": "Füge einen gültigen Theme-Code oder Genyxo-JSON unter 20 KB ein.",
     "custom": "Benutzerdefiniert",
     "expand_sidebar": "Seitenleiste öffnen",
-    "collapse_sidebar": "Seitenleiste einklappen"
+    "collapse_sidebar": "Seitenleiste einklappen",
+    "resize_sidebar": "Breite der Seitenleiste ändern"
   }
 }

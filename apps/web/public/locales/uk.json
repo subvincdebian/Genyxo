@@ -692,6 +692,7 @@
     "theme_paste_error": "Вставте коректний код теми або JSON Genyxo розміром до 20 КБ.",
     "custom": "Власна",
     "expand_sidebar": "Розгорнути бічну панель",
-    "collapse_sidebar": "Згорнути бічну панель"
+    "collapse_sidebar": "Згорнути бічну панель",
+    "resize_sidebar": "Змінити ширину бічної панелі"
   }
 }
