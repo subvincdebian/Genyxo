@@ -667,6 +667,13 @@
     "theme_import_error": "Choose a valid Genyxo theme JSON file under 20 KB.",
     "devices": "Devices",
     "search_options": "Search options",
-    "theme_copy_error": "Copy failed. Try again."
+    "theme_copy_error": "Copy failed. Try again.",
+    "additionally": "Additionally",
+    "reset_defaults": "Reset to default settings",
+    "theme_code": "Theme code",
+    "theme_paste_error": "Paste a valid theme code or Genyxo JSON under 20 KB.",
+    "custom": "Custom",
+    "expand_sidebar": "Expand sidebar",
+    "collapse_sidebar": "Collapse sidebar"
   }
 }

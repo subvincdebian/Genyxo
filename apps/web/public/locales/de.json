@@ -685,6 +685,13 @@
     "theme_import_error": "Wähle eine gültige Genyxo-JSON-Datei unter 20 KB.",
     "devices": "Geräte",
     "search_options": "Optionen suchen",
-    "theme_copy_error": "Kopieren fehlgeschlagen. Erneut versuchen."
+    "theme_copy_error": "Kopieren fehlgeschlagen. Erneut versuchen.",
+    "additionally": "Zusätzlich",
+    "reset_defaults": "Standardeinstellungen wiederherstellen",
+    "theme_code": "Theme-Code",
+    "theme_paste_error": "Füge einen gültigen Theme-Code oder Genyxo-JSON unter 20 KB ein.",
+    "custom": "Benutzerdefiniert",
+    "expand_sidebar": "Seitenleiste öffnen",
+    "collapse_sidebar": "Seitenleiste einklappen"
   }
 }

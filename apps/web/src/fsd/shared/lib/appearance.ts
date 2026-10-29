@@ -3,6 +3,10 @@ export type Palette = {
   accent: string;
   background: string;
   foreground: string;
+  fonts?: { ui: string | null; code: string | null };
+  semanticColors?: { diffAdded: string; diffRemoved: string; skill: string };
+  opaqueWindows?: boolean;
+  codeThemeId?: string;
 };
 export type Appearance = {
   separate: boolean;
@@ -44,6 +48,8 @@ export const defaultAppearance: Appearance = {
   contrast: 60,
   diff: "color",
 };
+export const cleanFont = (value: unknown): string | null =>
+  typeof value === "string" && /^[\w -]{1,80}$/.test(value) ? value : null;
 const color = (value: unknown, fallback: string) =>
   typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
 export function parseAppearance(raw: unknown): Appearance {
@@ -52,10 +58,37 @@ export function parseAppearance(raw: unknown): Appearance {
   const clean = (input: Partial<Palette> | undefined, light: boolean) => {
     const base = palette(light);
     return {
-      preset: input?.preset && presets[input.preset] ? input.preset : "Genyxo",
+      preset:
+        input?.preset && (presets[input.preset] || input.preset === "Custom")
+          ? input.preset
+          : "Genyxo",
       accent: color(input?.accent, base.accent),
       background: color(input?.background, base.background),
       foreground: color(input?.foreground, base.foreground),
+      ...(input?.fonts
+        ? {
+            fonts: {
+              ui: cleanFont(input.fonts.ui),
+              code: cleanFont(input.fonts.code),
+            },
+          }
+        : {}),
+      ...(input?.semanticColors
+        ? {
+            semanticColors: {
+              diffAdded: color(input.semanticColors.diffAdded, "#69c967"),
+              diffRemoved: color(input.semanticColors.diffRemoved, "#ff7e78"),
+              skill: color(input.semanticColors.skill, "#c2a1ff"),
+            },
+          }
+        : {}),
+      ...(typeof input?.opaqueWindows === "boolean"
+        ? { opaqueWindows: input.opaqueWindows }
+        : {}),
+      ...(typeof input?.codeThemeId === "string" &&
+      /^[a-z0-9-]{1,80}$/i.test(input.codeThemeId)
+        ? { codeThemeId: input.codeThemeId }
+        : {}),
     };
   };
   return {
@@ -96,28 +129,74 @@ export function applyAppearance(value: Appearance) {
   root.dataset.gxAppearance = "true";
   root.dataset.gxMotion = value.motion;
   root.dataset.gxDiff = value.diff;
+  const foreground = readableColor(chosen.foreground, chosen.background, 4.5);
   const vars: Record<string, string> = {
+    "--gx-hover": `color-mix(in srgb, ${foreground} 7%, transparent)`,
+    "--gx-active": `color-mix(in srgb, ${foreground} 11%, transparent)`,
+    "--gx-border": `color-mix(in srgb, ${foreground} 12%, transparent)`,
+    "--gx-border-strong": `color-mix(in srgb, ${foreground} 20%, transparent)`,
+    "--gx-code-keyword": readableColor(chosen.accent, chosen.background, 4.5),
+    "--gx-font": chosen.fonts?.ui
+      ? `"${chosen.fonts.ui}", Inter, system-ui, sans-serif`
+      : "Inter, system-ui, sans-serif",
+    "--gx-display": chosen.fonts?.ui
+      ? `"${chosen.fonts.ui}", Inter, system-ui, sans-serif`
+      : '"Inter Tight", Inter, system-ui, sans-serif',
+    "--gx-code-font": chosen.fonts?.code
+      ? `"${chosen.fonts.code}", ui-monospace, monospace`
+      : "ui-monospace, SFMono-Regular, Consolas, monospace",
+    "--gx-diff-added": readableColor(
+      chosen.semanticColors?.diffAdded || "#69c967",
+      chosen.background,
+      4.5,
+    ),
+    "--gx-diff-removed": readableColor(
+      chosen.semanticColors?.diffRemoved || "#ff7e78",
+      chosen.background,
+      4.5,
+    ),
+    "--gx-skill": readableColor(
+      chosen.semanticColors?.skill || "#c2a1ff",
+      chosen.background,
+      4.5,
+    ),
     "--gx-on-accent":
-      parseInt(chosen.accent.slice(1, 3), 16) * 0.299 +
-        parseInt(chosen.accent.slice(3, 5), 16) * 0.587 +
-        parseInt(chosen.accent.slice(5, 7), 16) * 0.114 >
-      150
-        ? "#13251c"
-        : "#ffffff",
+      contrastRatio("#ffffff", chosen.accent) >
+      contrastRatio("#13251c", chosen.accent)
+        ? "#ffffff"
+        : "#13251c",
     "--gx-accent": chosen.accent,
     "--gx-accent-strong": chosen.accent,
     "--gx-mint": chosen.accent,
     "--gx-accent-soft": `color-mix(in srgb, ${chosen.accent} 14%, transparent)`,
     "--gx-accent-glow": `color-mix(in srgb, ${chosen.accent} 32%, transparent)`,
     "--gx-bg": chosen.background,
-    "--gx-sidebar": `color-mix(in srgb, ${chosen.background} 94%, ${light ? "black" : "black"})`,
+    "--gx-sidebar": `color-mix(in srgb, ${chosen.background} 94%, black)`,
     "--gx-surface": `color-mix(in srgb, ${chosen.background} 96%, ${chosen.foreground})`,
     "--gx-surface-2": `color-mix(in srgb, ${chosen.background} 92%, ${chosen.foreground})`,
     "--gx-elevated": `color-mix(in srgb, ${chosen.background} 90%, ${chosen.foreground})`,
-    "--gx-text": chosen.foreground,
-    "--gx-text-2": `color-mix(in srgb, ${chosen.foreground} ${70 + value.contrast * 0.2}%, ${chosen.background})`,
-    "--gx-muted": `color-mix(in srgb, ${chosen.foreground} ${45 + value.contrast * 0.25}%, ${chosen.background})`,
-    "--gx-glass": `color-mix(in srgb, ${chosen.background} 94%, transparent)`,
+    "--gx-text": foreground,
+    "--gx-text-2": readableColor(
+      mixColor(
+        foreground,
+        chosen.background,
+        (70 + value.contrast * 0.2) / 100,
+      ),
+      chosen.background,
+      4.5,
+    ),
+    "--gx-muted": readableColor(
+      mixColor(
+        foreground,
+        chosen.background,
+        (45 + value.contrast * 0.25) / 100,
+      ),
+      chosen.background,
+      4.5,
+    ),
+    "--gx-glass": chosen.opaqueWindows
+      ? chosen.background
+      : `color-mix(in srgb, ${chosen.background} 94%, transparent)`,
     "--gx-gradient": `linear-gradient(135deg, ${chosen.accent}, color-mix(in srgb, ${chosen.accent} 60%, white))`,
     "--gx-ui-size": `${value.uiSize}px`,
     "--gx-code-size": `${value.codeSize}px`,
@@ -132,4 +211,45 @@ export function clearAppearance() {
   delete root.dataset.gxAppearance;
   delete root.dataset.gxMotion;
   delete root.dataset.gxDiff;
+}
+
+const channels = (hex: string) =>
+  [1, 3, 5].map((index) => parseInt(hex.slice(index, index + 2), 16));
+const luminance = (hex: string) =>
+  channels(hex)
+    .map((n) => {
+      const c = n / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    })
+    .reduce((sum, c, index) => sum + c * [0.2126, 0.7152, 0.0722][index], 0);
+export function contrastRatio(a: string, b: string) {
+  const x = luminance(a),
+    y = luminance(b);
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+function mixColor(a: string, b: string, fraction: number) {
+  const x = channels(a),
+    y = channels(b);
+  return (
+    "#" +
+    x
+      .map((c, i) =>
+        Math.round(c * fraction + y[i] * (1 - fraction))
+          .toString(16)
+          .padStart(2, "0"),
+      )
+      .join("")
+  );
+}
+function readableColor(color: string, background: string, minimum: number) {
+  if (contrastRatio(color, background) >= minimum) return color;
+  const target =
+    contrastRatio("#ffffff", background) > contrastRatio("#000000", background)
+      ? "#ffffff"
+      : "#000000";
+  for (let amount = 0.05; amount <= 1; amount += 0.05) {
+    const candidate = mixColor(target, color, amount);
+    if (contrastRatio(candidate, background) >= minimum) return candidate;
+  }
+  return target;
 }

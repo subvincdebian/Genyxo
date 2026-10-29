@@ -685,6 +685,13 @@
     "theme_import_error": "Виберіть коректний JSON теми Genyxo до 20 КБ.",
     "devices": "Пристрої",
     "search_options": "Пошук варіантів",
-    "theme_copy_error": "Не вдалося скопіювати. Спробуйте ще раз."
+    "theme_copy_error": "Не вдалося скопіювати. Спробуйте ще раз.",
+    "additionally": "Додатково",
+    "reset_defaults": "Скинути до стандартних налаштувань",
+    "theme_code": "Код теми",
+    "theme_paste_error": "Вставте коректний код теми або JSON Genyxo розміром до 20 КБ.",
+    "custom": "Власна",
+    "expand_sidebar": "Розгорнути бічну панель",
+    "collapse_sidebar": "Згорнути бічну панель"
   }
 }

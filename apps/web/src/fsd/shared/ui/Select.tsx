@@ -19,13 +19,18 @@ export function Select({
   children,
   disabled,
   id,
+  renderOption,
   "aria-label": label,
 }: {
   value: string | number;
-  onChange: (event: { target: { value: string } }) => void;
+  onChange: (event: {
+    target: { value: string };
+    currentTarget: HTMLButtonElement;
+  }) => void;
   children: ReactNode;
   disabled?: boolean;
   id?: string;
+  renderOption?: (value: string, label: ReactNode) => ReactNode;
   "aria-label"?: string;
 }) {
   const { t } = useLanguage();
@@ -55,7 +60,10 @@ export function Select({
   const choose = (index: number) => {
     const option = visible[index];
     if (option && !option.disabled) {
-      onChange({ target: { value: String(option.value) } });
+      onChange({
+        target: { value: String(option.value) },
+        currentTarget: trigger.current!,
+      });
       close();
     }
   };
@@ -146,7 +154,11 @@ export function Select({
           } else if (event.key === "Escape") setOpen(false);
         }}
       >
-        <span>{selected?.children || value}</span>
+        <span>
+          {renderOption
+            ? renderOption(String(value), selected?.children || value)
+            : selected?.children || value}
+        </span>
         <WorkspaceIcon name="chevron-down" size={15} />
       </button>
       {open &&
@@ -202,7 +214,11 @@ export function Select({
                   onPointerMove={() => setActive(index)}
                   onClick={() => choose(index)}
                 >
-                  <span>{option.children}</span>
+                  <span>
+                    {renderOption
+                      ? renderOption(String(option.value), option.children)
+                      : option.children}
+                  </span>
                   {String(value) === String(option.value) && (
                     <WorkspaceIcon name="check" size={16} />
                   )}

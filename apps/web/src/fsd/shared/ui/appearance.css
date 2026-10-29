@@ -99,3 +99,85 @@ html[data-gx-diff="markers"]
   background: transparent;
   color: inherit;
 }
+
+html[data-gx-theme-transition]::view-transition-old(root),
+html[data-gx-theme-transition]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html[data-gx-theme-transition]::view-transition-old(root) {
+  z-index: 1;
+}
+html[data-gx-theme-transition]::view-transition-new(root) {
+  z-index: 2;
+}
+html[data-gx-appearance] .workspace-shell :is(pre, pre code, .code-block code) {
+  font-family: var(--gx-code-font) !important;
+}
+html[data-gx-appearance] .workspace-shell .gx-diff-add {
+  background: color-mix(in srgb, var(--gx-diff-added) 12%, transparent);
+  color: var(--gx-diff-added);
+}
+html[data-gx-appearance] .workspace-shell .gx-diff-remove {
+  background: color-mix(in srgb, var(--gx-diff-removed) 12%, transparent);
+  color: var(--gx-diff-removed);
+}
+html[data-gx-appearance][data-gx-diff="markers"]
+  .workspace-shell
+  :is(.gx-diff-add, .gx-diff-remove) {
+  background: transparent;
+  color: inherit;
+}
+html:has(.account-appearance-scope) .ws-tooltip {
+  background: var(--gx-text);
+  color: var(--gx-bg);
+  border-color: transparent;
+  font-weight: 550;
+}
+html[data-gx-appearance]
+  .workspace-shell
+  :is(.gx-btn-primary, .credits-cta, .upgrade-full-btn) {
+  background: var(--gx-accent) !important;
+  color: var(--gx-on-accent) !important;
+}
+html[data-gx-appearance]
+  .workspace-shell
+  :is(.gx-btn-primary, .credits-cta, .upgrade-full-btn):hover {
+  background: color-mix(
+    in srgb,
+    var(--gx-accent) 88%,
+    var(--gx-text)
+  ) !important;
+}
+html[data-gx-appearance]
+  .workspace-shell
+  #chatBox
+  .message.bot-message
+  .ai-code-block
+  :is(.tok-keyword, .tok-selector, .tok-tag) {
+  color: var(--gx-code-keyword);
+}
+html[data-gx-appearance]
+  .workspace-shell
+  #chatBox
+  .message.bot-message
+  .ai-code-block
+  .tok-string {
+  color: var(--gx-diff-added);
+}
+html[data-gx-appearance]
+  .workspace-shell
+  #chatBox
+  .message.bot-message
+  .ai-code-block
+  :is(.tok-number, .tok-builtin) {
+  color: var(--gx-skill);
+}
+html[data-gx-appearance]
+  .workspace-shell
+  #chatBox
+  .message.bot-message
+  .ai-code-block
+  .tok-comment {
+  color: var(--gx-muted);
+}

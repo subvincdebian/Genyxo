@@ -1,119 +1,123 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   defaultAppearance,
   readAppearance,
   saveAppearance,
   presets,
-  parseAppearance,
   type Appearance,
   type Palette,
 } from "@/shared/lib/appearance";
+import { exportTheme, importTheme } from "@/shared/lib/theme-codec";
+import { transitionTheme } from "@/shared/lib/theme-transition";
 import { useLanguage, LANGUAGES, LANGUAGE_NAMES } from "@/shared/i18n";
 import { Select } from "@/shared/ui/Select";
-import { WorkspaceIcon } from "@/shared/ui/workspace";
+import { SegmentedControl } from "@/shared/ui/SegmentedControl";
+import {
+  WorkspaceDialog,
+  WorkspaceIcon,
+  WorkspaceTooltip,
+} from "@/shared/ui/workspace";
 import { Action, Row, Section, useAccountText } from "./account-ui";
 import { applyAccountTheme, type Theme } from "./AccountPreferences";
 import styles from "./ProfilePage.module.css";
+
 export function AccountAppearance() {
   const { text } = useAccountText();
   const { lang, changeLanguage } = useLanguage();
   const [value, setValue] = useState<Appearance>(defaultAppearance);
   const [mode, setMode] = useState<Theme>("system");
+  const [systemDark, setSystemDark] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [error, setError] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const input = useRef<HTMLInputElement>(null);
+  const [toast, setToast] = useState<{ message: string; id: number } | null>(
+    null,
+  );
+  const importButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
+    const media = matchMedia("(prefers-color-scheme: dark)");
     queueMicrotask(() => {
       setValue(readAppearance());
       setMode((localStorage.getItem("theme") || "system") as Theme);
+      setSystemDark(media.matches);
     });
+    const sync = () => setSystemDark(media.matches);
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
   }, []);
-  const light =
-    mode === "light" ||
-    (mode === "system" &&
-      typeof window !== "undefined" &&
-      !matchMedia("(prefers-color-scheme:dark)").matches);
+  const light = mode === "light" || (mode === "system" && !systemDark);
   const key = light ? "light" : "dark";
   const palette = value[key];
-  function update(patch: Partial<Appearance>) {
+  const advancedDirty =
+    (
+      ["uiSize", "codeSize", "motion", "separate", "contrast", "diff"] as const
+    ).some((field) => value[field] !== defaultAppearance[field]) ||
+    lang !== "en";
+  const notify = (message: string) => setToast({ message, id: Date.now() });
+  function update(patch: Partial<Appearance>, source?: HTMLElement | null) {
     const next = { ...value, ...patch };
-    setValue(next);
-    saveAppearance(next);
-    setFeedback("");
+    const commit = () => {
+      setValue(next);
+      saveAppearance(next);
+      setError("");
+    };
+    if (source) transitionTheme(commit, source);
+    else commit();
   }
   function colors(patch: Partial<Palette>) {
-    const next = { ...palette, ...patch };
     update({
-      [key]: next,
-      ...(!value.separate
+      [key]: { ...palette, ...patch },
+      ...(!value.separate && patch.accent
         ? {
             [light ? "dark" : "light"]: {
               ...value[light ? "dark" : "light"],
-              ...(patch.accent ? { accent: patch.accent } : {}),
+              accent: patch.accent,
             },
           }
         : {}),
     });
   }
-  function preset(name: string) {
+  function preset(name: string, source: HTMLElement) {
     const p = presets[name];
+    if (!p) return;
+    const make = (light: boolean): Palette => ({
+      preset: name,
+      accent: p.accent,
+      background: light ? p.light : p.dark,
+      foreground: light ? "#171c1a" : "#f3f5f4",
+    });
     update(
       value.separate
-        ? {
-            [key]: {
-              preset: name,
-              accent: p.accent,
-              background: light ? p.light : p.dark,
-              foreground: light ? "#171c1a" : "#f3f5f4",
-            },
-          }
-        : {
-            light: {
-              preset: name,
-              accent: p.accent,
-              background: p.light,
-              foreground: "#171c1a",
-            },
-            dark: {
-              preset: name,
-              accent: p.accent,
-              background: p.dark,
-              foreground: "#f3f5f4",
-            },
-          },
+        ? { [key]: make(light) }
+        : { light: make(true), dark: make(false) },
+      source,
     );
   }
   async function copy() {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(value, null, 2));
-      setFeedback(text("theme_copied", "Theme copied"));
+      await navigator.clipboard.writeText(exportTheme(value, key));
+      setError("");
+      notify(text("theme_copied", "Theme copied"));
     } catch {
       setError(text("theme_copy_error", "Copy failed. Try again."));
     }
   }
-  async function upload(file?: File) {
-    if (!file) return;
-    try {
-      if (file.size > 20000) throw Error();
-      const parsed = JSON.parse(await file.text());
-      if (!parsed.light || !parsed.dark) throw Error();
-      const next = parseAppearance(parsed);
-      setValue(next);
-      saveAppearance(next);
-      setError("");
-      setFeedback(text("theme_imported", "Theme imported"));
-    } catch {
-      setError(
-        text(
-          "theme_import_error",
-          "Choose a valid Genyxo theme JSON file under 20 KB.",
-        ),
-      );
-    } finally {
-      if (input.current) input.current.value = "";
-    }
-  }
+  const badge = (name: string, label: ReactNode) => (
+    <span className={styles.presetLabel}>
+      <span
+        aria-hidden="true"
+        className={styles.presetBadge}
+        style={{
+          color: presets[name]?.accent || palette.accent,
+          background: presets[name]?.[key] || palette.background,
+        }}
+      >
+        Aa
+      </span>
+      {label}
+    </span>
+  );
   return (
     <>
       <Section title={text("visual_style", "Visual style")}>
@@ -125,43 +129,53 @@ export function AccountAppearance() {
               className={styles.modeOptions}
             >
               {(["system", "light", "dark"] as const).map((option) => (
-                <button
-                  type="button"
-                  role="radio"
-                  aria-label={text(
+                <WorkspaceTooltip
+                  key={option}
+                  label={text(
                     option,
                     option[0].toUpperCase() + option.slice(1),
                   )}
-                  aria-checked={mode === option}
-                  key={option}
-                  onClick={() => {
-                    setMode(option);
-                    applyAccountTheme(option);
-                  }}
-                  className={`${styles.modeOption} ${mode === option ? styles.modeActive : ""}`}
+                  side="bottom"
                 >
-                  <span
-                    className={`${styles.themePreview} ${styles[`preview_${option}`]}`}
-                    aria-hidden="true"
-                  >
-                    <span className={styles.previewSidebar}>
-                      <i />
-                      <i />
-                      <i />
-                    </span>
-                    <span className={styles.previewContent}>
-                      <i />
-                      <i />
-                      <i />
-                      <b />
-                    </span>
-                    {mode === option && (
-                      <span className={styles.themeCheck}>
-                        <WorkspaceIcon name="check" size={13} />
-                      </span>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-label={text(
+                      option,
+                      option[0].toUpperCase() + option.slice(1),
                     )}
-                  </span>
-                </button>
+                    aria-checked={mode === option}
+                    onClick={(event) =>
+                      transitionTheme(() => {
+                        setMode(option);
+                        applyAccountTheme(option);
+                      }, event.currentTarget)
+                    }
+                    className={`${styles.modeOption} ${mode === option ? styles.modeActive : ""}`}
+                  >
+                    <span
+                      className={`${styles.themePreview} ${styles[`preview_${option}`]}`}
+                      aria-hidden="true"
+                    >
+                      <span className={styles.previewSidebar}>
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                      <span className={styles.previewContent}>
+                        <i />
+                        <i />
+                        <i />
+                        <b />
+                      </span>
+                      {mode === option && (
+                        <span className={styles.themeCheck}>
+                          <WorkspaceIcon name="check" size={13} />
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                </WorkspaceTooltip>
               ))}
             </div>
           </Row>
@@ -170,44 +184,51 @@ export function AccountAppearance() {
       <Section title={text("theme", "Color theme")}>
         <div className={styles.group}>
           <Row title={text("preset", "Theme preset")}>
-            <div className="gx:flex gx:items-center gx:gap-2">
-              <button
-                type="button"
-                className={styles.iconButton}
-                aria-label={text("import_theme", "Import theme")}
-                title={text("import_theme", "Import theme")}
-                onClick={() => input.current?.click()}
+            <div className={styles.themeActions}>
+              <WorkspaceTooltip
+                label={text("import_theme", "Import theme")}
+                side="bottom"
               >
-                <WorkspaceIcon name="upload" size={17} />
-              </button>
-              <button
-                type="button"
-                className={styles.iconButton}
-                aria-label={text("copy_theme", "Copy theme")}
-                title={text("copy_theme", "Copy theme")}
-                onClick={() => void copy()}
+                <button
+                  ref={importButton}
+                  type="button"
+                  className={styles.iconButton}
+                  aria-label={text("import_theme", "Import theme")}
+                  onClick={() => setImporting(true)}
+                >
+                  <WorkspaceIcon name="download" size={17} />
+                </button>
+              </WorkspaceTooltip>
+              <WorkspaceTooltip
+                label={text("copy_theme", "Copy theme")}
+                side="bottom"
               >
-                <WorkspaceIcon name="copy" size={17} />
-              </button>
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  aria-label={text("copy_theme", "Copy theme")}
+                  onClick={() => void copy()}
+                >
+                  <WorkspaceIcon name="copy" size={17} />
+                </button>
+              </WorkspaceTooltip>
               <Select
                 aria-label={text("preset", "Theme preset")}
                 value={palette.preset}
-                onChange={(event) => preset(event.target.value)}
+                onChange={(event) =>
+                  preset(event.target.value, event.currentTarget)
+                }
+                renderOption={badge}
               >
+                {palette.preset === "Custom" && (
+                  <option value="Custom">{text("custom", "Custom")}</option>
+                )}
                 {Object.keys(presets).map((name) => (
                   <option value={name} key={name}>
                     {name}
                   </option>
                 ))}
               </Select>
-              <input
-                hidden
-                ref={input}
-                type="file"
-                accept="application/json,.json"
-                aria-label={text("import_theme", "Import theme")}
-                onChange={(event) => void upload(event.target.files?.[0])}
-              />
             </div>
           </Row>
           {(
@@ -231,159 +252,346 @@ export function AccountAppearance() {
           ))}
         </div>
       </Section>
-      <details className={styles.appearanceAdvanced} open>
-        <summary>{text("advanced", "Advanced")}</summary>
-        <div className={styles.group}>
-          <Row
-            title={text("ui_font_size", "Interface font size")}
-            description={text(
-              "ui_font_help",
-              "Applies to chat and workspace controls.",
-            )}
+      <div className={styles.additionalHeading}>
+        <button
+          type="button"
+          className={styles.additionalToggle}
+          aria-expanded={expanded}
+          aria-controls="additional-appearance"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {text("additionally", "Additionally")}
+          <span
+            className={
+              expanded ? styles.additionalChevronOpen : styles.additionalChevron
+            }
           >
-            <label className={styles.sizeControl}>
-              <input
-                type="number"
-                min={12}
-                max={20}
-                aria-label={text("ui_font_size", "Interface font size")}
-                value={value.uiSize}
-                onChange={(event) =>
-                  update({
-                    uiSize: Math.max(
-                      12,
-                      Math.min(20, Number(event.target.value) || 14),
-                    ),
-                  })
-                }
-              />
-              <span>px</span>
-            </label>
-          </Row>
-          <Row title={text("code_font_size", "Code font size")}>
-            <label className={styles.sizeControl}>
-              <input
-                type="number"
-                min={10}
-                max={20}
-                aria-label={text("code_font_size", "Code font size")}
-                value={value.codeSize}
-                onChange={(event) =>
-                  update({
-                    codeSize: Math.max(
-                      10,
-                      Math.min(20, Number(event.target.value) || 13),
-                    ),
-                  })
-                }
-              />
-              <span>px</span>
-            </label>
-          </Row>
-          <Row title={text("reduce_motion", "Reduce motion")}>
-            <Select
-              aria-label={text("reduce_motion", "Reduce motion")}
-              value={value.motion}
-              onChange={(event) =>
-                update({ motion: event.target.value as Appearance["motion"] })
-              }
-            >
-              <option value="system">{text("system", "System")}</option>
-              <option value="on">{text("on", "On")}</option>
-              <option value="off">{text("off", "Off")}</option>
-            </Select>
-          </Row>
-          <Row
-            title={text(
-              "separate_modes",
-              "Separate settings for light and dark mode",
-            )}
-            description={text(
-              "separate_modes_help",
-              "Keep independent themes and colors for each mode.",
-            )}
-          >
-            <button
-              type="button"
-              role="switch"
-              aria-label={text(
-                "separate_modes",
-                "Separate settings for light and dark mode",
-              )}
-              aria-checked={value.separate}
-              className={styles.switch}
-              onClick={() => update({ separate: !value.separate })}
-            >
-              <span />
-            </button>
-          </Row>
-          <Row title={text("contrast", "Contrast")}>
-            <input
-              className={styles.contrastRange}
-              type="range"
-              min="0"
-              max="100"
-              aria-label={text("contrast", "Contrast")}
-              value={value.contrast}
-              onChange={(event) =>
-                update({ contrast: Number(event.target.value) })
-              }
-            />
-            <output>{value.contrast}</output>
-          </Row>
-          <Row
-            title={text("diff_markers", "Code difference markers")}
-            description={text(
-              "diff_markers_help",
-              "Show code changes with colors or +/− markers.",
-            )}
-          >
-            <Select
-              aria-label={text("diff_markers", "Code difference markers")}
-              value={value.diff}
-              onChange={(event) =>
-                update({ diff: event.target.value as Appearance["diff"] })
-              }
-            >
-              <option value="color">{text("color", "Color")}</option>
-              <option value="markers">+/−</option>
-            </Select>
-          </Row>
-        </div>
-      </details>
-      <Section title={text("language_region", "Language & region")}>
-        <div className={styles.group}>
-          <Row title={text("interface_language", "Interface language")}>
-            <Select
-              aria-label={text("interface_language", "Interface language")}
-              value={lang}
-              onChange={(event) => void changeLanguage(event.target.value)}
-            >
-              {LANGUAGES.map((language) => (
-                <option key={language} value={language}>
-                  {LANGUAGE_NAMES[language]}
-                </option>
-              ))}
-            </Select>
-          </Row>
-        </div>
-      </Section>
-      <div className={styles.appearanceReset}>
-        <Action
+            <WorkspaceIcon name="chevron" size={15} />
+          </span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.additionalReset} ${advancedDirty ? styles.additionalResetVisible : ""}`}
+          aria-hidden={!advancedDirty}
+          tabIndex={advancedDirty ? 0 : -1}
           onClick={() => {
-            setValue(defaultAppearance);
-            saveAppearance(defaultAppearance);
+            update({
+              uiSize: defaultAppearance.uiSize,
+              codeSize: defaultAppearance.codeSize,
+              motion: defaultAppearance.motion,
+              separate: defaultAppearance.separate,
+              contrast: defaultAppearance.contrast,
+              diff: defaultAppearance.diff,
+            });
+            void changeLanguage("en");
           }}
         >
-          {text("reset_appearance", "Reset appearance")}
-        </Action>
-        <span role="status">{feedback}</span>
+          {text("reset_defaults", "Reset to default settings")}
+        </button>
+      </div>
+      <div
+        id="additional-appearance"
+        className={`${styles.additionalReveal} ${expanded ? styles.additionalRevealOpen : ""}`}
+        inert={!expanded}
+        aria-hidden={!expanded}
+      >
+        <div className={styles.additionalClip}>
+          <div className={styles.additionalBody}>
+            <div className={styles.group}>
+              <Row
+                title={text("ui_font_size", "Interface font size")}
+                description={text(
+                  "ui_font_help",
+                  "Applies to chat and workspace controls.",
+                )}
+              >
+                <label className={styles.sizeControl}>
+                  <input
+                    type="number"
+                    min={12}
+                    max={20}
+                    aria-label={text("ui_font_size", "Interface font size")}
+                    value={value.uiSize}
+                    onChange={(event) =>
+                      update({
+                        uiSize: Math.max(
+                          12,
+                          Math.min(20, Number(event.target.value) || 14),
+                        ),
+                      })
+                    }
+                  />
+                  <span>px</span>
+                </label>
+              </Row>
+              <Row title={text("code_font_size", "Code font size")}>
+                <label className={styles.sizeControl}>
+                  <input
+                    type="number"
+                    min={10}
+                    max={20}
+                    aria-label={text("code_font_size", "Code font size")}
+                    value={value.codeSize}
+                    onChange={(event) =>
+                      update({
+                        codeSize: Math.max(
+                          10,
+                          Math.min(20, Number(event.target.value) || 13),
+                        ),
+                      })
+                    }
+                  />
+                  <span>px</span>
+                </label>
+              </Row>
+            </div>
+            <div className={styles.group}>
+              <Row title={text("reduce_motion", "Reduce motion")}>
+                <SegmentedControl
+                  label={text("reduce_motion", "Reduce motion")}
+                  value={value.motion}
+                  onChange={(motion) =>
+                    update({ motion: motion as Appearance["motion"] })
+                  }
+                  options={[
+                    { value: "system", label: text("system", "System") },
+                    { value: "on", label: text("on", "On") },
+                    { value: "off", label: text("off", "Off") },
+                  ]}
+                />
+              </Row>
+              <Row
+                title={text(
+                  "separate_modes",
+                  "Separate settings for light and dark mode",
+                )}
+                description={text(
+                  "separate_modes_help",
+                  "Keep independent themes and colors for each mode.",
+                )}
+              >
+                <button
+                  type="button"
+                  role="switch"
+                  aria-label={text(
+                    "separate_modes",
+                    "Separate settings for light and dark mode",
+                  )}
+                  aria-checked={value.separate}
+                  className={styles.switch}
+                  onClick={() => update({ separate: !value.separate })}
+                >
+                  <span />
+                </button>
+              </Row>
+            </div>
+            <div className={styles.group}>
+              <Row title={text("contrast", "Contrast")}>
+                <input
+                  className={styles.contrastRange}
+                  type="range"
+                  min="0"
+                  max="100"
+                  aria-label={text("contrast", "Contrast")}
+                  value={value.contrast}
+                  onChange={(event) =>
+                    update({ contrast: Number(event.target.value) })
+                  }
+                />
+                <output>{value.contrast}</output>
+              </Row>
+            </div>
+            <div className={styles.group}>
+              <Row
+                title={text("diff_markers", "Code difference markers")}
+                description={text(
+                  "diff_markers_help",
+                  "Show code changes with colors or +/− markers.",
+                )}
+              >
+                <SegmentedControl
+                  label={text("diff_markers", "Code difference markers")}
+                  value={value.diff}
+                  onChange={(diff) =>
+                    update({ diff: diff as Appearance["diff"] })
+                  }
+                  options={[
+                    { value: "color", label: text("color", "Color") },
+                    { value: "markers", label: "+/−" },
+                  ]}
+                />
+              </Row>
+            </div>
+            <Section title={text("language_region", "Language & region")}>
+              <div className={styles.group}>
+                <Row title={text("interface_language", "Interface language")}>
+                  <Select
+                    aria-label={text(
+                      "interface_language",
+                      "Interface language",
+                    )}
+                    value={lang}
+                    onChange={(event) =>
+                      void changeLanguage(event.target.value)
+                    }
+                  >
+                    {LANGUAGES.map((language) => (
+                      <option key={language} value={language}>
+                        {LANGUAGE_NAMES[language]}
+                      </option>
+                    ))}
+                  </Select>
+                </Row>
+              </div>
+            </Section>
+          </div>
+        </div>
       </div>
       {error && (
         <p role="alert" className={styles.error}>
           {error}
         </p>
       )}
+      {importing && (
+        <ThemeImportDialog
+          onClose={() => setImporting(false)}
+          onImport={(source) => {
+            const next = importTheme(source, value);
+            transitionTheme(() => {
+              setValue(next.appearance);
+              saveAppearance(next.appearance);
+              if (next.variant) {
+                setMode(next.variant);
+                applyAccountTheme(next.variant);
+              }
+              setError("");
+            }, importButton.current);
+            notify(text("theme_imported", "Theme imported"));
+          }}
+        />
+      )}
+      {toast && (
+        <ThemeToast
+          key={toast.id}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
     </>
+  );
+}
+
+function ThemeImportDialog({
+  onClose,
+  onImport,
+}: {
+  onClose: () => void;
+  onImport: (source: string) => void;
+}) {
+  const { text } = useAccountText();
+  const [source, setSource] = useState("");
+  const [error, setError] = useState("");
+  const [closing, setClosing] = useState(false);
+  useEffect(() => {
+    if (!closing) return;
+    const timer = setTimeout(onClose, 180);
+    return () => clearTimeout(timer);
+  }, [closing, onClose]);
+  return (
+    <WorkspaceDialog
+      title={text("import_theme", "Import theme")}
+      onClose={() => setClosing(true)}
+      className={`${styles.dialog} ${styles.themeImport} ${closing ? styles.themeImportClosing : ""}`}
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          try {
+            onImport(source);
+            setClosing(true);
+          } catch {
+            setError(
+              text(
+                "theme_paste_error",
+                "Paste a valid theme code or Genyxo JSON under 20 KB.",
+              ),
+            );
+          }
+        }}
+      >
+        <label htmlFor="theme-source" className={styles.importLabel}>
+          {text("theme_code", "Theme code")}
+        </label>
+        <textarea
+          id="theme-source"
+          autoFocus
+          rows={3}
+          maxLength={20000}
+          value={source}
+          placeholder="codex-theme-v1:{…}"
+          aria-invalid={!!error}
+          aria-describedby={error ? "theme-import-error" : undefined}
+          onChange={(event) => {
+            setSource(event.target.value);
+            setError("");
+          }}
+        />
+        {error && (
+          <p id="theme-import-error" className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
+        <div className={styles.formFooter}>
+          <Action onClick={() => setClosing(true)}>
+            {text("cancel", "Cancel")}
+          </Action>
+          <Action primary type="submit" disabled={!source.trim() || closing}>
+            {text("import_theme", "Import theme")}
+          </Action>
+        </div>
+      </form>
+    </WorkspaceDialog>
+  );
+}
+
+function ThemeToast({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) {
+  const { text } = useAccountText();
+  const [closing, setClosing] = useState(false);
+  const close = useRef(onClose);
+  useEffect(() => {
+    close.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    const timer = setTimeout(() => setClosing(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+  useEffect(() => {
+    if (!closing) return;
+    const timer = setTimeout(() => close.current(), 180);
+    return () => clearTimeout(timer);
+  }, [closing]);
+  return (
+    <div
+      role="status"
+      className={`${styles.themeToast} ${closing ? styles.themeToastClosing : ""}`}
+    >
+      <WorkspaceIcon name="check" size={18} />
+      <span>{message}</span>
+      <WorkspaceTooltip side="bottom" label={text("dismiss", "Dismiss")}>
+        <button
+          type="button"
+          aria-label={text("dismiss", "Dismiss")}
+          onClick={() => setClosing(true)}
+        >
+          <WorkspaceIcon name="close" size={15} />
+        </button>
+      </WorkspaceTooltip>
+    </div>
   );
 }

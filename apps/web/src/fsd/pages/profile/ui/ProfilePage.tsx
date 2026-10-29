@@ -2,7 +2,11 @@
 import { AppearanceSync } from "@/shared/ui/AppearanceSync";
 import { Select } from "@/shared/ui/Select";
 import { useEffect, useRef, useState } from "react";
-import { WorkspaceDialog, WorkspaceIcon } from "@/shared/ui/workspace";
+import {
+  WorkspaceDialog,
+  WorkspaceIcon,
+  WorkspaceTooltip,
+} from "@/shared/ui/workspace";
 import { AvatarNavbar } from "@/entities/session";
 import { useLocalizedMetadata } from "@/shared/i18n";
 import { signOut, useAccountResource, type Account } from "../model/account";
@@ -76,7 +80,7 @@ export function ProfilePage() {
   const account = useAccountResource<Account>("profile");
   const [active, setActive] = useState<SectionId>("profile");
   const [search, setSearch] = useState("");
-  const [shortcut, setShortcut] = useState("Ctrl K");
+  const [collapsed, setCollapsed] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
@@ -96,7 +100,9 @@ export function ProfilePage() {
     media.addEventListener("change", syncTheme);
     queueMicrotask(() => {
       setActive(sectionFromHash());
-      setShortcut(navigator.platform.includes("Mac") ? "⌘ K" : "Ctrl K");
+      setCollapsed(
+        localStorage.getItem("genyxo.settings.sidebarCollapsed") === "true",
+      );
     });
     return () => media.removeEventListener("change", syncTheme);
   }, []);
@@ -126,7 +132,9 @@ export function ProfilePage() {
     const keyboard = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        searchInput.current?.focus();
+        setCollapsed(false);
+        localStorage.setItem("genyxo.settings.sidebarCollapsed", "false");
+        requestAnimationFrame(() => searchInput.current?.focus());
       }
     };
     document.addEventListener("keydown", keyboard);
@@ -225,13 +233,42 @@ export function ProfilePage() {
           )}
         </div>
       </header>
-      <div className={styles.layout}>
+      <div
+        className={`${styles.layout} ${collapsed ? styles.layoutCollapsed : ""}`}
+      >
         <aside
           className={styles.sidebar}
           aria-label={text("settings_navigation", "Settings navigation")}
         >
           <div className={styles.sidebarIntro}>
             <h2>{text("settings", "Settings")}</h2>
+            <WorkspaceTooltip
+              label={text(
+                collapsed ? "expand_sidebar" : "collapse_sidebar",
+                collapsed ? "Expand sidebar" : "Collapse sidebar",
+              )}
+              side="bottom"
+            >
+              <button
+                type="button"
+                className={styles.sidebarToggle}
+                aria-label={text(
+                  collapsed ? "expand_sidebar" : "collapse_sidebar",
+                  collapsed ? "Expand sidebar" : "Collapse sidebar",
+                )}
+                aria-expanded={!collapsed}
+                aria-controls="settings-sections"
+                onClick={() => {
+                  setCollapsed(!collapsed);
+                  localStorage.setItem(
+                    "genyxo.settings.sidebarCollapsed",
+                    String(!collapsed),
+                  );
+                }}
+              >
+                <WorkspaceIcon name="panel" size={20} />
+              </button>
+            </WorkspaceTooltip>
           </div>
           <label className={styles.search}>
             <WorkspaceIcon name="search" size={17} />
@@ -243,9 +280,8 @@ export function ProfilePage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
-            <kbd>{shortcut}</kbd>
           </label>
-          <nav className={styles.navigation}>
+          <nav id="settings-sections" className={styles.navigation}>
             {visible.map((item, index) => (
               <div key={item.id}>
                 {(index === 0 || item.id === "billing") && (
@@ -258,19 +294,25 @@ export function ProfilePage() {
                     )}
                   </p>
                 )}
-                <a
-                  href={`#${item.id}`}
-                  data-group-break={item.id === "billing" ? "" : undefined}
-                  aria-disabled={saving}
-                  aria-current={active === item.id ? "page" : undefined}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    navigate(item.id);
-                  }}
+                <WorkspaceTooltip
+                  disabled={!collapsed}
+                  label={labels(item.id, item.title)}
                 >
-                  <AccountNavIcon section={item.id} />
-                  <span>{labels(item.id, item.title)}</span>
-                </a>
+                  <a
+                    href={`#${item.id}`}
+                    aria-label={labels(item.id, item.title)}
+                    data-group-break={item.id === "billing" ? "" : undefined}
+                    aria-disabled={saving}
+                    aria-current={active === item.id ? "page" : undefined}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      navigate(item.id);
+                    }}
+                  >
+                    <AccountNavIcon section={item.id} />
+                    <span>{labels(item.id, item.title)}</span>
+                  </a>
+                </WorkspaceTooltip>
               </div>
             ))}
             {!visible.length && (
@@ -280,20 +322,26 @@ export function ProfilePage() {
             )}
           </nav>
           <div className={styles.sidebarBottom}>
-            <a
-              className={styles.supportLink}
-              href="/support"
-              onClick={(event) => {
-                if (dirty) {
-                  event.preventDefault();
-                  navigate("/support");
-                }
-              }}
+            <WorkspaceTooltip
+              disabled={!collapsed}
+              label={text("help_support", "Help & support")}
             >
-              <WorkspaceIcon name="help" size={18} />
-              {text("help_support", "Help & support")}
-              <WorkspaceIcon name="external" size={14} />
-            </a>
+              <a
+                className={styles.supportLink}
+                aria-label={text("help_support", "Help & support")}
+                href="/support"
+                onClick={(event) => {
+                  if (dirty) {
+                    event.preventDefault();
+                    navigate("/support");
+                  }
+                }}
+              >
+                <WorkspaceIcon name="help" size={18} />
+                <span>{text("help_support", "Help & support")}</span>
+                <WorkspaceIcon name="external" size={14} />
+              </a>
+            </WorkspaceTooltip>
           </div>
         </aside>
         <div className={styles.mobileNavigation}>

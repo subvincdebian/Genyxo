@@ -349,6 +349,7 @@ test("mobile, light theme, reduced motion and all sections remain usable", async
   await choose(page, "Settings", "appearance");
   await page.getByRole("radio", { name: "Light", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.getByRole("button", { name: "Additionally", exact: true }).click();
   await choose(page, "Interface language", "uk");
   await expect(page.locator("html")).toHaveAttribute("lang", "uk");
   await expect(page.locator("main h1")).toHaveText("Зовнішній вигляд");
@@ -510,6 +511,7 @@ test("appearance persists, updates chat and leaves the home page untouched", asy
   await signIn(page, request);
   await page.getByRole("link", { name: "Appearance", exact: true }).click();
   await page.getByLabel("Accent", { exact: true }).fill("#6671e8");
+  await page.getByRole("button", { name: "Additionally", exact: true }).click();
   await page.getByLabel("Interface font size", { exact: true }).fill("17");
   await page.getByLabel("Code font size", { exact: true }).fill("15");
   await expect
@@ -536,11 +538,12 @@ test("appearance persists, updates chat and leaves the home page untouched", asy
     await page.evaluate(() => document.documentElement.dataset.gxAppearance),
   ).toBeUndefined();
   await page.goto("/profile#appearance");
+  await page.getByRole("button", { name: "Additionally", exact: true }).click();
   await expect(
     page.getByLabel("Interface font size", { exact: true }),
   ).toHaveValue("17");
   await page
-    .getByRole("button", { name: "Reset appearance", exact: true })
+    .getByRole("button", { name: "Reset to default settings", exact: true })
     .click();
 });
 

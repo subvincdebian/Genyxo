@@ -685,6 +685,13 @@
     "theme_import_error": "Elige un JSON de tema Genyxo válido de menos de 20 KB.",
     "devices": "Dispositivos",
     "search_options": "Buscar opciones",
-    "theme_copy_error": "No se pudo copiar. Inténtalo de nuevo."
+    "theme_copy_error": "No se pudo copiar. Inténtalo de nuevo.",
+    "additionally": "Además",
+    "reset_defaults": "Restablecer valores predeterminados",
+    "theme_code": "Código del tema",
+    "theme_paste_error": "Pega un código de tema válido o JSON de Genyxo de menos de 20 KB.",
+    "custom": "Personalizado",
+    "expand_sidebar": "Expandir barra lateral",
+    "collapse_sidebar": "Contraer barra lateral"
   }
 }
