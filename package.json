@@ -59,7 +59,7 @@
     "@commitlint/config-conventional": "^21.2.3",
     "cross-env": "^10.1.0",
     "husky": "^9.1.7",
-    "knip": "^6.41.0",
+    "knip": "^6.43.0",
     "lint-staged": "^17.6.0",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.4.2",
