@@ -17,7 +17,7 @@ Commercial AI platform built for a client, with a web interface for chat and AI-
 
 Built the backend and most of the frontend, with occasional frontend help from another developer. My work included two frontend redesigns, mobile layouts, chat improvements, localization and API error handling.
 
-The migration to React/Next.js and complex integrations involved AI-assisted development. My current career focus is junior frontend development with React, TypeScript and JavaScript.
+The migration to React/Next.js and complex integrations involved AI-assisted development. My current career focus is frontend development with React, TypeScript and JavaScript.
 
 ## Where to start reviewing
 
