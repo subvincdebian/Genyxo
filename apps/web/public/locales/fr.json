@@ -205,7 +205,12 @@
     "total": "Total à payer",
     "method": "Nous acceptons :",
     "button": "Procéder au paiement",
-    "footer": "Propulsé par . Vous serez redirigé pour finaliser le paiement sécurisé."
+    "footer": "Propulsé par . Vous serez redirigé pour finaliser le paiement sécurisé.",
+    "method_choose": "Moyen de paiement",
+    "method_card": "Carte",
+    "method_crypto": "Crypto",
+    "method_card_hint": "Visa, Mastercard, Apple Pay ou Google Pay. Sur la page suivante, choisissez « Payer par carte ».",
+    "method_crypto_hint": "Bitcoin, Ethereum, USDT et plus de 300 autres cryptos."
   },
   "language": {
     "select": "Choisir la langue"
@@ -940,7 +945,9 @@
     "save_card": "Enregistrer la carte",
     "card_failed": "La carte n’a pas pu être enregistrée.",
     "card_privacy": "Les données de carte sont chiffrées et envoyées directement à notre prestataire certifié PCI DSS. Genyxo ne voit ni ne stocke jamais le numéro complet ni le code de sécurité.",
-    "credits_unit": "crédits"
+    "credits_unit": "crédits",
+    "cards_checkout_title": "Payez par carte lors de l’achat",
+    "cards_checkout_body": "Visa, Mastercard, Apple Pay et Google Pay sont acceptés à l’achat de crédits, ainsi que la crypto. Genyxo ne stocke aucune carte."
   },
   "faq": {
     "title": "Aide et FAQ"

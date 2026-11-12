@@ -64,9 +64,28 @@ export class PaymentService {
     private readonly auditService: AuditService,
   ) {}
 
-  async createPayment(userId: number, packId: number) {
+  /**
+   * Cards are paid on the NOWPayments checkout through its fiat on-ramp
+   * partners (the buyer pays by card, the merchant receives crypto), so no
+   * card merchant account is needed. The owner enables the on-ramp in the
+   * NOWPayments dashboard and sets NOWPAYMENTS_CARD_ENABLED=true.
+   */
+  methods() {
+    const card = /^(1|true|yes)$/i.test(
+      this.configService.get<string>("NOWPAYMENTS_CARD_ENABLED") || "",
+    );
+    return { crypto: true, card, provider: "NOWPAYMENTS" };
+  }
+
+  async createPayment(
+    userId: number,
+    packId: number,
+    method: "crypto" | "card" = "crypto",
+  ) {
     const pack = PACKS[packId];
     if (!pack) throw new BadRequestException("Package not found");
+    if (method === "card" && !this.methods().card)
+      throw new BadRequestException("Card payments are not available yet");
 
     const transaction = this.transactionRepo.create({
       userId,
@@ -75,6 +94,7 @@ export class PaymentService {
       packId,
       status: TransactionStatus.PENDING,
       provider: "NOWPAYMENTS",
+      description: `${pack.name} · ${method === "card" ? "card" : "crypto"} checkout`,
     });
 
     const savedTx = await this.transactionRepo.save(transaction);

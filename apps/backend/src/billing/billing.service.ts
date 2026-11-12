@@ -186,7 +186,11 @@ export class BillingService {
               : row.status === TransactionStatus.PARTIALLY_PAID
                 ? "partial"
                 : "pending",
-        method: row.provider === "NOWPAYMENTS" ? "crypto" : "card",
+        method:
+          row.provider !== "NOWPAYMENTS" ||
+          row.description?.endsWith("card checkout")
+            ? "card"
+            : "crypto",
         reference: `GX-${String(row.id).padStart(6, "0")}`,
         createdAt: row.createdAt,
       }));
@@ -238,7 +242,12 @@ export class BillingService {
 
   async paymentMethods(userId: number) {
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY?.trim() || "";
-    if (!this.stripe || !publishableKey) return { enabled: false, methods: [] };
+    // Cards can still be used at checkout through the NOWPayments on-ramp.
+    const checkoutCard = /^(1|true|yes)$/i.test(
+      process.env.NOWPAYMENTS_CARD_ENABLED || "",
+    );
+    if (!this.stripe || !publishableKey)
+      return { enabled: false, checkoutCard, methods: [] };
     const customer = await this.customerId(userId, false);
     if (!customer) return { enabled: true, publishableKey, methods: [] };
     const [list, record] = await Promise.all([

@@ -683,6 +683,7 @@ export default function initialize(scope, context) {
         },
         body: JSON.stringify({
           packId: currentProduct.id,
+          method: payBtn.dataset.method === "card" ? "card" : "crypto",
         }),
       });
       const data = await response.json();

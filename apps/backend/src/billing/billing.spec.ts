@@ -145,6 +145,7 @@ describe("billing", () => {
     const { instance } = service({ stripe: null });
     await expect(instance.paymentMethods(1)).resolves.toEqual({
       enabled: false,
+      checkoutCard: false,
       methods: [],
     });
   });

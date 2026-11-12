@@ -59,7 +59,12 @@ type Card = {
   wallet: string | null;
   isDefault: boolean;
 };
-type Methods = { enabled: boolean; publishableKey?: string; methods: Card[] };
+type Methods = {
+  enabled: boolean;
+  checkoutCard?: boolean;
+  publishableKey?: string;
+  methods: Card[];
+};
 
 const BRANDS: Record<string, string> = {
   visa: "Visa",
@@ -679,13 +684,23 @@ export function PaymentMethods() {
             </span>
             <div>
               <strong>
-                {text("cards_unavailable_title", "Saved cards aren’t available yet")}
+                {data.checkoutCard
+                  ? text("cards_checkout_title", "Pay by card at checkout")
+                  : text(
+                      "cards_unavailable_title",
+                      "Saved cards aren’t available yet",
+                    )}
               </strong>
               <p>
-                {text(
-                  "cards_unavailable_body",
-                  "Credit packs are paid securely at checkout. Card details are never stored by Genyxo.",
-                )}
+                {data.checkoutCard
+                  ? text(
+                      "cards_checkout_body",
+                      "Visa, Mastercard, Apple Pay and Google Pay are accepted when you buy credits, as well as crypto. No card is stored by Genyxo.",
+                    )
+                  : text(
+                      "cards_unavailable_body",
+                      "Credit packs are paid securely at checkout. Card details are never stored by Genyxo.",
+                    )}
               </p>
             </div>
           </div>
