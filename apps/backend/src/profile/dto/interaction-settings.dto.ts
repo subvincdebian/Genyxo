@@ -32,4 +32,8 @@ export class InteractionSettingsDto {
     string,
     { binding: string; enabled: boolean }
   >;
+  @IsOptional() @IsObject() notifications?: {
+    categories?: Record<string, { push?: boolean; email?: boolean }>;
+    sound?: boolean;
+  };
 }

@@ -225,3 +225,107 @@ html[data-gx-appearance]
 }
 /* Dictation preferences apply even when legacy composer button styles set display. */
 #voiceBtn[hidden] { display: none !important; }
+
+/* General → Interface font: every surface except code, icon fonts and math. */
+html[data-gx-ui-font]
+  body
+  *:not(
+    :is(
+      code,
+      pre,
+      pre *,
+      kbd,
+      samp,
+      .katex,
+      .katex *,
+      .fa,
+      .fas,
+      .far,
+      .fab,
+      .fa-solid,
+      .fa-regular,
+      .fa-brands,
+      .material-icons,
+      .material-symbols-outlined,
+      [data-font-preview],
+      [data-font-preview] *
+    )
+  ) {
+  font-family: var(--gx-ui-font) !important;
+}
+
+/* General → Response font: AI replies only (more specific than the rule above). */
+html[data-gx-reply-font] .bot-message-text,
+html[data-gx-reply-font]
+  .bot-message-text
+  *:not(
+    :is(
+      code,
+      pre,
+      pre *,
+      kbd,
+      samp,
+      .katex,
+      .katex *,
+      .fa,
+      .fas,
+      .far,
+      .fab,
+      .fa-solid,
+      .fa-regular,
+      .fa-brands,
+      .material-icons,
+      .material-symbols-outlined,
+      [data-font-preview],
+      [data-font-preview] *
+    )
+  ) {
+  font-family: var(--gx-reply-font) !important;
+}
+
+/* General → Animations: Reduced turns off motion everywhere settings apply. */
+html[data-gx-motion="on"] body *:not([class*="spinner"], [class*="loader"]),
+html[data-gx-motion="on"] body *:not([class*="spinner"], [class*="loader"])::before,
+html[data-gx-motion="on"] body *:not([class*="spinner"], [class*="loader"])::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  animation-delay: 0ms !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
+html[data-gx-motion="on"]::view-transition-group(*),
+html[data-gx-motion="on"]::view-transition-old(*),
+html[data-gx-motion="on"]::view-transition-new(*) {
+  animation: none !important;
+}
+
+/* Settings: a setting opened from search glows briefly. */
+[data-search-hit] {
+  animation: gx-search-hit 1.8s var(--gx-ease, ease) both;
+  border-radius: 12px;
+}
+@keyframes gx-search-hit {
+  0%,
+  35% {
+    background: var(--gx-accent-soft);
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, var(--gx-accent) 45%, transparent);
+  }
+}
+
+/* Settings: printing a receipt prints only the receipt. */
+@media print {
+  body:has(#genyxo-receipt) * {
+    visibility: hidden !important;
+  }
+  #genyxo-receipt,
+  #genyxo-receipt * {
+    visibility: visible !important;
+    color: #000 !important;
+  }
+  #genyxo-receipt {
+    position: fixed;
+    inset: 24px;
+  }
+}

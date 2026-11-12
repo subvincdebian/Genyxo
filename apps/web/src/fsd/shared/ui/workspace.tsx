@@ -133,10 +133,13 @@ export function WorkspaceMenu({ children, onClose, anchor, trigger, positionTarg
       }
     };
     const resize = () => close.current();
+    // A menu is pinned where it opened; once the page itself scrolls its trigger moves away, so dismiss it.
+    const scroll = (event: Event) => { if (event.target === document || event.target === document.documentElement) close.current(); };
     document.addEventListener("pointerdown", outside);
     document.addEventListener("click", toggle, true);
     window.addEventListener("resize", resize);
-    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("click", toggle, true); window.removeEventListener("resize", resize); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
+    document.addEventListener("scroll", scroll, true);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("click", toggle, true); window.removeEventListener("resize", resize); document.removeEventListener("scroll", scroll, true); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, [anchor?.x, anchor?.y, placement, trigger, positionTarget]);
   return createPortal(<div ref={ref} role="menu" className={`ws-menu ${className}`} style={style} onKeyDown={(event) => {
     if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); onClose(); }

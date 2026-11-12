@@ -34,12 +34,16 @@ export const LANGUAGE_FLAGS: Readonly<Record<Language, string>> = {
 
 export const LANGUAGES: readonly Language[] = ["en", "uk", "es", "de", "fr"];
 
+/** A saved language, or "auto" to follow the browser's preferred languages. */
+export type LanguagePreference = Language | "auto";
+
 interface LanguageSnapshot {
   readonly lang: Language;
   readonly translations: TranslationDictionary;
 }
 
 interface LanguageContextValue extends LanguageSnapshot {
+  readonly preference: LanguagePreference;
   readonly t: (key: string, fallback?: string) => string;
   readonly changeLanguage: (language: string) => Promise<boolean>;
 }
@@ -66,10 +70,25 @@ function isDictionary(value: unknown): value is TranslationDictionary {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function initialLanguage(): Language {
+/** First supported language among the browser's preferences. */
+export function detectLanguage(): Language {
+  const candidates =
+    typeof navigator === "undefined"
+      ? []
+      : navigator.languages?.length
+        ? navigator.languages
+        : [navigator.language];
+  for (const candidate of candidates) {
+    const base = candidate?.toLowerCase().split("-")[0] ?? null;
+    if (isLanguage(base)) return base;
+  }
+  return "en";
+}
+
+function initialPreference(): LanguagePreference {
   try {
     const saved = localStorage.getItem("appLang");
-    if (isLanguage(saved)) return saved;
+    if (saved === "auto" || isLanguage(saved)) return saved;
   } catch {
     // Language selection also works when browser storage is unavailable.
   }
@@ -93,12 +112,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     lang: "en",
     translations: english,
   });
+  const [preference, setPreference] = useState<LanguagePreference>("en");
   const snapshot = useRef(state);
   const mounted = useRef(false);
   const activeRequest = useRef<AbortController | null>(null);
 
   const changeLanguage = useCallback(
-    async (language: string): Promise<boolean> => {
+    async (requested: string): Promise<boolean> => {
+      const auto = requested === "auto";
+      const language = auto ? detectLanguage() : requested;
       if (!isLanguage(language) || !mounted.current) return false;
       activeRequest.current?.abort();
       const request = new AbortController();
@@ -122,8 +144,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         const next = { lang: effectiveLanguage, translations: { ...english, ...translations } };
         snapshot.current = next;
         setState(next);
+        setPreference(auto ? "auto" : effectiveLanguage);
         try {
-          localStorage.setItem("appLang", effectiveLanguage);
+          localStorage.setItem("appLang", auto ? "auto" : effectiveLanguage);
         } catch {
           /* Storage is optional. */
         }
@@ -173,10 +196,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     queueMicrotask(() => {
-      if (active) void changeLanguage(initialLanguage());
+      if (active) void changeLanguage(initialPreference());
     });
+    // Keep every open tab on the same language.
+    const storage = (event: StorageEvent) => {
+      if (event.key === "appLang" && event.newValue)
+        void changeLanguage(event.newValue);
+    };
+    // "Auto-detect" follows browser language changes while the page is open.
+    const browser = () => {
+      if (initialPreference() === "auto") void changeLanguage("auto");
+    };
+    window.addEventListener("storage", storage);
+    window.addEventListener("languagechange", browser);
     return () => {
       active = false;
+      window.removeEventListener("storage", storage);
+      window.removeEventListener("languagechange", browser);
     };
   }, [changeLanguage]);
 
@@ -194,8 +230,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ ...state, t, changeLanguage }),
-    [state, t, changeLanguage],
+    () => ({ ...state, preference, t, changeLanguage }),
+    [state, preference, t, changeLanguage],
   );
   return (
     <LanguageContext.Provider value={value}>

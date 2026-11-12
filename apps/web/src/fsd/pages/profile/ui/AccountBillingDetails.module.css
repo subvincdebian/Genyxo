@@ -1,0 +1,427 @@
+/* Credit packs */
+.purchases {
+  display: grid;
+}
+.purchase {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto minmax(80px, auto) 16px;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 22px;
+  border: 0;
+  border-bottom: 1px solid var(--gx-border);
+  background: transparent;
+  color: var(--gx-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s ease;
+  animation: rowIn 0.28s var(--gx-ease, ease) both;
+}
+.purchase:last-child {
+  border-bottom: 0;
+}
+.purchase:hover {
+  background: var(--gx-hover);
+}
+.purchase:focus-visible {
+  outline: 2px solid var(--gx-accent);
+  outline-offset: -2px;
+}
+.purchase > svg {
+  color: var(--gx-muted);
+  transition: transform 0.2s var(--gx-ease, ease);
+}
+.purchase:hover > svg {
+  transform: translateX(2px);
+}
+.purchaseName {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.purchaseName > span:last-child {
+  display: grid;
+  min-width: 0;
+}
+.purchaseName strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+.purchaseName small,
+.purchaseDate {
+  color: var(--gx-muted);
+  font-size: 12.5px;
+}
+.purchaseAmount {
+  text-align: right;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.packIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: var(--gx-accent-soft);
+  color: var(--gx-accent);
+}
+.status {
+  padding: 3px 9px;
+  border-radius: 7px;
+  background: var(--gx-hover);
+  color: var(--gx-text-2);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status[data-status="paid"] {
+  background: var(--gx-accent-soft);
+  color: var(--gx-text);
+}
+.status[data-status="failed"] {
+  background: color-mix(in srgb, #df5148 12%, transparent);
+  color: var(--gx-danger, #f0897c);
+}
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Receipt */
+.receiptDialog {
+  width: min(460px, calc(100vw - 32px));
+}
+.receipt {
+  display: grid;
+  gap: 18px;
+}
+.receiptTotal {
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--gx-surface-2);
+}
+.receiptTotal span {
+  color: var(--gx-muted);
+  font-size: 12px;
+}
+.receiptTotal strong {
+  font-size: 26px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.receipt dl {
+  display: grid;
+  margin: 0;
+}
+.receipt dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--gx-border);
+  font-size: 13px;
+}
+.receipt dt {
+  color: var(--gx-muted);
+}
+.receipt dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 550;
+}
+/* Billing details */
+.details {
+  display: grid;
+  transition: box-shadow 0.4s ease;
+}
+.details[data-saved] {
+  box-shadow: 0 0 0 4px var(--gx-accent-soft);
+}
+.detailRow {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--gx-border);
+  animation: rowIn 0.28s var(--gx-ease, ease) both;
+}
+.detailRow:last-child {
+  border-bottom: 0;
+}
+.detailRow span {
+  font-size: 14px;
+  font-weight: 600;
+}
+.detailRow p {
+  margin: 4px 0 0;
+  color: var(--gx-text-2);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.emptyDetails {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+}
+.emptyDetails > div {
+  flex: 1;
+  min-width: 0;
+}
+.emptyDetails strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.emptyDetails p {
+  margin: 4px 0 0;
+  color: var(--gx-muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+/* Editor */
+.editor {
+  width: min(480px, calc(100vw - 32px));
+}
+.editor form {
+  display: grid;
+  gap: 10px;
+}
+.editor form > button[type="submit"] {
+  width: 100%;
+  justify-content: center;
+  margin-top: 6px;
+  min-height: 46px;
+  border-radius: 999px;
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.floating {
+  position: relative;
+  display: block;
+}
+.floating input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 56px;
+  padding: 22px 14px 8px;
+  border: 1px solid var(--gx-border-strong);
+  border-radius: 12px;
+  background: var(--gx-surface-2);
+  color: var(--gx-text);
+  font: 450 14px/1.4 var(--gx-font);
+  outline: none;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+.floating input:hover {
+  border-color: color-mix(in srgb, var(--gx-text) 28%, transparent);
+}
+.floating input:focus-visible {
+  outline: none;
+}
+.floating input:focus {
+  border-color: var(--gx-accent);
+  box-shadow: 0 0 0 3px var(--gx-accent-soft);
+}
+.floating > span {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  color: var(--gx-muted);
+  font-size: 14px;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transform-origin: left top;
+  transition:
+    top 0.18s var(--gx-ease, ease),
+    transform 0.18s var(--gx-ease, ease),
+    color 0.18s ease;
+}
+.floating input:focus + span,
+.floating input:not(:placeholder-shown) + span {
+  top: 9px;
+  transform: scale(0.8);
+  color: var(--gx-text-2);
+}
+.field[data-invalid] .floating input,
+.field[data-invalid] .selectField button {
+  border-color: var(--gx-danger, #f0897c);
+}
+.fieldError {
+  margin: 0 0 0 4px !important;
+  color: var(--gx-danger, #f0897c);
+  font-size: 12px;
+  animation: rowIn 0.2s ease both;
+}
+.selectField {
+  display: grid;
+  gap: 6px;
+}
+.selectField > span {
+  margin-left: 4px;
+  color: var(--gx-muted);
+  font-size: 12px;
+}
+.selectField button {
+  width: 100%;
+  min-height: 48px;
+}
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.addTax {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--gx-text-2);
+  font: 500 13px/1 var(--gx-font);
+  cursor: pointer;
+}
+.addTax:hover {
+  color: var(--gx-text);
+}
+.privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 2px 0 !important;
+  color: var(--gx-muted);
+  font-size: 12px !important;
+  line-height: 1.55;
+}
+.privacy svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Cards */
+.card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--gx-border);
+  animation: rowIn 0.28s var(--gx-ease, ease) both;
+}
+.card:last-child {
+  border-bottom: 0;
+}
+.cardIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 30px;
+  border: 1px solid var(--gx-border);
+  border-radius: 7px;
+  color: var(--gx-text-2);
+}
+.cardText {
+  flex: 1;
+  display: grid;
+  min-width: 0;
+}
+.cardText strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.cardText span {
+  color: var(--gx-muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.defaultBadge {
+  padding: 3px 9px;
+  border-radius: 7px;
+  background: var(--gx-hover);
+  color: var(--gx-text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+.more {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--gx-text-2);
+  cursor: pointer;
+}
+.more:hover {
+  background: var(--gx-hover);
+  color: var(--gx-text);
+}
+.stripeMount {
+  position: relative;
+  min-height: 150px;
+}
+.stripeMount > div:last-child {
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+.stripeMount[data-ready] > div:last-child {
+  opacity: 1;
+}
+.stripeLoading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.stripeLoading i {
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    var(--gx-surface-2),
+    var(--gx-hover),
+    var(--gx-surface-2)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .purchase {
+    grid-template-columns: minmax(0, 1fr) auto 16px;
+    padding: 14px 16px;
+  }
+  .purchaseDate,
+  .status {
+    display: none;
+  }
+  .pair {
+    grid-template-columns: 1fr;
+  }
+  .emptyDetails {
+    flex-wrap: wrap;
+  }
+}

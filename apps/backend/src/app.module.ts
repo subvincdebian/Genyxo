@@ -13,6 +13,7 @@ import { UsersModule } from "./users/users.module";
 import { ProfileModule } from "./profile/profile.module";
 import { ChatModule } from "./chat/chat.module";
 import { PaymentModule } from "./payment/payment.module";
+import { BillingModule } from "./billing/billing.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { AdminModule } from "./admin/admin.module";
 import { SupportModule } from "./support/support.module";
@@ -211,6 +212,7 @@ import { QueuesModule } from "./queues/queues.module";
     ProfileModule,
     ChatModule,
     PaymentModule,
+    BillingModule,
     NotificationsModule,
     AdminModule,
     SupportModule,

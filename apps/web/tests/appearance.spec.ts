@@ -86,10 +86,6 @@ test("appearance controls collapse, reset all settings and use inline switches",
   await expect(
     diff.getByRole("radio", { name: "+/−", exact: true }),
   ).toHaveAttribute("aria-checked", "true");
-  await page
-    .getByRole("radiogroup", { name: "Reduce motion" })
-    .getByRole("radio", { name: "On", exact: true })
-    .click();
   const reset = page.getByRole("button", {
     name: "Reset to default settings",
     exact: true,
@@ -309,11 +305,14 @@ test("system mode follows device changes and reduced motion skips the circular r
   await expect(page.getByLabel("Background", { exact: true })).toHaveValue(
     "#f8faf9",
   );
-  await page.getByRole("button", { name: "Additionally", exact: true }).click();
+  // Animations moved to General; reduced motion still applies to this page.
+  await page.goto("/profile#general");
   await page
-    .getByRole("radiogroup", { name: "Reduce motion" })
-    .getByRole("radio", { name: "On", exact: true })
+    .getByRole("radiogroup", { name: "Animations" })
+    .getByRole("radio", { name: "Reduced", exact: true })
     .click();
+  await page.goto("/profile#appearance");
+  await expect(page.locator("html")).toHaveAttribute("data-gx-motion", "on");
   await page.evaluate(() => {
     const root = document.documentElement;
     const animate = root.animate.bind(root);
@@ -503,26 +502,24 @@ test("icon tooltips render above content and modal close hover never changes geo
   });
 });
 
-test("language select stays attached while scrolling and animates dismissal", async ({
+test("font select stays attached while scrolling and animates dismissal", async ({
   page,
 }, info) => {
-  await page.goto("/profile#appearance");
-  await page.getByRole("button", { name: "Additionally", exact: true }).click();
-  await page
-    .locator("#additional-appearance")
-    .evaluate((element) =>
-      Promise.all(
-        element.getAnimations().map((animation) => animation.finished),
-      ),
-    );
+  await page.goto("/profile#general");
   const trigger = page.getByRole("combobox", {
-    name: "Interface language",
+    name: "Response font",
     exact: true,
   });
+  await expect(trigger).toBeVisible();
+  // General is short; extra room lets the trigger scroll fully out of view.
+  await page.addStyleTag({
+    content: "[data-settings-content] { padding-top: 1400px; }",
+  });
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
   await trigger.scrollIntoViewIfNeeded();
   await trigger.click();
   const list = page.getByRole("listbox", {
-    name: "Interface language",
+    name: "Response font",
     exact: true,
   });
   await expect(list).toBeVisible();
@@ -796,7 +793,7 @@ test("custom theme contrast reaches credits, notifications and support while Hom
   ).toBe("");
 });
 
-test("Language in the shared profile menu expands and focuses interface language", async ({
+test("Language in the shared profile menu opens General and focuses interface language", async ({
   page,
 }) => {
   await page.goto("/profile#profile");
@@ -807,9 +804,7 @@ test("Language in the shared profile menu expands and focuses interface language
     name: "Interface language",
     exact: true,
   });
-  await expect(
-    page.getByRole("button", { name: "Additionally", exact: true }),
-  ).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("main h1")).toHaveText("General");
   await expect(control).toBeFocused();
   await expect(control).toBeInViewport();
   await page.getByRole("button", { name: "Profile menu", exact: true }).click();

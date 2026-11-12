@@ -123,3 +123,35 @@
 .popup[data-side="top"] {
   --select-offset: 4px;
 }
+
+/* Long option labels truncate instead of scrolling the list sideways. */
+.list {
+  overflow-x: hidden;
+}
+.list button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Multi-select: the check eases in and out instead of popping. */
+.list button > span.check {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  overflow: visible;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.16s ease,
+    transform 0.2s var(--gx-spring, ease);
+}
+.list button > span.check[data-on="true"] {
+  opacity: 1;
+  transform: none;
+  color: var(--gx-accent);
+}
+.trigger[data-empty] {
+  color: var(--gx-muted);
+}

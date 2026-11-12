@@ -9,7 +9,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useTopLayer } from "@/shared/lib/top-layer";
+import {
+  floatingBounds,
+  referenceHidden,
+  useTopLayer,
+} from "@/shared/lib/top-layer";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/shared/i18n";
 import { WorkspaceIcon } from "./workspace";
@@ -108,31 +112,25 @@ export function Select({
       const box = trigger.current.getBoundingClientRect();
       // A viewport-clamped menu looks detached once its trigger has scrolled
       // away. Dismiss without restoring focus (which would scroll it back).
-      if (
-        box.bottom <= 0 ||
-        box.top >= innerHeight ||
-        box.right <= 0 ||
-        box.left >= innerWidth ||
-        !box.width ||
-        !box.height
-      ) {
+      if (referenceHidden(box)) {
         close(false);
         return;
       }
       const width = Math.min(Math.max(box.width, 220), innerWidth - 16);
       const height = menu.current.offsetHeight;
+      const bounds = floatingBounds();
       const above =
-        box.bottom + height + 6 > innerHeight - 8 &&
-        box.top > innerHeight - box.bottom;
+        box.bottom + height + 6 > bounds.bottom - 8 &&
+        box.top - bounds.top > bounds.bottom - box.bottom;
       const left = Math.max(
         8,
         Math.min(box.right - width, innerWidth - width - 8),
       );
       const top = Math.max(
-        8,
+        bounds.top + 8,
         Math.min(
           above ? box.top - height - 6 : box.bottom + 6,
-          innerHeight - height - 8,
+          bounds.bottom - height - 8,
         ),
       );
       setPosition((old) =>
@@ -151,9 +149,11 @@ export function Select({
       );
     };
     place();
-    const search = menu.current.querySelector<HTMLInputElement>("input");
-    if (search) search.focus({ preventScroll: true });
-    else menu.current.focus({ preventScroll: true });
+    // Focus after the placed (now visible) menu commits: hidden elements can't take focus.
+    const focusFrame = requestAnimationFrame(() => {
+      const search = menu.current?.querySelector<HTMLInputElement>("input");
+      (search || menu.current)?.focus({ preventScroll: true });
+    });
     const outside = (event: PointerEvent) => {
       if (
         !menu.current?.contains(event.target as Node) &&
@@ -176,6 +176,7 @@ export function Select({
     document.addEventListener("scroll", scroll, true);
     window.addEventListener("resize", place);
     return () => {
+      cancelAnimationFrame(focusFrame);
       observer.disconnect();
       visibility.disconnect();
       document.removeEventListener("pointerdown", outside);

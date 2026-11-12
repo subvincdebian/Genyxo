@@ -28,7 +28,7 @@ export function Section({
     <section className={styles.section}>
       <div className={styles.sectionHeading}>
         <div>
-          <h2>{title}</h2>
+          <h2 data-setting-label="">{title}</h2>
           {description && <p>{description}</p>}
         </div>
         {action}
@@ -53,7 +53,7 @@ export function Row({
   id?: string;
 }) {
   return (
-    <div id={id} className={styles.row}>
+    <div id={id} className={styles.row} data-setting-row="">
       {leading && <span className={styles.rowIcon}>{leading}</span>}
       {icon && (
         <span className={styles.rowIcon}>
@@ -61,7 +61,7 @@ export function Row({
         </span>
       )}
       <div className={styles.rowLabel}>
-        <span>{title}</span>
+        <span data-setting-label="">{title}</span>
         {description && <p>{description}</p>}
       </div>
       <div className={styles.rowControl}>{children}</div>
@@ -190,6 +190,12 @@ function ProfileAvatar({
 // Consistent outline geometry and literal metaphors for settings navigation.
 export function AccountNavIcon({ section }: { section: string }) {
   const paths: Record<string, ReactNode> = {
+    general: (
+      <>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2.8 14 5l3-.4.6 3L20.4 9 19.5 12l.9 3-2.8 1.4-.6 3-3-.4-2 2.2-2-2.2-3 .4-.6-3L3.6 15l.9-3-.9-3 2.8-1.4.6-3 3 .4 2-2.2Z" />
+      </>
+    ),
     profile: (
       <>
         <circle cx="12" cy="12" r="9" />
@@ -208,6 +214,12 @@ export function AccountNavIcon({ section }: { section: string }) {
       <>
         <circle cx="12" cy="12" r="4" />
         <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+      </>
+    ),
+    notifications: (
+      <>
+        <path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z" />
+        <path d="M10 20a2.2 2.2 0 0 0 4 0" />
       </>
     ),
     security: (

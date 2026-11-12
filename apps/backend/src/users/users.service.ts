@@ -18,6 +18,7 @@ import {
 } from "../transactions/transaction.entity";
 import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { frontendUrl } from "../common/frontend-url";
+import { assertNotificationPatch } from "../notifications/notification-preferences";
 
 const REFERRAL_REWARDS: Record<number, number> = {
   1: 1, // Start AI
@@ -207,6 +208,17 @@ export class UsersService {
     if (!result.affected) throw new NotFoundException("Session not found");
     return { status: "success" };
   }
+  /** A sign-in from an installation (or, without one, a browser) never seen before. */
+  async isNewDevice(userId: number, deviceId?: string, agent = "") {
+    const sessions = this.usersRepository.manager.getRepository(AuthSession);
+    if (!(await sessions.count({ where: { userId } }))) return false;
+    const known = await sessions.count({
+      where: deviceId
+        ? { userId, deviceId }
+        : { userId, userAgent: agent.slice(0, 512) },
+    });
+    return known === 0;
+  }
   async interactionSettings(userId: number) {
     const rows = await this.usersRepository.manager.query(
       "SELECT settings FROM user_interaction_settings WHERE userId = ?",
@@ -249,6 +261,8 @@ export class UsersService {
           throw new BadRequestException("Invalid keyboard shortcut");
       }
     }
+    if (patch.notifications !== undefined)
+      assertNotificationPatch(patch.notifications);
     await this.usersRepository.manager.query(
       "INSERT INTO user_interaction_settings (userId, settings) VALUES (?, ?) ON DUPLICATE KEY UPDATE settings = JSON_MERGE_PATCH(settings, VALUES(settings))",
       [userId, JSON.stringify(patch)],

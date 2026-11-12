@@ -1,6 +1,11 @@
 "use client";
 import { ModelLogo } from "@/shared/ui/ModelLogo";
 import { AnimatedNumber } from "@/shared/ui/AnimatedNumber";
+import {
+  BillingInformation,
+  CreditPurchases,
+  PaymentMethods,
+} from "./AccountBillingDetails";
 import { Select } from "@/shared/ui/Select";
 import { useId, useState } from "react";
 import { WorkspaceIcon } from "@/shared/ui/workspace";
@@ -53,6 +58,7 @@ export function AccountBilling({ account }: { account: Account }) {
           <WorkspaceIcon name="gem" size={112} />
         </span>
       </div>
+      <CreditPurchases />
       <Section
         title={text("transaction_history", "Transaction history")}
         description={text(
@@ -203,6 +209,8 @@ export function AccountBilling({ account }: { account: Account }) {
           </State>
         </div>
       </Section>
+      <BillingInformation account={account} />
+      <PaymentMethods />
       <p className={styles.footnote}>
         <WorkspaceIcon name="lock" size={16} />
         {text(

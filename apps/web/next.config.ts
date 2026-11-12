@@ -54,13 +54,15 @@ const config: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
               "connect-src 'self' ws: wss: http: https:",
               // The map library renders tiles in a worker it starts from a blob.
               "worker-src 'self' blob:",
+              // Card fields render inside Stripe's own frames (PCI DSS SAQ A).
+              "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

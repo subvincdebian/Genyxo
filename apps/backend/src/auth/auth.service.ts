@@ -5,7 +5,11 @@ import {
   ConflictException,
   ForbiddenException,
   ServiceUnavailableException,
+  Optional,
+  Logger,
 } from "@nestjs/common";
+import { NotificationsService } from "../notifications/notifications.service";
+import { describeDevice } from "../notifications/device-label";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { createHash, randomBytes, randomUUID } from "crypto";
@@ -24,7 +28,9 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private emailService: EmailService,
+    @Optional() private notifications?: NotificationsService,
   ) {}
+  private readonly logger = new Logger(AuthService.name);
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
@@ -53,6 +59,23 @@ export class AuthService {
       ...(requestDevice(request) ? { deviceId: requestDevice(request) } : {}),
     };
     const token = this.jwtService.sign(payload);
+    const agent = String(request?.headers?.["user-agent"] || "");
+    const newDevice =
+      request && this.notifications
+        ? await this.usersService
+            .isNewDevice(user.id, requestDevice(request), agent)
+            .catch(() => false)
+        : false;
+    if (newDevice)
+      void this.notifications
+        ?.notify(user.id, {
+          category: "security",
+          title: "New sign-in to your account",
+          message: `Your Genyxo account was signed in from ${describeDevice(agent)}. If this wasn’t you, sign out of all devices and change your password.`,
+          link: "/profile#security",
+          action: "Review security",
+        })
+        .catch(() => this.logger.warn("Sign-in alert could not be sent"));
     if (request)
       await this.usersService.trackSession(
         user.id,

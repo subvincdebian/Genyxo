@@ -3053,3 +3053,60 @@
 .languageTarget > section {
   margin: 6px 0 0;
 }
+
+/* Collapsed rail: every icon button is the same square, centered in the rail. */
+.layoutCollapsed .navigation > div {
+  display: flex;
+  justify-content: center;
+}
+.layoutCollapsed .navigation a,
+.layoutCollapsed .supportLink {
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin-inline: auto;
+  padding: 0;
+  justify-content: center;
+}
+.layoutCollapsed .sidebarIntro {
+  display: flex;
+  justify-content: center;
+}
+.layoutCollapsed .sidebarBottom {
+  display: flex;
+  justify-content: center;
+}
+
+/* Settings search results */
+.navigation a.searchHit {
+  align-items: center;
+  animation: searchIn 0.22s var(--gx-ease, ease) both;
+}
+.searchHit > span {
+  display: grid;
+  min-width: 0;
+}
+.searchHit strong {
+  overflow: hidden;
+  color: var(--gx-text);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.searchHit small {
+  overflow: hidden;
+  color: var(--gx-muted);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.layoutCollapsed .searchHit {
+  display: none !important;
+}
+@keyframes searchIn {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}

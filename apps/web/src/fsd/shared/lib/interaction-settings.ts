@@ -1,4 +1,9 @@
 import { VOICE_OPTIONS } from "./voice-catalog";
+import {
+  DEFAULT_NOTIFICATIONS,
+  mergeNotifications,
+  type NotificationPreferences,
+} from "./notification-settings";
 export type Shortcut = { binding: string; enabled: boolean };
 export const SHORTCUTS = [
   {
@@ -95,12 +100,14 @@ export type InteractionSettings = {
   voice: string;
   callLanguage: string;
   dictationEnabled: boolean;
+  notifications: NotificationPreferences;
   shortcuts: Record<string, Shortcut>;
 };
 export const DEFAULT_INTERACTIONS: InteractionSettings = {
   voice: "Kore",
   callLanguage: "auto",
   dictationEnabled: true,
+  notifications: DEFAULT_NOTIFICATIONS,
   shortcuts: Object.fromEntries(
     SHORTCUTS.map((item) => [
       item.id,
@@ -147,6 +154,7 @@ function merge(value: Partial<InteractionSettings>): InteractionSettings {
       typeof value?.dictationEnabled === "boolean"
         ? value.dictationEnabled
         : true,
+    notifications: mergeNotifications(value?.notifications),
     shortcuts,
   };
 }
@@ -336,7 +344,7 @@ export function shortcutBinding(
     "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey"
   >,
 ) {
-  return `${event.ctrlKey || event.metaKey ? "Ctrl+" : ""}${event.altKey ? "Alt+" : ""}${event.shiftKey ? "Shift+" : ""}${event.code}`;
+  return `${event.ctrlKey || event.metaKey ? "Ctrl+" : ""}${event.altKey ? "Alt+" : ""}${event.shiftKey ? "Shift+" : ""}${event.code === "NumpadEnter" ? "Enter" : event.code}`;
 }
 export function matchesShortcut(event: KeyboardEvent, id: string) {
   const value = snapshot.settings.shortcuts[id];
@@ -352,3 +360,37 @@ export const formatBinding = (binding: string) =>
     .replace("Escape", "Esc")
     .replace("Slash", "/")
     .replace("Space", "Space");
+const BINDING_PATTERN =
+  /^(?:(?:Ctrl|Alt|Shift)\+)*(?:Key[A-Z]|Digit[1-9]|Enter|Escape|Backspace|Delete|Space|Slash|Arrow(?:Up|Down|Left|Right))$/;
+/** Why a recorded combination cannot be used, or null when it is valid. */
+export function bindingProblem(
+  id: string,
+  binding: string,
+  event: Pick<KeyboardEvent, "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey">,
+): "modifier" | "reserved" | null {
+  const modified = event.ctrlKey || event.metaKey || event.altKey || event.shiftKey;
+  const bareSend =
+    id === "send" && (event.code === "Enter" || event.code === "NumpadEnter");
+  if (!BINDING_PATTERN.test(binding) || (!modified && !bareSend))
+    return "modifier";
+  if (
+    /^Ctrl\+Key[WLNTR]$/.test(binding) ||
+    binding === "Alt+ArrowLeft" ||
+    binding === "Alt+ArrowRight"
+  )
+    return "reserved";
+  return null;
+}
+/** The enabled shortcut that already uses `binding`, if any. */
+export function shortcutConflict(
+  shortcuts: Record<string, Shortcut>,
+  id: string,
+  binding: string,
+) {
+  return SHORTCUTS.find(
+    (item) =>
+      item.id !== id &&
+      shortcuts[item.id]?.enabled &&
+      shortcuts[item.id].binding === binding,
+  );
+}

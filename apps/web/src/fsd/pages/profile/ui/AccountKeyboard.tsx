@@ -3,10 +3,12 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   DEFAULT_INTERACTIONS,
   SHORTCUTS,
+  bindingProblem,
   formatBinding,
   getInteractions,
   getServerInteractions,
   shortcutBinding,
+  shortcutConflict,
   subscribeInteractions,
   updateInteractions,
 } from "@/shared/lib/interaction-settings";
@@ -46,40 +48,19 @@ export function AccountKeyboard() {
       )
         return;
       const binding = shortcutBinding(event);
-      if (
-        !/^(?:(?:Ctrl|Alt|Shift)\+)*(?:Key[A-Z]|Digit[1-9]|Enter|Escape|Backspace|Delete|Space|Slash|Arrow(?:Up|Down|Left|Right))$/.test(
-          binding,
-        ) ||
-        (!event.ctrlKey &&
-          !event.metaKey &&
-          !event.altKey &&
-          !event.shiftKey &&
-          !(recording === "send" && event.code === "Enter"))
-      ) {
+      const invalid = bindingProblem(recording, binding, event);
+      if (invalid) {
         setProblem(
-          text("shortcut_modifier", "Use Ctrl, Alt or Shift with a key."),
+          invalid === "modifier"
+            ? text("shortcut_modifier", "Use Ctrl, Alt or Shift with a key.")
+            : text(
+                "shortcut_reserved",
+                "This combination belongs to your browser. Choose another.",
+              ),
         );
         return;
       }
-      if (
-        /^Ctrl\+Key[WLNTR]$/.test(binding) ||
-        binding === "Alt+ArrowLeft" ||
-        binding === "Alt+ArrowRight"
-      ) {
-        setProblem(
-          text(
-            "shortcut_reserved",
-            "This combination belongs to your browser. Choose another.",
-          ),
-        );
-        return;
-      }
-      const conflict = SHORTCUTS.find(
-        (item) =>
-          item.id !== recording &&
-          settings.shortcuts[item.id]?.enabled &&
-          settings.shortcuts[item.id].binding === binding,
-      );
+      const conflict = shortcutConflict(settings.shortcuts, recording, binding);
       if (conflict) {
         setProblem(
           `${text("shortcut_used", "Already used by")} “${text(`shortcut_${conflict.id}`, conflict.title)}”.`,

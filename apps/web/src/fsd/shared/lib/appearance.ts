@@ -1,3 +1,4 @@
+import { ensureFont, findFont, isFontId } from "./fonts";
 export type Palette = {
   preset: string;
   accent: string;
@@ -17,6 +18,10 @@ export type Appearance = {
   motion: "system" | "on" | "off";
   contrast: number;
   diff: "color" | "markers";
+  /** Interface typography (everything except AI responses). */
+  uiFont: string;
+  /** AI response typography; "inherit" follows the interface font. */
+  replyFont: string;
 };
 export const presets: Record<
   string,
@@ -47,6 +52,8 @@ export const defaultAppearance: Appearance = {
   motion: "system",
   contrast: 60,
   diff: "color",
+  uiFont: "default",
+  replyFont: "inherit",
 };
 export const cleanFont = (value: unknown): string | null =>
   typeof value === "string" && /^[\w -]{1,80}$/.test(value) ? value : null;
@@ -107,6 +114,8 @@ export function parseAppearance(raw: unknown): Appearance {
       ),
     ),
     diff: value.diff === "markers" ? "markers" : "color",
+    uiFont: isFontId(value.uiFont) ? value.uiFont : "default",
+    replyFont: isFontId(value.replyFont, true) ? value.replyFont : "inherit",
   };
 }
 export function readAppearance() {
@@ -140,6 +149,24 @@ export function applyAppearance(value: Appearance) {
   root.dataset.gxAppearance = "true";
   root.dataset.gxMotion = value.motion;
   root.dataset.gxDiff = value.diff;
+  const uiFont = findFont(value.uiFont);
+  const replyFont = findFont(value.replyFont);
+  ensureFont(uiFont?.id);
+  ensureFont(replyFont?.id);
+  if (uiFont?.stack) {
+    root.dataset.gxUiFont = uiFont.id;
+    root.style.setProperty("--gx-ui-font", uiFont.stack);
+  } else {
+    delete root.dataset.gxUiFont;
+    root.style.removeProperty("--gx-ui-font");
+  }
+  if (replyFont?.stack) {
+    root.dataset.gxReplyFont = replyFont.id;
+    root.style.setProperty("--gx-reply-font", replyFont.stack);
+  } else {
+    delete root.dataset.gxReplyFont;
+    root.style.removeProperty("--gx-reply-font");
+  }
   const foreground = readableColor(chosen.foreground, chosen.background, 4.5);
   root.dataset.gxTone =
     contrastRatio("#000000", chosen.background) >
@@ -168,10 +195,14 @@ export function applyAppearance(value: Appearance) {
     "--gx-border": `color-mix(in srgb, ${foreground} 12%, transparent)`,
     "--gx-border-strong": `color-mix(in srgb, ${foreground} 20%, transparent)`,
     "--gx-code-keyword": readableColor(chosen.accent, chosen.background, 4.5),
-    "--gx-font": chosen.fonts?.ui
+    "--gx-font": uiFont?.stack
+      ? uiFont.stack
+      : chosen.fonts?.ui
       ? `"${chosen.fonts.ui}", Inter, system-ui, sans-serif`
       : "Inter, system-ui, sans-serif",
-    "--gx-display": chosen.fonts?.ui
+    "--gx-display": uiFont?.stack
+      ? uiFont.stack
+      : chosen.fonts?.ui
       ? `"${chosen.fonts.ui}", Inter, system-ui, sans-serif`
       : '"Inter Tight", Inter, system-ui, sans-serif',
     "--gx-code-font": chosen.fonts?.code
@@ -249,6 +280,8 @@ export function clearAppearance() {
   delete root.dataset.gxAppearance;
   delete root.dataset.gxMotion;
   delete root.dataset.gxDiff;
+  delete root.dataset.gxUiFont;
+  delete root.dataset.gxReplyFont;
 }
 
 const channels = (hex: string) =>

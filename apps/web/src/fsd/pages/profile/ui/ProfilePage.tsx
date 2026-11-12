@@ -1,5 +1,10 @@
 "use client";
 import { useSettingsSidebar } from "../model/use-settings-sidebar";
+import {
+  revealSetting,
+  searchSettings,
+  type SearchHit,
+} from "../model/settings-search";
 import { Select } from "@/shared/ui/Select";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
@@ -11,6 +16,8 @@ import { AvatarNavbar } from "@/entities/session";
 import { useLocalizedMetadata } from "@/shared/i18n";
 import { signOut, useAccountResource, type Account } from "../model/account";
 import { AccountOverview } from "./AccountOverview";
+import { AccountGeneral } from "./AccountGeneral";
+import { AccountNotifications } from "./AccountNotifications";
 import { AccountAppearance, AccountPreferences } from "./AccountPreferences";
 import { AccountCollection } from "./AccountCollections";
 import { AccountVoice } from "./AccountVoice";
@@ -25,6 +32,12 @@ import { Action, AccountNavIcon, State, useAccountText } from "./account-ui";
 import styles from "./ProfilePage.module.css";
 
 const sections = [
+  {
+    id: "general",
+    icon: "settings",
+    title: "General",
+    description: "Language, typing and typography preferences.",
+  },
   {
     id: "profile",
     icon: "user",
@@ -42,6 +55,12 @@ const sections = [
     icon: "settings",
     title: "Appearance",
     description: "Make Genyxo feel right at home on your screen.",
+  },
+  {
+    id: "notifications",
+    icon: "bell",
+    title: "Notifications",
+    description: "Choose what reaches you, and where.",
   },
   {
     id: "security",
@@ -89,7 +108,7 @@ const sections = [
 type SectionId = (typeof sections)[number]["id"];
 const sectionFromHash = () =>
   location.hash === "#language"
-    ? "appearance"
+    ? "general"
     : sections.find((item) => item.id === location.hash.slice(1))?.id ||
       "profile";
 
@@ -143,6 +162,38 @@ export function ProfilePage() {
     void securityTransition.current.finished.then(commit).catch(() => {});
   }
   const heading = useRef<HTMLHeadingElement>(null);
+  const revealTarget = useRef<SearchHit | null>(null);
+  // A setting picked from search is revealed once its section has rendered.
+  useEffect(() => {
+    const hit = revealTarget.current;
+    if (!hit || hit.section !== active) return;
+    revealTarget.current = null;
+    let attempts = 0;
+    const tryReveal = async () => {
+      if (await revealSetting(hit.title)) return;
+      if (++attempts < 12) timer = setTimeout(() => void tryReveal(), 150);
+    };
+    let timer = setTimeout(() => void tryReveal(), 120);
+    return () => clearTimeout(timer);
+  }, [active]);
+  const layout = useRef<HTMLDivElement>(null);
+  // The collapsed rail slides to the window edge. Measure the real distance:
+  // a 100vw estimate counts the scrollbar and pushes the rail past the edge.
+  useEffect(() => {
+    const element = layout.current;
+    if (!element) return;
+    const measure = () => {
+      const edge =
+        element.getBoundingClientRect().left +
+        parseFloat(getComputedStyle(element).paddingLeft || "0");
+      element.style.setProperty("--account-edge", `${Math.max(0, edge)}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    observer.observe(document.documentElement);
+    return () => observer.disconnect();
+  }, []);
   const searchInput = useRef<HTMLInputElement>(null);
   const current = sections.find((item) => item.id === active)!;
   const labels = (id: string, fallback: string) => text(id, fallback);
@@ -211,7 +262,7 @@ export function ProfilePage() {
     }
     const next =
       destination === "language"
-        ? "appearance"
+        ? "general"
         : sections.find((item) => item.id === destination)?.id || "profile";
     history.pushState(
       null,
@@ -228,11 +279,28 @@ export function ProfilePage() {
       heading.current?.focus({ preventScroll: true }),
     );
   }
+  const query = search.trim();
   const visible = sections.filter((item) =>
     labels(item.id, item.title)
       .toLocaleLowerCase(lang)
-      .includes(search.toLocaleLowerCase(lang)),
+      .includes(query.toLocaleLowerCase(lang)),
   );
+  const sectionTitle = (id: string) =>
+    labels(id, sections.find((item) => item.id === id)?.title || id);
+  const hits = query
+    ? searchSettings(query, text, sectionTitle).filter(
+        (hit) =>
+          hit.title.toLocaleLowerCase(lang) !==
+          sectionTitle(hit.section).toLocaleLowerCase(lang),
+      )
+    : [];
+  function openSetting(hit: SearchHit) {
+    revealTarget.current = hit;
+    if (hit.section === active) {
+      revealTarget.current = null;
+      void revealSetting(hit.title);
+    } else navigate(hit.section);
+  }
   return (
     <div className={`${styles.page} account-appearance-scope`}>
       <a
@@ -293,6 +361,7 @@ export function ProfilePage() {
         </div>
       </header>
       <div
+        ref={layout}
         className={`${styles.layout} ${collapsed ? styles.layoutCollapsed : ""} ${sidebarSize.resizing ? styles.layoutResizing : ""}`}
         style={
           {
@@ -344,12 +413,32 @@ export function ProfilePage() {
                 aria-label={text("search_settings", "Search settings")}
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape" && search) {
+                    event.preventDefault();
+                    setSearch("");
+                  } else if (event.key === "Enter") {
+                    event.preventDefault();
+                    if (hits[0]) openSetting(hits[0]);
+                    else if (visible[0]) navigate(visible[0].id);
+                  } else if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    document
+                      .querySelector<HTMLElement>("#settings-sections a")
+                      ?.focus();
+                  }
+                }}
               />
             </label>
             <nav id="settings-sections" className={styles.navigation}>
+              {query && visible.length > 0 && (
+                <p className={styles.navGroup}>
+                  {text("search_sections", "Sections")}
+                </p>
+              )}
               {visible.map((item, index) => (
                 <div key={item.id}>
-                  {(index === 0 || item.id === "billing") && (
+                  {!query && (index === 0 || item.id === "billing") && (
                     <p className={styles.navGroup}>
                       {text(
                         item.id === "billing"
@@ -382,7 +471,43 @@ export function ProfilePage() {
                   </WorkspaceTooltip>
                 </div>
               ))}
-              {!visible.length && (
+              {hits.length > 0 && (
+                <p className={styles.navGroup}>
+                  {text("search_results", "Settings")}
+                </p>
+              )}
+              {hits.map((hit) => (
+                <div key={`${hit.section}:${hit.key}`}>
+                  <a
+                    href={`#${hit.section}`}
+                    className={styles.searchHit}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      openSetting(hit);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key !== "ArrowDown" && event.key !== "ArrowUp")
+                        return;
+                      event.preventDefault();
+                      const links = Array.from(
+                        document.querySelectorAll<HTMLElement>(
+                          "#settings-sections a",
+                        ),
+                      );
+                      const index = links.indexOf(event.currentTarget);
+                      const next = links[index + (event.key === "ArrowDown" ? 1 : -1)];
+                      (next || searchInput.current)?.focus();
+                    }}
+                  >
+                    <AccountNavIcon section={hit.section} />
+                    <span>
+                      <strong>{hit.title}</strong>
+                      <small>{sectionTitle(hit.section)}</small>
+                    </span>
+                  </a>
+                </div>
+              ))}
+              {!visible.length && !hits.length && (
                 <p className={styles.hint}>
                   {text("no_settings", "No matching settings")}
                 </p>
@@ -483,6 +608,7 @@ export function ProfilePage() {
             >
               {account.data && (
                 <>
+                  {active === "general" && <AccountGeneral />}
                   {active === "profile" && (
                     <AccountOverview
                       account={account.data}
@@ -497,6 +623,7 @@ export function ProfilePage() {
                     <AccountPreferences onDirty={setDirty} onBusy={setSaving} />
                   )}
                   {active === "appearance" && <AccountAppearance />}
+                  {active === "notifications" && <AccountNotifications />}
                   {active === "voice" && <AccountVoice />}
                   {active === "keyboard" && <AccountKeyboard />}
                   {active === "archive" && <AccountCollection kind="archive" />}

@@ -128,15 +128,21 @@ export class SupportService {
         adminResponse: response,
         status: TicketStatus.CLOSED,
       }),
-      this.notificationsService.create(
-        ticket.user.id,
-        "Support Reply 📩",
-        `Support team has replied to your ticket "${ticket.subject}".`,
-        NotificationType.SUPPORT,
-      ),
+      this.notificationsService.notify(ticket.user.id, {
+        category: "support",
+        title: "Support replied",
+        message: `Our team replied to your request "${ticket.subject}".`,
+        type: NotificationType.SUPPORT,
+        link: "/support",
+        // The reply email below carries the full answer.
+        email: false,
+      }),
     ]);
 
-    if (ticket.user.email) {
+    if (
+      ticket.user.email &&
+      (await this.notificationsService.wantsEmail(ticket.user.id, "support"))
+    ) {
       await this.emailService
         .sendSupportReply(
           ticket.user.email,

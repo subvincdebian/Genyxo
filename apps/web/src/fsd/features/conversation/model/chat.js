@@ -2740,6 +2740,11 @@ export default function initialize(scope, context) {
       userInput.focus();
     }
   }
+  // Human-readable model name for notifications ("Gemini 3.5 Flash-Lite").
+  function modelLabel(value) {
+    const option = modelSelect && Array.from(modelSelect.options || []).find((item) => item.value === value);
+    return (option && option.textContent && option.textContent.trim()) || "";
+  }
   async function sendMessage(background = false) {
     let navigateInBackground = background === true;
     const requestViewRevision = chatViewRevision;
@@ -2992,7 +2997,7 @@ export default function initialize(scope, context) {
       updateComposerState();
       if (activeSendController === controller) activeSendController = null;
       if (completed) { pendingFirstSend = null; activePresetId = undefined; attachCanvasCard(botBubble, fullContent, true); }
-      scope.document.dispatchEvent(new CustomEvent("genyxo:answer-done", { detail: { ok: completed, text: fullContent } }));
+      scope.document.dispatchEvent(new CustomEvent("genyxo:answer-done", { detail: { ok: completed, aborted: controller.signal.aborted, text: fullContent, conversationId: responseConversationId || currentChatId, url: isChatPath(scope.window.location.pathname) && String(currentChatId) === String(responseConversationId) ? scope.window.location.pathname : "/chat", model: modelLabel(selectedModel) } }));
       if (context.workspaceManaged) {
         scope.document.dispatchEvent(new CustomEvent("genyxo:workspace-refresh"));
         if (completed && responseConversationId) {
@@ -3029,6 +3034,7 @@ export default function initialize(scope, context) {
         const data = await res.json();
         if (data.isReady && data.videoUrl) {
           clearInterval(interval);
+          scope.document.dispatchEvent(new CustomEvent("genyxo:media-ready", { detail: { ok: true, text: "Your video is ready to watch.", conversationId: currentChatId, url: scope.window.location.pathname } }));
           element.innerHTML = scope.sanitizeHtml(`
                     <div class="video-wrapper">
                         <video controls poster="">

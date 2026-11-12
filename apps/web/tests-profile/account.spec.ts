@@ -53,6 +53,7 @@ async function choose(page: Page, label: string, value: string) {
     uk: "Українська",
     en: "English",
     PURCHASE: "Purchases",
+    general: "General",
     profile: "Profile",
     personalization: "Personalization",
     appearance: "Appearance",
@@ -356,11 +357,12 @@ test("mobile, light theme, reduced motion and all sections remain usable", async
   await choose(page, "Settings", "appearance");
   await page.getByRole("radio", { name: "Light", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await page.getByRole("button", { name: "Additionally", exact: true }).click();
+  await choose(page, "Settings", "general");
   await choose(page, "Interface language", "uk");
   await expect(page.locator("html")).toHaveAttribute("lang", "uk");
-  await expect(page.locator("main h1")).toHaveText("Зовнішній вигляд");
+  await expect(page.locator("main h1")).toHaveText("Загальні");
   await choose(page, "Мова інтерфейсу", "en");
+  await choose(page, "Settings", "appearance");
   await page.getByRole("radio", { name: "Dark", exact: true }).click();
   await choose(page, "Settings", "profile");
   await expect(

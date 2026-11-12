@@ -298,12 +298,14 @@ export class PaymentService {
             finalizationData.packId,
           )
         : Promise.resolve(),
-      this.notificationsService.create(
-        finalizationData.userId,
-        "Payment Successful! ✅",
-        `You have successfully purchased ${finalizationData.creditsAmount} credits.`,
-        NotificationType.SYSTEM,
-      ),
+      this.notificationsService.notify(finalizationData.userId, {
+        category: "billing",
+        title: "Payment successful",
+        message: `${finalizationData.creditsAmount} credits were added to your balance.`,
+        type: NotificationType.SYSTEM,
+        link: "/profile#billing",
+        action: "View billing",
+      }),
     ]);
   }
 }

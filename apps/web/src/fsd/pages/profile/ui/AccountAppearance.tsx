@@ -13,7 +13,7 @@ import { copyText } from "@/shared/lib/clipboard";
 import { useTopLayer } from "@/shared/lib/top-layer";
 import { exportTheme, importTheme } from "@/shared/lib/theme-codec";
 import { transitionTheme } from "@/shared/lib/theme-transition";
-import { useLanguage, LANGUAGES, LANGUAGE_NAMES } from "@/shared/i18n";
+import { useLanguage } from "@/shared/i18n";
 import { Select } from "@/shared/ui/Select";
 import { SegmentedControl } from "@/shared/ui/SegmentedControl";
 import {
@@ -24,12 +24,11 @@ import {
 import { Action, Row, Section, useAccountText } from "./account-ui";
 import { applyAccountTheme, type Theme } from "./AccountPreferences";
 import { readAccountTheme } from "@/shared/lib/theme";
-import { useLanguageFocus } from "../model/use-language-focus";
 import styles from "./ProfilePage.module.css";
 
 export function AccountAppearance() {
   const { text } = useAccountText();
-  const { lang, changeLanguage } = useLanguage();
+  const { lang } = useLanguage();
   const [value, setValue] = useState<Appearance>(defaultAppearance);
   const [mode, setMode] = useState<Theme>("system");
   const [systemDark, setSystemDark] = useState(false);
@@ -40,8 +39,6 @@ export function AccountAppearance() {
     null,
   );
   const importButton = useRef<HTMLButtonElement>(null);
-  const languageRow = useRef<HTMLDivElement>(null);
-  useLanguageFocus(expanded, setExpanded, languageRow);
   useEffect(() => {
     const media = matchMedia("(prefers-color-scheme: dark)");
     queueMicrotask(() => {
@@ -66,10 +63,15 @@ export function AccountAppearance() {
   const light = mode === "light" || (mode === "system" && !systemDark);
   const key = light ? "light" : "dark";
   const palette = value[key];
+  // Fonts and motion live in General; they are kept by this page's reset/import.
+  const general = {
+    uiFont: value.uiFont,
+    replyFont: value.replyFont,
+    motion: value.motion,
+  };
   const appearanceDirty =
-    JSON.stringify(value) !== JSON.stringify(defaultAppearance) ||
-    mode !== "system" ||
-    lang !== "en";
+    JSON.stringify({ ...value, ...general }) !==
+      JSON.stringify({ ...defaultAppearance, ...general }) || mode !== "system";
   const notify = (message: string) => setToast({ message, id: Date.now() });
   function update(patch: Partial<Appearance>, source?: HTMLElement | null) {
     const next = { ...value, ...patch };
@@ -293,13 +295,13 @@ export function AccountAppearance() {
           aria-hidden={!appearanceDirty}
           tabIndex={appearanceDirty ? 0 : -1}
           onClick={() => {
+            const next = { ...defaultAppearance, ...general };
             transitionTheme(() => {
-              setValue(defaultAppearance);
-              saveAppearance(defaultAppearance);
+              setValue(next);
+              saveAppearance(next);
               setMode("system");
               applyAccountTheme("system");
             });
-            void changeLanguage("en");
           }}
         >
           {text("reset_defaults", "Reset to default settings")}
@@ -362,20 +364,6 @@ export function AccountAppearance() {
               </Row>
             </div>
             <div className={styles.group}>
-              <Row title={text("reduce_motion", "Reduce motion")}>
-                <SegmentedControl
-                  label={text("reduce_motion", "Reduce motion")}
-                  value={value.motion}
-                  onChange={(motion) =>
-                    update({ motion: motion as Appearance["motion"] })
-                  }
-                  options={[
-                    { value: "system", label: text("system", "System") },
-                    { value: "on", label: text("on", "On") },
-                    { value: "off", label: text("off", "Off") },
-                  ]}
-                />
-              </Row>
               <Row
                 title={text(
                   "separate_modes",
@@ -438,30 +426,6 @@ export function AccountAppearance() {
                 />
               </Row>
             </div>
-            <div ref={languageRow} className={styles.languageTarget}>
-              <Section title={text("language_region", "Language & region")}>
-                <div className={styles.group}>
-                  <Row title={text("interface_language", "Interface language")}>
-                    <Select
-                      aria-label={text(
-                        "interface_language",
-                        "Interface language",
-                      )}
-                      value={lang}
-                      onChange={(event) =>
-                        void changeLanguage(event.target.value)
-                      }
-                    >
-                      {LANGUAGES.map((language) => (
-                        <option key={language} value={language}>
-                          {LANGUAGE_NAMES[language]}
-                        </option>
-                      ))}
-                    </Select>
-                  </Row>
-                </div>
-              </Section>
-            </div>
           </div>
         </div>
       </div>
@@ -475,15 +439,15 @@ export function AccountAppearance() {
           onClose={() => setImporting(false)}
           onImport={(source) => {
             const next = importTheme(source, value);
+            const imported = { ...next.appearance, ...general };
             transitionTheme(() => {
-              setValue(next.appearance);
-              saveAppearance(next.appearance);
+              setValue(imported);
+              saveAppearance(imported);
               const nextMode = next.mode || next.variant;
               if (nextMode) {
                 setMode(nextMode);
                 applyAccountTheme(nextMode);
               }
-              if (next.language) void changeLanguage(next.language);
               setError("");
             }, importButton.current);
             notify(text("theme_imported", "Theme imported"));

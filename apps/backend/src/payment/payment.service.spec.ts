@@ -36,7 +36,7 @@ describe("PaymentService invoice and IPN contracts", () => {
     invalidateUserCache: jest.fn(),
     processReferralBonus: jest.fn(),
   };
-  const notifications = { create: jest.fn() };
+  const notifications = { create: jest.fn(), notify: jest.fn() };
   const payload = {
     payment_status: "finished",
     order_id: "21",
@@ -200,7 +200,7 @@ describe("PaymentService invoice and IPN contracts", () => {
       await send({ ...payload, payment_status });
     expect(status).toBe(TransactionStatus.APPROVED);
     expect(manager.increment).toHaveBeenCalledTimes(1);
-    expect(notifications.create).toHaveBeenCalledTimes(1);
+    expect(notifications.notify).toHaveBeenCalledTimes(1);
   });
   it("cannot reopen a payment when a delayed update overlaps successful crediting", async () => {
     let release: () => void = () => undefined;

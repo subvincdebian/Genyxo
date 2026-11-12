@@ -51,6 +51,8 @@ export class AccountError extends Error {
   constructor(
     message: string,
     public readonly status: number,
+    /** Per-field problems from RFC 7807 "invalidParams". */
+    public readonly fields: Record<string, string> = {},
   ) {
     super(message);
   }
@@ -78,6 +80,18 @@ export async function accountRequest<T>(
         ? data.message.join(" ")
         : data.detail || data.message || `Request failed (${response.status})`,
       response.status,
+      Object.fromEntries(
+        (Array.isArray(data.invalidParams) ? data.invalidParams : [])
+          .filter(
+            (item: { field?: unknown; reason?: unknown }) =>
+              typeof item?.field === "string" &&
+              typeof item?.reason === "string",
+          )
+          .map((item: { field: string; reason: string }) => [
+            item.field,
+            item.reason,
+          ]),
+      ),
     );
   return data as T;
 }

@@ -5,6 +5,7 @@ import {
   NotFoundException,
   OnModuleDestroy,
   OnModuleInit,
+  Optional,
 } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -15,6 +16,7 @@ import { Repository } from "typeorm";
 import { Conversation } from "../conversation.entity";
 import { WorkspaceRecord } from "../workspace/workspace-record.entity";
 import { UsersService } from "../../users/users.service";
+import { NotificationsService } from "../../notifications/notifications.service";
 import { PricingService } from "../pricing.service";
 import { ChatService } from "../chat.service";
 import {
@@ -76,6 +78,7 @@ export class ScheduledService implements OnModuleInit, OnModuleDestroy {
     private readonly users: UsersService,
     private readonly pricing: PricingService,
     private readonly moduleRef: ModuleRef,
+    @Optional() private readonly notifications?: NotificationsService,
   ) {}
 
   onModuleInit() {
@@ -452,6 +455,28 @@ export class ScheduledService implements OnModuleInit, OnModuleDestroy {
         fresh.data = latest;
         await this.records.save(fresh);
       }
+      const chat =
+        !error && data.conversationId
+          ? await this.conversations
+              .findOne({
+                where: { id: data.conversationId, userId: row.userId },
+                select: ["id", "publicId"],
+              })
+              .catch(() => null)
+          : null;
+      void this.notifications
+        ?.notify(row.userId, {
+          category: "scheduled",
+          title: error
+            ? `Scheduled task couldn’t run: ${data.title}`
+            : `Scheduled task finished: ${data.title}`,
+          message: error
+            ? `“${data.title}” stopped with an error: ${error}`
+            : `“${data.title}” has a new result ready for you.`,
+          link: chat?.publicId ? `/c/${chat.publicId}` : "/scheduled",
+          action: error ? "Review task" : "Open result",
+        })
+        .catch(() => this.logger.warn(`Task ${row.id} notification failed`));
     }
   }
 }
