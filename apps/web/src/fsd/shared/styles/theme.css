@@ -1,0 +1,72 @@
+/* Genyxo design tokens. Base document rules; saved appearance overrides live in shared/ui/appearance.css. The root
+   layout imports it, every page reads the --gx-* tokens, and route styles live
+   in CSS Modules or gated route stylesheets (scripts/postcss-route-scope.cjs). */
+
+:root {
+  --gx-font: "Inter", "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --gx-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --gx-bg: #0c0d0d;
+  --gx-sidebar: #070808;
+  --gx-surface: #131515;
+  --gx-surface-2: #191c1c;
+  --gx-elevated: #1f2323;
+  --gx-border: rgba(255, 255, 255, .07);
+  --gx-border-strong: rgba(255, 255, 255, .13);
+  --gx-text: #f3f5f4;
+  --gx-text-2: #c3c9c6;
+  --gx-muted: #858d8a;
+  --gx-hover: rgba(255, 255, 255, .055);
+  --gx-active: rgba(255, 255, 255, .09);
+  --gx-accent: #5ee0c4;
+  --gx-accent-strong: #39a994;
+  --gx-accent-soft: rgba(94, 224, 196, .12);
+  --gx-accent-glow: rgba(94, 224, 196, .32);
+  --gx-mint: #c8efd2;
+  --gx-gradient: linear-gradient(135deg, #8ff5dc 0%, #5ee0c4 38%, #39a994 72%, #c8efd2 100%);
+  --gx-glass: rgba(22, 25, 25, .94);
+  --gx-shadow-lg: 0 24px 80px rgba(0, 0, 0, .55), 0 2px 8px rgba(0, 0, 0, .3);
+  --gx-shadow-md: 0 12px 40px rgba(0, 0, 0, .38);
+  --gx-ease: cubic-bezier(.22, 1, .36, 1);
+  --gx-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --gx-radius: 14px;
+
+  --ws-font: var(--gx-font);
+  --ws-bg: var(--gx-bg);
+  --ws-sidebar-bg: var(--gx-sidebar);
+  --ws-panel: var(--gx-surface-2);
+  --ws-text: var(--gx-text);
+  --ws-muted: var(--gx-muted);
+  --ws-border: var(--gx-border);
+  --ws-hover: var(--gx-hover);
+  --ws-selection: var(--gx-active);
+  --ws-accent: var(--gx-accent);
+  --ws-glass: var(--gx-glass);
+  --gi-fill: var(--gx-bg);
+}
+[data-theme="light"] {
+  --gx-bg: #fbfcfb;
+  --gx-sidebar: #f3f5f4;
+  --gx-surface: #ffffff;
+  --gx-surface-2: #ffffff;
+  --gx-elevated: #ffffff;
+  --gx-border: rgba(16, 32, 26, .09);
+  --gx-border-strong: rgba(16, 32, 26, .16);
+  --gx-text: #101614;
+  --gx-text-2: #3f4a46;
+  --gx-muted: #6d7773;
+  --gx-hover: rgba(16, 32, 26, .045);
+  --gx-active: rgba(16, 32, 26, .075);
+  --gx-accent: #1f9c84;
+  --gx-accent-strong: #16806c;
+  --gx-accent-soft: rgba(31, 156, 132, .1);
+  --gx-accent-glow: rgba(31, 156, 132, .22);
+  --gx-gradient: linear-gradient(135deg, #34c3a6 0%, #1f9c84 55%, #6fcf9f 100%);
+  --gx-glass: rgba(255, 255, 255, .94);
+  --gx-shadow-lg: 0 24px 70px rgba(16, 32, 26, .14), 0 2px 8px rgba(16, 32, 26, .06);
+  --gx-shadow-md: 0 12px 34px rgba(16, 32, 26, .1);
+  --ws-accent: var(--gx-accent);
+}
+
+body {
+  margin: 0;
+}

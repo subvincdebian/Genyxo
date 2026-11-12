@@ -11,8 +11,11 @@ import { User } from "../users/user.entity";
 import { Conversation } from "./conversation.entity";
 
 export interface IAttachedFile {
+  id?: string;
   mime_type: string;
   data?: string;
+  extracted_text?: string;
+  text_chunks?: { index: number; text: string }[];
   name: string;
   size?: number;
 }
@@ -63,4 +66,14 @@ export class Message {
   // meta + base64
   @Column({ type: "json", nullable: true })
   files!: IAttachedFile[] | null;
+
+  @Column({ type: "json", nullable: true })
+  activity!: string[] | null;
+
+  @Column({ type: "json", nullable: true })
+  sources!: string[] | null;
+
+  @Index("IDX_messages_alternative_to")
+  @Column({ type: "int", nullable: true })
+  alternativeToMessageId!: number | null;
 }

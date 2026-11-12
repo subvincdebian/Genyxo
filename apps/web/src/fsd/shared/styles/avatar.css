@@ -1,0 +1,32 @@
+/* Signed-in header avatar, shared by every page header. A clean circle without decorative rings. Keyboard focus is separate from
+   pointer hover and does not scale raster images. */
+#loginBtn.profile-toggle-btn,
+html.auth-active #loginBtn.chat-auth-btn {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  transform: none !important;
+  transition: box-shadow 200ms ease !important;
+}
+#loginBtn.profile-toggle-btn:focus-visible { outline: 2px solid var(--gx-text-2); outline-offset: 3px; }
+#loginBtn.profile-toggle-btn #navAvatar,
+html.auth-active #loginBtn #navAvatar {
+  display: block !important;
+  width: 38px !important;
+  height: 38px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  box-shadow: none !important;
+  object-fit: cover;
+  transform: none !important;
+  background: #1f2323;
+}
+
+.gx-account-avatar, .ws-footer-menu:hover .gx-account-avatar { box-shadow: none !important; transform: none !important; }

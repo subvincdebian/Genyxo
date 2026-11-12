@@ -21,6 +21,9 @@ export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Column({ type: "int", default: 0, select: false })
+  sessionVersion!: number;
+
   @Column({ unique: true, type: "varchar", length: 255 })
   email!: string;
 
@@ -47,6 +50,16 @@ export class User {
   @Index()
   @Column({ nullable: true, select: false, type: "varchar", length: 255 })
   verificationToken?: string | null;
+
+  @Column({ type: "datetime", nullable: true })
+  verificationExpires?: Date | null;
+
+  @Index()
+  @Column({ type: "varchar", length: 255, nullable: true, select: false })
+  resetPasswordToken?: string | null;
+
+  @Column({ type: "datetime", nullable: true, select: false })
+  resetPasswordExpires?: Date | null;
 
   @Index()
   @Column({ nullable: true, select: false, type: "varchar", length: 255 })

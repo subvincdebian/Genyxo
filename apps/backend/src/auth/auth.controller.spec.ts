@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { AuthController } from "./auth.controller";
 
 import { AuthService } from "./auth.service";
+import { ConfigService } from "@nestjs/config";
 
 describe("AuthController", () => {
   let controller: AuthController;
@@ -16,7 +17,10 @@ describe("AuthController", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: auth }],
+      providers: [
+        { provide: AuthService, useValue: auth },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
+      ],
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
@@ -38,7 +42,8 @@ describe("AuthController", () => {
       else await controller.facebookLoginCallback(req, { redirect });
       const result = new URL(redirect.mock.calls[0][0]);
       expect(result.origin).toBe("http://localhost:3001");
-      expect(result.searchParams.get("token")).toBe(req.user.access_token);
+      expect(result.pathname).toBe("/sign-in");
+      expect(result.hash).toBe(`#auth-token=${req.user.access_token}`);
       expect(redirect.mock.calls[0][1]).toBe(302);
       expect(auth.login).not.toHaveBeenCalled();
     },
@@ -50,7 +55,7 @@ describe("AuthController", () => {
     await controller.verify("verification-token", { redirect });
     expect(auth.verifyEmail).toHaveBeenCalledWith("verification-token");
     expect(redirect).toHaveBeenCalledWith(
-      "http://localhost:3001/?token=verified",
+      "http://localhost:3001/sign-in#auth-token=verified",
       302,
     );
   });

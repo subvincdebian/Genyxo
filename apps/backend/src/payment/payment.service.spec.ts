@@ -36,7 +36,7 @@ describe("PaymentService invoice and IPN contracts", () => {
     invalidateUserCache: jest.fn(),
     processReferralBonus: jest.fn(),
   };
-  const notifications = { create: jest.fn() };
+  const notifications = { create: jest.fn(), notify: jest.fn() };
   const payload = {
     payment_status: "finished",
     order_id: "21",
@@ -139,6 +139,19 @@ describe("PaymentService invoice and IPN contracts", () => {
     );
     expect(repo.update).toHaveBeenCalledWith(21, { externalId: 91 });
   });
+  it("offers card checkout only after the on-ramp is enabled", async () => {
+    const post = jest.spyOn(axios, "post");
+    expect(service.methods()).toEqual({
+      crypto: true,
+      card: false,
+      provider: "NOWPAYMENTS",
+    });
+    await expect(service.createPayment(7, 2, "card")).rejects.toThrow(
+      "Card payments are not available yet",
+    );
+    expect(repo.save).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
+  });
   it("rejects an unknown pack before database or provider writes", async () => {
     const post = jest.spyOn(axios, "post");
     await expect(service.createPayment(7, 999)).rejects.toThrow(
@@ -200,7 +213,7 @@ describe("PaymentService invoice and IPN contracts", () => {
       await send({ ...payload, payment_status });
     expect(status).toBe(TransactionStatus.APPROVED);
     expect(manager.increment).toHaveBeenCalledTimes(1);
-    expect(notifications.create).toHaveBeenCalledTimes(1);
+    expect(notifications.notify).toHaveBeenCalledTimes(1);
   });
   it("cannot reopen a payment when a delayed update overlaps successful crediting", async () => {
     let release: () => void = () => undefined;

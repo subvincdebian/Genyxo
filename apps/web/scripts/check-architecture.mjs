@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import routeScope from "./postcss-route-scope.cjs";
 
 const frontend = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -70,8 +71,33 @@ function report(file, node, message) {
   );
 }
 
+const rootLayout = path.join(routerRoot, "layout.tsx");
+
+// Next keeps every stylesheet it has loaded, so a global one must either be a
+// root-layout file or be gated to its route by scripts/postcss-route-scope.cjs.
+function checkStylesheet(file, node, specifier) {
+  if (specifier.endsWith(".module.css")) return;
+  const absolute = specifier.startsWith("@/")
+    ? path.join(sourceRoot, specifier.slice(2))
+    : specifier.startsWith(".")
+      ? path.resolve(path.dirname(file), specifier)
+      : path.join(frontend, "node_modules", specifier);
+  const key = path.relative(frontend, absolute).split(path.sep).join("/");
+  if (routeScope.rootStylesheets.includes(key)) {
+    if (file !== rootLayout)
+      report(file, node, `${key} is a root stylesheet; only app/layout.tsx imports it.`);
+  } else if (!routeScope.routeStylesheets[key]) {
+    report(
+      file,
+      node,
+      `Global stylesheet ${key} is not gated to a route: use a CSS Module, or register it in scripts/postcss-route-scope.cjs.`,
+    );
+  }
+}
+
 function check(file, node, specifier) {
   checkedImports++;
+  if (specifier.endsWith(".css")) checkStylesheet(file, node, specifier);
   // Browser asset URLs do not represent imports between source modules.
   if (/^(?:https?:|data:|\/)/.test(specifier)) return;
   const resolved = ts.resolveModuleName(

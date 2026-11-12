@@ -34,7 +34,8 @@ export async function proxyBackendRequest(request: Request): Promise<Response> {
     const headers = forwardedHeaders(request.headers);
     headers.delete("host");
     headers.delete("content-length");
-    headers.set("x-forwarded-host", incoming.host);
+    // The Host header is what the browser used (request.url may be normalized).
+    headers.set("x-forwarded-host", request.headers.get("host") || incoming.host);
 
     const options: RequestInit & { duplex: "half" } = {
       method: request.method,

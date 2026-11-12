@@ -1,0 +1,70 @@
+.trigger {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  border: 0 !important;
+  border-radius: 50%;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.trigger:focus {
+  outline: none;
+}
+.trigger:focus-visible {
+  outline: 2px solid var(--gx-text-2);
+  outline-offset: 2px;
+}
+.trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.guest > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid var(--gx-border-strong);
+  border-radius: 999px;
+  padding: 9px 16px;
+  background: var(--gx-text);
+  color: var(--gx-bg);
+  font: 550 13px/1.4 var(--gx-font);
+  cursor: pointer;
+}
+.guest > button:focus-visible {
+  outline: 2px solid var(--gx-text-2);
+  outline-offset: 3px;
+}
+
+.guest {
+  flex-shrink: 0;
+}
+.guest > button {
+  white-space: nowrap;
+}
+.guest :global(.gx-mobile-login-label) {
+  display: none;
+}
+@media (max-width: 600px) {
+  .guest :global(#navUsername) {
+    display: none;
+  }
+  .guest :global(.gx-mobile-login-label) {
+    display: inline;
+  }
+}

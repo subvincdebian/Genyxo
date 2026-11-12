@@ -120,6 +120,9 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
           });
         } else if (typeof resObj.message === "string") {
           detail = resObj.message;
+          // Business validation can name the offending field: { field, message }.
+          if (typeof resObj.field === "string")
+            invalidParams = [{ field: resObj.field, reason: resObj.message }];
         } else if (typeof resObj.error === "string") {
           detail = resObj.error;
         }

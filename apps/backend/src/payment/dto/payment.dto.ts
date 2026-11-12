@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, Min, Max } from "class-validator";
+import { IsIn, IsInt, IsNotEmpty, IsOptional, Min, Max } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class BuyPackDto {
@@ -13,4 +13,14 @@ export class BuyPackDto {
   @Min(1)
   @Max(6)
   packId!: number;
+
+  @ApiProperty({
+    required: false,
+    enum: ["crypto", "card"],
+    description:
+      "How the buyer intends to pay. Cards run through the NOWPayments fiat on-ramp.",
+  })
+  @IsOptional()
+  @IsIn(["crypto", "card"])
+  method?: "crypto" | "card";
 }

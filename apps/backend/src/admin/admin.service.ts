@@ -141,22 +141,26 @@ export class AdminService {
     if (!isNaN(creditsToAdd) && creditsToAdd > 0) {
       await Promise.all([
         this.userRepo.increment({ id: userId }, "credits", creditsToAdd),
-        this.notificationsService.create(
-          userId,
-          "Credits Added",
-          `Administrator added ${amount} credits to your account.`,
-          NotificationType.SYSTEM,
-        ),
+        this.notificationsService.notify(userId, {
+          category: "billing",
+          title: "Credits added",
+          message: `${amount} credits were added to your account by our team.`,
+          type: NotificationType.SYSTEM,
+          link: "/profile#billing",
+          action: "View billing",
+        }),
       ]);
       user.credits = previousCredits + creditsToAdd;
       await this.redisCache.invalidate(userId);
     } else {
-      await this.notificationsService.create(
-        userId,
-        "Credits Added",
-        `Administrator added ${amount} credits to your account.`,
-        NotificationType.SYSTEM,
-      );
+      await this.notificationsService.notify(userId, {
+        category: "billing",
+        title: "Credits added",
+        message: `${amount} credits were added to your account by our team.`,
+        type: NotificationType.SYSTEM,
+        link: "/profile#billing",
+        action: "View billing",
+      });
     }
 
     await this.auditService.record({

@@ -1,0 +1,38 @@
+.group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+}
+.group button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--gx-muted);
+  padding: 7px 11px;
+  border-radius: 999px;
+  font: 550 13px/1.3 var(--gx-font);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 160ms,
+    background 160ms;
+}
+.group button:hover {
+  color: var(--gx-text);
+  background: var(--gx-hover);
+}
+.group button[aria-checked="true"] {
+  color: var(--gx-text);
+  background: var(--gx-hover);
+}
+.group button:focus-visible {
+  outline: 2px solid var(--gx-accent);
+  outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  .group button {
+    font-size: 12px;
+    padding: 7px 9px;
+  }
+}

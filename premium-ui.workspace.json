@@ -1,0 +1,30 @@
+{
+  "profile": "product-admin",
+  "canonicalMap": "UX-CONTRACT.md",
+  "sourceRoots": [
+    "apps/web/src/fsd/features/workspace",
+    "apps/web/src/fsd/widgets/workspace",
+    "apps/web/src/fsd/pages/workspace",
+    "apps/web/src/fsd/pages/chat/ui",
+    "apps/web/src/fsd/shared/ui"
+  ],
+  "requiredCapabilities": [
+    "Select/Listbox",
+    "Date",
+    "Form",
+    "Scrollbar",
+    "Toast",
+    "CRUD"
+  ],
+  "ownership": { "Select/Listbox": "native", "Date": "native" },
+  "requiredCommands": ["typecheck", "lint", "browser"],
+  "commands": {
+    "typecheck": "npm run typecheck",
+    "lint": "npm run lint",
+    "browser": "cd apps/web && npx playwright test -c playwright.workspace.config.ts tests/workspace-*.spec.ts --workers=1"
+  },
+  "evidence": {
+    "crudFullFlow": "apps/web/tests/workspace-pages.spec.ts",
+    "failurePaths": "apps/web/tests/workspace-shell.spec.ts"
+  }
+}

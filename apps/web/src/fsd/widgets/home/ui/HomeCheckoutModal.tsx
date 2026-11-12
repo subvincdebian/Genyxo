@@ -1,7 +1,7 @@
 "use client";
-import type { SyntheticEvent } from "react";
+import { useEffect, useState, type SyntheticEvent } from "react";
 
-import { Localized } from "@/shared/i18n";
+import { Localized, useLanguage } from "@/shared/i18n";
 export function HomeCheckoutModal({
   dispatch,
   ready,
@@ -9,6 +9,45 @@ export function HomeCheckoutModal({
   dispatch: (name: string, event: SyntheticEvent<Element>) => unknown;
   ready: boolean;
 }) {
+  const { t } = useLanguage();
+  const [cardEnabled, setCardEnabled] = useState(false);
+  const [method, setMethod] = useState<"card" | "crypto">("crypto");
+  useEffect(() => {
+    const request = new AbortController();
+    fetch("/api/payment/methods", { signal: request.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: { card?: boolean } | null) => {
+        if (!data?.card) return;
+        setCardEnabled(true);
+        setMethod("card");
+      })
+      .catch(() => undefined);
+    return () => request.abort();
+  }, []);
+  const options = [
+    ...(cardEnabled
+      ? [
+          {
+            id: "card" as const,
+            icon: "fas fa-credit-card",
+            label: t("order.method_card", "Card"),
+            hint: t(
+              "order.method_card_hint",
+              "Visa, Mastercard, Apple Pay or Google Pay. On the next page choose “Pay with card”.",
+            ),
+          },
+        ]
+      : []),
+    {
+      id: "crypto" as const,
+      icon: "fab fa-bitcoin",
+      label: t("order.method_crypto", "Crypto"),
+      hint: t(
+        "order.method_crypto_hint",
+        "Bitcoin, Ethereum, USDT and 300+ other coins.",
+      ),
+    },
+  ];
   return (
     <div className="modal" id="checkoutModal">
       {"\n        "}
@@ -134,6 +173,30 @@ export function HomeCheckoutModal({
             {"\n                "}
           </div>
           {"\n\n                "}
+          {options.length > 1 && (
+            <div
+              className="checkout-method"
+              role="radiogroup"
+              aria-label={t("order.method_choose", "Payment method")}
+            >
+              {options.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={method === option.id}
+                  className="checkout-method-option"
+                  onClick={() => setMethod(option.id)}
+                >
+                  <i className={option.icon} aria-hidden="true"></i>
+                  <span>{option.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          <p className="checkout-method-hint" aria-live="polite">
+            {options.find((option) => option.id === method)?.hint}
+          </p>
           <div className="payment-methods">
             {"\n                    "}
             <Localized
@@ -152,7 +215,9 @@ export function HomeCheckoutModal({
               {"\n                        "}
               <i className="fas fa-dollar-sign" title="USDT"></i>
               {"\n                        "}
-              <i className="fab fa-cc-visa" title="Visa/Mastercard"></i>
+              {cardEnabled && (
+                <i className="fab fa-cc-visa" title="Visa/Mastercard"></i>
+              )}
               {"\n                    "}
             </div>
             {"\n                "}
@@ -162,6 +227,7 @@ export function HomeCheckoutModal({
             disabled={!ready}
             className="pay-now-btn"
             id="payBtn"
+            data-method={method}
             aria-label="Pay Now"
             onClick={(event) => dispatch("home-4", event)}
           >

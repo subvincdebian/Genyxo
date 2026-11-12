@@ -29,8 +29,7 @@ export class HealthController {
   ) {}
 
   @ApiOperation({ summary: "Kubernetes liveness probe" })
-  @Get()
-  @Get("liveness")
+  @Get(["", "liveness"])
   checkLiveness() {
     return {
       status: "ok",

@@ -1,20 +1,11 @@
 // Behavior migrated from chat-inline0; resources are owned by the React mount.
 
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 export default function initialize(scope, context) {
   let attachedFiles = scope.window.attachedFiles || [];
   scope.window.attachedFiles = attachedFiles;
   function toggleSidebar() {
     scope.document.getElementById("app").classList.toggle("sidebar-closed");
   }
-  const tx = scope.document.getElementById("userInput");
-  scope.listen(tx, "input", function () {
-    this.style.height = "auto";
-    this.style.height = this.scrollHeight + "px";
-  });
   function setInput(text) {
     const input = scope.document.getElementById("userInput");
     input.value = text;
@@ -113,6 +104,7 @@ export default function initialize(scope, context) {
         }
       }
     }
+    scope.window.dispatchEvent(new Event("genyxo:attachments-changed"));
   }
   scope.window.renderAllPreviews = renderAllPreviews;
   scope.window.clearAttachedFiles = function () {
@@ -197,9 +189,6 @@ export default function initialize(scope, context) {
     });
     if (userInput) {
       scope.listen(userInput, "input", function () {
-        this.style.height = "auto";
-        let newHeight = this.scrollHeight;
-        this.style.height = (newHeight > 200 ? 200 : newHeight) + "px";
         const featuresGrid = scope.document.querySelector(".features-grid");
         if (featuresGrid) {
           if (this.value.trim() || attachedFiles.length > 0) {

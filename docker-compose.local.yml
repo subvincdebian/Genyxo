@@ -1,0 +1,46 @@
+# Local override for docker-compose.dev.yml on Windows/Docker Desktop.
+# Usage:
+#   docker compose -f docker-compose.dev.yml -f docker-compose.local.yml up -d --build
+# Bind mounts on Windows do not deliver file events, so watchers poll.
+services:
+  app:
+    # nest --watch clears dist/ on start; a separate volume mount cannot be removed.
+    volumes: !override
+      - ./apps/backend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - TSC_WATCHFILE=DynamicPriorityPolling
+      - TSC_WATCHDIRECTORY=DynamicPriorityPolling
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+    depends_on:
+      mailpit:
+        condition: service_started
+
+  frontend:
+    command: ["npx", "next", "dev", "--webpack", "--port", "3001"]
+    environment:
+      - WATCHPACK_POLLING=true
+      - GENYXO_NEXT_DIST_DIR=.next
+
+  mysql:
+    ports: !override
+      - "3307:3306"
+
+  redis:
+    ports: !override
+      - "6380:6379"
+
+  redis-commander:
+    profiles: [tools]
+
+  # Catches outgoing mail (verification, password reset). UI: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.27
+    container_name: genyxo-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+    networks:
+      - dev_net

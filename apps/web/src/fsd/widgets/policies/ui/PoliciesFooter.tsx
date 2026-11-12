@@ -179,19 +179,19 @@ export function PoliciesFooter({}: {
           <ul className="footer-links">
             {"\n                    "}
             <li>
-              <a href="/index.html" aria-label="Home Page">
+              <a href="/" aria-label="Home Page">
                 {"Home"}
               </a>
             </li>
             {"\n                    "}
             <li>
-              <a href="/index.html#products" aria-label="Product Section">
+              <a href="/#products" aria-label="Product Section">
                 {"All Products"}
               </a>
             </li>
             {"\n                    "}
             <li>
-              <a href="/chat.html" aria-label="Chat Page">
+              <a href="/chat" aria-label="Chat Page">
                 {"Chat With AI"}
               </a>
             </li>

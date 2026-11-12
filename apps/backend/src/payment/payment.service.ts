@@ -47,8 +47,8 @@ export const PACKS: Record<
   2: { name: "AI Explorer", price: 9.99, credits: 2000 },
   3: { name: "Pro Creator", price: 24.99, credits: 5000 },
   4: { name: "AI Master", price: 49.99, credits: 10000 },
-  5: { name: "Unlimited Power", price: 99.99, credits: 20000 },
-  6: { name: "AI Titan", price: 219.99, credits: 45000 },
+  5: { name: "Power Credits", price: 99.99, credits: 20000 },
+  6: { name: "Titan Credits", price: 219.99, credits: 45000 },
 };
 
 @Injectable()
@@ -64,9 +64,28 @@ export class PaymentService {
     private readonly auditService: AuditService,
   ) {}
 
-  async createPayment(userId: number, packId: number) {
+  /**
+   * Cards are paid on the NOWPayments checkout through its fiat on-ramp
+   * partners (the buyer pays by card, the merchant receives crypto), so no
+   * card merchant account is needed. The owner enables the on-ramp in the
+   * NOWPayments dashboard and sets NOWPAYMENTS_CARD_ENABLED=true.
+   */
+  methods() {
+    const card = /^(1|true|yes)$/i.test(
+      this.configService.get<string>("NOWPAYMENTS_CARD_ENABLED") || "",
+    );
+    return { crypto: true, card, provider: "NOWPAYMENTS" };
+  }
+
+  async createPayment(
+    userId: number,
+    packId: number,
+    method: "crypto" | "card" = "crypto",
+  ) {
     const pack = PACKS[packId];
     if (!pack) throw new BadRequestException("Package not found");
+    if (method === "card" && !this.methods().card)
+      throw new BadRequestException("Card payments are not available yet");
 
     const transaction = this.transactionRepo.create({
       userId,
@@ -75,6 +94,7 @@ export class PaymentService {
       packId,
       status: TransactionStatus.PENDING,
       provider: "NOWPAYMENTS",
+      description: `${pack.name} · ${method === "card" ? "card" : "crypto"} checkout`,
     });
 
     const savedTx = await this.transactionRepo.save(transaction);
@@ -298,12 +318,14 @@ export class PaymentService {
             finalizationData.packId,
           )
         : Promise.resolve(),
-      this.notificationsService.create(
-        finalizationData.userId,
-        "Payment Successful! ✅",
-        `You have successfully purchased ${finalizationData.creditsAmount} credits.`,
-        NotificationType.SYSTEM,
-      ),
+      this.notificationsService.notify(finalizationData.userId, {
+        category: "billing",
+        title: "Payment successful",
+        message: `${finalizationData.creditsAmount} credits were added to your balance.`,
+        type: NotificationType.SYSTEM,
+        link: "/profile#billing",
+        action: "View billing",
+      }),
     ]);
   }
 }

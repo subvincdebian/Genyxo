@@ -9,6 +9,7 @@ export class ControllerScope {
   private disposed = false;
   private nextAction = 0;
   private isReady = false;
+  private ownedNodes = new Set<Element>();
   private abort = new AbortController();
   readonly context: Record<string, unknown> = {};
   readonly document: Document;
@@ -17,6 +18,16 @@ export class ControllerScope {
   constructor() {
     this.document = new Proxy(document, {
       get: (target, key) => {
+        if (key === "createElement") return (tag: string, options?: ElementCreationOptions) => {
+          const node = target.createElement(tag, options);
+          this.ownedNodes.add(node);
+          return node;
+        };
+        if (key === "createElementNS") return (namespace: string | null, tag: string, options?: ElementCreationOptions) => {
+          const node = target.createElementNS(namespace, tag, options);
+          this.ownedNodes.add(node);
+          return node;
+        };
         if (key === "addEventListener")
           return (
             type: string,
@@ -55,11 +66,9 @@ export class ControllerScope {
         return true;
       },
     });
-    const initialNodes = new Set(document.body.children);
     this.cleanup(() => {
-      for (const element of document.body.children) {
-        if (!initialNodes.has(element)) element.remove();
-      }
+      for (const element of [...this.ownedNodes].reverse()) if (element.isConnected) element.remove();
+      this.ownedNodes.clear();
     });
     for (const type of [
       "click",

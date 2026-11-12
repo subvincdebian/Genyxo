@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   UseGuards,
   Request,
@@ -30,7 +31,17 @@ export class PaymentController {
   @Post("buy")
   @HttpCode(HttpStatus.OK)
   async buyPack(@Request() req, @Body() buyPackDto: BuyPackDto) {
-    return this.paymentService.createPayment(req.user.id, buyPackDto.packId);
+    return this.paymentService.createPayment(
+      req.user.id,
+      buyPackDto.packId,
+      buyPackDto.method,
+    );
+  }
+
+  @ApiOperation({ summary: "Payment methods available at checkout" })
+  @Get("methods")
+  methods() {
+    return this.paymentService.methods();
   }
 
   @SkipThrottle()
