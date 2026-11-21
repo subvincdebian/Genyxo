@@ -1,0 +1,32 @@
+name: "Bug report"
+description: "Report a reproducible problem in Genyxo."
+body:
+  - type: markdown
+    attributes:
+      value: "Remove credentials and personal data from screenshots and logs. Please report vulnerabilities privately through Security."
+  - type: input
+    id: area
+    attributes:
+      label: "Affected area"
+      description: "For example: chat, account, localization, API, or local setup."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to reproduce"
+      description: "List the steps from opening the page or starting the app. Use test data."
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: "Expected and actual behavior"
+      description: "What did you expect, and what happened instead?"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Which environment was affected (genyxo.com or local setup)? Include your browser and OS, plus the commit or version if known."
