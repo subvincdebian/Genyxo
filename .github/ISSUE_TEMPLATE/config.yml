@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/subvincdebian/Genyxo/discussions
+    about: Ask questions and share ideas with the project community.
+  - name: "Private vulnerability report"
+    url: https://github.com/subvincdebian/Genyxo/security/advisories/new
+    about: "Send a vulnerability report privately through GitHub."
