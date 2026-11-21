@@ -1,0 +1,22 @@
+.logo {
+  display: inline-block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.fallback {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-weight: 600;
+}
+:global([data-theme="light"]) .mono {
+  filter: brightness(0);
+}
+
+.mono {
+  filter: brightness(0) invert(1);
+}
+:global([data-theme="light"]) .mono {
+  filter: brightness(0);
+}

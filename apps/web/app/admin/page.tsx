@@ -4,6 +4,7 @@ import "@/shared/styles/profile.css";
 import "@/shared/styles/style.css";
 import "@/pages/admin/ui/page.css";
 import { AdminBoundary } from "@/entities/session";
+import { RouteScope } from "@/shared/ui/route-scope";
 export const metadata: Metadata = {
   title: "Admin Panel - Genyxo",
   description: "Admin Panel for Genyxo management.",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 };
 export default function Page() {
   return (
-    <>
+    <RouteScope name="admin">
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -20,6 +21,6 @@ export default function Page() {
       <AdminBoundary>
         <AdminPage />
       </AdminBoundary>
-    </>
+    </RouteScope>
   );
 }

@@ -1,5 +1,17 @@
 import { spawnSync } from "node:child_process";
+import { copyFileSync, existsSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+
+// Compose now requires every env_file to exist even with --no-env-resolution.
+// A clean checkout (CI) has none, so stand in the public example for the
+// duration of the check and remove it afterwards; a real .env is never touched.
+const envFile = fileURLToPath(new URL("../apps/backend/.env", import.meta.url));
+const standIn = !existsSync(envFile);
+if (standIn)
+  copyFileSync(new URL("../apps/backend/.env.example", import.meta.url), envFile);
+process.on("exit", () => {
+  if (standIn) rmSync(envFile, { force: true });
+});
 
 const configurations = [
   ["docker-compose.yml"],

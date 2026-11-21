@@ -1,0 +1,40 @@
+# Light local stack: frontend and backend run as compiled builds instead of
+# `next dev` / `nest --watch`. Code is compiled once at image build time, so
+# navigation is instant and both containers idle near 0% CPU (no file polling,
+# no on-demand compiles).
+# Usage (or `npm run local:up`):
+#   docker compose -f docker-compose.dev.yml -f docker-compose.local.yml -f docker-compose.fast.yml up -d --build
+# Code edits need a rebuild: run the same command again.
+services:
+  app:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    command: !reset null
+    volumes: !reset []
+    # NODE_ENV stays "development" (from docker-compose.dev.yml) so TypeORM keeps
+    # synchronizing the local schema exactly as the watch-mode backend does.
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+
+  frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SOCKET_URL: http://localhost:3000
+    command: !reset null
+    volumes: !reset []
+    environment: !override
+      - NODE_ENV=production
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+      - BACKEND_URL=http://app:3000
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M

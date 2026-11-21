@@ -3,34 +3,43 @@ import type { SyntheticEvent } from "react";
 
 import { Localized } from "@/shared/i18n";
 import { LanguageGrid } from "@/features/language";
+import styles from "./SupportLangModal.module.css";
+
+// The page controller shows #langModal by setting its inline display to flex
+// and hides it again from #closeLangModal.
 export function SupportLangModal({}: {
   dispatch: (name: string, event: SyntheticEvent<Element>) => unknown;
   ready: boolean;
 }) {
   return (
-    <div className="modal" id="langModal">
-      {"\n        "}
-      <div className="modal-content glass" style={{ maxWidth: "400px" }}>
-        {"\n            "}
-        <span className="close-btn" id="closeLangModal">
-          {"×"}
-        </span>
-        {"\n            "}
+    <div className={styles.overlay} id="langModal">
+      <div
+        className={styles.dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="langModalTitle"
+      >
+        <button
+          type="button"
+          className={styles.close}
+          id="closeLangModal"
+          aria-label="Close"
+        >
+          <i className="fas fa-times" aria-hidden="true"></i>
+        </button>
         <Localized
           as="h2"
           translationKey="language.select"
-          style={{ textAlign: "center", marginBottom: "20px" }}
+          className={styles.title}
+          id="langModalTitle"
           data-i18n="language.select"
         >
           {"Select Language"}
         </Localized>
-        {"\n            "}
-        <div className="lang-grid" id="langGrid">
+        <div className={styles.grid} id="langGrid">
           <LanguageGrid />
         </div>
-        {"\n        "}
       </div>
-      {"\n    "}
     </div>
   );
 }

@@ -5,10 +5,12 @@ import { NotificationsController } from "./notifications.controller";
 import { NotificationsService } from "./notifications.service";
 import { NotificationsGateway } from "./notifications.gateway";
 import { JwtModule } from "@nestjs/jwt";
+import { UsersModule } from "../users/users.module";
 
 @Global()
 @Module({
   imports: [
+    UsersModule,
     TypeOrmModule.forFeature([Notification]),
     JwtModule.registerAsync({
       useFactory: () => ({
@@ -19,6 +21,6 @@ import { JwtModule } from "@nestjs/jwt";
   ],
   controllers: [NotificationsController],
   providers: [NotificationsService, NotificationsGateway],
-  exports: [NotificationsService],
+  exports: [NotificationsService, NotificationsGateway],
 })
 export class NotificationsModule {}

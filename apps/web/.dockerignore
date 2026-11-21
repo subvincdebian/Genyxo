@@ -1,5 +1,6 @@
 node_modules
 .next
+.next-*
 .git
 .gitignore
 .env
@@ -18,3 +19,7 @@ Dockerfile*
 test-results
 playwright-report
 *.tsbuildinfo
+test-results*
+tests-live
+tests-profile
+playwright-report*

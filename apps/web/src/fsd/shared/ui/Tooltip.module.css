@@ -1,0 +1,35 @@
+.owner {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  vertical-align: middle;
+}
+.tip {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 16px));
+  box-sizing: border-box;
+  pointer-events: none;
+  padding: 7px 11px;
+  border: 1px solid var(--gx-border-strong);
+  border-radius: 999px;
+  color: var(--gx-text);
+  background: var(--gx-elevated);
+  box-shadow: var(--gx-shadow-md);
+  font: 550 12px/1.4 var(--gx-font);
+  overflow-wrap: anywhere;
+  opacity: 1;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+.tip[data-state="closed"] {
+  opacity: 0;
+  transform: translateY(3px);
+}

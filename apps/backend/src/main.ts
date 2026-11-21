@@ -31,7 +31,8 @@ function createFastifyAdapter(): FastifyAdapter {
   return new FastifyAdapter({
     logger: process.env.NODE_ENV === "production" ? pinoConfig : true,
     requestIdHeader: "x-request-id",
-    bodyLimit: 10 * 1024 * 1024,
+    // Five shared 4 MB files expand to roughly 27 MB in JSON/base64.
+    bodyLimit: 32 * 1024 * 1024,
     trustProxy: true,
     keepAliveTimeout: 65000,
     forceCloseConnections: true,

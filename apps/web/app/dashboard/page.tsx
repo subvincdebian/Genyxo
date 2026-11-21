@@ -3,6 +3,7 @@ import { DashboardPage } from "@/pages/dashboard";
 import "@/shared/styles/dashboard.css";
 
 import { AdminBoundary } from "@/entities/session";
+import { RouteScope } from "@/shared/ui/route-scope";
 export const metadata: Metadata = {
   title: "Admin Dashboard - Genyxo",
   robots: { index: false, follow: false },
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 export default function Page() {
   return (
-    <>
+    <RouteScope name="dashboard">
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
@@ -22,6 +23,6 @@ export default function Page() {
       <AdminBoundary>
         <DashboardPage />
       </AdminBoundary>
-    </>
+    </RouteScope>
   );
 }

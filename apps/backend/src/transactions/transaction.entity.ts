@@ -53,7 +53,11 @@ export class Transaction {
   })
   amount!: number;
 
-  @Column({ type: "int" })
+  @Column("decimal", {
+    precision: 12,
+    scale: 2,
+    transformer: new ColumnNumericTransformer(),
+  })
   creditsAmount!: number;
 
   @Column({

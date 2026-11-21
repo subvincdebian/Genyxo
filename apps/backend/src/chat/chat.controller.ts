@@ -15,6 +15,7 @@ import {
   Headers,
   Query,
   Res,
+  Optional,
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
 import { ConfigService } from "@nestjs/config";
@@ -27,8 +28,15 @@ import { FalService } from "./fal.service";
 import { PricingService } from "./pricing.service";
 import { SendMessageDto } from "./dto/send-message.dto";
 import { StreamMessageDto } from "./dto/stream-message.dto";
+import { countryFromHeaders } from "./language/language-profile.service";
+import {
+  AlternativeDto,
+  ProjectDto,
+  SaveLibraryItemDto,
+} from "./dto/chat-workspace.dto";
 import * as crypto from "crypto";
 import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
+import { WorkspaceService } from "./workspace/workspace.service";
 
 @ApiTags("Chat")
 @Controller("chat")
@@ -39,6 +47,7 @@ export class ChatController {
     private falService: FalService,
     private pricingService: PricingService,
     private configService: ConfigService,
+    @Optional() private workspaceService?: WorkspaceService,
   ) {}
 
   @ApiBearerAuth("JWT-auth")
@@ -56,6 +65,82 @@ export class ChatController {
   }
 
   @UseGuards(AuthGuard("jwt"))
+  @Get("projects")
+  listProjects(@Request() req) {
+    return this.chatService.listProjects(req.user.id);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Post("projects")
+  createProject(@Body() dto: ProjectDto, @Request() req) {
+    return this.chatService.saveProject(req.user.id, dto);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Patch("projects/:id")
+  updateProject(
+    @Param("id") id: number,
+    @Body() dto: ProjectDto,
+    @Request() req,
+  ) {
+    return this.chatService.saveProject(req.user.id, dto, Number(id));
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Delete("projects/:id")
+  deleteProject(@Param("id") id: number, @Request() req) {
+    return this.chatService.deleteProject(req.user.id, Number(id));
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Patch("conversations/:id/project")
+  setConversationProject(
+    @Param("id") id: number,
+    @Body("projectId") projectId: number | null,
+    @Request() req,
+  ) {
+    return this.chatService.setConversationProject(
+      req.user.id,
+      Number(id),
+      projectId ? Number(projectId) : null,
+    );
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Post("alternative")
+  alternative(@Body() dto: AlternativeDto, @Request() req) {
+    return this.chatService.generateAlternative(
+      req.user.id,
+      dto.messageId,
+      dto.model,
+    );
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("library")
+  listLibrary(@Request() req) {
+    return this.chatService.listLibrary(req.user.id);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("library/document/:id")
+  getLibraryDocument(@Param("id") id: number, @Request() req) {
+    return this.chatService.getLibraryDocument(req.user.id, Number(id));
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Post("library")
+  saveLibraryItem(@Body() dto: SaveLibraryItemDto, @Request() req) {
+    return this.chatService.saveDocumentToLibrary(req.user.id, dto);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Delete("library/:id")
+  deleteLibraryItem(@Param("id") id: number, @Request() req) {
+    return this.chatService.deleteLibraryItem(req.user.id, Number(id));
+  }
+
+  @UseGuards(AuthGuard("jwt"))
   @Post("stream")
   async streamMessage(
     @Body() dto: StreamMessageDto,
@@ -63,17 +148,52 @@ export class ChatController {
     @Res({ passthrough: false }) res: FastifyReply,
   ) {
     const userId = req.user.id;
-    const { message, model, conversationId, files } = dto;
-    const selectedModel = model || "openai/gpt-4o-mini";
+    const {
+      message,
+      model,
+      conversationId,
+      projectId,
+      files,
+      presetId,
+      clientRequestId,
+    } = dto;
+    const selectedModel = model || "google/gemini-3.5-flash-lite";
     const convId = conversationId ? Number(conversationId) : undefined;
 
     const modelConfig = this.pricingService.getModelConfig(selectedModel);
     if (!modelConfig)
       throw new BadRequestException(`Model ${selectedModel} not supported`);
 
+    if (!message?.trim() && !files?.length)
+      throw new BadRequestException("Message or files must be provided");
+    await this.workspaceService?.validateChatInput(userId, dto);
+    const claimed = clientRequestId
+      ? await this.workspaceService?.claimRequest(userId, clientRequestId, dto)
+      : null;
+    if (claimed?.replay) {
+      const result = claimed.replay;
+      res.raw.setHeader("Content-Type", "text/event-stream");
+      res.raw.setHeader("Cache-Control", "no-cache, no-transform");
+      for (const event of [
+        { status: "conversation", conversationId: result.conversationId },
+        { token: result.botReply, conversationId: result.conversationId },
+        {
+          status: "done",
+          messageId: result.messageId,
+          creditBalance: result.creditsLeft,
+        },
+      ])
+        res.raw.write(`data: ${JSON.stringify(event)}\n\n`);
+      res.raw.end();
+      return;
+    }
+
     const cost = modelConfig.cost;
     const isDeducted = await this.usersService.deductCredits(userId, cost);
-    if (!isDeducted) throw new ForbiddenException("Not enough credits");
+    if (!isDeducted) {
+      await this.workspaceService?.failRequest(userId, clientRequestId);
+      throw new ForbiddenException("Not enough credits");
+    }
 
     const raw = res.raw;
     raw.setHeader("Content-Type", "text/event-stream");
@@ -92,6 +212,18 @@ export class ChatController {
       cost,
       files || [],
       raw,
+      projectId,
+      presetId,
+      clientRequestId,
+      {
+        voice: dto.voice,
+        language: dto.language,
+        locales: dto.locales,
+        country: countryFromHeaders(req.headers || {}),
+        location: dto.location,
+        pinnedPlaces: dto.pinnedPlaces,
+        mode: dto.mode,
+      },
     );
   }
 
@@ -99,7 +231,15 @@ export class ChatController {
   @Post("message")
   async sendMessage(@Body() dto: SendMessageDto, @Request() req) {
     const userId = req.user.id;
-    const { message, conversationId, model, files } = dto;
+    const {
+      message,
+      conversationId,
+      projectId,
+      model,
+      files,
+      presetId,
+      clientRequestId,
+    } = dto;
 
     const modelConfig = this.pricingService.getModelConfig(model);
     if (!modelConfig)
@@ -110,8 +250,17 @@ export class ChatController {
       throw new BadRequestException("Message or files must be provided");
     }
 
+    await this.workspaceService?.validateChatInput(userId, dto);
+    const claimed = clientRequestId
+      ? await this.workspaceService?.claimRequest(userId, clientRequestId, dto)
+      : null;
+    if (claimed?.replay) return claimed.replay;
+
     const isDeducted = await this.usersService.deductCredits(userId, cost);
-    if (!isDeducted) throw new ForbiddenException(`Not enough credits.`);
+    if (!isDeducted) {
+      await this.workspaceService?.failRequest(userId, clientRequestId);
+      throw new ForbiddenException(`Not enough credits.`);
+    }
 
     try {
       const result = await this.chatService.processMessage(
@@ -121,10 +270,20 @@ export class ChatController {
         conversationId,
         files || [],
         cost,
+        projectId,
+        presetId,
+        clientRequestId,
+      );
+
+      await this.workspaceService?.completeRequest(
+        userId,
+        clientRequestId,
+        result,
       );
 
       return result;
-    } catch (error) {
+    } catch (_error) {
+      await this.workspaceService?.failRequest(userId, clientRequestId);
       await Promise.all([
         this.usersService.addCredits(userId, cost),
         this.usersService.logTransaction(

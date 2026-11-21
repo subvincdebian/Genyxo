@@ -9,6 +9,7 @@ import {
 import { AuthController } from "../src/auth/auth.controller";
 import { ProfileController } from "../src/profile/profile.controller";
 import { ChatController } from "../src/chat/chat.controller";
+import { MapsController } from "../src/chat/maps/maps.controller";
 import { PaymentController } from "../src/payment/payment.controller";
 import { NotificationsController } from "../src/notifications/notifications.controller";
 import { AdminController } from "../src/admin/admin.controller";
@@ -26,6 +27,7 @@ async function generateOpenApi() {
       AuthController,
       ProfileController,
       ChatController,
+      MapsController,
       PaymentController,
       NotificationsController,
       AdminController,

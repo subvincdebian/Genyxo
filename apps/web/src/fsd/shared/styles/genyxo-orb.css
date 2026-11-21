@@ -1,0 +1,38 @@
+/* GenyxoOrb: Siri-like gradient sphere in the Genyxo palette. State changes
+   adjust speed and energy; --gx-orb-level adds a live audio pulse. */
+.gx-orb { --gx-orb-speed: 14s; --gx-orb-energy: .55; position: relative; display: inline-grid; place-items: center; width: var(--gx-orb-size, 76px); height: var(--gx-orb-size, 76px); flex: 0 0 auto; isolation: isolate; }
+.gx-orb-aura { position: absolute; inset: -38%; z-index: -1; border-radius: 50%; background: radial-gradient(circle, rgba(94, 224, 196, .32), rgba(57, 169, 148, .12) 38%, transparent 66%); filter: blur(calc(var(--gx-orb-size) * .08)); opacity: calc(.55 + var(--gx-orb-level) * .45); transform: scale(calc(.92 + var(--gx-orb-level) * .28)); transition: transform 120ms linear, opacity 200ms; animation: gx-orb-breathe 5.6s ease-in-out infinite; }
+.gx-orb-body { position: absolute; inset: 0; overflow: hidden; border-radius: 50%; background: radial-gradient(circle at 50% 120%, #0a3b33, #04110f 72%); box-shadow: inset 0 0 0 1px rgba(200, 239, 210, .14), inset 0 calc(var(--gx-orb-size) * -.12) calc(var(--gx-orb-size) * .25) rgba(0, 0, 0, .55), 0 calc(var(--gx-orb-size) * .12) calc(var(--gx-orb-size) * .35) rgba(0, 0, 0, .45); transform: scale(calc(1 + var(--gx-orb-level) * .09)); transition: transform 110ms linear; }
+.gx-orb-field { position: absolute; width: 90%; height: 90%; border-radius: 46% 54% 52% 48% / 50% 44% 56% 50%; filter: blur(calc(var(--gx-orb-size) * .09)); mix-blend-mode: screen; opacity: var(--gx-orb-energy); }
+.gx-orb-field-1 { left: -18%; top: -14%; background: radial-gradient(circle at 40% 40%, #8ff5dc, rgba(94, 224, 196, .65) 45%, transparent 70%); animation: gx-orb-drift-1 var(--gx-orb-speed) ease-in-out infinite; }
+.gx-orb-field-2 { right: -22%; top: 4%; background: radial-gradient(circle at 60% 40%, #4cc3ff, rgba(43, 132, 214, .55) 45%, transparent 70%); animation: gx-orb-drift-2 calc(var(--gx-orb-speed) * 1.2) ease-in-out infinite; }
+.gx-orb-field-3 { left: 6%; bottom: -26%; background: radial-gradient(circle at 50% 50%, #c8efd2, rgba(57, 169, 148, .6) 48%, transparent 72%); animation: gx-orb-drift-3 calc(var(--gx-orb-speed) * .9) ease-in-out infinite; }
+.gx-orb-field-4 { right: -6%; bottom: -12%; width: 70%; height: 70%; background: radial-gradient(circle, #7d6bff, rgba(98, 76, 255, .45) 45%, transparent 70%); opacity: calc(var(--gx-orb-energy) * .7); animation: gx-orb-drift-2 calc(var(--gx-orb-speed) * 1.45) ease-in-out infinite reverse; }
+.gx-orb-sheen { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(60% 45% at 35% 22%, rgba(255, 255, 255, .42), transparent 60%), radial-gradient(80% 60% at 50% 110%, rgba(143, 245, 220, .22), transparent 70%); mix-blend-mode: soft-light; }
+.gx-orb-logo { position: relative; z-index: 1; filter: drop-shadow(0 2px 10px rgba(4, 18, 14, .55)); transition: transform 300ms var(--gx-spring, ease), opacity 300ms; animation: gx-orb-logo 6s ease-in-out infinite; }
+
+.gx-orb[data-state="listening"] { --gx-orb-speed: 7s; --gx-orb-energy: .8; }
+.gx-orb[data-state="thinking"] { --gx-orb-speed: 3.2s; --gx-orb-energy: .7; }
+.gx-orb[data-state="thinking"] .gx-orb-body { animation: gx-orb-think 1.6s ease-in-out infinite; }
+.gx-orb[data-state="speaking"] { --gx-orb-speed: 5s; --gx-orb-energy: .95; }
+.gx-orb[data-state="muted"] { --gx-orb-speed: 22s; --gx-orb-energy: .3; }
+.gx-orb[data-state="muted"] .gx-orb-body { filter: saturate(.35); }
+.gx-orb[data-state="listening"] .gx-orb-logo, .gx-orb[data-state="speaking"] .gx-orb-logo, .gx-orb[data-state="thinking"] .gx-orb-logo { opacity: .9; transform: scale(.9); }
+
+@keyframes gx-orb-drift-1 { 0%, 100% { transform: translate(0, 0) rotate(0); } 33% { transform: translate(22%, 14%) rotate(120deg); } 66% { transform: translate(6%, 28%) rotate(240deg); } }
+@keyframes gx-orb-drift-2 { 0%, 100% { transform: translate(0, 0) rotate(0); } 50% { transform: translate(-26%, 20%) rotate(-180deg); } }
+@keyframes gx-orb-drift-3 { 0%, 100% { transform: translate(0, 0) scale(1); } 40% { transform: translate(18%, -24%) scale(1.15); } 75% { transform: translate(-12%, -10%) scale(.9); } }
+@keyframes gx-orb-breathe { 0%, 100% { filter: blur(calc(var(--gx-orb-size) * .08)); } 50% { filter: blur(calc(var(--gx-orb-size) * .12)); } }
+@keyframes gx-orb-think { 0%, 100% { transform: scale(.97); } 50% { transform: scale(1.04); } }
+@keyframes gx-orb-logo { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-orb *, .gx-orb { animation: none !important; transition: none !important; }
+}
+
+/* WebGL sphere: when it runs, it replaces the CSS layers below it. */
+.gx-orb-canvas { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; opacity: 0; transition: opacity 600ms ease; pointer-events: none; }
+.gx-orb.is-gl .gx-orb-canvas { opacity: 1; }
+.gx-orb.is-gl .gx-orb-body { opacity: 0; transition: opacity 400ms ease; }
+.gx-orb.is-gl .gx-orb-aura { background: radial-gradient(circle, rgba(94, 224, 196, .3), rgba(76, 140, 255, .12) 42%, transparent 68%); }
+.gx-orb.is-gl .gx-orb-logo { z-index: 2; filter: drop-shadow(0 1px 1px rgba(255, 255, 255, .35)) drop-shadow(0 4px 14px rgba(2, 20, 18, .65)); mix-blend-mode: normal; opacity: .96; }

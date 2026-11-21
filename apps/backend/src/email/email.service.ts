@@ -69,6 +69,42 @@ export class EmailService {
       this.logger.log(`Verification email sent directly to ${email}`);
     } catch {
       this.logger.error("Error sending verification email");
+      throw new Error("Verification email could not be sent");
+    }
+  }
+
+  async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+    const target = frontendUrl("/sign-in");
+    target.searchParams.set("mode", "reset");
+    target.searchParams.set("token", token);
+    await this.mailerService.sendMail({
+      to: email,
+      subject: "Reset your Genyxo password",
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:32px;color:#12231d"><h1>Reset your password</h1><p>Use this link to choose a new password. It expires in 30 minutes.</p><p><a href="${target.href}" style="display:inline-block;padding:14px 24px;background:#123d32;color:#fff;text-decoration:none;border-radius:8px">Choose a new password</a></p><p>If you did not request this, you can ignore this email.</p></div>`,
+    });
+  }
+
+  /** A generic account notification email (scheduled tasks, billing, security). */
+  async sendNotificationEmail(input: {
+    email: string;
+    name?: string | null;
+    title: string;
+    message: string;
+    link?: string;
+    action?: string;
+  }): Promise<void> {
+    const target = frontendUrl(input.link || "/notifications");
+    const settings = frontendUrl("/profile");
+    settings.hash = "notifications";
+    const name = this.escapeHtml(input.name || "there");
+    try {
+      await this.mailerService.sendMail({
+        to: input.email,
+        subject: input.title,
+        html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:32px;color:#12231d"><p style="margin:0 0 24px;font-weight:700;font-size:18px">Genyxo</p><h1 style="font-size:22px;margin:0 0 12px">${this.escapeHtml(input.title)}</h1><p style="margin:0 0 8px">Hi ${name},</p><p style="margin:0 0 24px;line-height:1.6;white-space:pre-wrap">${this.escapeHtml(input.message)}</p><p style="margin:0 0 32px"><a href="${target.href}" style="display:inline-block;padding:14px 24px;background:#123d32;color:#fff;text-decoration:none;border-radius:8px">${this.escapeHtml(input.action || "Open Genyxo")}</a></p><p style="font-size:12px;color:#6b7a75;margin:0">You receive this email because of your notification settings. <a href="${settings.href}" style="color:#6b7a75">Manage notifications</a></p></div>`,
+      });
+    } catch {
+      this.logger.error("Error sending notification email");
     }
   }
 

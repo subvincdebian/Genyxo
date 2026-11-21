@@ -11,6 +11,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
     private authService: AuthService,
   ) {
     super({
+      passReqToCallback: true,
       clientID: configService.get<string>("GOOGLE_CLIENT_ID")!,
       clientSecret: configService.get<string>("GOOGLE_CLIENT_SECRET")!,
       callbackURL:
@@ -21,25 +22,29 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
   }
 
   async validate(
+    request: any,
     accessToken: string,
     refreshToken: string,
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
     const { name, emails, photos, id } = profile;
-    const userEmail =
-      emails && emails.length > 0
-        ? emails[0].value
-        : `google.${id}@no-email.genyxo.com`;
+    const userEmail = emails && emails.length > 0 ? emails[0].value : null;
     const user = {
       email: userEmail,
       firstName: name.givenName || "User",
       lastName: name.familyName || ":)",
       picture: photos && photos.length > 0 ? photos[0].value : null,
       id: id,
+      emailVerified: profile._json?.email_verified === true,
     };
 
-    const result = await this.authService.validateOAuthLogin(user, "google");
+    const result = await this.authService.validateOAuthLogin(
+      user,
+      "google",
+      undefined,
+      request,
+    );
     done(null, result);
   }
 }

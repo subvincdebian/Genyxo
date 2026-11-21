@@ -1,0 +1,276 @@
+.highlightTarget {
+  border-radius: 16px;
+}
+.highlightTarget[data-highlight="true"] {
+  animation: highlight 1.6s var(--gx-ease, ease) both;
+}
+@keyframes highlight {
+  0%,
+  40% {
+    box-shadow: 0 0 0 8px var(--gx-accent-soft);
+    background: var(--gx-accent-soft);
+  }
+}
+
+/* Select option content */
+.languageOption,
+.fontOption {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.languageOption small,
+.fontOption small {
+  color: var(--gx-muted);
+  font: 500 11px/1 var(--gx-font);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.fontOption > span {
+  font-size: 14px;
+  white-space: nowrap;
+}
+.customOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gx-text-2);
+}
+
+/* Keycaps */
+.keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.keys kbd,
+.recorder kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--gx-border-strong);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--gx-bg);
+  color: var(--gx-text);
+  font: 600 11.5px/1 var(--gx-font);
+  box-sizing: border-box;
+}
+
+/* Recording state for a custom send key */
+.recorder {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 8px 10px 8px 14px;
+  border: 1px solid var(--gx-accent);
+  border-radius: 12px;
+  background: var(--gx-accent-soft);
+  color: var(--gx-text);
+  font: 500 13px/1.4 var(--gx-font);
+  cursor: pointer;
+  animation:
+    recorderIn 0.22s var(--gx-ease, ease) both,
+    recorderPulse 1.6s ease-in-out 0.22s infinite;
+  outline: none;
+}
+.recorderDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gx-accent);
+  animation: blink 1s ease-in-out infinite;
+}
+@keyframes recorderIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes recorderPulse {
+  50% {
+    box-shadow: 0 0 0 4px var(--gx-accent-soft);
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Inline feedback under the editor section */
+.messages {
+  display: grid;
+  gap: 8px;
+}
+.messages:not(:empty) {
+  margin-top: 12px;
+}
+.problem,
+.notice,
+.saving {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  animation: messageIn 0.24s var(--gx-ease, ease) both;
+}
+.problem {
+  border: 1px solid color-mix(in srgb, #ee8177 24%, transparent);
+  background: color-mix(in srgb, #df5148 7%, transparent);
+  color: var(--gx-danger, #f2aaa1);
+}
+.problem > button {
+  margin-left: auto;
+}
+.notice {
+  border: 1px solid var(--gx-border);
+  background: var(--gx-accent-soft);
+  color: var(--gx-text);
+}
+.saving {
+  padding: 0 2px;
+  color: var(--gx-muted);
+}
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* Live typography preview */
+.preview {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 22px;
+  border: 1px solid var(--gx-border);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      120% 80% at 100% 0%,
+      color-mix(in srgb, var(--gx-accent) 7%, transparent),
+      transparent 60%
+    ),
+    var(--gx-bg);
+}
+.previewUser {
+  justify-self: end;
+  max-width: min(78%, 420px);
+  padding: 10px 15px;
+  border-radius: 18px 18px 6px 18px;
+  background: var(--gx-surface-2);
+  color: var(--gx-text);
+  font-size: 14px;
+  line-height: 1.55;
+  animation: fontSwap 0.32s var(--gx-ease, ease) both;
+}
+.previewReply {
+  max-width: 560px;
+  color: var(--gx-text);
+  font-size: 14.5px;
+  line-height: 1.65;
+  animation: fontSwap 0.32s var(--gx-ease, ease) both;
+}
+.previewReply strong {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 650;
+}
+.previewReply p {
+  margin: 0 0 10px;
+  color: var(--gx-text-2);
+}
+.previewReply code {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--gx-surface-2);
+  color: var(--gx-code-keyword, var(--gx-accent));
+  font: 12.5px/1.5 var(--gx-code-font, ui-monospace, monospace);
+}
+@keyframes fontSwap {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+    filter: blur(2px);
+  }
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: -8px;
+  color: var(--gx-muted);
+  font-size: 12px;
+}
+.reset {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--gx-text-2);
+  font: 500 12.5px/1 var(--gx-font);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s var(--gx-ease, ease),
+    background 0.16s ease,
+    color 0.16s ease;
+}
+.resetVisible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.reset:hover {
+  background: var(--gx-hover);
+  color: var(--gx-text);
+}
+.reset:focus-visible {
+  outline: 2px solid var(--gx-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .preview {
+    padding: 16px;
+  }
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .recorder,
+  .recorderDot,
+  .previewUser,
+  .previewReply,
+  .problem,
+  .notice,
+  .saving {
+    animation: none;
+  }
+}
+
+/* The closed select only shows the chosen name; tags belong to the open list. */
+:global([role="combobox"]) .fontOption small,
+:global([role="combobox"]) .languageOption small {
+  display: none;
+}

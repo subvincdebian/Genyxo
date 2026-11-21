@@ -1,1 +1,6 @@
-export default { plugins: { "@tailwindcss/postcss": {} } };
+export default {
+  plugins: {
+    "@tailwindcss/postcss": {},
+    "./scripts/postcss-route-scope.cjs": {},
+  },
+};

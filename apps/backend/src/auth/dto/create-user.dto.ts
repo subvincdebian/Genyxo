@@ -2,7 +2,6 @@ import {
   IsEmail,
   IsNotEmpty,
   MinLength,
-  Matches,
   IsString,
   IsOptional,
   MaxLength,
@@ -12,24 +11,23 @@ import { Transform } from "class-transformer";
 export class CreateUserDto {
   @IsNotEmpty({ message: "Email cannot be empty." })
   @IsEmail({}, { message: "Invalid email format." })
+  @MaxLength(254, { message: "Email address is too long." })
   @Transform(({ value }) =>
     typeof value === "string" ? value.toLowerCase().trim() : value,
   )
   email!: string;
 
   @IsNotEmpty({ message: "Password cannot be empty." })
-  @MinLength(6, { message: "Password must be at least 6 characters long." })
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: "Password must contain uppercase, lowercase letters and numbers",
-  })
+  @IsString({ message: "Password must be text." })
+  @MinLength(8, { message: "Password must be at least 8 characters long." })
+  @MaxLength(128, { message: "Password must be 128 characters or fewer." })
   password!: string;
 
-  @IsOptional()
   @IsString()
-  @MinLength(2)
-  @MaxLength(50)
+  @IsNotEmpty({ message: "Name is required." })
+  @MaxLength(50, { message: "Name must be 50 characters or fewer." })
   @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
-  name?: string;
+  name!: string;
 
   @IsOptional()
   @IsString()

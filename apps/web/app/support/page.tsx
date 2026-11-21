@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { SupportPage } from "@/pages/support";
-import "@/shared/styles/profile.css";
-import "@/pages/support/ui/page.css";
 
 export const metadata: Metadata = {
   title: "Support Center - Genyxo",
@@ -13,6 +11,13 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Inter+Tight:wght@500..700&display=swap"
+        precedence="default"
+      />
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"

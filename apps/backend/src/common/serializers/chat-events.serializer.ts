@@ -21,6 +21,12 @@ export interface ErrorEventPayload {
   error: string;
 }
 
+export interface ActivityEventPayload {
+  status: "activity";
+  step: string;
+  sources?: string[];
+}
+
 export const stringifyTokenEvent = fastJson({
   title: "TokenEvent",
   type: "object",
@@ -58,6 +64,20 @@ export const stringifyErrorEvent = fastJson({
   type: "object",
   properties: {
     error: { type: "string" },
+    // Set when the failed turn was rolled back: null means the new chat was removed.
+    conversationId: { type: "integer", nullable: true },
+    rolledBack: { type: "boolean" },
   },
   required: ["error"],
+});
+
+export const stringifyActivityEvent = fastJson({
+  title: "ActivityEvent",
+  type: "object",
+  properties: {
+    status: { type: "string" },
+    step: { type: "string" },
+    sources: { type: "array", items: { type: "string" } },
+  },
+  required: ["status", "step"],
 });

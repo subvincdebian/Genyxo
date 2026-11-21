@@ -17,7 +17,7 @@ export function HomeLoginModal({
           {"×"}
         </span>
         {"\n            \n            "}
-        <form id="loginForm" className="auth-form">
+        <form id="loginForm" className="auth-form" method="post">
           {"\n                "}
           <Localized
             as="h2"
@@ -120,7 +120,7 @@ export function HomeLoginModal({
           {"\n            "}
         </form>
         {"\n\n            "}
-        <form id="signupForm" className="auth-form" style={{ display: "none" }}>
+        <form id="signupForm" className="auth-form" method="post" style={{ display: "none" }}>
           {"\n                "}
           <Localized
             as="h2"

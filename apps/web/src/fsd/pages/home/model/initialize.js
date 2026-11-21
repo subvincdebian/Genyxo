@@ -1,10 +1,8 @@
 import { initializeHomeHead0 as initialize0 } from "@/features/home";
-import { initializeDemochat as initialize1 } from "@/features/demo-chat";
 import { initializeScript as initialize2 } from "@/features/platform";
 export default function initialize(scope) {
   const context = scope.context;
   initialize0(scope, context);
-  initialize1(scope, context);
   initialize2(scope, context);
   scope.register("home-0", function (event) {
     context.openCategoryModal("packs");

@@ -13,6 +13,7 @@ import { UsersModule } from "./users/users.module";
 import { ProfileModule } from "./profile/profile.module";
 import { ChatModule } from "./chat/chat.module";
 import { PaymentModule } from "./payment/payment.module";
+import { BillingModule } from "./billing/billing.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { AdminModule } from "./admin/admin.module";
 import { SupportModule } from "./support/support.module";
@@ -75,8 +76,9 @@ import { QueuesModule } from "./queues/queues.module";
     }),
     MailerModule.forRoot({
       transport: {
-        host: "smtp.zoho.eu",
-        port: 587,
+        // SMTP_HOST/SMTP_PORT point local development at a mail catcher.
+        host: process.env.SMTP_HOST || "smtp.zoho.eu",
+        port: Number(process.env.SMTP_PORT || 587),
         secure: false,
         ...(process.env.VERCEL
           ? {}
@@ -84,10 +86,14 @@ import { QueuesModule } from "./queues/queues.module";
         connectionTimeout: 10000,
         greetingTimeout: 10000,
         socketTimeout: 15000,
-        auth: {
-          user: "info@genyxo.com",
-          pass: process.env.ZOHO_APP_PASSWORD,
-        },
+        ...(process.env.SMTP_HOST
+          ? {}
+          : {
+              auth: {
+                user: "info@genyxo.com",
+                pass: process.env.ZOHO_APP_PASSWORD,
+              },
+            }),
       },
       defaults: {
         from: '"Genyxo Support" <info@genyxo.com>',
@@ -206,6 +212,7 @@ import { QueuesModule } from "./queues/queues.module";
     ProfileModule,
     ChatModule,
     PaymentModule,
+    BillingModule,
     NotificationsModule,
     AdminModule,
     SupportModule,
