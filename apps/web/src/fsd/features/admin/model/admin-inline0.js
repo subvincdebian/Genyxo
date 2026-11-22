@@ -1,9 +1,5 @@
 // Behavior migrated from admin-inline0; resources are owned by the React mount.
 
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 export default function initialize(scope, context) {
   const tbody = scope.document.getElementById("usersTable");
   const replyModal = scope.document.getElementById("replyModal");
@@ -302,7 +298,7 @@ export default function initialize(scope, context) {
                                               function (event) {
                                                 openReplyModal(
                                                   t.id,
-                                                  `${t.subject.replace(/'/g, "\\'")}`,
+                                                  t.subject,
                                                 );
                                               },
                                             )}">Reply</button>

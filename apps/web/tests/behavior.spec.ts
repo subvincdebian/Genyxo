@@ -1,9 +1,12 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { test, expect } from "@playwright/test";
 import { authenticate, mockApi, user, token } from "./fixtures";
 
 test("admin preserves populated table cells, pagination and sanitized user content", async ({
   page,
 }) => {
+  const ticketSubject = "Customer's \\ folder & request";
   await authenticate(page, "admin");
   await mockApi(page, async (route, path) => {
     if (path === "/profile") {
@@ -24,6 +27,21 @@ test("admin preserves populated table cells, pagination and sanitized user conte
             },
           ],
           meta: { page: currentPage, lastPage: 2, total: 2 },
+        },
+      });
+      return true;
+    }
+    if (path.endsWith("/tickets")) {
+      await route.fulfill({
+        json: {
+          data: [
+            {
+              id: 31,
+              subject: ticketSubject,
+              status: "OPEN",
+              createdAt: "2026-10-09T09:00:00Z",
+            },
+          ],
         },
       });
       return true;
@@ -62,6 +80,8 @@ test("admin preserves populated table cells, pagination and sanitized user conte
   await page.locator("#nextUserBtn").click();
   await expect(page.locator("#usersTable td").first()).toHaveText("#2");
   await expect(page.locator("#nextUserBtn")).toBeDisabled();
+  await page.getByRole("button", { name: "Reply On Ticket" }).click();
+  await expect(page.locator("#modalUserMessage")).toHaveText(ticketSubject);
 });
 
 test("catalogue, checkout, guest authentication forms and search actions", async ({
@@ -130,11 +150,20 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
   });
   await page.goto("/chat.html");
   await expect(page.locator("#userInput")).toBeEnabled();
-  await page.locator("#fileInput").setInputFiles({
-    name: "example.txt",
-    mimeType: "text/plain",
-    buffer: Buffer.from("Attachment content"),
-  });
+  const docx = readFileSync(join(__dirname, "fixtures/attachment.docx"));
+  await page.locator("#fileInput").setInputFiles([
+    {
+      name: "example.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from("Attachment content"),
+    },
+    {
+      name: "attachment.docx",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      buffer: docx,
+    },
+  ]);
   await page.locator("#userInput").fill("Test message");
   await page.locator("#sendBtn").click();
   await expect(page.locator("#chatBox")).toContainText("Hello React");
@@ -148,6 +177,14 @@ test("chat preserves SSE contract, Markdown sanitization, history and balance", 
         mime_type: "text/plain",
         size: 18,
         data: Buffer.from("Attachment content").toString("base64"),
+      },
+      {
+        name: "attachment.docx",
+        mime_type: "text/plain",
+        size: docx.length,
+        data: Buffer.from(
+          "Note &lt; &quot;\tA\nnext\nsecond paragraph",
+        ).toString("base64"),
       },
     ],
   });

@@ -14,15 +14,15 @@
   "dependencies": {
     "canvas-confetti": "1.9.4",
     "chart.js": "4.5.1",
-    "dompurify": "3.4.16",
+    "dompurify": "3.4.17",
     "marked": "18.1.0",
-    "next": "16.4.0",
+    "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "socket.io-client": "4.8.4"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^16.4.0",
+    "@next/bundle-analyzer": "^16.4.6",
     "@playwright/test": "1.64.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/canvas-confetti": "1.9.0",
@@ -31,7 +31,7 @@
     "@types/react-dom": "19.3.0",
     "cross-env": "^10.1.0",
     "eslint": "9.39.5",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.6",
     "postcss": "8.5.29",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3"

@@ -27,7 +27,7 @@ import { Idempotent } from "../common/decorators/idempotent.decorator";
 
 import { AdminAddCreditsDto } from "./dto/admin-add-credits.dto";
 import { AdminTransactionActionDto } from "./dto/admin-transaction-action.dto";
-import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 
 @ApiTags("Admin")
 @ApiBearerAuth("JWT-auth")

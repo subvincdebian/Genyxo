@@ -1,16 +1,11 @@
 // Behavior migrated from chat-inline3; resources are owned by the React mount.
 
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 export default function initialize(scope, context) {
   scope.document.addEventListener("DOMContentLoaded", function () {
     const faqWindow = scope.document.getElementById("faqWindow");
     const faqMenu = scope.document.getElementById("faqMenu");
     const faqBackBtn = scope.document.getElementById("faqBackBtn");
     const faqCloseBtn = scope.document.getElementById("faqCloseBtn");
-    const faqTitle = scope.document.querySelector(".faq-title");
     scope.window.openFaqPage = function (pageId) {
       faqMenu.style.display = "none";
 

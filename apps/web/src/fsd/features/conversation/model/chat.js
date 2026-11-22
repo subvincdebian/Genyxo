@@ -1,10 +1,6 @@
 // Behavior migrated from chat.js; resources are owned by the React mount.
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 export default function initialize(scope, context) {
   let currentChatId = null;
   let conversations = [];
@@ -558,16 +554,19 @@ export default function initialize(scope, context) {
     return "";
   }
   function docxXmlToText(xml) {
-    return xml
-      .replace(/<w:tab\/>/g, "\t")
-      .replace(/<w:br\/>/g, "\n")
-      .replace(/<\/w:p>/g, "\n")
-      .replace(/<[^>]+>/g, "")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&amp;/g, "&")
-      .replace(/&quot;/g, '"')
-      .replace(/&apos;/g, "'")
+    const document = new DOMParser().parseFromString(xml, "application/xml");
+    if (document.querySelector("parsererror")) return "";
+
+    const wordNamespace = document.documentElement.namespaceURI;
+    const paragraphs = document.getElementsByTagNameNS(wordNamespace, "p");
+    return Array.from(paragraphs, (paragraph) =>
+      Array.from(paragraph.getElementsByTagNameNS(wordNamespace, "*"), (node) => {
+        if (node.localName === "tab") return "\t";
+        if (node.localName === "br") return "\n";
+        return node.localName === "t" ? node.textContent : "";
+      }).join(""),
+    )
+      .join("\n")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
   }
@@ -1163,7 +1162,7 @@ export default function initialize(scope, context) {
     const match = markdown.match(
       /(^|\n)(\s*)(<!doctype\s+html|<html[\s>]|<style[\s>]|<script[\s>])/i,
     );
-    if (!match || typeof match.index !== "number") return markdown || "";
+    if (!match || typeof match.index !== "number") return markdown;
     const codeStartIndex = match.index + match[1].length;
     const intro = markdown.slice(0, codeStartIndex).trimEnd();
     const code = markdown.slice(codeStartIndex).trim();

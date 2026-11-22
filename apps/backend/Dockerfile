@@ -38,7 +38,8 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 # Install tini for PID 1 zombie reaping and proper POSIX signal propagation (SIGTERM/SIGINT)
-RUN apk add --no-cache tini curl
+RUN apk upgrade --no-cache && apk add --no-cache tini curl && \
+    rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 ENV NODE_ENV=production
 ENV PORT=3000

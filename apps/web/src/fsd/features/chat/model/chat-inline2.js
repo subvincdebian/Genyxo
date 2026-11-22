@@ -1,15 +1,10 @@
 // Behavior migrated from chat-inline2; resources are owned by the React mount.
 
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 export default function initialize(scope, context) {
   scope.document.addEventListener("DOMContentLoaded", () => {
     const mobileBtn = scope.document.getElementById("sidebarToggle");
     const sidebar = scope.document.getElementById("sidebar");
     const overlay = scope.document.getElementById("sidebar-overlay");
-    const body = scope.document.body;
     const closeMenu = () => {
       sidebar.classList.remove("mobile-open");
       overlay.classList.remove("active");

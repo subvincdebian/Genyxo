@@ -1,9 +1,5 @@
 // Behavior migrated from profile-transactions.js; resources are owned by the React mount.
 import { Chart } from "chart.js/auto";
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 export default function initialize(scope, context) {
   // 1. Данные ГЛОБАЛЬНО
   const chartData = {

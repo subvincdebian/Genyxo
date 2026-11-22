@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { randomBytes } from "crypto";
+import { randomInt } from "crypto";
 import { RedisCacheService } from "../common/redis-cache.service";
 import { User } from "./user.entity";
 import { Role } from "./role.enum";
@@ -140,11 +140,8 @@ export class UsersService {
     const size = 10; // Длина 10 символов как в Grass
 
     let code = "";
-    const bytes = randomBytes(size);
-
     for (let i = 0; i < size; i++) {
-      // Используем остаток от деления байта на длину алфавита
-      code += alphabet[bytes[i] % alphabet.length];
+      code += alphabet[randomInt(alphabet.length)];
     }
 
     // Проверка на уникальность в БД

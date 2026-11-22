@@ -1,6 +1,5 @@
 // Behavior migrated from terms-of-service-inline0; resources are owned by the React mount.
 
-import { API_BASE_URL as API_ORIGIN, SOCKET_URL as SOCKET_ORIGIN } from '@/shared/config';
 export default function initialize(scope, context) {
 scope.window.onload = function () {
   scope.setTimeout(function () {

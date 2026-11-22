@@ -440,9 +440,7 @@ export default function initialize(scope, context) {
       renderBadge(data.count);
     });
     socket.on("new_notification", (n) => {
-      if (typeof showToast === "function") {
-        showToast(`${n.title}: ${n.message}`, "info");
-      }
+      showToast(`${n.title}: ${n.message}`, "info");
       scope.document.dispatchEvent(
         new CustomEvent("genyxo:notification", {
           detail: n,
@@ -1398,13 +1396,14 @@ export default function initialize(scope, context) {
           )
           .join(""),
       );
-      renderPagination(Math.ceil(data.total / 5), page);
+      renderPagination(data.meta);
     } catch (err) {
       console.error("Failed to load transactions", err);
     }
   }
   function renderPagination(meta) {
-    const container = scope.document.getElementById("pagination-controls");
+    const container = scope.document.getElementById("pagination");
+    if (!container) return;
     let html = "";
     for (let i = 1; i <= meta.totalPages; i++) {
       html += `<button class="${i === meta.currentPage ? "active" : ""}" data-gx-click="${scope.bindHandler(

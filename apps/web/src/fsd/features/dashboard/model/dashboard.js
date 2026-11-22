@@ -1,12 +1,7 @@
 // Behavior migrated from dashboard.js; resources are owned by the React mount.
 import { Chart } from "chart.js/auto";
-import {
-  API_BASE_URL as API_ORIGIN,
-  SOCKET_URL as SOCKET_ORIGIN,
-} from "@/shared/config";
 export default function initialize(scope, context) {
   scope.document.addEventListener("DOMContentLoaded", function () {
-    const token = localStorage.getItem("token");
     const navAvatarImg = scope.document.getElementById("navAvatarImg");
     const dropdownAvatars = scope.document.getElementById("dropdownAvatars");
     const menuName = scope.document.getElementById("menuName");

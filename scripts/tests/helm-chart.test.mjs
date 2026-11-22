@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const localHelm = path.join(
@@ -110,25 +111,43 @@ for (const environment of [
         data(resource(result.stdout, "ConfigMap", "genyxo-config")),
       );
       assert.match(config, /FRONTEND_URL: "https:\/\//);
-      const mainIngress = resource(result.stdout, "Ingress", "genyxo-ingress");
-      assert.doesNotMatch(mainIngress, /nginx.ingress.kubernetes.io\/affinity/);
-      assert.doesNotMatch(mainIngress, /path: \/socket.io/);
-      const ingress = resource(
-        result.stdout,
-        "Ingress",
-        "genyxo-socket-ingress",
+      const mainIngress = parse(
+        resource(result.stdout, "Ingress", "genyxo-ingress"),
       );
-      assert.doesNotMatch(ingress, /cert-manager.io\/(?:cluster-)?issuer/);
-      assert.doesNotMatch(ingress, /frontend-svc/);
-      assert.match(ingress, /nginx.ingress.kubernetes.io\/affinity: cookie/);
-      assert.match(
-        ingress,
-        /nginx.ingress.kubernetes.io\/affinity-mode: persistent/,
+      assert.equal(
+        mainIngress.metadata.annotations?.[
+          "nginx.ingress.kubernetes.io/affinity"
+        ],
+        undefined,
       );
-      assert.match(
-        ingress,
-        /nginx.ingress.kubernetes.io\/session-cookie-path: \/socket.io/,
+      const ingress = parse(
+        resource(result.stdout, "Ingress", "genyxo-socket-ingress"),
       );
+      const annotations = ingress.metadata.annotations;
+      assert.equal(annotations["cert-manager.io/issuer"], undefined);
+      assert.equal(annotations["cert-manager.io/cluster-issuer"], undefined);
+      assert.equal(
+        annotations["nginx.ingress.kubernetes.io/affinity"],
+        "cookie",
+      );
+      assert.equal(
+        annotations["nginx.ingress.kubernetes.io/affinity-mode"],
+        "persistent",
+      );
+      assert.equal(
+        annotations["nginx.ingress.kubernetes.io/session-cookie-path"],
+        "/socket.io",
+      );
+      for (const rule of mainIngress.spec.rules) {
+        assert.ok(rule.http.paths.every(({ path }) => path !== "/socket.io"));
+      }
+      for (const rule of ingress.spec.rules) {
+        assert.ok(
+          rule.http.paths.every(
+            ({ backend }) => backend.service.name !== "frontend-svc",
+          ),
+        );
+      }
       if (environment === "values-production.yaml") {
         assert.match(config, /OTEL_ENABLED: "true"/);
         assert.match(config, /OTEL_EXPORTER_OTLP_ENDPOINT:/);

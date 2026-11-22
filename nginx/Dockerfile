@@ -1,6 +1,6 @@
-FROM nginx:1.27-alpine
+FROM nginx:1.30.7-alpine3.24
 
-RUN apk add --no-cache openssl curl
+RUN apk upgrade --no-cache && apk add --no-cache openssl curl
 
 # Remove default nginx configurations
 RUN rm -rf /etc/nginx/conf.d/*
