@@ -182,7 +182,9 @@ tests. Затем публикует образы в lowercase GHCR repository, 
 web и Nginx. HIGH/CRITICAL останавливают deployment; находки требуют устранения
 или отдельного обоснованного решения, их нельзя молча игнорировать.
 
-Production job использует GitHub environment `production`, секрет `KUBECONFIG`
+`.github/workflows/deploy-production.yml` запускается после успешной сборки и
+сканирования коммита основной ветки и пропускает устаревшие коммиты. Production
+job использует GitHub environment `production`, секрет `KUBECONFIG`
 (base64 kubeconfig), уже подготовленный `genyxo-secrets`, production values
 и одинаковый commit SHA для backend и migration Job. Отсутствие credentials
 является ошибкой. Настройте environment protection и registry pull access

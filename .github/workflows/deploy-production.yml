@@ -1,0 +1,76 @@
+name: Production Kubernetes Deploy
+
+on:
+  workflow_run:
+    workflows: [Production CI/CD Pipeline]
+    types: [completed]
+    branches: [master, main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to Kubernetes Cluster
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.path == '.github/workflows/ci-cd.yml' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: genyxo-production
+      queue: max
+    env:
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+      RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch }}
+    steps:
+      - name: Checkout Scanned Commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.19.0
+
+      - name: Confirm Commit Is Still Current
+        id: release
+        shell: bash
+        run: |
+          branch_ref="$(git ls-remote --exit-code origin "refs/heads/$RELEASE_BRANCH")"
+          branch_sha="${branch_ref%%$'\t'*}"
+          if [[ "$branch_sha" != "$RELEASE_SHA" ]]; then
+            echo "Skipping superseded commit $RELEASE_SHA"
+            exit 0
+          fi
+          echo 'current=true' >> "$GITHUB_OUTPUT"
+
+      - name: Upgrade Helm Release
+        if: steps.release.outputs.current == 'true'
+        shell: bash
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        run: |
+          test -n "$KUBECONFIG_DATA" || { echo 'Configure the KUBECONFIG production secret'; exit 1; }
+          umask 077
+          KUBECONFIG="$(mktemp)"
+          export KUBECONFIG
+          trap 'rm -f "$KUBECONFIG"' EXIT
+          printf '%s' "$KUBECONFIG_DATA" | base64 -d > "$KUBECONFIG"
+          unset KUBECONFIG_DATA
+
+          repository="ghcr.io/${GITHUB_REPOSITORY,,}"
+          helm upgrade --install genyxo ./helm/genyxo \
+            --namespace genyxo --create-namespace \
+            -f ./helm/genyxo/values-production.yaml \
+            --set-string backend.image.repository="$repository/genyxo-backend" \
+            --set-string frontend.image.repository="$repository/genyxo-frontend" \
+            --set-string backend.image.tag="$RELEASE_SHA" \
+            --set-string frontend.image.tag="$RELEASE_SHA" \
+            --set-string secrets.existingSecret=genyxo-secrets \
+            --atomic --wait --timeout 10m
