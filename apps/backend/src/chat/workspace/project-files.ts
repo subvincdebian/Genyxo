@@ -4,7 +4,7 @@ import { inflateRawSync } from "zlib";
 
 // Read only the document XML, using central-directory lengths (Word may use
 // data descriptors). Never unpack paths, evaluate XML entities, or fetch URLs.
-export function extractDocxText(bytes: Buffer): string {
+export function extractDocxText(bytes: Buffer, limit = 45000): string {
   try {
     const end = bytes.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
     if (end < 0 || end + 22 > bytes.length) throw new Error();
@@ -28,7 +28,7 @@ export function extractDocxText(bytes: Buffer): string {
       if (name !== "word/document.xml") continue;
       if (
         flags & 1 ||
-        expanded > 1000000 ||
+        expanded > Math.max(1000000, limit * 4) ||
         size > 5000000 ||
         bytes.readUInt32LE(local) !== 0x04034b50
       )
@@ -44,7 +44,9 @@ export function extractDocxText(bytes: Buffer): string {
         method === 0
           ? packed
           : method === 8
-            ? inflateRawSync(packed, { maxOutputLength: 1000000 })
+            ? inflateRawSync(packed, {
+                maxOutputLength: Math.max(1000000, limit * 4),
+              })
             : Buffer.alloc(0)
       ).toString("utf8");
       if (!xml || /<!DOCTYPE|<!ENTITY/i.test(xml)) throw new Error();
@@ -53,7 +55,7 @@ export function extractDocxText(bytes: Buffer): string {
         xml
           .replace(/<w:(?:br|tab)\b[^>]*\/?\s*>/g, " ")
           .replace(/<\/w:p>/g, "\n"),
-      ).slice(0, 45000);
+      ).slice(0, limit);
     }
   } catch {
     throw new BadRequestException(

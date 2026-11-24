@@ -89,6 +89,11 @@ export class StreamMessageDto extends SendMessageDto {
   @IsIn(["search", "research"])
   mode?: "search" | "research";
 
+  /** Auto mode: cheaper, balanced or best quality. */
+  @IsOptional()
+  @IsIn(["economy", "balanced", "quality"])
+  routePreference?: "economy" | "balanced" | "quality";
+
   /** Map places mentioned in the message, with their address and coordinates. */
   @IsOptional()
   @IsArray()
@@ -96,4 +101,57 @@ export class StreamMessageDto extends SendMessageDto {
   @ValidateNested({ each: true })
   @Type(() => PinnedPlaceDto)
   pinnedPlaces?: PinnedPlaceDto[];
+}
+
+export class RoutePreviewFileDto {
+  @IsString()
+  @MaxLength(100)
+  mime_type!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  name?: string;
+}
+
+/** What the composer knows while the user types, to preview Auto's pick. */
+export class RoutePreviewDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  message?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => RoutePreviewFileDto)
+  files?: RoutePreviewFileDto[];
+
+  @IsOptional()
+  @IsIn(["search", "research"])
+  mode?: "search" | "research";
+
+  @IsOptional()
+  @IsIn(["economy", "balanced", "quality"])
+  preference?: "economy" | "balanced" | "quality";
+}
+
+export class FactCheckDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  model?: string;
+
+  /** Compare with the chat's documents, the web, or both. */
+  @IsOptional()
+  @IsIn(["web", "documents", "both"])
+  scope?: "web" | "documents" | "both";
+}
+
+/** A question about the user's earlier chats. */
+export class RecallDto {
+  @IsString()
+  @MaxLength(500)
+  question!: string;
 }

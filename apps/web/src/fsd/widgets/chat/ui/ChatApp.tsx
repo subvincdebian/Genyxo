@@ -690,6 +690,7 @@ export function ChatApp({
               defaultValue="google/gemini-3.5-flash-lite"
             >
               {"\n                            "}
+              <option value="auto">{"Auto"}</option>
               <option value="google/gemini-3.5-flash-lite">{"Gemini 3.5 Flash-Lite"}</option>
               <option value="nvidia/nemotron-3-ultra-550b-a55b:free">{"Nemotron 3 Ultra"}</option>
               {"\n                            "}

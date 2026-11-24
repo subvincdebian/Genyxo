@@ -7,7 +7,7 @@ import { WorkspaceProvider, useWorkspace } from "@/features/workspace";
 import { WorkspaceSidebar } from "@/widgets/workspace/ui/WorkspaceSidebar";
 import { CanvasPanel } from "@/widgets/canvas";
 import { MapCardsHost, MapsHome } from "@/widgets/maps";
-import { MemoryManager, ReplyNotifier, RichCardsHost, TaskPanel, ThinkingOrbs } from "@/widgets/chat";
+import { IntelligenceHost, MemoryManager, ReplyNotifier, RichCardsHost, TaskPanel, ThinkingOrbs } from "@/widgets/chat";
 import { WorkspaceIcon, WorkspaceTooltip, lockWorkspaceScroll } from "@/shared/ui/workspace";
 import { useLanguage } from "@/shared/i18n";
 import { isChatPath } from "@/shared/lib/chat-url";
@@ -201,6 +201,7 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
       <ThinkingOrbs/>
       <ReplyNotifier/>
       <RichCardsHost/>
+      <IntelligenceHost/>
       <MemoryManager/>
       <TaskPanel/>
       {pathname === "/maps" && <MapsHome/>}

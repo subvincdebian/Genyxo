@@ -48,6 +48,7 @@ const routeStylesheets = {
   "src/fsd/pages/workspace/ui/workspace-pages.css": workspace,
   "src/fsd/widgets/canvas/ui/canvas.css": workspace,
   "src/fsd/widgets/chat/ui/action-card.css": workspace,
+  "src/fsd/widgets/chat/ui/intelligence/intelligence.css": workspace,
   "src/fsd/widgets/maps/ui/maps.css": workspace,
   "node_modules/maplibre-gl/dist/maplibre-gl.css": workspace,
   "src/fsd/widgets/workspace/ui/WorkspaceSidebar.css": workspace,

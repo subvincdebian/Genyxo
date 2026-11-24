@@ -421,6 +421,8 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
     if (input.current) input.current.style.height = "auto";
     engine.current?.setBase("think");
     stop.current = sendToPet(message, attachments, request, {
+      onRoute: (routed) =>
+        setMessages((old) => old.map((item) => (item.id === replyId ? { ...item, model: routed, activity: activityFor(routed, mode) } : item))),
       onActivity: (activity) =>
         setMessages((old) => old.map((item) => (item.id === replyId ? { ...item, activity } : item))),
       onVideo: (video) =>

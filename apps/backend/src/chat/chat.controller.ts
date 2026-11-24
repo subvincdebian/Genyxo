@@ -27,7 +27,19 @@ import { ChatService } from "./chat.service";
 import { FalService } from "./fal.service";
 import { PricingService } from "./pricing.service";
 import { SendMessageDto } from "./dto/send-message.dto";
-import { StreamMessageDto } from "./dto/stream-message.dto";
+import {
+  RecallDto,
+  FactCheckDto,
+  RoutePreviewDto,
+  StreamMessageDto,
+} from "./dto/stream-message.dto";
+import {
+  AUTO_MODEL,
+  routeModel,
+  type RouteDecision,
+} from "./routing/model-router";
+import { FactCheckService } from "./fact-check/fact-check.service";
+import { RecallService } from "./recall/recall.service";
 import { countryFromHeaders } from "./language/language-profile.service";
 import {
   AlternativeDto,
@@ -48,7 +60,70 @@ export class ChatController {
     private pricingService: PricingService,
     private configService: ConfigService,
     @Optional() private workspaceService?: WorkspaceService,
+    @Optional() private factCheckService?: FactCheckService,
+    @Optional() private recallService?: RecallService,
   ) {}
+
+  @UseGuards(AuthGuard("jwt"))
+  @ApiOperation({ summary: "Answer a question from the user's earlier chats" })
+  @Post("recall")
+  recall(@Body() dto: RecallDto, @Request() req) {
+    if (!this.recallService)
+      throw new BadRequestException("Chat search is not available");
+    const question = dto.question.trim();
+    if (question.length < 3)
+      throw new BadRequestException("Ask a longer question");
+    return this.recallService.answer(req.user.id, question);
+  }
+
+  private async route(
+    userId: number,
+    input: {
+      message?: string;
+      files?: { mime_type?: string; name?: string }[];
+      mode?: "search" | "research";
+      preference?: "economy" | "balanced" | "quality";
+    },
+  ): Promise<RouteDecision> {
+    return routeModel({
+      text: input.message || "",
+      files: input.files,
+      mode: input.mode,
+      preference: input.preference,
+      balance: await this.usersService
+        .getBalance(userId)
+        .catch(() => undefined),
+      costOf: (model) => this.pricingService.getModelConfig(model)?.cost,
+    });
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @ApiOperation({ summary: "Preview the model Auto mode would pick" })
+  @SkipThrottle()
+  @Post("route")
+  previewRoute(@Body() dto: RoutePreviewDto, @Request() req) {
+    return this.route(req.user.id, dto);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @ApiOperation({ summary: "Fact-check an answer with a second model" })
+  @Post("messages/:id/fact-check")
+  async factCheck(
+    @Param("id") id: number,
+    @Body() dto: FactCheckDto,
+    @Request() req,
+    @Res({ passthrough: false }) res: FastifyReply,
+  ) {
+    if (!this.factCheckService)
+      throw new BadRequestException("Fact-checking is not available");
+    await this.factCheckService.run(
+      req.user.id,
+      Number(id),
+      dto.model,
+      res.raw,
+      dto.scope,
+    );
+  }
 
   @ApiBearerAuth("JWT-auth")
   @UseGuards(AuthGuard("jwt"))
@@ -157,8 +232,21 @@ export class ChatController {
       presetId,
       clientRequestId,
     } = dto;
-    const selectedModel = model || "google/gemini-3.5-flash-lite";
     const convId = conversationId ? Number(conversationId) : undefined;
+    // Auto mode: route by what the message asks for, the same way the
+    // composer previewed it.
+    const route =
+      model === AUTO_MODEL
+        ? await this.route(userId, {
+            message,
+            files,
+            mode: dto.mode,
+            preference: dto.routePreference,
+          })
+        : null;
+    const selectedModel =
+      route?.model || model || "google/gemini-3.5-flash-lite";
+    if (route?.search && !dto.mode) dto.mode = "search";
 
     const modelConfig = this.pricingService.getModelConfig(selectedModel);
     if (!modelConfig)
@@ -203,6 +291,10 @@ export class ChatController {
     if (typeof raw.flushHeaders === "function") {
       raw.flushHeaders();
     }
+    if (route)
+      raw.write(`data: ${JSON.stringify({ status: "route", route })}
+
+`);
 
     await this.chatService.processStreamingMessage(
       userId,
@@ -223,6 +315,7 @@ export class ChatController {
         location: dto.location,
         pinnedPlaces: dto.pinnedPlaces,
         mode: dto.mode,
+        route: route || undefined,
       },
     );
   }

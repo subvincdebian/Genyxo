@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   GoneException,
   Injectable,
@@ -293,6 +294,40 @@ export class IntegrationToolsService {
       },
     };
     return [find, run];
+  }
+
+  /**
+   * Runs one read-only tool of a connected plugin directly, outside a chat
+   * turn (importing a Drive file or Notion page into a knowledge base).
+   */
+  async runReadTool(
+    userId: number,
+    pluginId: string,
+    pick: (key: string) => boolean,
+    args: Record<string, any>,
+  ) {
+    const connected = await this.integrations.connectedPlugins(userId);
+    const plugin = connected.find(
+      (item) => item.plugin.id === pluginId,
+    )?.plugin;
+    if (!plugin)
+      throw new BadRequestException(
+        `Connect ${findPlugin(pluginId)?.name || pluginId} on the Plugins page first`,
+      );
+    const tools =
+      plugin.auth.type === "mcp"
+        ? await this.mcpToolsFor(userId, plugin)
+        : ALL_TOOLS.filter((tool) => tool.pluginId === plugin.id).map((tool) =>
+            fromRest(tool, plugin),
+          );
+    const name = (tool: ChatTool) =>
+      tool.key.startsWith("mcp:")
+        ? tool.key.split(":").slice(2).join(":")
+        : tool.key;
+    const tool = tools.find((item) => pick(name(item)) && !item.writes(args));
+    if (!tool)
+      throw new BadRequestException(`${plugin.name} cannot be read this way`);
+    return this.execute(userId, tool, args);
   }
 
   /** Tools for the plugins this user turned on; null when there are none. */

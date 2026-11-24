@@ -1842,6 +1842,7 @@ export default function initialize(scope, context) {
       likeBtn,
       dislikeBtn,
       createBotActionButton("fas fa-wand-magic-sparkles", "Answer with another model", () => openAlternativePicker(botBubble)),
+      createBotActionButton("fas fa-shield-halved", "Check facts", () => startFactCheck(botBubble)),
       compareBtn,
       createBotActionButton("far fa-bookmark", "Save as document", () => saveAnswerToLibrary(botBubble)),
       createBotActionButton("far fa-copy", "Copy response", () =>
@@ -1852,6 +1853,7 @@ export default function initialize(scope, context) {
     return actions;
   }
   function getModelIconSrc(value = "") {
+    if (value === "auto") return "/images/auto-route.svg";
     if (value.includes("dall-e")) return "/images/dalle-text.png";
     if (value.includes("google/gemini") || value.includes("gemma"))
       return "/images/google-gemini.svg";
@@ -1864,6 +1866,7 @@ export default function initialize(scope, context) {
     return "/images/logo.svg";
   }
   function getModelProviderName(value = "") {
+    if (value === "auto") return "Auto";
     if (value.includes("google/gemini") || value.includes("gemma"))
       return "Gemini";
     if (value.includes("openai") || value.includes("gpt")) return "OpenAI";
@@ -1872,6 +1875,50 @@ export default function initialize(scope, context) {
     if (value.includes("nvidia/")) return "NVIDIA";
     if (value.includes("kling")) return "Kling";
     return "AI";
+  }
+  // Auto mode's pick sits above the answer; React renders it (IntelligenceHost).
+  function setMessageRoute(botBubble, route) {
+    if (!route?.model) return;
+    botBubble._route = route;
+    botBubble._messageModel = route.model;
+    let slot = botBubble.querySelector(":scope > .gx-route-slot");
+    if (!slot) {
+      slot = scope.document.createElement("div");
+      slot.className = "gx-route-slot";
+      botBubble.prepend(slot);
+    }
+    scope.document.dispatchEvent(new CustomEvent("genyxo:route-badge", {
+      detail: { element: slot, route, answerWith: (model) => answerWithModel(botBubble, model) },
+    }));
+  }
+  // A second model checks the answer's facts; the card sits above the actions.
+  function showFactCheck(botBubble, { result = null, run = false } = {}) {
+    let slot = botBubble.querySelector(":scope > .gx-factcheck-slot");
+    if (!slot) {
+      slot = scope.document.createElement("div");
+      slot.className = "gx-factcheck-slot";
+      const actions = botBubble.querySelector(":scope > .bot-message-actions");
+      if (actions) actions.before(slot);
+      else botBubble.appendChild(slot);
+    }
+    scope.document.dispatchEvent(new CustomEvent("genyxo:fact-check", {
+      detail: {
+        element: slot,
+        bubble: botBubble,
+        messageId: Number(botBubble.dataset.messageId),
+        answerModel: botBubble._messageModel || "",
+        result,
+        run,
+        api: context.API_BASE_URL,
+        token: () => context.token,
+        onBalance: (balance) => context.updateBalanceUI?.(balance),
+      },
+    }));
+  }
+  function startFactCheck(botBubble) {
+    if (!botBubble.dataset.messageId) return context.showToast("This answer is still being saved", "info");
+    if (botBubble.classList.contains("streaming")) return;
+    showFactCheck(botBubble, { run: true });
   }
   // A scheduled task's run shows as a quiet header with the task's name (as in
   // ChatGPT) instead of a user bubble; it opens to the instruction it ran.
@@ -1904,7 +1951,7 @@ export default function initialize(scope, context) {
     chatBox.appendChild(row);
     return row;
   }
-  function appendMessage(sender, text, model = "", files = [], activity = [], sources = [], messageId = null, alternativeToMessageId = null) {
+  function appendMessage(sender, text, model = "", files = [], activity = [], sources = [], messageId = null, alternativeToMessageId = null, meta = null) {
     if (sender === "user" && typeof text === "string" && text.startsWith("```genyxo-task-run\n")) {
       const row = appendTaskRun(text, messageId);
       if (row) return row;
@@ -2045,6 +2092,7 @@ export default function initialize(scope, context) {
     }
     msgDiv.appendChild(contentDiv);
     if (sender === "bot" && text) attachCanvasCard(msgDiv, text, false);
+    if (sender === "bot" && meta?.route) setMessageRoute(msgDiv, meta.route);
     if (sender === "bot") {
       scope.document
         .querySelectorAll(".latest-bot-message")
@@ -2053,6 +2101,7 @@ export default function initialize(scope, context) {
         });
       msgDiv.classList.add("latest-bot-message");
       msgDiv.appendChild(createBotActions(msgDiv));
+      if (meta?.factCheck) showFactCheck(msgDiv, { result: meta.factCheck });
     }
     if (model) {
       const meta = scope.document.createElement("div");
@@ -2108,7 +2157,7 @@ export default function initialize(scope, context) {
         if (DOM.chatBox) DOM.chatBox.innerHTML = scope.sanitizeHtml("");
         if (messages && messages.length > 0) {
           messages.forEach((msg) =>
-            appendMessage(msg.sender, msg.content, msg.model, msg.files || [], msg.activity, msg.sources, msg.id, msg.alternativeToMessageId),
+            appendMessage(msg.sender, msg.content, msg.model, msg.files || [], msg.activity, msg.sources, msg.id, msg.alternativeToMessageId, msg.meta),
           );
           refreshVariantActions();
         }
@@ -2240,7 +2289,7 @@ export default function initialize(scope, context) {
     select.setAttribute("aria-label", "Choose another model");
     Array.from(modelSelect.options).filter((option) =>
       option.value !== originalBubble._messageModel &&
-      !/dall-e|kling|embedding|robotics|audio|live-translate/.test(option.value),
+      !/^auto$|dall-e|kling|embedding|robotics|audio|live-translate/.test(option.value),
     ).forEach((option) => {
       const item = scope.document.createElement("option");
       item.value = option.value;
@@ -2256,9 +2305,7 @@ export default function initialize(scope, context) {
       submit.disabled = true;
       submit.textContent = "Generating…";
       try {
-        const result = await workspaceRequest("alternative", { method: "POST", body: JSON.stringify({ messageId: Number(originalId), model: select.value }) });
-        appendMessage("bot", result.content, result.model, [], result.activity, result.sources, result.id, result.alternativeToMessageId);
-        refreshVariantActions();
+        await answerWithModel(botBubble, select.value);
         dismiss();
       } catch (error) {
         context.showToast(error.message, "error");
@@ -2266,6 +2313,15 @@ export default function initialize(scope, context) {
         submit.textContent = "Generate alternative";
       }
     });
+  }
+  // The same question answered by another model, kept as a variant of the answer.
+  async function answerWithModel(botBubble, model) {
+    const originalId = botBubble.dataset.alternativeTo || botBubble.dataset.messageId;
+    if (!originalId) throw new Error("This answer is still being saved");
+    const result = await workspaceRequest("alternative", { method: "POST", body: JSON.stringify({ messageId: Number(originalId), model }) });
+    appendMessage("bot", result.content, result.model, [], result.activity, result.sources, result.id, result.alternativeToMessageId);
+    refreshVariantActions();
+    return result;
   }
   async function saveAnswerToLibrary(botBubble) {
     if (!botBubble.dataset.messageId) return context.showToast("Wait until this answer is saved", "info");
@@ -2667,6 +2723,12 @@ export default function initialize(scope, context) {
         model: selectedModel,
         files: base64Files,
       };
+      if (selectedModel === "auto") {
+        try {
+          const preference = scope.window.localStorage.getItem("genyxo:auto-preference");
+          if (/^(economy|balanced|quality)$/.test(preference || "")) payload.routePreference = preference;
+        } catch { /* Storage can be blocked; Auto then stays balanced. */ }
+      }
       if (currentChatId) payload.conversationId = currentChatId;
       const response = await scope.fetch(
         `${context.API_BASE_URL}/chat/stream`,
@@ -2708,6 +2770,10 @@ export default function initialize(scope, context) {
           if (!jsonStr || jsonStr === "[DONE]") continue;
           const data = JSON.parse(jsonStr);
           if (data.error) throw new Error(data.error);
+          if (data.status === "route" && data.route) {
+            setMessageRoute(botBubble, data.route);
+            continue;
+          }
           recordResponseActivity(botBubble, data);
           if (data.token) {
             fullContent += data.token;
@@ -2810,6 +2876,12 @@ export default function initialize(scope, context) {
         model: selectedModel,
         files: base64Files,
       };
+      if (selectedModel === "auto") {
+        try {
+          const preference = scope.window.localStorage.getItem("genyxo:auto-preference");
+          if (/^(economy|balanced|quality)$/.test(preference || "")) payload.routePreference = preference;
+        } catch { /* Storage can be blocked; Auto then stays balanced. */ }
+      }
       if (activePresetId !== undefined) payload.presetId = activePresetId;
       // The Maps page shares the user's location, which gives the model map tools.
       const sharedLocation = scope.window.genyxoMaps?.location?.();
@@ -2890,6 +2962,10 @@ export default function initialize(scope, context) {
                 failure.conversationId = data.conversationId;
                 throw failure;
               }
+              if (data.status === "route" && data.route) {
+                setMessageRoute(botBubble, data.route);
+                continue;
+              }
               recordResponseActivity(botBubble, data);
               if (data.messageId) botBubble.dataset.messageId = String(data.messageId);
               if (data.token) {
@@ -2931,8 +3007,8 @@ export default function initialize(scope, context) {
               }
               if (
                 data.messageId &&
-                (selectedModel.includes("kling") ||
-                  selectedModel.includes("luma"))
+                (botBubble._messageModel.includes("kling") ||
+                  botBubble._messageModel.includes("luma"))
               ) {
                 if (fullContent.trim()) streamingRenderer.flush(fullContent);
                 botBubble.classList.remove("streaming");
@@ -2997,7 +3073,7 @@ export default function initialize(scope, context) {
       updateComposerState();
       if (activeSendController === controller) activeSendController = null;
       if (completed) { pendingFirstSend = null; activePresetId = undefined; attachCanvasCard(botBubble, fullContent, true); }
-      scope.document.dispatchEvent(new CustomEvent("genyxo:answer-done", { detail: { ok: completed, aborted: controller.signal.aborted, text: fullContent, conversationId: responseConversationId || currentChatId, url: isChatPath(scope.window.location.pathname) && String(currentChatId) === String(responseConversationId) ? scope.window.location.pathname : "/chat", model: modelLabel(selectedModel) } }));
+      scope.document.dispatchEvent(new CustomEvent("genyxo:answer-done", { detail: { ok: completed, aborted: controller.signal.aborted, text: fullContent, conversationId: responseConversationId || currentChatId, url: isChatPath(scope.window.location.pathname) && String(currentChatId) === String(responseConversationId) ? scope.window.location.pathname : "/chat", model: modelLabel(botBubble._messageModel || selectedModel) || botBubble._route?.label || "" } }));
       if (context.workspaceManaged) {
         scope.document.dispatchEvent(new CustomEvent("genyxo:workspace-refresh"));
         if (completed && responseConversationId) {
@@ -3422,6 +3498,7 @@ export default function initialize(scope, context) {
     try { favorites = JSON.parse(scope.window.localStorage.getItem(favoriteKey) || "[]"); } catch { favorites = []; }
     if (!Array.isArray(favorites)) favorites = [];
     const modeFor = (value) => {
+      if (value === "auto") return "chat";
       if (value === "openai/dall-e-3") return "image";
       if (value === "kling-video") return "video";
       if (/embedding|robotics|audio|live-translate/.test(value)) return "unsupported";
@@ -3450,10 +3527,60 @@ export default function initialize(scope, context) {
       label.textContent = option.textContent;
       container.append(icon, label);
     }
+    const autoPreferenceKey = "genyxo:auto-preference";
+    const readAutoPreference = () => {
+      try { return scope.window.localStorage.getItem(autoPreferenceKey) || "balanced"; } catch { return "balanced"; }
+    };
+    // Auto leads the Chat tab: one row that picks the model per message, with
+    // how hard it should lean on cost or quality.
+    function renderAutoRow() {
+      const li = scope.document.createElement("li");
+      li.className = "model-auto-row";
+      li.dataset.value = "auto";
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", String(native.value === "auto"));
+      li.tabIndex = 0;
+      if (native.value === "auto") li.classList.add("active");
+      const glyph = scope.document.createElement("span");
+      glyph.className = "model-auto-glyph";
+      const icon = scope.document.createElement("img");
+      icon.src = "/images/auto-route.svg";
+      icon.alt = "";
+      glyph.appendChild(icon);
+      const copy = scope.document.createElement("span");
+      copy.className = "model-auto-copy";
+      const title = scope.document.createElement("strong");
+      title.textContent = "Auto";
+      const hint = scope.document.createElement("small");
+      hint.textContent = "Best model for each message";
+      copy.append(title, hint);
+      const prefs = scope.document.createElement("span");
+      prefs.className = "model-auto-prefs";
+      prefs.setAttribute("role", "radiogroup");
+      prefs.setAttribute("aria-label", "Auto mode leans toward");
+      const preference = readAutoPreference();
+      [["economy", "Cheaper", "Prefer free and cheaper models"], ["balanced", "Balanced", "Best value for each task"], ["quality", "Smarter", "Top models, higher cost"]].forEach(([value, label, tip]) => {
+        const button = scope.document.createElement("button");
+        button.type = "button";
+        button.dataset.autoPreference = value;
+        button.setAttribute("role", "radio");
+        button.setAttribute("aria-checked", String(preference === value));
+        button.title = tip;
+        button.textContent = label;
+        prefs.appendChild(button);
+      });
+      prefs.dataset.active = preference;
+      li.append(glyph, copy);
+      // How Auto weighs cost only matters once Auto is chosen.
+      if (native.value === "auto") li.appendChild(prefs);
+      return li;
+    }
     function renderOptions() {
       optionsList.replaceChildren();
       const query = search.value.trim().toLowerCase();
+      if (activeMode === "chat" && (!query || "auto smart".includes(query))) optionsList.appendChild(renderAutoRow());
       const matching = Array.from(native.options).filter((opt) =>
+        opt.value !== "auto" &&
         modeFor(opt.value) === activeMode &&
         opt.textContent.toLowerCase().includes(query),
       );
@@ -3509,7 +3636,7 @@ export default function initialize(scope, context) {
         group.append(heading, children);
         optionsList.appendChild(group);
       });
-      if (!matching.length) {
+      if (!matching.length && !optionsList.querySelector(".model-auto-row")) {
         const empty = scope.document.createElement("li");
         empty.className = "model-picker-empty";
         empty.textContent = "No compatible models found";
@@ -3518,12 +3645,26 @@ export default function initialize(scope, context) {
       modeTabs.forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.mode === activeMode)));
       custom.querySelector(".model-picker-tabs").dataset.activeMode = activeMode;
     }
+    const chosenModelKey = "genyxo:chat-model";
+    try {
+      const saved = scope.window.localStorage.getItem(chosenModelKey);
+      if (saved && Array.from(native.options).some((opt) => opt.value === saved && modeFor(saved) === "chat")) {
+        native.value = saved;
+        activeMode = modeFor(saved);
+        expandedProvider = providerFor(saved);
+        native.dispatchEvent(new Event("change"));
+      }
+    } catch { /* Storage can be blocked; the default model stays. */ }
     renderOptions();
     const selected = native.options[native.selectedIndex];
     if (selected && current) renderModelLabel(current, selected);
     scope.listen(native, "change", () => {
       const option = native.options[native.selectedIndex];
       if (!option) return;
+      // Chat models are remembered; image and video stay one-off choices.
+      if (modeFor(option.value) === "chat") {
+        try { scope.window.localStorage.setItem(chosenModelKey, option.value); } catch { /* Storage can be blocked. */ }
+      }
       activeMode = modeFor(option.value);
       expandedProvider = providerFor(option.value);
       renderModelLabel(current, option);
@@ -3604,6 +3745,16 @@ export default function initialize(scope, context) {
     scope.listen(search, "click", (e) => e.stopPropagation());
     scope.listen(search, "input", renderOptions);
     scope.listen(optionsList, "click", (e) => {
+      const preferenceButton = e.target.closest("[data-auto-preference]");
+      if (preferenceButton) {
+        e.stopPropagation();
+        try { scope.window.localStorage.setItem(autoPreferenceKey, preferenceButton.dataset.autoPreference); } catch { /* Storage can be blocked. */ }
+        const group = preferenceButton.parentElement;
+        group.dataset.active = preferenceButton.dataset.autoPreference;
+        group.querySelectorAll("button").forEach((button) => button.setAttribute("aria-checked", String(button === preferenceButton)));
+        scope.document.dispatchEvent(new CustomEvent("genyxo:auto-preference", { detail: preferenceButton.dataset.autoPreference }));
+        return;
+      }
       const providerButton = e.target.closest("[data-provider]");
       if (providerButton) {
         e.stopPropagation();

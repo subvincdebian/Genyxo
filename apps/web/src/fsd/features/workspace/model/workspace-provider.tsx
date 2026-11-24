@@ -154,6 +154,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (path) router.push(path);
     else void chatPath(id).then((found) => { if (selected.current === id) router.push(found || "/chat"); });
   }, [router, snapshot.conversations, setActiveProjectId]);
+  // Other parts of the app (links to a message in another chat) open a chat by id.
+  useEffect(() => {
+    const open = (event: Event) => {
+      const id = Number((event as CustomEvent<{ id: number }>).detail?.id);
+      if (id) selectChat(id);
+    };
+    document.addEventListener("genyxo:open-chat", open);
+    return () => document.removeEventListener("genyxo:open-chat", open);
+  }, [selectChat]);
   const startNewChat = useCallback((projectId?: number) => {
     selected.current = null; setSelectedChatId(null); setActiveProjectId(projectId || null);
     document.dispatchEvent(new CustomEvent("genyxo:workspace-new", { detail: { projectId: projectId || null } }));

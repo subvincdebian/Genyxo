@@ -28,6 +28,11 @@ import { MapsController } from "./maps/maps.controller";
 import { ScheduledService } from "./scheduled/scheduled.service";
 import { ShareService } from "./share/share.service";
 import { ShareController } from "./share/share.controller";
+import { FactCheckService } from "./fact-check/fact-check.service";
+import { RecallService } from "./recall/recall.service";
+import { KnowledgeService } from "./knowledge/knowledge.service";
+import { KnowledgeController } from "./knowledge/knowledge.controller";
+import { KnowledgeChunk, KnowledgeSource } from "./knowledge/knowledge.entity";
 @Module({
   imports: [
     ConfigModule,
@@ -40,6 +45,8 @@ import { ShareController } from "./share/share.controller";
       ChatLibraryItem,
       WorkspaceRecord,
       GeneratedMedia,
+      KnowledgeSource,
+      KnowledgeChunk,
     ]),
   ],
   providers: [
@@ -55,6 +62,9 @@ import { ShareController } from "./share/share.controller";
     LiveVoiceService,
     ScheduledService,
     ShareService,
+    FactCheckService,
+    RecallService,
+    KnowledgeService,
   ],
   controllers: [
     WorkspaceController,
@@ -63,6 +73,7 @@ import { ShareController } from "./share/share.controller";
     ChatController,
     VoiceController,
     ShareController,
+    KnowledgeController,
   ],
   exports: [ChatService],
 })

@@ -58,6 +58,8 @@ export type PetStreamEvents = {
   onVideo?: (url: string) => void;
   /** Long jobs (video) report progress text. */
   onActivity?: (text: string) => void;
+  /** Auto mode chose this model for the reply. */
+  onRoute?: (model: string) => void;
 };
 
 const sleep = (ms: number, signal: AbortSignal) =>
@@ -149,6 +151,7 @@ export function sendToPet(
       const decoder = new TextDecoder();
       let rest = "";
       let completed = false;
+      let routed = request.model;
       for (;;) {
         const { value, done } = await reader.read();
         if (done) break;
@@ -169,9 +172,14 @@ export function sendToPet(
           if (data.conversationId)
             sessionStorage.setItem(THREAD_KEY, String(data.conversationId));
           if (typeof data.error === "string") throw new Error(data.error);
+          const route = data.route as { model?: unknown } | undefined;
+          if (data.status === "route" && typeof route?.model === "string") {
+            routed = route.model;
+            events.onRoute?.(routed);
+          }
           if (typeof data.token === "string") events.onToken(data.token);
           if (data.status === "done") completed = true;
-          if (typeof data.messageId === "number" && request.model.includes("kling")) {
+          if (typeof data.messageId === "number" && routed.includes("kling")) {
             await reader.cancel().catch(() => {});
             events.onActivity?.("Rendering your video");
             events.onVideo?.(await waitForVideo(data.messageId, controller.signal));

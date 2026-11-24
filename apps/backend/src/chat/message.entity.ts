@@ -20,6 +20,11 @@ export interface IAttachedFile {
   size?: number;
 }
 
+export interface MessageMeta {
+  route?: import("./routing/model-router").RouteDecision;
+  factCheck?: import("./fact-check/fact-check.types").FactCheckResult;
+}
+
 @Entity("messages")
 @Index(["conversationId", "createdAt"])
 export class Message {
@@ -72,6 +77,10 @@ export class Message {
 
   @Column({ type: "json", nullable: true })
   sources!: string[] | null;
+
+  /** Auto-mode route and fact-check results shown with a reply. */
+  @Column({ type: "json", nullable: true })
+  meta!: MessageMeta | null;
 
   @Index("IDX_messages_alternative_to")
   @Column({ type: "int", nullable: true })

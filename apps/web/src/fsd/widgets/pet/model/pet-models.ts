@@ -22,6 +22,8 @@ const chat = (value: string, label: string, provider: string, credits?: number):
 
 export const PET_MODELS: PetModel[] = [
   chat("google/gemini-3.5-flash-lite", "Gemini 3.5 Flash-Lite", "Gemini"),
+  // Picks the model per message on the server, as in the main composer.
+  chat("auto", "Auto", "Auto"),
   chat("google/gemini-3.5-flash", "Gemini 3.5 Flash", "Gemini"),
   chat("google/gemini-3.1-flash-lite", "Gemini 3.1 Flash", "Gemini"),
   chat("google/gemini-2.5-pro", "Gemini 2.5 Pro", "Gemini"),
@@ -48,7 +50,7 @@ export const PET_MODELS: PetModel[] = [
   { value: "openai/dall-e-3", label: "DALL·E 3", provider: "DALL·E", kind: "image", credits: 120 },
   { value: "kling-video", label: "Kling Video", provider: "Kling", kind: "video", credits: 500 },
 ];
-export const PROVIDER_ORDER = ["Gemini", "ChatGPT", "Claude", "NVIDIA Nemotron", "Gemma", "DALL·E", "Kling"];
+export const PROVIDER_ORDER = ["Auto", "Gemini", "ChatGPT", "Claude", "NVIDIA Nemotron", "Gemma", "DALL·E", "Kling"];
 export const DEFAULT_PET_MODEL = PET_MODELS[0].value;
 export const IMAGE_MODEL = "openai/dall-e-3";
 export const VIDEO_MODEL = "kling-video";
@@ -57,6 +59,7 @@ export const findPetModel = (value: string) =>
   PET_MODELS.find((model) => model.value === value) || PET_MODELS[0];
 
 export function modelIcon(value: string) {
+  if (value === "auto") return "/images/auto-route.svg";
   if (value.includes("dall-e")) return "/images/dalle-text.png";
   if (value.includes("gemini") || value.includes("gemma")) return "/images/google-gemini.svg";
   if (value.includes("openai")) return "/images/openai-mark.svg";

@@ -155,12 +155,9 @@ describe("ChatService", () => {
     conversationRepository.update = jest
       .fn()
       .mockResolvedValue({ affected: 1 });
-    const ai = (service as any).openRouter;
-    ai.chat.completions.create = jest.fn().mockResolvedValue({
-      choices: [
-        { message: { content: "The user is discussing project context." } },
-      ],
-    });
+    const summarize = jest
+      .spyOn(service, "completeText")
+      .mockResolvedValue("Goal: the user is discussing project context.");
     const conversation = {
       id: 1,
       userId: 7,
@@ -172,9 +169,41 @@ describe("ChatService", () => {
       messages[5],
     );
     expect(result.summary).toContain("project context");
+    expect(summarize.mock.calls[0][1]).toContain("Decisions:");
     expect(conversation.summaryThroughMessageId).toBeGreaterThan(0);
     expect(result.messages.at(-1).id).toBe(6);
     expect(conversationRepository.update).toHaveBeenCalled();
+  });
+
+  it("keeps a condensed digest of older messages when no summary model answers", async () => {
+    const messages = Array.from({ length: 6 }, (_, index) => ({
+      id: index + 1,
+      content: `Turn ${index + 1} about invoices. ` + "Context ".repeat(1350),
+      sender: index % 2 ? "bot" : "user",
+      model: "openai/gpt-4o",
+      files: null,
+    }));
+    (service as any).messageRepository.find = jest
+      .fn()
+      .mockResolvedValue(messages);
+    (service as any).conversationRepository.update = jest
+      .fn()
+      .mockResolvedValue({ affected: 1 });
+    jest
+      .spyOn(service, "completeText")
+      .mockRejectedValue(new Error("429 quota"));
+    const conversation = {
+      id: 1,
+      userId: 7,
+      contextSummary: null,
+      summaryThroughMessageId: 0,
+    };
+    const result = await (service as any).prepareConversationContext(
+      conversation,
+      messages[5],
+    );
+    expect(result.summary).toContain("Earlier messages (condensed)");
+    expect(result.summary).toContain("Turn 1 about invoices");
   });
 
   it("stores an alternative answer linked to the original without replacing it", async () => {
