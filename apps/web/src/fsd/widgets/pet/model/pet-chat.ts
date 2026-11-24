@@ -10,6 +10,16 @@ export type PetMessage = {
   files?: string[];
   error?: boolean;
   streaming?: boolean;
+  /** What the pet is doing before the first words arrive. */
+  activity?: string;
+  model?: string;
+  video?: string;
+};
+export type PetRequest = {
+  model: string;
+  mode?: "search" | "research";
+  presetId?: number;
+  projectId?: number;
 };
 export type PetAttachment = { file: File; name: string };
 
@@ -24,14 +34,6 @@ const token = () => {
   }
 };
 export const petSignedIn = () => Boolean(token());
-
-const selectedModel = () => {
-  try {
-    return localStorage.getItem("selectedAIModel") || "google/gemini-2.5-flash";
-  } catch {
-    return "google/gemini-2.5-flash";
-  }
-};
 
 const toBase64 = (file: Blob) =>
   new Promise<string>((resolve, reject) => {
@@ -52,12 +54,44 @@ export function acceptAttachment(file: File): string | null {
 export type PetStreamEvents = {
   onToken: (text: string) => void;
   onDone: (ok: boolean, error?: string) => void;
+  /** A video model finished rendering. */
+  onVideo?: (url: string) => void;
+  /** Long jobs (video) report progress text. */
+  onActivity?: (text: string) => void;
 };
+
+const sleep = (ms: number, signal: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    signal.addEventListener("abort", () => {
+      clearTimeout(timer);
+      reject(new DOMException("Aborted", "AbortError"));
+    });
+  });
+
+/** Video models answer with a message id; the clip is ready a minute or two later. */
+async function waitForVideo(messageId: number, signal: AbortSignal) {
+  for (let attempt = 0; attempt < 72; attempt++) {
+    await sleep(5000, signal);
+    const response = await fetch(`/api/chat/message-status/${messageId}`, {
+      signal,
+      headers: { Authorization: `Bearer ${token()}` },
+    });
+    if (!response.ok) continue;
+    const data = (await response.json().catch(() => ({}))) as {
+      isReady?: boolean;
+      videoUrl?: string;
+    };
+    if (data.isReady && data.videoUrl) return data.videoUrl;
+  }
+  throw new Error("The video is taking too long. It will appear in your chats when ready.");
+}
 
 /** Send one turn; returns a function that stops the answer. */
 export function sendToPet(
   message: string,
   attachments: PetAttachment[],
+  request: PetRequest,
   events: PetStreamEvents,
 ) {
   const controller = new AbortController();
@@ -91,10 +125,16 @@ export function sendToPet(
         },
         body: JSON.stringify({
           message,
-          model: selectedModel(),
+          model: request.model,
           files,
+          ...(request.mode ? { mode: request.mode } : {}),
+          ...(request.presetId ? { presetId: request.presetId } : {}),
           ...(locales.length ? { locales } : {}),
-          ...(conversationId ? { conversationId } : {}),
+          ...(conversationId
+            ? { conversationId }
+            : request.projectId
+              ? { projectId: request.projectId }
+              : {}),
         }),
       });
       if (!response.ok || !response.body) {
@@ -131,6 +171,13 @@ export function sendToPet(
           if (typeof data.error === "string") throw new Error(data.error);
           if (typeof data.token === "string") events.onToken(data.token);
           if (data.status === "done") completed = true;
+          if (typeof data.messageId === "number" && request.model.includes("kling")) {
+            await reader.cancel().catch(() => {});
+            events.onActivity?.("Rendering your video");
+            events.onVideo?.(await waitForVideo(data.messageId, controller.signal));
+            finish(true);
+            return;
+          }
         }
       }
       finish(completed, completed ? undefined : "The answer was interrupted.");

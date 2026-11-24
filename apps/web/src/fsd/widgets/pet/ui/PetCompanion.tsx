@@ -10,6 +10,7 @@ import {
   type CSSProperties,
 } from "react";
 import { useLanguage } from "@/shared/i18n";
+import { WorkspaceIcon } from "@/shared/ui/workspace";
 import {
   PETS,
   getPetSettings,
@@ -31,6 +32,22 @@ import {
   type PetAttachment,
   type PetMessage,
 } from "../model/pet-chat";
+import { createDictation, type DictationState, type PetDictation } from "../model/pet-dictation";
+import {
+  IMAGE_MODEL,
+  VIDEO_MODEL,
+  findPetModel,
+  getPetModel,
+  getServerPetModel,
+  modelIcon,
+  setPetModel,
+  subscribePetModel,
+} from "../model/pet-models";
+import { closeOpenFence, useTypewriter } from "../model/pet-typing";
+import { PetModelPicker } from "./PetModelPicker";
+import { MODE_TITLES, PetPlusMenu, modeIcon, type PetMode } from "./PetPlusMenu";
+import { PetPopover, usePresence } from "./PetPopover";
+import { PetSketch } from "./PetSketch";
 import styles from "./PetCompanion.module.css";
 
 /** The voice call the pet can start; injected by the app so widgets stay independent. */
@@ -73,7 +90,80 @@ const ICONS = {
     "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM4 12h2m12 0h2M12 4v2m0 12v2M6.3 6.3l1.4 1.4m8.6 8.6 1.4 1.4m0-11.4-1.4 1.4m-8.6 8.6-1.4 1.4",
   hide: "M3 3l18 18M10.6 6.2A9.8 9.8 0 0 1 12 6c5 0 8.5 4 9.5 6a13 13 0 0 1-2.6 3.4M6.6 6.7A13.6 13.6 0 0 0 2.5 12c1 2 4.5 6 9.5 6a9.6 9.6 0 0 0 4-.9M9.9 9.9a3 3 0 0 0 4.2 4.2",
   fresh: "M4 5v5h5M20 19v-5h-5M5.5 15a7 7 0 0 0 12 2.5M18.5 9a7 7 0 0 0-12-2.5",
+  copy: "M9 9h10v10H9zM5 15V5h10",
+  check: "m5 12 5 5 9-10",
+  chevron: "m7 10 5 5 5-5",
 };
+/** The waveform on the voice-conversation button, as in the main composer. */
+const WAVE = (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+    {[5, 9, 13, 17, 21].map((x, index) => (
+      <rect key={x} x={x - 1.1} y={[9, 5, 3, 6, 9][index]} width="2.2" height={[6, 14, 18, 12, 6][index]} rx="1.1" fill="currentColor" />
+    ))}
+  </svg>
+);
+
+/** One answer, typed out smoothly with a breathing caret, as in the main chat. */
+function PetReply({ message, reduced }: { message: PetMessage; reduced: boolean }) {
+  const shown = useTypewriter(message.text, Boolean(message.streaming), reduced);
+  const typing = Boolean(message.streaming) || shown.length < message.text.length;
+  const [copied, setCopied] = useState(false);
+  if (!message.text && !message.video)
+    return (
+      <div className={styles.thinking} role="status">
+        <span className={styles.orb} aria-hidden="true" />
+        <span className={styles.shimmer}>{message.activity || "Thinking"}</span>
+      </div>
+    );
+  return (
+    <div className={`${styles.reply} bot-message-text`} data-error={message.error || undefined} data-typing={typing || undefined}>
+      {message.text && (
+        <div
+          className={styles.markdown}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(marked.parse(typing ? closeOpenFence(shown) : message.text, { async: false })),
+          }}
+        />
+      )}
+      {message.video && (
+        <video className={styles.video} src={message.video} controls playsInline preload="metadata" />
+      )}
+      {!typing && !message.error && message.text && (
+        <div className={styles.replyActions}>
+          {message.model && (
+            <span className={styles.replyModel}>
+              <img src={modelIcon(message.model)} alt="" width={13} height={13} />
+              {findPetModel(message.model).label}
+            </span>
+          )}
+          <button
+            type="button"
+            aria-label={copied ? "Copied" : "Copy answer"}
+            title={copied ? "Copied" : "Copy"}
+            onClick={() => {
+              void navigator.clipboard?.writeText(message.text).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1400);
+              });
+            }}
+          >
+            {icon(copied ? ICONS.check : ICONS.copy)}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+const activityFor = (model: string, mode: PetMode | null) =>
+  model === IMAGE_MODEL
+    ? "Creating your image"
+    : model === VIDEO_MODEL
+      ? "Starting your video"
+      : mode === "search"
+        ? "Searching the web"
+        : mode === "research"
+          ? "Researching"
+          : "Thinking";
 
 export function PetCompanion({ loadVoice }: { loadVoice: LoadVoice }) {
   // Finish a transition the pet started on the previous page.
@@ -124,6 +214,29 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
   const input = useRef<HTMLTextAreaElement>(null);
   const filePicker = useRef<HTMLInputElement>(null);
   const nextId = useRef(1);
+  // Composer extras: model, "+" modes, project and skill context.
+  const model = useSyncExternalStore(subscribePetModel, getPetModel, getServerPetModel);
+  const [mode, setMode] = useState<PetMode | null>(null);
+  const [project, setProject] = useState<{ id: number; name: string } | null>(null);
+  const [skill, setSkill] = useState<{ id: number; name: string } | null>(null);
+  const [popover, setPopover] = useState<"plus" | "model" | null>(null);
+  const [lastPopover, setLastPopover] = useState<"plus" | "model">("plus");
+  const popoverMounted = usePresence(Boolean(popover));
+  const [sketch, setSketch] = useState(false);
+  const [dictation, setDictation] = useState<DictationState>("idle");
+  const dictator = useRef<PetDictation | null>(null);
+  // Elements the popovers anchor to; state so they re-render once mounted.
+  const [composer, setComposer] = useState<HTMLFormElement | null>(null);
+  const [plusButton, setPlusButton] = useState<HTMLButtonElement | null>(null);
+  const [modelButton, setModelButton] = useState<HTMLButtonElement | null>(null);
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    queueMicrotask(() => setReduced(reducedMotion()));
+  }, []);
+  const showPopover = (next: "plus" | "model" | null) => {
+    if (next) setLastPopover(next);
+    setPopover(next);
+  };
 
   // Sprite sheet first, then the engine: the pet never appears half-loaded.
   useEffect(() => {
@@ -211,19 +324,25 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
     list.current?.scrollTo({ top: list.current.scrollHeight });
   }, [messages]);
 
-  // Close the panel and menu on Escape or a click elsewhere.
+  // Close the panel and menu on Escape or a click elsewhere. Menus opened
+  // from the composer live in a portal and count as part of the pet.
   useEffect(() => {
     if (!open && !menu) return;
     const key = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || sketch) return;
+      if (popover) {
+        setPopover(null);
+        input.current?.focus();
+        return;
+      }
       setOpen(false);
       setMenu(false);
     };
     const outside = (event: PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) {
-        setMenu(false);
-        if (!busy && !draft && !files.length) setOpen(false);
-      }
+      const target = event.target as Element;
+      if (root.current?.contains(target) || target.closest?.("[data-pet-layer]") || sketch) return;
+      setMenu(false);
+      if (!busy && !draft && !files.length && dictation === "idle") setOpen(false);
     };
     document.addEventListener("keydown", key);
     document.addEventListener("pointerdown", outside);
@@ -231,12 +350,14 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
       document.removeEventListener("keydown", key);
       document.removeEventListener("pointerdown", outside);
     };
-  }, [open, menu, busy, draft, files.length]);
+  }, [open, menu, busy, draft, files.length, popover, sketch, dictation]);
+  if (!open && popover) setPopover(null);
 
   useEffect(
     () => () => {
       stop.current?.();
       voiceModule.current?.stopVoice();
+      dictator.current?.dispose();
     },
     [],
   );
@@ -277,6 +398,7 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
       return;
     }
     const replyId = nextId.current + 1;
+    const request = { model, mode: mode || undefined, presetId: skill?.id, projectId: project?.id };
     setMessages((old) => [
       ...old,
       {
@@ -285,16 +407,24 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
         text: message,
         files: files.map((item) => item.name),
       },
-      { id: replyId, role: "pet", text: "", streaming: true },
+      { id: replyId, role: "pet", text: "", streaming: true, model, activity: activityFor(model, mode) },
     ]);
     nextId.current += 2;
     const attachments = files;
     setDraft("");
     setFiles([]);
     setNotice("");
+    setMode(null);
+    setPopover(null);
+    dictator.current?.stop();
     setBusy(true);
+    if (input.current) input.current.style.height = "auto";
     engine.current?.setBase("think");
-    stop.current = sendToPet(message, attachments, {
+    stop.current = sendToPet(message, attachments, request, {
+      onActivity: (activity) =>
+        setMessages((old) => old.map((item) => (item.id === replyId ? { ...item, activity } : item))),
+      onVideo: (video) =>
+        setMessages((old) => old.map((item) => (item.id === replyId ? { ...item, video } : item))),
       onToken: (chunk) => {
         engine.current?.setBase("idle");
         engine.current?.talk();
@@ -318,9 +448,11 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
                   error: !ok,
                   text:
                     item.text ||
-                    (ok
-                      ? text("stopped", "Stopped.")
-                      : error || text("failed", "Something went wrong.")),
+                    (item.video
+                      ? ""
+                      : ok
+                        ? text("stopped", "Stopped.")
+                        : error || text("failed", "Something went wrong.")),
                 }
               : item,
           ),
@@ -329,7 +461,7 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
     });
   }
 
-  function addFiles(selected: FileList | null) {
+  function addFiles(selected: FileList | File[] | null) {
     if (!selected) return;
     const accepted: PetAttachment[] = [];
     for (const file of Array.from(selected).slice(0, 4 - files.length)) {
@@ -338,6 +470,47 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
       else accepted.push({ file, name: file.name });
     }
     if (accepted.length) setFiles((old) => [...old, ...accepted]);
+  }
+
+  function toggleDictation() {
+    if (!petSignedIn()) {
+      setNotice(text("sign_in", "Sign in to chat with your pet."));
+      return;
+    }
+    dictator.current ??= createDictation({
+      onState: (state) => {
+        setDictation(state);
+        if (state === "listening") engine.current?.setBase("listen");
+        else if (state === "idle") engine.current?.setBase("idle");
+      },
+      onText: (spoken) => {
+        setDraft((old) => [old.trim(), spoken].filter(Boolean).join(" "));
+        requestAnimationFrame(() => {
+          const field = input.current;
+          if (!field) return;
+          field.focus();
+          field.style.height = "auto";
+          field.style.height = `${Math.min(120, field.scrollHeight)}px`;
+        });
+      },
+      onError: (message) => setNotice(message),
+    });
+    setNotice("");
+    dictator.current.toggle();
+  }
+  function chooseProject(next: { id: number; name: string } | null) {
+    if (next?.id === project?.id) return;
+    setProject(next);
+    // A project applies to a new conversation, so the thread starts over.
+    if (messages.length) {
+      stop.current?.();
+      resetPetThread();
+      setMessages([]);
+    }
+  }
+  function mention(name: string) {
+    setDraft((old) => `${old}${old && !/\s$/.test(old) ? " " : ""}@${name} `);
+    requestAnimationFrame(() => input.current?.focus());
   }
 
   async function toggleVoice() {
@@ -511,28 +684,7 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
                     ))}
                   </div>
                 ) : (
-                  <div
-                    key={message.id}
-                    className={`${styles.reply} bot-message-text`}
-                    data-error={message.error || undefined}
-                    data-streaming={message.streaming || undefined}
-                  >
-                    {message.text ? (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: DOMPurify.sanitize(
-                            marked.parse(message.text, { async: false }),
-                          ),
-                        }}
-                      />
-                    ) : (
-                      <span className={styles.dots}>
-                        <i />
-                        <i />
-                        <i />
-                      </span>
-                    )}
-                  </div>
+                  <PetReply key={message.id} message={message} reduced={reduced} />
                 ),
               )}
             </div>
@@ -542,25 +694,10 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
               {notice}
             </p>
           )}
-          {files.length > 0 && (
-            <div className={styles.files}>
-              {files.map((item, index) => (
-                <button
-                  key={`${item.name}-${index}`}
-                  type="button"
-                  title={text("remove_file", "Remove file")}
-                  onClick={() =>
-                    setFiles((old) => old.filter((_, at) => at !== index))
-                  }
-                >
-                  {item.name}
-                  {icon(ICONS.close)}
-                </button>
-              ))}
-            </div>
-          )}
           <form
+            ref={setComposer}
             className={styles.composer}
+            data-dictation={dictation}
             onSubmit={(event) => {
               event.preventDefault();
               submit();
@@ -577,21 +714,71 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
                 event.target.value = "";
               }}
             />
-            <button
-              type="button"
-              aria-label={text("attach", "Attach files")}
-              title={text("attach", "Attach files")}
-              disabled={files.length >= 4}
-              onClick={() => filePicker.current?.click()}
-            >
-              {icon(ICONS.plus)}
-            </button>
+            {(files.length > 0 || mode || skill || project) && (
+              <div className={styles.chips}>
+                {mode && (
+                  <button type="button" className={styles.chip} data-kind="mode" title={`Turn off ${MODE_TITLES[mode]}`} onClick={() => setMode(null)}>
+                    <span className={styles.chipIcon}>{modeIcon(mode, 14)}</span>
+                    <span className={styles.chipClose}>{icon(ICONS.close)}</span>
+                    {MODE_TITLES[mode]}
+                  </button>
+                )}
+                {project && (
+                  <button type="button" className={styles.chip} title="Stop using this project" onClick={() => chooseProject(null)}>
+                    <span className={styles.chipIcon}>
+                      <WorkspaceIcon name="folder" size={14} />
+                    </span>
+                    <span className={styles.chipClose}>{icon(ICONS.close)}</span>
+                    {project.name}
+                  </button>
+                )}
+                {skill && (
+                  <button type="button" className={styles.chip} title="Remove this skill" onClick={() => setSkill(null)}>
+                    <span className={styles.chipIcon}>
+                      <WorkspaceIcon name="sparkles" size={14} />
+                    </span>
+                    <span className={styles.chipClose}>{icon(ICONS.close)}</span>
+                    {skill.name}
+                  </button>
+                )}
+                {files.map((item, index) => (
+                  <button
+                    key={`${item.name}-${index}`}
+                    type="button"
+                    className={styles.chip}
+                    data-kind="file"
+                    title={text("remove_file", "Remove file")}
+                    onClick={() => setFiles((old) => old.filter((_, at) => at !== index))}
+                  >
+                    <span className={styles.chipIcon}>
+                      <WorkspaceIcon name={item.file.type.startsWith("image/") ? "image" : "file"} size={14} />
+                    </span>
+                    <span className={styles.chipClose}>{icon(ICONS.close)}</span>
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            )}
             <textarea
               ref={input}
               rows={1}
               value={draft}
               maxLength={8000}
-              placeholder={`${text("ask", "Ask")} ${pet.name}…`}
+              placeholder={
+                dictation === "listening"
+                  ? "Listening…"
+                  : dictation === "transcribing"
+                    ? "Transcribing…"
+                    : model === IMAGE_MODEL
+                      ? "Describe the image you want…"
+                      : model === VIDEO_MODEL
+                        ? "Describe the video you want…"
+                        : mode === "search"
+                          ? "Search the web…"
+                          : mode === "research"
+                            ? "What should I research?"
+                            : `${text("ask", "Ask")} ${pet.name}…`
+              }
               aria-label={`${text("ask", "Ask")} ${pet.name}`}
               onChange={(event) => {
                 setDraft(event.target.value);
@@ -603,6 +790,9 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
                 if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
                   event.preventDefault();
                   submit();
+                } else if (event.key === "Backspace" && !draft && mode) {
+                  event.preventDefault();
+                  setMode(null);
                 }
               }}
               onPaste={(event) => {
@@ -612,36 +802,126 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
                 }
               }}
             />
-            <button
-              type="button"
-              className={styles.voice}
-              data-active={voice.active}
-              aria-label={voiceLabel}
-              title={voiceLabel}
-              onClick={() => void toggleVoice()}
-            >
-              {icon(voice.active ? ICONS.stop : ICONS.mic)}
-            </button>
-            {busy ? (
+            <div className={styles.toolbar}>
+              <button
+                ref={setPlusButton}
+                type="button"
+                className={styles.tool}
+                aria-label="Add files and more"
+                title="Add files and more"
+                aria-haspopup="dialog"
+                aria-expanded={popover === "plus"}
+                data-open={popover === "plus"}
+                onClick={() => showPopover(popover === "plus" ? null : "plus")}
+              >
+                <span className={styles.plusGlyph}>{icon(ICONS.plus)}</span>
+              </button>
+              <span className={styles.spacer} />
+              <button
+                ref={setModelButton}
+                type="button"
+                className={styles.modelButton}
+                aria-label={`Model: ${findPetModel(model).label}. Change model`}
+                aria-haspopup="dialog"
+                aria-expanded={popover === "model"}
+                data-open={popover === "model"}
+                onClick={() => showPopover(popover === "model" ? null : "model")}
+              >
+                <img src={modelIcon(model)} alt="" width={15} height={15} />
+                <span key={model}>{findPetModel(model).label}</span>
+                {icon(ICONS.chevron)}
+              </button>
               <button
                 type="button"
-                className={styles.send}
-                aria-label={text("stop", "Stop answer")}
-                onClick={() => stop.current?.()}
+                className={styles.tool}
+                data-state={dictation}
+                aria-label={dictation === "listening" ? "Stop dictation" : dictation === "transcribing" ? "Transcribing" : "Dictate a message"}
+                title={dictation === "listening" ? "Stop dictation" : "Dictate"}
+                disabled={dictation === "transcribing"}
+                onClick={toggleDictation}
               >
-                {icon(ICONS.stop)}
+                {dictation === "transcribing" ? <span className={styles.toolSpinner} /> : icon(dictation === "listening" ? ICONS.stop : ICONS.mic)}
               </button>
-            ) : (
-              <button
-                type="submit"
-                className={styles.send}
-                aria-label={text("send", "Send")}
-                disabled={!draft.trim() && !files.length}
-              >
-                {icon(ICONS.send)}
-              </button>
-            )}
+              {busy ? (
+                <button type="button" className={styles.action} data-kind="stop" aria-label={text("stop", "Stop answer")} title={text("stop", "Stop answer")} onClick={() => stop.current?.()}>
+                  {icon(ICONS.stop)}
+                </button>
+              ) : draft.trim() || files.length ? (
+                <button key="send" type="submit" className={styles.action} data-kind="send" aria-label={text("send", "Send")} title={text("send", "Send")}>
+                  {icon(ICONS.send)}
+                </button>
+              ) : (
+                <button
+                  key="voice"
+                  type="button"
+                  className={styles.action}
+                  data-kind="voice"
+                  data-active={voice.active}
+                  aria-label={voiceLabel}
+                  title={voiceLabel}
+                  onClick={() => void toggleVoice()}
+                >
+                  {voice.active ? icon(ICONS.close) : WAVE}
+                </button>
+              )}
+            </div>
           </form>
+          {popoverMounted && (
+            <PetPopover
+              anchor={composer}
+              trigger={lastPopover === "plus" ? plusButton : modelButton}
+              open={Boolean(popover)}
+              align={lastPopover === "plus" ? "start" : "end"}
+              width={lastPopover === "plus" ? 330 : 300}
+              cap={lastPopover === "plus" ? 340 : 360}
+              label={lastPopover === "plus" ? "Add to your message" : "Choose a model"}
+              accent={pet.accent}
+              onClose={() => setPopover(null)}
+            >
+              {lastPopover === "plus" ? (
+                <PetPlusMenu
+                  model={model}
+                  mode={mode}
+                  projectId={project?.id ?? null}
+                  presetId={skill?.id ?? null}
+                  onClose={() => {
+                    setPopover(null);
+                    input.current?.focus({ preventScroll: true });
+                  }}
+                  onUpload={() => filePicker.current?.click()}
+                  onAttach={addFiles}
+                  onSketch={() => setSketch(true)}
+                  onMode={setMode}
+                  onModel={setPetModel}
+                  onProject={chooseProject}
+                  onSkill={setSkill}
+                  onMention={mention}
+                  onError={setNotice}
+                />
+              ) : (
+                <PetModelPicker
+                  value={model}
+                  onPick={(value) => {
+                    setPetModel(value);
+                    setPopover(null);
+                    input.current?.focus({ preventScroll: true });
+                  }}
+                  onClose={() => setPopover(null)}
+                />
+              )}
+            </PetPopover>
+          )}
+          {sketch && (
+            <PetSketch
+              accent={pet.accent}
+              onClose={() => setSketch(false)}
+              onAttach={(file) => {
+                addFiles([file]);
+                setSketch(false);
+                input.current?.focus();
+              }}
+            />
+          )}
         </section>
       )}
     </div>

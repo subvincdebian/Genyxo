@@ -1,0 +1,552 @@
+/* Surfaces that open from the pet's composer: the "+" menu, the model
+   picker and the drawing pad. They live in a portal, so each one carries its
+   own theme fallbacks. */
+.popover,
+.sketch {
+  --pet-bg: var(--gx-elevated, #1b1d1d);
+  --pet-surface: var(--gx-surface-2, #242626);
+  --pet-text: var(--gx-text, #f3f5f4);
+  --pet-muted: var(--gx-muted, #9aa3a0);
+  --glass-tint: color-mix(in srgb, var(--pet-bg) 58%, transparent);
+  --glass-rim: rgba(255, 255, 255, 0.2);
+  --glass-shine: rgba(255, 255, 255, 0.14);
+  --row-hover: color-mix(in srgb, var(--pet-text) 9%, transparent);
+  color: var(--pet-text);
+  font: 450 14px/1.45 var(--gx-font, Inter, system-ui, sans-serif);
+  isolation: isolate;
+  border: 1px solid var(--glass-rim);
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--pet-accent) 9%, transparent) 0%, transparent 45%),
+    var(--glass-tint);
+  -webkit-backdrop-filter: blur(28px) saturate(1.9) brightness(1.05);
+  backdrop-filter: blur(28px) saturate(1.9) brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 0 22px rgba(255, 255, 255, 0.04),
+    0 24px 64px rgba(0, 0, 0, 0.38),
+    0 2px 10px rgba(0, 0, 0, 0.2);
+}
+:global([data-gx-tone="light"]) .popover,
+:global([data-gx-tone="light"]) .sketch {
+  --glass-tint: color-mix(in srgb, var(--pet-bg) 64%, transparent);
+  --glass-rim: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 24px 64px rgba(20, 30, 40, 0.2),
+    0 2px 8px rgba(20, 30, 40, 0.08);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .popover,
+  .sketch {
+    --glass-tint: var(--pet-bg);
+  }
+}
+
+.popover {
+  position: fixed;
+  z-index: 2147483001;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: popIn 0.24s cubic-bezier(0.2, 0.9, 0.25, 1.08) both;
+}
+.popover[data-side="top"] {
+  transform-origin: bottom left;
+}
+.popover[data-side="bottom"] {
+  transform-origin: top left;
+}
+.popover[data-state="closing"] {
+  animation: popOut 0.15s ease-in both;
+  pointer-events: none;
+}
+.popover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(120% 50% at 10% -10%, var(--glass-shine) 0%, transparent 55%);
+  pointer-events: none;
+}
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    filter: blur(6px);
+  }
+}
+@keyframes popOut {
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+    filter: blur(4px);
+  }
+}
+
+/* Palette layout shared by both menus */
+.palette {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 6px;
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+  padding: 0 12px;
+  height: 38px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--pet-text) 7%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: var(--pet-muted);
+  cursor: text;
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--pet-text);
+  font: inherit;
+}
+.search input::placeholder {
+  color: var(--pet-muted);
+}
+.back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pet-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.back:hover {
+  background: var(--row-hover);
+}
+.list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--pet-text) 22%, transparent) transparent;
+  animation: listIn 0.22s ease both;
+}
+.list[data-sub] {
+  animation-name: subIn;
+}
+@keyframes listIn {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes subIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+.section + .section {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--pet-text) 9%, transparent);
+}
+.label {
+  margin: 6px 10px 4px;
+  color: var(--pet-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.row,
+.model {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+.row[aria-selected="true"],
+.model[data-active="true"],
+.model:hover {
+  background: var(--row-hover);
+}
+.rowIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  color: var(--pet-text);
+}
+.rowTitle,
+.modelName {
+  flex-shrink: 0;
+  max-width: 62%;
+  overflow: hidden;
+  font-weight: 550;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rowHint {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--pet-muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rowEnd {
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  color: var(--pet-muted);
+}
+.row[aria-current="true"] .rowEnd,
+.model[aria-selected="true"] .rowEnd {
+  color: var(--pet-accent);
+}
+.rowEnd[data-hidden="true"] {
+  visibility: hidden;
+}
+.spinner {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  border: 2px solid color-mix(in srgb, var(--pet-text) 20%, transparent);
+  border-top-color: var(--pet-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.loading {
+  display: grid;
+  gap: 6px;
+  padding: 6px 10px;
+}
+.loading span {
+  height: 28px;
+  border-radius: 9px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--pet-text) 6%, transparent) 0%,
+    color-mix(in srgb, var(--pet-text) 13%, transparent) 50%,
+    color-mix(in srgb, var(--pet-text) 6%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.empty {
+  margin: 10px 12px;
+  color: var(--pet-muted);
+  font-size: 12.5px;
+}
+
+/* Model picker */
+.tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  flex-shrink: 0;
+  margin-bottom: 6px;
+  padding: 3px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--pet-text) 7%, transparent);
+}
+.tabs button {
+  position: relative;
+  z-index: 1;
+  height: 30px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--pet-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.tabs button[aria-selected="true"] {
+  color: var(--pet-text);
+}
+.tabGlider {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 3);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--pet-text) 12%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 2px 8px rgba(0, 0, 0, 0.16);
+  transform: translateX(calc(var(--tab, 0) * 100%));
+  transition: transform 0.32s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.model img,
+.providerHead img {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+.credits {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pet-text) 8%, transparent);
+  color: var(--pet-muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.star {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--pet-muted);
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    opacity 0.14s ease,
+    color 0.14s ease,
+    transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.model:hover .star,
+.model[data-active="true"] .star,
+.star[data-on="true"],
+.star:focus-visible {
+  opacity: 1;
+}
+.star[data-on="true"] {
+  color: #f6c64b;
+}
+.star:active {
+  transform: scale(1.3);
+}
+.star + .rowEnd {
+  margin-left: 0;
+}
+.provider + .provider {
+  margin-top: 2px;
+}
+.providerHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--pet-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.providerHead:hover {
+  background: var(--row-hover);
+}
+.providerHead small {
+  color: var(--pet-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.providerHead svg {
+  margin-left: auto;
+  color: var(--pet-muted);
+  transition: transform 0.28s cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+.providerHead[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+/* Height animates through a 0fr → 1fr grid track. */
+.providerBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.3s cubic-bezier(0.3, 1, 0.4, 1),
+    opacity 0.22s ease;
+}
+.providerBody > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.providerBody[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.providerHead + .providerBody .model {
+  padding-left: 22px;
+}
+
+/* Drawing pad */
+.sketchScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483002;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.28);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: fade 0.22s ease both;
+}
+.sketchScrim[data-state="closing"] {
+  animation: fadeOut 0.18s ease both;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+.sketch {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(760px, 100%);
+  max-height: calc(100dvh - 32px);
+  padding: 14px 16px 16px;
+  border-radius: 24px;
+  animation: popIn 0.3s cubic-bezier(0.2, 0.9, 0.25, 1.08) both;
+}
+.sketch header,
+.sketch footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.sketch footer {
+  justify-content: flex-end;
+}
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--pet-muted);
+  cursor: pointer;
+}
+.iconButton:hover {
+  background: var(--row-hover);
+  color: var(--pet-text);
+}
+.sketchTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.swatches {
+  display: flex;
+  gap: 6px;
+}
+.swatches button {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.swatches button[aria-checked="true"] {
+  box-shadow: 0 0 0 2px var(--pet-bg), 0 0 0 4px var(--pet-accent);
+  transform: scale(1.1);
+}
+.sketchTools input[type="range"] {
+  width: 110px;
+  accent-color: var(--pet-accent);
+}
+.toolButton,
+.primary {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--pet-text) 14%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pet-text) 6%, transparent);
+  color: var(--pet-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.toolButton[aria-pressed="true"] {
+  border-color: var(--pet-accent);
+  color: var(--pet-accent);
+}
+.toolButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.primary {
+  border-color: transparent;
+  background: var(--pet-accent);
+  color: #fff;
+}
+.canvas {
+  width: 100%;
+  aspect-ratio: 960 / 600;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popover,
+  .popover[data-state="closing"],
+  .list,
+  .sketch,
+  .sketchScrim {
+    animation: none;
+  }
+  .providerBody,
+  .tabGlider {
+    transition: none;
+  }
+}

@@ -6,6 +6,7 @@
   --pet-text: var(--gx-text, #f3f5f4);
   --pet-muted: var(--gx-muted, #9aa3a0);
   --pet-border: var(--gx-border-strong, rgba(255, 255, 255, 0.14));
+  --pet-hover: color-mix(in srgb, var(--pet-text) 9%, transparent);
   position: fixed;
   top: 0;
   left: 0;
@@ -197,7 +198,7 @@
 }
 .menu :is(a, button):hover,
 .menu :is(a, button):focus-visible {
-  background: var(--pet-surface);
+  background: var(--pet-hover);
   outline: none;
 }
 
@@ -230,13 +231,12 @@
   display: flex;
   gap: 2px;
 }
-.panel header button,
-.composer > button {
+.panel header button {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -244,12 +244,10 @@
   cursor: pointer;
   transition:
     background 0.16s ease,
-    color 0.16s ease,
-    transform 0.16s ease;
+    color 0.16s ease;
 }
-.panel header button:hover:not(:disabled),
-.composer > button:hover:not(:disabled) {
-  background: var(--pet-surface);
+.panel header button:hover:not(:disabled) {
+  background: var(--pet-hover);
   color: var(--pet-text);
 }
 .panel button:disabled {
@@ -263,8 +261,8 @@
 .messages {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 6px 14px 10px;
+  gap: 12px;
+  padding: 6px 14px 12px;
   overflow-y: auto;
   scrollbar-width: thin;
   overscroll-behavior: contain;
@@ -273,11 +271,13 @@
   align-self: flex-end;
   max-width: 85%;
   padding: 8px 13px;
-  border-radius: 16px 16px 5px 16px;
-  background: var(--pet-surface);
+  border-radius: 18px 18px 6px 18px;
+  background: color-mix(in srgb, var(--pet-text) 10%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  animation: messageIn 0.2s ease both;
+  animation: bubbleIn 0.34s cubic-bezier(0.2, 1.1, 0.3, 1) both;
+  transform-origin: bottom right;
 }
 .user small {
   display: block;
@@ -285,128 +285,255 @@
   color: var(--pet-muted);
   font-size: 12px;
 }
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+}
+
+/* Answers: typed out with a breathing caret, like the main chat. */
 .reply {
   max-width: 100%;
   overflow-wrap: anywhere;
-  animation: messageIn 0.2s ease both;
+  animation: replyIn 0.4s ease both;
+}
+@keyframes replyIn {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
 }
 .reply[data-error] {
   color: var(--gx-danger, #f0897c);
 }
-.reply :is(p, ul, ol, pre) {
-  margin: 0 0 8px;
+.markdown > :first-child {
+  margin-top: 0;
 }
-.reply :is(ul, ol) {
+.markdown :is(p, ul, ol, pre, blockquote, table) {
+  margin: 0 0 9px;
+}
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+.markdown :is(h1, h2, h3, h4) {
+  margin: 12px 0 6px;
+  font-size: 1.02em;
+  font-weight: 650;
+}
+.markdown :is(ul, ol) {
   padding-left: 20px;
 }
-.reply pre {
-  padding: 10px;
-  border-radius: 10px;
-  background: var(--pet-surface);
+.markdown li + li {
+  margin-top: 3px;
+}
+.markdown pre {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #000 28%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   overflow-x: auto;
   font-size: 12.5px;
 }
-.reply code {
+.markdown code {
   font-family: var(--gx-code-font, ui-monospace, Consolas, monospace);
-  font-size: 0.92em;
+  font-size: 0.9em;
 }
-.reply img {
+.markdown :not(pre) > code {
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--pet-text) 10%, transparent);
+}
+.markdown blockquote {
+  padding-left: 10px;
+  border-left: 3px solid var(--pet-accent);
+  color: var(--pet-muted);
+}
+.markdown table {
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.markdown :is(th, td) {
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--pet-text) 14%, transparent);
+}
+.markdown img {
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
+  animation: replyIn 0.5s ease both;
 }
-.reply a {
+.markdown a {
   color: var(--pet-accent);
 }
-.dots {
-  display: inline-flex;
-  gap: 4px;
-  padding: 6px 0;
-}
-.dots i {
-  width: 6px;
-  height: 6px;
+.reply[data-typing] .markdown > :last-child::after,
+.reply[data-typing] .markdown > :is(ul, ol):last-child > li:last-child::after {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
   border-radius: 50%;
-  background: var(--pet-muted);
-  animation: dot 1s ease-in-out infinite;
+  background: var(--pet-accent);
+  box-shadow: 0 0 12px var(--pet-accent);
+  vertical-align: middle;
+  animation: breathe 1.2s ease-in-out infinite;
 }
-.dots i:nth-child(2) {
-  animation-delay: 0.15s;
+.reply[data-typing] .markdown > :is(ul, ol):last-child::after {
+  content: none;
 }
-.dots i:nth-child(3) {
-  animation-delay: 0.3s;
-}
-@keyframes dot {
-  40% {
-    transform: translateY(-4px);
-    background: var(--pet-accent);
+@keyframes breathe {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
   }
 }
-@keyframes messageIn {
+.video {
+  width: 100%;
+  margin-top: 6px;
+  border-radius: 14px;
+  background: #000;
+}
+.replyActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  color: var(--pet-muted);
+  animation: replyIn 0.3s ease both;
+}
+.replyModel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+}
+.replyModel img {
+  opacity: 0.85;
+}
+.replyActions button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--pet-muted);
+  cursor: pointer;
+}
+.replyActions button svg {
+  width: 15px;
+  height: 15px;
+}
+.replyActions button:hover {
+  background: var(--pet-hover);
+  color: var(--pet-text);
+}
+/* Before the first words: a living orb and a shimmering status. */
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  animation: replyIn 0.3s ease both;
+}
+.orb {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9) 0%, transparent 32%),
+    conic-gradient(from 0deg, var(--pet-accent), color-mix(in srgb, var(--pet-accent) 40%, #fff), var(--pet-accent));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--pet-accent) 70%, transparent);
+  animation:
+    orbSpin 2.4s linear infinite,
+    orbPulse 1.6s ease-in-out infinite;
+}
+@keyframes orbSpin {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes orbPulse {
+  50% {
+    scale: 0.82;
+    box-shadow: 0 0 22px color-mix(in srgb, var(--pet-accent) 90%, transparent);
+  }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--pet-muted) 0%,
+    var(--pet-muted) 35%,
+    var(--pet-text) 50%,
+    var(--pet-muted) 65%,
+    var(--pet-muted) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 550;
+  animation: shimmer 1.8s linear infinite;
+}
+@keyframes shimmer {
   from {
-    opacity: 0;
-    transform: translateY(4px);
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
   }
 }
 .notice {
   margin: 0 14px 8px;
   color: var(--gx-danger, #f0897c);
   font-size: 12.5px;
+  animation: replyIn 0.25s ease both;
 }
-.files {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 0 14px 8px;
-}
-.files button {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  max-width: 100%;
-  padding: 3px 6px 3px 10px;
-  border: 1px solid var(--pet-border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--pet-text);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-.files svg {
-  width: 13px;
-  height: 13px;
-}
+
+/* Composer: text on top, tools below, all on glass. */
 .composer {
   display: flex;
-  align-items: flex-end;
-  gap: 4px;
+  flex-direction: column;
   margin: 0 8px 8px;
-  padding: 5px;
+  padding: 6px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 22px;
-  background: color-mix(in srgb, var(--pet-surface) 38%, transparent);
+  background: color-mix(in srgb, var(--pet-surface) 36%, transparent);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     inset 0 -1px 2px rgba(0, 0, 0, 0.12);
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.25s ease;
 }
 .composer:focus-within {
   border-color: color-mix(in srgb, var(--pet-accent) 70%, transparent);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 0 0 4px color-mix(in srgb, var(--pet-accent) 18%, transparent);
+    0 0 0 4px color-mix(in srgb, var(--pet-accent) 16%, transparent);
+}
+.composer[data-dictation="listening"] {
+  border-color: var(--pet-accent);
+  animation: listening 1.6s ease-in-out infinite;
+}
+@keyframes listening {
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 0 0 6px color-mix(in srgb, var(--pet-accent) 22%, transparent);
+  }
 }
 :global([data-gx-tone="light"]) .composer {
   border-color: rgba(255, 255, 255, 0.75);
   background: color-mix(in srgb, #fff 45%, transparent);
 }
 .composer textarea {
-  flex: 1;
-  min-width: 0;
+  min-height: 34px;
   max-height: 120px;
-  padding: 7px 4px;
+  padding: 6px 8px 2px;
   border: 0;
   outline: none;
   resize: none;
@@ -418,18 +545,198 @@
 .composer textarea::placeholder {
   color: var(--pet-muted);
 }
-.composer > button.voice[data-active="true"] {
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 2px 4px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 10px 0 8px;
+  border: 1px solid color-mix(in srgb, var(--pet-text) 12%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pet-text) 7%, transparent);
+  color: var(--pet-text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 550;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  animation: chipIn 0.3s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+.chip[data-kind="mode"] {
+  border-color: color-mix(in srgb, var(--pet-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--pet-accent) 16%, transparent);
+  color: color-mix(in srgb, var(--pet-accent) 55%, var(--pet-text));
+}
+.chip:hover {
+  background: color-mix(in srgb, var(--pet-text) 12%, transparent);
+}
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+.chipIcon,
+.chipClose {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+}
+.chipClose {
+  display: none;
+}
+.chipClose svg {
+  width: 14px;
+  height: 14px;
+}
+.chip:hover .chipIcon,
+.chip:focus-visible .chipIcon {
+  display: none;
+}
+.chip:hover .chipClose,
+.chip:focus-visible .chipClose {
+  display: grid;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.spacer {
+  flex: 1;
+}
+.tool,
+.action {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--pet-muted);
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    transform 0.2s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.tool:hover:not(:disabled),
+.tool[data-open="true"] {
+  background: var(--pet-hover);
+  color: var(--pet-text);
+}
+.plusGlyph {
+  display: grid;
+  transition: transform 0.3s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.tool[data-open="true"] .plusGlyph {
+  transform: rotate(45deg);
+}
+.tool[data-state="listening"] {
   background: color-mix(in srgb, var(--pet-accent) 22%, transparent);
   color: var(--pet-accent);
 }
-.composer > button.send {
-  background: var(--pet-accent);
-  color: #fff;
+.toolSpinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid color-mix(in srgb, var(--pet-text) 22%, transparent);
+  border-top-color: var(--pet-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
-.composer > button.send:hover:not(:disabled) {
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.modelButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 196px;
+  height: 32px;
+  padding: 0 8px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pet-muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+.modelButton:hover,
+.modelButton[data-open="true"] {
+  background: var(--pet-hover);
+  color: var(--pet-text);
+}
+.modelButton img {
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.modelButton span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  animation: labelIn 0.3s ease both;
+}
+@keyframes labelIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.modelButton svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.28s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.modelButton[data-open="true"] svg {
+  transform: rotate(180deg);
+}
+.action {
+  margin-left: 2px;
   background: var(--pet-accent);
   color: #fff;
-  transform: scale(1.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 14px color-mix(in srgb, var(--pet-accent) 40%, transparent);
+  animation: actionIn 0.32s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.action:hover {
+  transform: scale(1.07);
+}
+.action:active {
+  transform: scale(0.94);
+}
+.action[data-kind="voice"][data-active="true"] {
+  background: var(--gx-danger, #e5534b);
+}
+@keyframes actionIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-30deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -438,8 +745,20 @@
   .panel,
   .user,
   .reply,
-  .dots i,
+  .thinking,
+  .orb,
+  .shimmer,
+  .chip,
+  .action,
+  .notice,
+  .replyActions,
+  .modelButton span,
+  .markdown img,
+  .composer[data-dictation="listening"],
   .voiceBadge i {
+    animation: none;
+  }
+  .reply[data-typing] .markdown > :last-child::after {
     animation: none;
   }
 }
