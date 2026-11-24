@@ -89,6 +89,17 @@ import {
 } from "./web/memory-tools";
 import { deepResearch } from "./web/deep-research";
 import { RecallService } from "./recall/recall.service";
+import { SandboxService } from "./sandbox/sandbox.service";
+import {
+  codeActivity,
+  codeGeminiDeclarations,
+  codeOpenAiTools,
+  codePrompt,
+  isCodeTool,
+  isSpreadsheet,
+  runCodeTool,
+  sandboxInputs,
+} from "./sandbox/code-tools";
 import {
   KnowledgeService,
   knowledgePrompt,
@@ -126,7 +137,7 @@ import {
 } from "./maps/maps-tools";
 
 /** Model ↔ plugin round trips allowed in one reply. */
-const MAX_TOOL_STEPS = 6;
+const MAX_TOOL_STEPS = 10;
 
 export type ChatTurnOptions = {
   /** The turn was spoken in voice mode. */
@@ -154,6 +165,19 @@ type ActiveStream = {
   clientRequestId?: string;
   controller: AbortController;
 };
+
+/**
+ * A Gemini stream also carries a `response` promise that rejects when the
+ * stream breaks ("Failed to parse stream"). The chat reads only the stream,
+ * so that rejection must be handled here, or Node treats it as unhandled and
+ * the whole server exits.
+ */
+export function settleGeminiStream<T extends { response?: Promise<unknown> }>(
+  result: T,
+): T {
+  result?.response?.catch?.(() => undefined);
+  return result;
+}
 
 /** How older turns are folded into the running conversation summary. */
 export const SUMMARY_PROMPT = [
@@ -221,6 +245,7 @@ export class ChatService {
     @Optional()
     @Inject(forwardRef(() => KnowledgeService))
     private knowledge?: KnowledgeService,
+    @Optional() private sandbox?: SandboxService,
   ) {
     this.openRouter = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
@@ -454,7 +479,9 @@ export class ChatService {
       .map(
         (file) =>
           this.buildTextFilePrompt(file) ||
-          `[Earlier attachment: ${file.name}; content unavailable to this model]`,
+          (this.sandbox?.available && file.data
+            ? `[Earlier attachment: ${file.name}; open it as input/${file.name} with genyxo_run_python]`
+            : `[Earlier attachment: ${file.name}; content unavailable to this model]`),
       )
       .join("\n\n");
   }
@@ -478,7 +505,10 @@ export class ChatService {
         parts.push({ inlineData: { data: file.data, mimeType } });
       } else {
         parts.push({
-          text: `[The file content is not available inline because this file type is not supported for direct AI inspection.]`,
+          text:
+            this.sandbox?.available && file.data
+              ? `[This file is not shown inline. It is available as input/${fileName} to genyxo_run_python: open it there to read or analyze it.]`
+              : `[The file content is not available inline because this file type is not supported for direct AI inspection.]`,
         });
       }
     }
@@ -506,7 +536,9 @@ export class ChatService {
           file.data.length <= this.maxInlineDataLength &&
           (this.canSendInlineToGemini(mimeType) ||
             mimeType ===
-              "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+            // Spreadsheets are kept as they are for the code sandbox.
+            (this.sandbox?.available && isSpreadsheet(file.name, mimeType)))
         ) {
           normalized.data = file.data;
         }
@@ -1629,6 +1661,21 @@ export class ChatService {
         Boolean(this.recall) &&
         !turnOptions.voice &&
         !turnOptions.scheduledTask;
+      // Python for analysis, charts and files on the user's attachments.
+      const code = Boolean(this.sandbox?.available) && !turnOptions.voice;
+      const codeFiles = code
+        ? sandboxInputs([
+            ...normalizedFiles,
+            ...(
+              await this.messageRepository.find({
+                where: { conversationId: conversation.id, sender: "user" },
+                select: ["id", "files"],
+                order: { id: "DESC" },
+                take: 30,
+              })
+            ).flatMap((message) => message.files || []),
+          ])
+        : [];
       const hasTools =
         Boolean(toolset) ||
         media.length > 0 ||
@@ -1636,7 +1683,8 @@ export class ChatService {
         web ||
         memory ||
         tasks ||
-        recall;
+        recall ||
+        code;
       const systemInstruction = [
         baseInstruction,
         // Before the plugin prompt, so time requests are not taken for plugin work.
@@ -1649,6 +1697,7 @@ export class ChatService {
         web ? webPrompt(turnOptions.mode === "search") : "",
         memory ? MEMORY_PROMPT : "",
         recall ? RECALL_PROMPT : "",
+        code ? codePrompt(codeFiles.map((file) => file.name)) : "",
         turnOptions.scheduledTask
           ? taskRunPrompt(turnOptions.scheduledTask.title)
           : "",
@@ -1727,6 +1776,30 @@ export class ChatService {
           } catch (error) {
             return { scheduled: false, error: (error as Error).message };
           }
+        }
+        if (code && isCodeTool(name)) {
+          const step = codeActivity();
+          toolSteps.push(step);
+          res.write(
+            `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
+          );
+          const done = await runCodeTool(
+            this.sandbox!,
+            input,
+            codeFiles,
+            (fileName, mime, data) =>
+              this.mediaService
+                ? this.mediaService.saveFile(
+                    userId,
+                    conversation.id,
+                    fileName,
+                    mime,
+                    data,
+                  )
+                : Promise.reject(new Error("File storage is unavailable")),
+          );
+          if (done.markdown) await emit(done.markdown);
+          return done.output;
         }
         if (recall && isRecallTool(name)) {
           const step = recallActivity();
@@ -1871,6 +1944,7 @@ export class ChatService {
                           ...(web ? webGeminiDeclarations() : []),
                           ...(memory ? memoryGeminiDeclarations() : []),
                           ...(recall ? recallGeminiDeclarations() : []),
+                          ...(code ? codeGeminiDeclarations() : []),
                           ...(tasks ? taskGeminiDeclarations() : []),
                         ],
                       },
@@ -1936,20 +2010,22 @@ export class ChatService {
 
         for (let step = 0; ; step++) {
           const request = () =>
-            generativeModel.generateContentStream(
-              {
-                contents,
-                generationConfig: {
-                  maxOutputTokens: this.getMaxOutputTokens(),
-                  // Spoken replies should start right away instead of reasoning first.
-                  ...(turnOptions.voice &&
-                  geminiModelName.startsWith("gemini-3")
-                    ? { thinkingConfig: { thinkingLevel: "minimal" } }
-                    : {}),
+            generativeModel
+              .generateContentStream(
+                {
+                  contents,
+                  generationConfig: {
+                    maxOutputTokens: this.getMaxOutputTokens(),
+                    // Spoken replies should start right away instead of reasoning first.
+                    ...(turnOptions.voice &&
+                    geminiModelName.startsWith("gemini-3")
+                      ? { thinkingConfig: { thinkingLevel: "minimal" } }
+                      : {}),
+                  },
                 },
-              },
-              { signal: abortController.signal },
-            );
+                { signal: abortController.signal },
+              )
+              .then(settleGeminiStream);
           let resultStream: Awaited<ReturnType<typeof request>>;
           try {
             resultStream = await request();
@@ -2100,6 +2176,7 @@ export class ChatService {
               ...(web ? webOpenAiTools() : []),
               ...(memory ? memoryOpenAiTools() : []),
               ...(recall ? recallOpenAiTools() : []),
+              ...(code ? codeOpenAiTools() : []),
               ...(tasks ? taskOpenAiTools() : []),
             ]
           : undefined;
@@ -2369,9 +2446,11 @@ export class ChatService {
         { model: model.replace("google/", ""), systemInstruction: system },
         { timeout: 180_000 },
       );
-      const result = await generative.generateContentStream(
-        { contents: [{ role: "user", parts: [{ text: prompt }] }] },
-        { signal },
+      const result = settleGeminiStream(
+        await generative.generateContentStream(
+          { contents: [{ role: "user", parts: [{ text: prompt }] }] },
+          { signal },
+        ),
       );
       for await (const chunk of result.stream) {
         const token = chunk.text();

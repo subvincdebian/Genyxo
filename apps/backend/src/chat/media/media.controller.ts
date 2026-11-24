@@ -28,7 +28,14 @@ export class MediaController {
         "Content-Type",
         inline ? file.mimeType : "application/octet-stream",
       )
-      .header("Content-Disposition", inline ? "inline" : "attachment")
+      .header(
+        "Content-Disposition",
+        `${inline ? "inline" : "attachment"}${
+          file.fileName
+            ? `; filename="${file.fileName.replace(/[^\w.\- ()]/g, "_")}"; filename*=UTF-8''${encodeURIComponent(file.fileName)}`
+            : ""
+        }`,
+      )
       .header("Cache-Control", "private, max-age=31536000, immutable")
       .header("X-Content-Type-Options", "nosniff")
       .header("Content-Security-Policy", "default-src 'none'; sandbox")

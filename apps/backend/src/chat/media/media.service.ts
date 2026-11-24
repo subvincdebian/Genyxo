@@ -539,16 +539,51 @@ export class MediaService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
+  /** Stores a file a tool produced (code sandbox output) for download. */
+  async saveFile(
+    userId: number,
+    conversationId: number | null,
+    name: string,
+    mimeType: string,
+    data: Buffer,
+  ) {
+    const image = /^image\/(png|jpeg|webp|gif)$/.test(mimeType);
+    const record = await this.media.save(
+      this.media.create({
+        id: randomUUID(),
+        userId,
+        conversationId,
+        kind: image ? "image" : "file",
+        prompt: name.slice(0, 200),
+        provider: "sandbox",
+        status: "ready",
+        mimeType: mimeType.slice(0, 80),
+        fileName: name.slice(0, 200),
+        data,
+        jobId: null,
+        error: null,
+      } as GeneratedMedia),
+    );
+    return { id: record.id, url: `/api/chat/media/${record.id}` };
+  }
+
   async file(id: string) {
     const record = await this.media.findOne({
       where: { id },
-      select: { id: true, status: true, mimeType: true, data: true },
+      select: {
+        id: true,
+        status: true,
+        mimeType: true,
+        data: true,
+        fileName: true,
+      },
     });
     if (!record || record.status !== "ready" || !record.data)
       throw new NotFoundException("Media not found");
     return {
       data: record.data,
       mimeType: record.mimeType || "application/octet-stream",
+      fileName: record.fileName,
     };
   }
 }

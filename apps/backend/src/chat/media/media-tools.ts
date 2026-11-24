@@ -1,3 +1,4 @@
+import { describeCodeFences } from "../sandbox/code-tools";
 import type { MediaKind } from "./generated-media.entity";
 import { MEDIA_COSTS, MediaRequest, MediaService } from "./media.service";
 
@@ -191,6 +192,7 @@ export async function runMediaTool(
 const MEDIA_FENCE = /```genyxo-media\n(\{.*\})\n```/g;
 /** Later turns see "[Generated video: …]" instead of the player markup. */
 export function describeMediaFences(content: string) {
+  content = describeCodeFences(content);
   if (!content.includes("genyxo-media")) return content;
   return content.replace(MEDIA_FENCE, (_match, json: string) => {
     try {

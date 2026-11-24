@@ -129,6 +129,15 @@ async function configureApp(app: NestFastifyApplication) {
   });
 }
 
+// A stray rejected promise (a provider SDK failing in the background) must
+// cost one request, not the whole server for every user.
+process.on("unhandledRejection", (reason) => {
+  console.error(
+    "Unhandled promise rejection:",
+    reason instanceof Error ? reason.stack || reason.message : reason,
+  );
+});
+
 async function bootstrap() {
   const adapter = createFastifyAdapter();
   const app = await NestFactory.create<NestFastifyApplication>(

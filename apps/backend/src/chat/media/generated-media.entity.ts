@@ -8,6 +8,8 @@ import {
 } from "typeorm";
 
 export type MediaKind = "image" | "video" | "speech" | "music";
+/** Stored kinds also include files a tool produced (code sandbox output). */
+export type StoredMediaKind = MediaKind | "file";
 export type MediaStatus = "pending" | "ready" | "failed";
 
 /**
@@ -21,7 +23,7 @@ export class GeneratedMedia {
   @PrimaryColumn({ length: 36 }) id!: string;
   @Column() userId!: number;
   @Column({ type: "int", nullable: true }) conversationId!: number | null;
-  @Column({ length: 12 }) kind!: MediaKind;
+  @Column({ length: 12 }) kind!: StoredMediaKind;
   @Column({ length: 12, default: "pending" }) status!: MediaStatus;
   @Column({ length: 80, nullable: true, type: "varchar" })
   mimeType!: string | null;
@@ -34,6 +36,9 @@ export class GeneratedMedia {
   @Column({ type: "longblob", nullable: true, select: false })
   data!: Buffer | null;
   @Column({ type: "int", default: 0 }) cost!: number;
+  /** Download name for files a tool produced (sandbox output). */
+  @Column({ length: 200, nullable: true, type: "varchar" })
+  fileName!: string | null;
   @Column({ length: 300, nullable: true, type: "varchar" })
   error!: string | null;
   @CreateDateColumn() createdAt!: Date;

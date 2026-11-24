@@ -615,13 +615,19 @@ export default function initialize(scope, context) {
     file._extractedDocxText = text;
     return text;
   }
+  // Spreadsheets travel as they are: the code sandbox opens them for analysis.
+  function isSpreadsheetFile(file) {
+    const name = getAttachmentName(file).toLowerCase();
+    return /\.(xlsx|xlsm|xls|ods)$/.test(name) || /spreadsheetml|ms-excel|opendocument\.spreadsheet/.test(getAttachmentMime(file));
+  }
   function canSendInlineToAI(file) {
     const mimeType = getAttachmentMime(file);
     return (
       mimeType.startsWith("image/") ||
       mimeType === "application/pdf" ||
       isTextLikeFile(file) ||
-      isDocxFile(file)
+      isDocxFile(file) ||
+      isSpreadsheetFile(file)
     );
   }
   function resizeImageForVision(file, maxDimension = 1600, quality = 0.82) {
@@ -1367,7 +1373,7 @@ export default function initialize(scope, context) {
       createMapCard(pre, rawCode);
       return;
     }
-    const rich = /(?:^|\s)language-genyxo-(sources|memory|task|weather)(?:\s|$)/.exec(codeEl?.className || "");
+    const rich = /(?:^|\s)language-genyxo-(sources|memory|task|weather|code)(?:\s|$)/.exec(codeEl?.className || "");
     if (rich) {
       createRichCard(pre, rawCode, rich[1]);
       return;

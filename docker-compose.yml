@@ -93,6 +93,8 @@ services:
       - REDISPORT=6379
       - REDISPASSWORD=${REDISPASSWORD:?Set REDISPASSWORD in apps/backend/.env}
       - ALLOWED_ORIGINS=https://genyxo.com,http://localhost,http://localhost:3000,http://localhost:3001
+      - SANDBOX_URL=http://sandbox:8080
+      - SANDBOX_TOKEN=${SANDBOX_TOKEN:?Set SANDBOX_TOKEN in apps/backend/.env}
     depends_on:
       mysql:
         condition: service_healthy
@@ -101,6 +103,7 @@ services:
     networks:
       - frontend_net
       - backend_net
+      - sandbox_net
     deploy:
       resources:
         limits:
@@ -114,6 +117,37 @@ services:
       options:
         max-size: "20m"
         max-file: "5"
+
+  # Runs model-written Python for chat (analysis, charts, files). Alone on an
+  # internal network: the backend reaches it; it reaches nothing.
+  sandbox:
+    build:
+      context: ./apps/sandbox
+    image: genyxo-sandbox:latest
+    restart: unless-stopped
+    environment:
+      - SANDBOX_TOKEN=${SANDBOX_TOKEN:?Set SANDBOX_TOKEN in apps/backend/.env}
+      - SANDBOX_CONCURRENCY=4
+    read_only: true
+    tmpfs:
+      - /tmp:size=1g,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - sandbox_net
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 3G
+          pids: 512
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Explicit migration gate, invoked by production launchers before rollout.
   db-migrate:
@@ -220,6 +254,9 @@ networks:
   frontend_net:
     driver: bridge
   backend_net:
+    driver: bridge
+    internal: true
+  sandbox_net:
     driver: bridge
     internal: true
 

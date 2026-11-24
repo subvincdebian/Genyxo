@@ -29,6 +29,8 @@ services:
       - REDISHOST=redis
       - REDISPORT=6379
       - REDISPASSWORD=redis_password
+      - SANDBOX_URL=http://sandbox:8080
+      - SANDBOX_TOKEN=${SANDBOX_TOKEN:-local-dev-sandbox-token}
     depends_on:
       mysql:
         condition: service_healthy
@@ -36,6 +38,7 @@ services:
         condition: service_healthy
     networks:
       - dev_net
+      - sandbox_net
 
   frontend:
     build:
@@ -121,9 +124,38 @@ services:
     networks:
       - dev_net
 
+  # Runs model-written Python. It sits alone on an internal network: the
+  # backend can reach it, it can reach nothing (no internet, no database).
+  sandbox:
+    build:
+      context: ./apps/sandbox
+    container_name: genyxo-sandbox-dev
+    restart: unless-stopped
+    environment:
+      - SANDBOX_TOKEN=${SANDBOX_TOKEN:-local-dev-sandbox-token}
+      - SANDBOX_CONCURRENCY=4
+    read_only: true
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 3G
+          pids: 512
+    networks:
+      - sandbox_net
+
 networks:
   dev_net:
     driver: bridge
+  sandbox_net:
+    driver: bridge
+    internal: true
 
 volumes:
   mysql_dev_data:

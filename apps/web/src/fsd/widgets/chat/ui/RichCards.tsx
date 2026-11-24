@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { WorkspaceIcon } from "@/shared/ui/workspace";
 import { TaskCard } from "./TaskPanel";
+import { CodeRunCard, type CodeRunData } from "./intelligence/CodeRun";
 
 type Source = { title: string; url: string };
 const hostOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; } };
@@ -135,6 +136,7 @@ export function RichCardsHost() {
       else if (kind === "memory") root.render(<MemoryPill action={data.action === "forgotten" ? "forgotten" : "saved"} fact={String(data.fact || "")} />);
       else if (kind === "task" && Number.isFinite(data.id)) root.render(<TaskCard id={Number(data.id)} title={String(data.title || "")} />);
       else if (kind === "weather" && Number.isFinite(data.temperature) && Array.isArray(data.hours)) root.render(<WeatherCard data={data as Weather} />);
+      else if (kind === "code" && typeof (data as unknown as CodeRunData).code === "string") root.render(<CodeRunCard data={data as unknown as CodeRunData} />);
       else return;
       roots.set(element, root);
       sweep();
