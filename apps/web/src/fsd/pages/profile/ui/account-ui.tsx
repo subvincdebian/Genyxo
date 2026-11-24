@@ -216,6 +216,14 @@ export function AccountNavIcon({ section }: { section: string }) {
         <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
       </>
     ),
+    pets: (
+      <>
+        <circle cx="7" cy="9" r="2" />
+        <circle cx="17" cy="9" r="2" />
+        <circle cx="12" cy="5.5" r="2" />
+        <path d="M7.5 17.5c0-2.5 2-5 4.5-5s4.5 2.5 4.5 5a2.5 2.5 0 0 1-2.5 2.5c-1 0-1.3-.5-2-.5s-1 .5-2 .5a2.5 2.5 0 0 1-2.5-2.5Z" />
+      </>
+    ),
     notifications: (
       <>
         <path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z" />

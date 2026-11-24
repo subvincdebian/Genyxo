@@ -929,9 +929,43 @@
     "card_privacy": "Card details are encrypted and sent directly to our PCI DSS certified payment processor. Genyxo never sees or stores your full card number or security code.",
     "credits_unit": "credits",
     "cards_checkout_title": "Pay by card at checkout",
-    "cards_checkout_body": "Visa, Mastercard, Apple Pay and Google Pay are accepted when you buy credits, as well as crypto. No card is stored by Genyxo."
+    "cards_checkout_body": "Visa, Mastercard, Apple Pay and Google Pay are accepted when you buy credits, as well as crypto. No card is stored by Genyxo.",
+    "pets": "Pets",
+    "pets_description": "A little companion for every page.",
+    "pet_companion": "Companion",
+    "pet_enable": "Show a pet",
+    "pet_enable_help": "A small animated companion that stays with you on every page. Click it to chat, attach files or talk with voice; drag it anywhere.",
+    "pet_size": "Size",
+    "pet_size_help": "How large the pet appears.",
+    "pet_choose": "Choose your pet",
+    "pet_choose_help": "Each one reacts to your chats: it thinks, talks, celebrates and falls asleep when things are quiet.",
+    "pet_nyx": "A bright crystal spirit that keeps your ideas sparkling.",
+    "pet_tangle": "A yarn-ball kitten that untangles the hardest problems.",
+    "pet_mothy": "A gentle night moth, drawn to every good question.",
+    "pet_orbit": "A tiny planet that keeps your work in motion.",
+    "pet_axo": "A calm axolotl that loves to listen and talk.",
+    "pet_footer": "Right-click the pet for quick options. Its position is remembered on this device.",
+    "pet_reset_position": "Reset position and size"
   },
   "faq": {
     "title": "Help & FAQ"
+  },
+  "pets": {
+    "open_chat": "Open pet chat",
+    "chat_with": "Chat with",
+    "ask": "Ask",
+    "settings": "Pet settings",
+    "hide": "Hide",
+    "new_thread": "New conversation",
+    "close": "Close",
+    "attach": "Attach files",
+    "remove_file": "Remove file",
+    "send": "Send",
+    "stop": "Stop answer",
+    "stopped": "Stopped.",
+    "failed": "Something went wrong.",
+    "sign_in": "Sign in to chat with your pet.",
+    "voice_start": "Talk with voice",
+    "voice_stop": "End voice conversation"
   }
 }

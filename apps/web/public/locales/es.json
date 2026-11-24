@@ -947,9 +947,43 @@
     "card_privacy": "Los datos de la tarjeta se cifran y se envían directamente a nuestro procesador certificado PCI DSS. Genyxo nunca ve ni guarda el número completo ni el código de seguridad.",
     "credits_unit": "créditos",
     "cards_checkout_title": "Paga con tarjeta al comprar",
-    "cards_checkout_body": "Al comprar créditos se aceptan Visa, Mastercard, Apple Pay y Google Pay, además de cripto. Genyxo no guarda tarjetas."
+    "cards_checkout_body": "Al comprar créditos se aceptan Visa, Mastercard, Apple Pay y Google Pay, además de cripto. Genyxo no guarda tarjetas.",
+    "pets": "Mascotas",
+    "pets_description": "Un pequeño compañero en cada página.",
+    "pet_companion": "Compañero",
+    "pet_enable": "Mostrar una mascota",
+    "pet_enable_help": "Un pequeño compañero animado que te acompaña en cada página. Haz clic para chatear, adjuntar archivos o hablar por voz; arrástralo a donde quieras.",
+    "pet_size": "Tamaño",
+    "pet_size_help": "El tamaño con que aparece la mascota.",
+    "pet_choose": "Elige tu mascota",
+    "pet_choose_help": "Cada una reacciona a tus chats: piensa, habla, celebra y se duerme cuando todo está tranquilo.",
+    "pet_nyx": "Un brillante espíritu de cristal que mantiene vivas tus ideas.",
+    "pet_tangle": "Un gatito de lana que desenreda los problemas más difíciles.",
+    "pet_mothy": "Una polilla nocturna y dulce, atraída por cada buena pregunta.",
+    "pet_orbit": "Un pequeño planeta que mantiene tu trabajo en movimiento.",
+    "pet_axo": "Un ajolote tranquilo al que le encanta escuchar y hablar.",
+    "pet_footer": "Haz clic derecho en la mascota para ver opciones rápidas. Su posición se recuerda en este dispositivo.",
+    "pet_reset_position": "Restablecer posición y tamaño"
   },
   "faq": {
     "title": "Ayuda y preguntas frecuentes"
+  },
+  "pets": {
+    "open_chat": "Abrir chat con la mascota",
+    "chat_with": "Chat con",
+    "ask": "Pregunta a",
+    "settings": "Ajustes de mascota",
+    "hide": "Ocultar",
+    "new_thread": "Nueva conversación",
+    "close": "Cerrar",
+    "attach": "Adjuntar archivos",
+    "remove_file": "Quitar archivo",
+    "send": "Enviar",
+    "stop": "Detener respuesta",
+    "stopped": "Detenido.",
+    "failed": "Algo salió mal.",
+    "sign_in": "Inicia sesión para chatear con tu mascota.",
+    "voice_start": "Hablar por voz",
+    "voice_stop": "Terminar conversación de voz"
   }
 }

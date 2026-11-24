@@ -18,6 +18,7 @@ import { signOut, useAccountResource, type Account } from "../model/account";
 import { AccountOverview } from "./AccountOverview";
 import { AccountGeneral } from "./AccountGeneral";
 import { AccountNotifications } from "./AccountNotifications";
+import { AccountPets } from "./AccountPets";
 import { AccountAppearance, AccountPreferences } from "./AccountPreferences";
 import { AccountCollection } from "./AccountCollections";
 import { AccountVoice } from "./AccountVoice";
@@ -49,6 +50,12 @@ const sections = [
     icon: "sparkles",
     title: "Personalization",
     description: "A little more you in every conversation.",
+  },
+  {
+    id: "pets",
+    icon: "sparkles",
+    title: "Pets",
+    description: "A little companion for every page.",
   },
   {
     id: "appearance",
@@ -622,6 +629,7 @@ export function ProfilePage() {
                   {active === "personalization" && (
                     <AccountPreferences onDirty={setDirty} onBusy={setSaving} />
                   )}
+                  {active === "pets" && <AccountPets />}
                   {active === "appearance" && <AccountAppearance />}
                   {active === "notifications" && <AccountNotifications />}
                   {active === "voice" && <AccountVoice />}

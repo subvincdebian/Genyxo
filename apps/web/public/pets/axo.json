@@ -1,0 +1,47 @@
+{
+  "id": "axo",
+  "cell": [192, 216],
+  "columns": 8,
+  "states": {
+    "idle": {
+      "row": 0,
+      "frames": 8
+    },
+    "run": {
+      "row": 1,
+      "frames": 8
+    },
+    "wave": {
+      "row": 2,
+      "frames": 8
+    },
+    "jump": {
+      "row": 3,
+      "frames": 8
+    },
+    "failed": {
+      "row": 4,
+      "frames": 8
+    },
+    "listen": {
+      "row": 5,
+      "frames": 8
+    },
+    "think": {
+      "row": 6,
+      "frames": 8
+    },
+    "happy": {
+      "row": 7,
+      "frames": 8
+    },
+    "sleep": {
+      "row": 8,
+      "frames": 8
+    },
+    "talk": {
+      "row": 9,
+      "frames": 8
+    }
+  }
+}

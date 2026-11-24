@@ -947,9 +947,43 @@
     "card_privacy": "Les données de carte sont chiffrées et envoyées directement à notre prestataire certifié PCI DSS. Genyxo ne voit ni ne stocke jamais le numéro complet ni le code de sécurité.",
     "credits_unit": "crédits",
     "cards_checkout_title": "Payez par carte lors de l’achat",
-    "cards_checkout_body": "Visa, Mastercard, Apple Pay et Google Pay sont acceptés à l’achat de crédits, ainsi que la crypto. Genyxo ne stocke aucune carte."
+    "cards_checkout_body": "Visa, Mastercard, Apple Pay et Google Pay sont acceptés à l’achat de crédits, ainsi que la crypto. Genyxo ne stocke aucune carte.",
+    "pets": "Compagnons",
+    "pets_description": "Un petit compagnon sur chaque page.",
+    "pet_companion": "Compagnon",
+    "pet_enable": "Afficher un compagnon",
+    "pet_enable_help": "Un petit compagnon animé qui vous suit sur chaque page. Cliquez pour discuter, joindre des fichiers ou parler ; faites-le glisser où vous voulez.",
+    "pet_size": "Taille",
+    "pet_size_help": "La taille du compagnon.",
+    "pet_choose": "Choisissez votre compagnon",
+    "pet_choose_help": "Chacun réagit à vos discussions : il réfléchit, parle, fête et dort quand tout est calme.",
+    "pet_nyx": "Un esprit de cristal lumineux qui fait briller vos idées.",
+    "pet_tangle": "Un chaton pelote qui démêle les problèmes les plus difficiles.",
+    "pet_mothy": "Un doux papillon de nuit, attiré par chaque bonne question.",
+    "pet_orbit": "Une petite planète qui garde votre travail en mouvement.",
+    "pet_axo": "Un axolotl calme qui adore écouter et parler.",
+    "pet_footer": "Clic droit sur le compagnon pour les options rapides. Sa position est mémorisée sur cet appareil.",
+    "pet_reset_position": "Réinitialiser position et taille"
   },
   "faq": {
     "title": "Aide et FAQ"
+  },
+  "pets": {
+    "open_chat": "Ouvrir la discussion",
+    "chat_with": "Discuter avec",
+    "ask": "Demandez à",
+    "settings": "Paramètres du compagnon",
+    "hide": "Masquer",
+    "new_thread": "Nouvelle conversation",
+    "close": "Fermer",
+    "attach": "Joindre des fichiers",
+    "remove_file": "Retirer le fichier",
+    "send": "Envoyer",
+    "stop": "Arrêter la réponse",
+    "stopped": "Arrêté.",
+    "failed": "Une erreur est survenue.",
+    "sign_in": "Connectez-vous pour discuter avec votre compagnon.",
+    "voice_start": "Parler à voix haute",
+    "voice_stop": "Terminer la conversation vocale"
   }
 }

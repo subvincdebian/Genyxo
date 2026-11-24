@@ -1,0 +1,450 @@
+/* The pet lives above every page, including ones without the app theme, so
+   each colour has its own fallback. */
+.root {
+  --pet-bg: var(--gx-elevated, #1b1d1d);
+  --pet-surface: var(--gx-surface-2, #242626);
+  --pet-text: var(--gx-text, #f3f5f4);
+  --pet-muted: var(--gx-muted, #9aa3a0);
+  --pet-border: var(--gx-border-strong, rgba(255, 255, 255, 0.14));
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483000;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  font: 450 14px/1.5 var(--gx-font, Inter, system-ui, sans-serif);
+  color: var(--pet-text);
+  will-change: transform;
+}
+.sprite {
+  cursor: grab;
+  background-repeat: no-repeat;
+  transform-origin: 50% 85%;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.28));
+  outline: none;
+  animation: petIn 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  transition: filter 0.2s ease;
+}
+.sprite:hover {
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.34));
+}
+.sprite:focus-visible {
+  filter: drop-shadow(0 0 0 var(--pet-accent))
+    drop-shadow(0 0 6px var(--pet-accent));
+}
+.root[data-dragging] .sprite {
+  cursor: grabbing;
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.3));
+}
+@keyframes petIn {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+
+/* Voice call indicator */
+.voiceBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--pet-accent);
+  pointer-events: none;
+}
+.voiceBadge i {
+  width: 3px;
+  height: 6px;
+  border-radius: 2px;
+  background: #fff;
+  animation: bars 0.9s ease-in-out infinite;
+}
+.voiceBadge i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.voiceBadge i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.voiceBadge[data-phase="thinking"] i {
+  animation-duration: 1.8s;
+}
+@keyframes bars {
+  50% {
+    height: 12px;
+  }
+}
+
+/* Floating surfaces */
+/* Liquid glass: the page shows through, blurred and saturated, tinted with
+   the theme; a specular rim and inner light give the surface depth. */
+.menu,
+.panel {
+  --glass-tint: color-mix(in srgb, var(--pet-bg) 46%, transparent);
+  --glass-rim: rgba(255, 255, 255, 0.22);
+  --glass-shine: rgba(255, 255, 255, 0.16);
+  position: absolute;
+  isolation: isolate;
+  border: 1px solid var(--glass-rim);
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--pet-accent) 10%, transparent) 0%,
+      transparent 42%
+    ),
+    var(--glass-tint);
+  -webkit-backdrop-filter: blur(26px) saturate(1.9) brightness(1.06);
+  backdrop-filter: blur(26px) saturate(1.9) brightness(1.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 1px 0 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 24px rgba(255, 255, 255, 0.05),
+    0 22px 60px rgba(0, 0, 0, 0.34),
+    0 2px 8px rgba(0, 0, 0, 0.18);
+  cursor: default;
+  user-select: text;
+  -webkit-user-select: text;
+  animation: surfaceIn 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+.menu[data-above="true"],
+.panel[data-above="true"] {
+  bottom: calc(100% + 8px);
+  transform-origin: bottom center;
+}
+.menu[data-above="false"],
+.panel[data-above="false"] {
+  top: calc(100% + 8px);
+  transform-origin: top center;
+}
+.menu[data-left="true"],
+.panel[data-left="true"] {
+  right: 0;
+}
+.menu[data-left="false"],
+.panel[data-left="false"] {
+  left: 0;
+}
+/* Specular sheen sweeping across the upper edge of the glass. */
+.menu::before,
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      120% 60% at 12% -10%,
+      var(--glass-shine) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      80% 40% at 100% 110%,
+      color-mix(in srgb, var(--pet-accent) 14%, transparent) 0%,
+      transparent 60%
+    );
+  pointer-events: none;
+}
+:global([data-gx-tone="light"]) .menu,
+:global([data-gx-tone="light"]) .panel {
+  --glass-tint: color-mix(in srgb, var(--pet-bg) 52%, transparent);
+  --glass-rim: rgba(255, 255, 255, 0.7);
+  --glass-shine: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.04),
+    0 22px 60px rgba(20, 30, 40, 0.18),
+    0 2px 8px rgba(20, 30, 40, 0.08);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .menu,
+  .panel {
+    --glass-tint: var(--pet-bg);
+  }
+}
+@keyframes surfaceIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+.menu {
+  display: grid;
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 14px;
+}
+.menu :is(a, button) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--pet-text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.menu :is(a, button):hover,
+.menu :is(a, button):focus-visible {
+  background: var(--pet-surface);
+  outline: none;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: min(380px, calc(100vw - 24px));
+  max-height: min(520px, calc(100dvh - 180px));
+  overflow: hidden;
+}
+.panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10px 6px 16px;
+}
+.panel header strong {
+  font-weight: 600;
+}
+.panel header strong::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--pet-accent);
+}
+.panel header span {
+  display: flex;
+  gap: 2px;
+}
+.panel header button,
+.composer > button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--pet-muted);
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+.panel header button:hover:not(:disabled),
+.composer > button:hover:not(:disabled) {
+  background: var(--pet-surface);
+  color: var(--pet-text);
+}
+.panel button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.panel button:focus-visible {
+  outline: 2px solid var(--pet-accent);
+  outline-offset: 1px;
+}
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 14px 10px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+.user {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 8px 13px;
+  border-radius: 16px 16px 5px 16px;
+  background: var(--pet-surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  animation: messageIn 0.2s ease both;
+}
+.user small {
+  display: block;
+  margin-top: 4px;
+  color: var(--pet-muted);
+  font-size: 12px;
+}
+.reply {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  animation: messageIn 0.2s ease both;
+}
+.reply[data-error] {
+  color: var(--gx-danger, #f0897c);
+}
+.reply :is(p, ul, ol, pre) {
+  margin: 0 0 8px;
+}
+.reply :is(ul, ol) {
+  padding-left: 20px;
+}
+.reply pre {
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--pet-surface);
+  overflow-x: auto;
+  font-size: 12.5px;
+}
+.reply code {
+  font-family: var(--gx-code-font, ui-monospace, Consolas, monospace);
+  font-size: 0.92em;
+}
+.reply img {
+  max-width: 100%;
+  border-radius: 10px;
+}
+.reply a {
+  color: var(--pet-accent);
+}
+.dots {
+  display: inline-flex;
+  gap: 4px;
+  padding: 6px 0;
+}
+.dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pet-muted);
+  animation: dot 1s ease-in-out infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes dot {
+  40% {
+    transform: translateY(-4px);
+    background: var(--pet-accent);
+  }
+}
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.notice {
+  margin: 0 14px 8px;
+  color: var(--gx-danger, #f0897c);
+  font-size: 12.5px;
+}
+.files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 14px 8px;
+}
+.files button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 3px 6px 3px 10px;
+  border: 1px solid var(--pet-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pet-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.files svg {
+  width: 13px;
+  height: 13px;
+}
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  margin: 0 8px 8px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--pet-surface) 38%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.12);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.composer:focus-within {
+  border-color: color-mix(in srgb, var(--pet-accent) 70%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 0 0 4px color-mix(in srgb, var(--pet-accent) 18%, transparent);
+}
+:global([data-gx-tone="light"]) .composer {
+  border-color: rgba(255, 255, 255, 0.75);
+  background: color-mix(in srgb, #fff 45%, transparent);
+}
+.composer textarea {
+  flex: 1;
+  min-width: 0;
+  max-height: 120px;
+  padding: 7px 4px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--pet-text);
+  font: inherit;
+  scrollbar-width: thin;
+}
+.composer textarea::placeholder {
+  color: var(--pet-muted);
+}
+.composer > button.voice[data-active="true"] {
+  background: color-mix(in srgb, var(--pet-accent) 22%, transparent);
+  color: var(--pet-accent);
+}
+.composer > button.send {
+  background: var(--pet-accent);
+  color: #fff;
+}
+.composer > button.send:hover:not(:disabled) {
+  background: var(--pet-accent);
+  color: #fff;
+  transform: scale(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sprite,
+  .menu,
+  .panel,
+  .user,
+  .reply,
+  .dots i,
+  .voiceBadge i {
+    animation: none;
+  }
+}
+@media print {
+  .root {
+    display: none;
+  }
+}

@@ -5,6 +5,7 @@ import { AppearanceSync } from "@/shared/ui/AppearanceSync";
 import { InteractionSync } from "@/shared/ui/InteractionSync";
 import { DeviceIdentity } from "@/shared/ui/DeviceIdentity";
 import { NotificationSync } from "@/shared/ui/NotificationSync";
+import { PetHost } from "./pet-host";
 import "@/shared/styles/tailwind.css";
 import "@/shared/styles/theme.css";
 import "@/shared/styles/avatar.css";
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <AppearanceSync />
           <NotificationSync />
           {children}
+          <PetHost />
         </LanguageProvider>
       </body>
     </html>

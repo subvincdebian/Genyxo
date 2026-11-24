@@ -947,9 +947,43 @@
     "card_privacy": "Kartendaten werden verschlüsselt direkt an unseren PCI-DSS-zertifizierten Zahlungsanbieter gesendet. Genyxo sieht oder speichert nie die vollständige Kartennummer oder den Sicherheitscode.",
     "credits_unit": "Credits",
     "cards_checkout_title": "Beim Kauf mit Karte bezahlen",
-    "cards_checkout_body": "Beim Kauf von Credits werden Visa, Mastercard, Apple Pay und Google Pay sowie Krypto akzeptiert. Genyxo speichert keine Karten."
+    "cards_checkout_body": "Beim Kauf von Credits werden Visa, Mastercard, Apple Pay und Google Pay sowie Krypto akzeptiert. Genyxo speichert keine Karten.",
+    "pets": "Begleiter",
+    "pets_description": "Ein kleiner Begleiter auf jeder Seite.",
+    "pet_companion": "Begleiter",
+    "pet_enable": "Begleiter anzeigen",
+    "pet_enable_help": "Ein kleiner animierter Begleiter, der auf jeder Seite bei dir bleibt. Klicke zum Chatten, Anhängen von Dateien oder Sprechen; ziehe ihn überallhin.",
+    "pet_size": "Größe",
+    "pet_size_help": "Wie groß der Begleiter erscheint.",
+    "pet_choose": "Wähle deinen Begleiter",
+    "pet_choose_help": "Jeder reagiert auf deine Chats: denkt, spricht, feiert und schläft ein, wenn es ruhig ist.",
+    "pet_nyx": "Ein heller Kristallgeist, der deine Ideen funkeln lässt.",
+    "pet_tangle": "Ein Wollknäuel-Kätzchen, das die schwierigsten Probleme entwirrt.",
+    "pet_mothy": "Ein sanfter Nachtfalter, angezogen von jeder guten Frage.",
+    "pet_orbit": "Ein winziger Planet, der deine Arbeit in Bewegung hält.",
+    "pet_axo": "Ein ruhiger Axolotl, der gern zuhört und spricht.",
+    "pet_footer": "Rechtsklick auf den Begleiter für Schnelloptionen. Seine Position wird auf diesem Gerät gespeichert.",
+    "pet_reset_position": "Position und Größe zurücksetzen"
   },
   "faq": {
     "title": "Hilfe & FAQ"
+  },
+  "pets": {
+    "open_chat": "Begleiter-Chat öffnen",
+    "chat_with": "Chat mit",
+    "ask": "Frag",
+    "settings": "Begleiter-Einstellungen",
+    "hide": "Ausblenden",
+    "new_thread": "Neue Unterhaltung",
+    "close": "Schließen",
+    "attach": "Dateien anhängen",
+    "remove_file": "Datei entfernen",
+    "send": "Senden",
+    "stop": "Antwort stoppen",
+    "stopped": "Gestoppt.",
+    "failed": "Etwas ist schiefgelaufen.",
+    "sign_in": "Melde dich an, um mit deinem Begleiter zu chatten.",
+    "voice_start": "Per Stimme sprechen",
+    "voice_stop": "Sprachunterhaltung beenden"
   }
 }
