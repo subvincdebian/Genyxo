@@ -664,6 +664,45 @@ export const PLUGINS: PluginDefinition[] = [
     tint: "#9b9a97",
   },
   {
+    id: "slack",
+    name: "Slack",
+    description: "Search, read and send messages",
+    about:
+      "Slack's official MCP server lets Genyxo work in your workspace as you: search messages and files you can see, read channels and threads, summarize discussions, and post messages or replies after you confirm them.",
+    prompts: [
+      "Summarize what #product discussed this week and list open questions",
+      "Find the thread where we agreed on the launch date",
+      "Draft a reply to the latest message from my manager",
+    ],
+    categories: ["popular", "new", "productivity"],
+    auth: {
+      type: "mcp",
+      url: "https://mcp.slack.com/mcp",
+      client: {
+        idEnv: "SLACK_MCP_CLIENT_ID",
+        secretEnv: "SLACK_MCP_CLIENT_SECRET",
+        setup:
+          "Create a Slack app at api.slack.com/apps, turn on MCP in its settings and add the Genyxo callback URL as a redirect URL.",
+      },
+    },
+    permissions: [
+      "Search and read messages and files you can access",
+      "Post messages and replies you confirm",
+    ],
+    capabilities: [
+      "Search messages, channels and people",
+      "Read channels and threads",
+      "Send messages and replies",
+      "Every tool in Slack's official MCP server",
+    ],
+    apps: [
+      { name: "Slack", description: "Channels, threads and direct messages." },
+    ],
+    website: "https://slack.com/",
+    version: "1.0.0",
+    tint: "#4a154b",
+  },
+  {
     id: "atlassian",
     name: "Atlassian",
     description: "Jira, Confluence, Loom & More",
@@ -737,7 +776,16 @@ export const PLUGINS: PluginDefinition[] = [
       "List files I changed this week",
     ],
     categories: ["small-business", "productivity"],
-    auth: { type: "mcp", url: "https://mcp.dropbox.com/mcp" },
+    auth: {
+      type: "mcp",
+      url: "https://mcp.dropbox.com/mcp",
+      client: {
+        idEnv: "DROPBOX_MCP_CLIENT_ID",
+        secretEnv: "DROPBOX_MCP_CLIENT_SECRET",
+        setup:
+          "Dropbox admits pre-approved MCP partners only: apply at dropbox.com/developers.",
+      },
+    },
     permissions: ["Read your files and sharing", "Changes you confirm"],
     capabilities: [
       "Search and read files",
@@ -1119,7 +1167,16 @@ export const PLUGINS: PluginDefinition[] = [
       "List the color variables in this design file: ",
     ],
     categories: ["design", "developer"],
-    auth: { type: "mcp", url: "https://mcp.figma.com/mcp" },
+    auth: {
+      type: "mcp",
+      url: "https://mcp.figma.com/mcp",
+      client: {
+        idEnv: "FIGMA_MCP_CLIENT_ID",
+        secretEnv: "FIGMA_MCP_CLIENT_SECRET",
+        setup:
+          "Figma's remote MCP server admits approved clients only: request access from Figma.",
+      },
+    },
     permissions: ["Files you share by link with your Figma account"],
     capabilities: [
       "Read frames, components, variables and styles",

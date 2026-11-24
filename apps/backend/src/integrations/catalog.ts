@@ -57,6 +57,11 @@ export interface McpAuth {
   url: string;
   scopes?: string[];
   open?: boolean;
+  /**
+   * Servers without automatic client registration (Slack, Dropbox, Figma)
+   * accept only an app the vendor approved; its id and secret come from .env.
+   */
+  client?: { idEnv: string; secretEnv?: string; setup: string };
 }
 export interface TokenField {
   key: string;

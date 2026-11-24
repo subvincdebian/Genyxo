@@ -13,7 +13,8 @@ export class IntegrationClient {
   @PrimaryGeneratedColumn() id!: number;
   @Column({ length: 255 }) issuer!: string;
   @Column({ length: 255 }) redirectUri!: string;
-  @Column({ length: 255 }) clientId!: string;
+  // Some servers (Netlify) issue encrypted client ids of several hundred characters.
+  @Column({ type: "varchar", length: 2048 }) clientId!: string;
   @Column({ type: "text", nullable: true })
   encryptedClientSecret!: string | null;
   @Column({ length: 40, default: "none" }) authMethod!: string;

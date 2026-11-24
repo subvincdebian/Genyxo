@@ -145,6 +145,14 @@ export class IntegrationsService {
         : `This server has no ${family.label} app credentials yet. An administrator adds them in the backend .env.`;
     }
     if (
+      plugin.auth.type === "mcp" &&
+      plugin.auth.client &&
+      (!this.env([plugin.auth.client.idEnv]) ||
+        (plugin.auth.client.secretEnv &&
+          !this.env([plugin.auth.client.secretEnv])))
+    )
+      return `${plugin.name} only connects through an approved app. ${plugin.auth.client.setup} Then add ${[plugin.auth.client.idEnv, plugin.auth.client.secretEnv].filter(Boolean).join(" and ")} to the backend .env.`;
+    if (
       plugin.auth.type === "none" &&
       plugin.auth.env?.some((name) => !this.env([name]))
     )
@@ -282,7 +290,11 @@ export class IntegrationsService {
       let client: { clientId: string };
       try {
         server = await discoverAuthServer(auth.url);
-        client = await this.mcpClient(server, this.scopeFor(auth, server));
+        client = await this.mcpClient(
+          server,
+          this.scopeFor(auth, server),
+          auth.client,
+        );
       } catch (error: any) {
         this.logger.warn(
           `${plugin.name} MCP discovery failed: ${error?.message}`,
@@ -358,11 +370,30 @@ export class IntegrationsService {
   }
 
   /** The OAuth client Genyxo registered at this authorization server, registering once. */
-  private async mcpClient(server: McpAuthServer, scope?: string) {
+  private async mcpClient(
+    server: McpAuthServer,
+    scope?: string,
+    preset?: { idEnv: string; secretEnv?: string },
+  ) {
     const redirectUri = this.redirectUri("mcp");
     const existing = await this.clients.findOne({
       where: { issuer: server.issuer.slice(0, 255), redirectUri },
     });
+    // An approved app from .env replaces whatever was stored for this server.
+    if (preset) {
+      const clientId = this.env([preset.idEnv]);
+      const secret = preset.secretEnv ? this.env([preset.secretEnv]) : "";
+      const row =
+        existing ||
+        this.clients.create({
+          issuer: server.issuer.slice(0, 255),
+          redirectUri,
+        });
+      row.clientId = clientId;
+      row.encryptedClientSecret = secret ? this.cipher.encrypt(secret) : null;
+      row.authMethod = secret ? "client_secret_post" : "none";
+      return this.clients.save(row);
+    }
     if (existing) return existing;
     const registered = await registerClient(server, redirectUri, scope);
     return this.clients.save(

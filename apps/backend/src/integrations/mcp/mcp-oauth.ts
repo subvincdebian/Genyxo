@@ -134,7 +134,10 @@ export async function registerClient(
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
       client_name: "Genyxo",
-      client_uri: new URL(redirectUri).origin,
+      // Optional, and servers like Lovable and WordPress.com reject http.
+      ...(redirectUri.startsWith("https://")
+        ? { client_uri: new URL(redirectUri).origin }
+        : {}),
       redirect_uris: [redirectUri],
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],

@@ -38,6 +38,7 @@ const LOGOS: Record<string, Logo> = {
   render: { ext: "svg", light: true },
   shazam: { ext: "svg" },
   shopify: { ext: "svg" },
+  slack: { ext: "svg" },
   spotify: { ext: "svg" },
   "stack-overflow": { ext: "svg" },
   stripe: { ext: "svg" },
