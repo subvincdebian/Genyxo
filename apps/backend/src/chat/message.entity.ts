@@ -23,6 +23,8 @@ export interface IAttachedFile {
 export interface MessageMeta {
   route?: import("./routing/model-router").RouteDecision;
   factCheck?: import("./fact-check/fact-check.types").FactCheckResult;
+  /** Agent mode's plan as it stood when the reply finished. */
+  plan?: import("./agent/agent-tools").PlanStep[];
 }
 
 @Entity("messages")

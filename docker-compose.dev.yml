@@ -30,6 +30,8 @@ services:
       - REDISPORT=6379
       - REDISPASSWORD=redis_password
       - SANDBOX_URL=http://sandbox:8080
+      - BROWSER_URL=http://browser:8090
+      - BROWSER_TOKEN=${BROWSER_TOKEN:-local-dev-browser-token}
       - SANDBOX_TOKEN=${SANDBOX_TOKEN:-local-dev-sandbox-token}
     depends_on:
       mysql:
@@ -39,6 +41,7 @@ services:
     networks:
       - dev_net
       - sandbox_net
+      - browser_net
 
   frontend:
     build:
@@ -150,12 +153,40 @@ services:
     networks:
       - sandbox_net
 
+  # Headless Chromium the chat agent drives. It needs the internet, so it has
+  # its own network; it refuses private and internal addresses itself.
+  browser:
+    build:
+      context: ./apps/browser
+    container_name: genyxo-browser-dev
+    restart: unless-stopped
+    environment:
+      - BROWSER_TOKEN=${BROWSER_TOKEN:-local-dev-browser-token}
+      - BROWSER_SESSIONS=6
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    ipc: private
+    networks:
+      - browser_net
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+          pids: 1024
+
 networks:
   dev_net:
     driver: bridge
   sandbox_net:
     driver: bridge
     internal: true
+  browser_net:
+    driver: bridge
 
 volumes:
   mysql_dev_data:

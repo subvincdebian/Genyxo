@@ -240,7 +240,7 @@ export class ChatController {
         ? await this.route(userId, {
             message,
             files,
-            mode: dto.mode,
+            mode: dto.mode === "agent" ? undefined : dto.mode,
             preference: dto.routePreference,
           })
         : null;

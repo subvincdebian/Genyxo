@@ -89,6 +89,17 @@ import {
 } from "./web/memory-tools";
 import { deepResearch } from "./web/deep-research";
 import { RecallService } from "./recall/recall.service";
+import { BrowserService } from "./agent/browser.service";
+import {
+  agentGeminiDeclarations,
+  agentOpenAiTools,
+  agentPrompt,
+  isBrowserTool,
+  isPlanTool,
+  readPlan,
+  runBrowserTool,
+  type PlanStep,
+} from "./agent/agent-tools";
 import { SandboxService } from "./sandbox/sandbox.service";
 import {
   codeActivity,
@@ -151,7 +162,7 @@ export type ChatTurnOptions = {
   /** Map places the user mentioned with "@". */
   pinnedPlaces?: { name: string; lat: number; lng: number; address?: string }[];
   /** "+" menu modes: always search the web, or run Deep research. */
-  mode?: "search" | "research";
+  mode?: "search" | "research" | "agent";
   /** Set when a scheduled task runs this turn on its own. */
   scheduledTask?: { id: number; title: string; prompt: string };
   /** Auto mode's pick, saved with the reply. */
@@ -246,6 +257,7 @@ export class ChatService {
     @Inject(forwardRef(() => KnowledgeService))
     private knowledge?: KnowledgeService,
     @Optional() private sandbox?: SandboxService,
+    @Optional() private browser?: BrowserService,
   ) {
     this.openRouter = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
@@ -1676,7 +1688,13 @@ export class ChatService {
             ).flatMap((message) => message.files || []),
           ])
         : [];
+      // Agent mode: a plan, a longer step budget and (when set up) a browser.
+      const agent = turnOptions.mode === "agent" && !turnOptions.voice;
+      const browsing = agent && Boolean(this.browser?.available);
+      const stepLimit = agent ? 30 : MAX_TOOL_STEPS;
+      let plan: PlanStep[] = [];
       const hasTools =
+        agent ||
         Boolean(toolset) ||
         media.length > 0 ||
         Boolean(mapsContext) ||
@@ -1697,6 +1715,7 @@ export class ChatService {
         web ? webPrompt(turnOptions.mode === "search") : "",
         memory ? MEMORY_PROMPT : "",
         recall ? RECALL_PROMPT : "",
+        agent ? agentPrompt(browsing) : "",
         code ? codePrompt(codeFiles.map((file) => file.name)) : "",
         turnOptions.scheduledTask
           ? taskRunPrompt(turnOptions.scheduledTask.title)
@@ -1716,7 +1735,7 @@ export class ChatService {
         clearTimeout(streamTimeout);
         streamTimeout = setTimeout(
           () => abortController.abort(),
-          mapsContext ? 240_000 : 150_000,
+          agent ? 600_000 : mapsContext ? 240_000 : 150_000,
         );
       }
       const toolSteps: string[] = [];
@@ -1776,6 +1795,33 @@ export class ChatService {
           } catch (error) {
             return { scheduled: false, error: (error as Error).message };
           }
+        }
+        if (agent && isPlanTool(name)) {
+          plan = readPlan(input);
+          res.write(`data: ${JSON.stringify({ status: "plan", plan })}\n\n`);
+          return { ok: true, steps: plan.length };
+        }
+        if (browsing && isBrowserTool(name)) {
+          const step =
+            name === "browser_open"
+              ? `Opening ${String(input.url || "a page")
+                  .replace(/^https?:\/\//, "")
+                  .slice(0, 60)}`
+              : "Using the browser";
+          toolSteps.push(step);
+          res.write(
+            `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
+          );
+          const outcome = await runBrowserTool(
+            this.browser!,
+            this.integrationTools,
+            { userId, conversationId: conversation.id },
+            name,
+            input,
+          );
+          if (outcome.actionId) actionIds.push(outcome.actionId);
+          if (outcome.card) await emit(outcome.card);
+          return outcome.output;
         }
         if (code && isCodeTool(name)) {
           const step = codeActivity();
@@ -1885,7 +1931,7 @@ export class ChatService {
         if (outcome.card) await emit(outcome.card);
         return outcome.output;
       };
-      const stepLimitNote = `\n\n_Stopped after ${MAX_TOOL_STEPS} plugin steps. Ask me to continue if you need more._`;
+      const stepLimitNote = `\n\n_Stopped after ${stepLimit} steps. Ask me to continue if you need more._`;
 
       if (turnOptions.mode === "research" && this.webSearch) {
         // Deep research runs its own plan → search → read → report loop.
@@ -1945,6 +1991,7 @@ export class ChatService {
                           ...(memory ? memoryGeminiDeclarations() : []),
                           ...(recall ? recallGeminiDeclarations() : []),
                           ...(code ? codeGeminiDeclarations() : []),
+                          ...(agent ? agentGeminiDeclarations(browsing) : []),
                           ...(tasks ? taskGeminiDeclarations() : []),
                         ],
                       },
@@ -2084,7 +2131,7 @@ export class ChatService {
             !hasTools
           )
             break;
-          if (step >= MAX_TOOL_STEPS) {
+          if (step >= stepLimit) {
             await emit(stepLimitNote);
             break;
           }
@@ -2177,6 +2224,7 @@ export class ChatService {
               ...(memory ? memoryOpenAiTools() : []),
               ...(recall ? recallOpenAiTools() : []),
               ...(code ? codeOpenAiTools() : []),
+              ...(agent ? agentOpenAiTools(browsing) : []),
               ...(tasks ? taskOpenAiTools() : []),
             ]
           : undefined;
@@ -2248,7 +2296,7 @@ export class ChatService {
             !tools
           )
             break;
-          if (step >= MAX_TOOL_STEPS) {
+          if (step >= stepLimit) {
             await emit(stepLimitNote);
             break;
           }
@@ -2327,7 +2375,12 @@ export class ChatService {
           ],
           sources,
           null,
-          turnOptions.route ? { route: turnOptions.route } : null,
+          turnOptions.route || plan.length
+            ? {
+                ...(turnOptions.route ? { route: turnOptions.route } : {}),
+                ...(plan.length ? { plan } : {}),
+              }
+            : null,
         ),
         this.usersService.logTransaction(
           userId,

@@ -1176,6 +1176,15 @@ export default function initialize(scope, context) {
   // ```genyxo-action fences are plugin write actions a model proposed. They run
   // only when the user confirms the exact details shown on this card.
   const ACTION_TINTS = { gmail: "#ea4335", github: "#8b949e", "google-drive": "#1fa463", "google-calendar": "#4285f4", "outlook-email": "#0a64c9", "outlook-calendar": "#0a64c9", "microsoft-teams": "#5059c9", notion: "#9b9a97", zoom: "#0b5cff", dropbox: "#0061ff", canva: "#7d2ae8", linear: "#5e6ad2", atlassian: "#1868db", stripe: "#635bff", paypal: "#0070e0", shopify: "#5e8e3e", gitlab: "#fc6d26", spotify: "#1db954", wix: "#0c6efc", "wordpress-com": "#3858e9", netlify: "#05bdba", railway: "#853bce", supabase: "#3ecf8e", kahoot: "#46178f", linkedin: "#0a66c2" };
+  // Sends the agent's follow-up turn in Agent mode once the user has decided.
+  let forcedMode = null;
+  function continueAgent(note) {
+    if (!userInput || userInput.disabled || sendBtn.disabled || activeSendController) return;
+    forcedMode = "agent";
+    userInput.value = note;
+    userInput.dispatchEvent(new Event("input", { bubbles: true }));
+    sendMessage();
+  }
   const ACTION_STATUS = { pending: "Needs your confirmation", running: "Running…", done: "Done", failed: "Failed", cancelled: "Cancelled" };
   const actionStates = new Map();
   function createActionCard(pre, rawCode) {
@@ -1250,6 +1259,9 @@ export default function initialize(scope, context) {
         const next = await request(`/${verb}`, "POST");
         actionStates.set(card.id, next);
         render(next);
+        // In an agent task, the agent picks up where it stopped for confirmation.
+        if (element.closest(".bot-message")?.querySelector(":scope > .gx-plan-slot") && (next.status === "done" || next.status === "cancelled"))
+          continueAgent(next.status === "done" ? `Confirmed: ${card.title || "the action"}. Continue the task.` : `I cancelled: ${card.title || "the action"}. Do not do it; continue without it or tell me what you need.`);
       } catch (error) {
         // Another tab may have handled it already: show the real state.
         const latest = error.status === 409 ? await request("").catch(() => null) : null;
@@ -1897,6 +1909,19 @@ export default function initialize(scope, context) {
       detail: { element: slot, route, answerWith: (model) => answerWithModel(botBubble, model) },
     }));
   }
+  // Agent mode's plan sits above the answer and updates as the agent works.
+  function setMessagePlan(botBubble, plan, live = false) {
+    if (!Array.isArray(plan) || !plan.length) return;
+    let slot = botBubble.querySelector(":scope > .gx-plan-slot");
+    if (!slot) {
+      slot = scope.document.createElement("div");
+      slot.className = "gx-plan-slot";
+      const route = botBubble.querySelector(":scope > .gx-route-slot");
+      if (route) route.after(slot);
+      else botBubble.prepend(slot);
+    }
+    scope.document.dispatchEvent(new CustomEvent("genyxo:agent-plan", { detail: { element: slot, plan, live } }));
+  }
   // A second model checks the answer's facts; the card sits above the actions.
   function showFactCheck(botBubble, { result = null, run = false } = {}) {
     let slot = botBubble.querySelector(":scope > .gx-factcheck-slot");
@@ -2099,6 +2124,7 @@ export default function initialize(scope, context) {
     msgDiv.appendChild(contentDiv);
     if (sender === "bot" && text) attachCanvasCard(msgDiv, text, false);
     if (sender === "bot" && meta?.route) setMessageRoute(msgDiv, meta.route);
+    if (sender === "bot" && meta?.plan) setMessagePlan(msgDiv, meta.plan);
     if (sender === "bot") {
       scope.document
         .querySelectorAll(".latest-bot-message")
@@ -2895,6 +2921,8 @@ export default function initialize(scope, context) {
       if (composer.places?.length) payload.pinnedPlaces = composer.places;
       // "+" menu modes: Web search or Deep research for this message.
       if (composer.mode) payload.mode = composer.mode;
+      else if (forcedMode) payload.mode = forcedMode;
+      forcedMode = null;
       // Voice mode marks its turns on the form so replies come back short and in the spoken language.
       const voiceTurn = DOM.chatForm?.dataset.voiceTurn === "1";
       const voiceLanguage = DOM.chatForm?.dataset.voiceLanguage || "";
@@ -2970,6 +2998,10 @@ export default function initialize(scope, context) {
               }
               if (data.status === "route" && data.route) {
                 setMessageRoute(botBubble, data.route);
+                continue;
+              }
+              if (data.status === "plan" && data.plan) {
+                setMessagePlan(botBubble, data.plan, true);
                 continue;
               }
               recordResponseActivity(botBubble, data);

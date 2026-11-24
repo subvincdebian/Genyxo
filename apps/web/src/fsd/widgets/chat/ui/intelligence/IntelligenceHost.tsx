@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { RouteBadge } from "./RouteBadge";
+import { PlanCard, type PlanStep } from "./PlanCard";
 import { FactCheckCard, type FactCheckDetail } from "./FactCheck";
 import { AutoRoutePreview } from "./AutoRoutePreview";
 import type { Route } from "./shared";
@@ -45,10 +46,16 @@ export function IntelligenceHost() {
       signals.set(detail.element, signal);
       rootFor(detail.element).render(<FactCheckCard detail={detail} signal={signal} />);
     };
+    const onPlan = (event: Event) => {
+      const { element, plan, live } = (event as CustomEvent<{ element: HTMLElement; plan: PlanStep[]; live: boolean }>).detail;
+      rootFor(element).render(<PlanCard plan={plan} live={live} />);
+    };
+    document.addEventListener("genyxo:agent-plan", onPlan);
     document.addEventListener("genyxo:route-badge", onRoute);
     document.addEventListener("genyxo:fact-check", onFactCheck);
     const timer = window.setInterval(sweep, 15_000);
     return () => {
+      document.removeEventListener("genyxo:agent-plan", onPlan);
       document.removeEventListener("genyxo:route-badge", onRoute);
       document.removeEventListener("genyxo:fact-check", onFactCheck);
       window.clearInterval(timer);

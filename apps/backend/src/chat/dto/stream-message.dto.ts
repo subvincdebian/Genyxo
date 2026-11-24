@@ -84,10 +84,10 @@ export class StreamMessageDto extends SendMessageDto {
   @Type(() => SharedLocationDto)
   location?: SharedLocationDto;
 
-  /** "+" menu modes: always search the web, or run Deep research. */
+  /** "+" menu modes: always search the web, run Deep research, or work as an agent. */
   @IsOptional()
-  @IsIn(["search", "research"])
-  mode?: "search" | "research";
+  @IsIn(["search", "research", "agent"])
+  mode?: "search" | "research" | "agent";
 
   /** Auto mode: cheaper, balanced or best quality. */
   @IsOptional()

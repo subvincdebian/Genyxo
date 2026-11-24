@@ -1,0 +1,14 @@
+{
+  "name": "genyxo-agent-browser",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Headless browser the Genyxo chat agent drives step by step",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.49.1"
+  }
+}

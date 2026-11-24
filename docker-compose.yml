@@ -94,6 +94,8 @@ services:
       - REDISPASSWORD=${REDISPASSWORD:?Set REDISPASSWORD in apps/backend/.env}
       - ALLOWED_ORIGINS=https://genyxo.com,http://localhost,http://localhost:3000,http://localhost:3001
       - SANDBOX_URL=http://sandbox:8080
+      - BROWSER_URL=http://browser:8090
+      - BROWSER_TOKEN=${BROWSER_TOKEN:?Set BROWSER_TOKEN in apps/backend/.env}
       - SANDBOX_TOKEN=${SANDBOX_TOKEN:?Set SANDBOX_TOKEN in apps/backend/.env}
     depends_on:
       mysql:
@@ -104,6 +106,7 @@ services:
       - frontend_net
       - backend_net
       - sandbox_net
+      - browser_net
     deploy:
       resources:
         limits:
@@ -148,6 +151,32 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  # Headless Chromium the chat agent drives. It needs the internet, so it has
+  # its own network; it refuses private and internal addresses itself.
+  browser:
+    build:
+      context: ./apps/browser
+    image: genyxo-browser:latest
+    restart: unless-stopped
+    environment:
+      - BROWSER_TOKEN=${BROWSER_TOKEN:?Set BROWSER_TOKEN in apps/backend/.env}
+      - BROWSER_SESSIONS=6
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    ipc: private
+    networks:
+      - browser_net
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+          pids: 1024
 
   # Explicit migration gate, invoked by production launchers before rollout.
   db-migrate:
@@ -259,6 +288,8 @@ networks:
   sandbox_net:
     driver: bridge
     internal: true
+  browser_net:
+    driver: bridge
 
 # ==============================================================
 # Persistent Volumes

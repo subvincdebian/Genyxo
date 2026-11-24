@@ -19,15 +19,18 @@ type Menu = { mode: Mode; page: Page; start: number };
 
 const ACCEPT = "image/*,.pdf,.docx,.txt,.md,.csv,.json,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.cs,.go,.rs,.php,.rb,.swift,.kt,.sql,.sh,.yaml,.yml,text/*";
 /** "+" menu modes for the next message, shown as a chip beside "+" like ChatGPT. */
-type ChatMode = "search" | "research";
+type ChatMode = "search" | "research" | "agent";
 const TELESCOPE = "M3.2 9.6 13.9 4.1l1.6 3.1-10.7 5.5-1.6-3.1Zm11.4-6 2.2-1.1 2.3 4.4-2.2 1.1-2.3-4.4ZM8.6 11.6l1.6 1.3-2.3 4.6H6.3l2.3-5.9Zm2.9.2 2.6 5.7h-1.6l-2.3-4.4 1.3-1.3Z";
 const MODES: Record<ChatMode, { title: string; placeholder: string }> = {
   search: { title: "Web search", placeholder: "Search the web…" },
   research: { title: "Deep research", placeholder: "What should I research?" },
+  agent: { title: "Agent", placeholder: "What should I get done?" },
 };
 const modeIcon = (mode: ChatMode, size = 18) => mode === "search"
   ? <WorkspaceIcon name="globe" size={size} />
-  : <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d={TELESCOPE} /></svg>;
+  : mode === "agent"
+    ? <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h9M4 12h6M4 18h9"/><path d="m15 10 2 2 4-4"/><path d="m15 16 2 2 4-4"/></svg>
+    : <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d={TELESCOPE} /></svg>;
 const PAGE_TITLES: Record<Exclude<Page, "root">, string> = { library: "Library", project: "Projects", skill: "Skills", plugin: "Plugins", model: "Model" };
 
 const composerInput = () => document.getElementById("userInput") as HTMLTextAreaElement | null;
@@ -454,6 +457,7 @@ export function ComposerPlusMenu({ disabled }: { disabled: boolean }) {
     const video: PaletteEntry = { id: "video", icon: icon("video"), title: "Make a video", hint: "Switch to Kling video", keywords: "clip generate", run: () => finish(() => switchModel("kling-video", "Describe the video you want…")) };
     const webSearch: PaletteEntry = { id: "web-search", icon: modeIcon("search"), title: "Web search", hint: "Search for current news and information", keywords: "internet browse google news online", current: chatMode === "search", run: () => finish(() => toggleMode("search")) };
     const research: PaletteEntry = { id: "deep-research", icon: modeIcon("research"), title: "Deep research", hint: "Get a detailed report with sources", keywords: "report analysis investigate study", current: chatMode === "research", run: () => finish(() => toggleMode("research")) };
+    const agentEntry: PaletteEntry = { id: "agent", icon: modeIcon("agent"), title: "Agent", hint: "Plans and does the task: browses, fills in, drafts. Asks before sending or paying", keywords: "agent automate task do browse operator", current: chatMode === "agent", run: () => finish(() => toggleMode("agent")) };
     const canvas: PaletteEntry = { id: "canvas", icon: icon("canvas"), title: "Canvas", hint: "Write or code side by side", keywords: "document editor code", run: () => finish(openCanvas) };
     const project: PaletteEntry = { id: "project", icon: icon("folder"), title: "Project", hint: activeProject ? `In ${activeProject.name}` : "Use a project's files and instructions", keywords: "work in", submenu: true, run: () => goTo("project") };
     const pluginsEntry: PaletteEntry = { id: "plugins", icon: icon("plugins"), title: "Plugins", hint: "Use a connected app", keywords: "apps integrations", submenu: true, run: () => goTo("plugin") };
@@ -498,7 +502,7 @@ export function ComposerPlusMenu({ disabled }: { disabled: boolean }) {
       const currentLabel = models.find((model) => model.value === current)?.label;
       return filter([{ id: "commands", entries: [
         { id: "model", icon: icon("cube"), title: "Model", hint: currentLabel ? `Switch from ${currentLabel}` : "Choose a model", submenu: true, run: () => goTo("model") },
-        webSearch, research, project, skillsEntry, pluginsEntry, image, video, canvas,
+        agentEntry, webSearch, research, project, skillsEntry, pluginsEntry, image, video, canvas,
         { id: "dictate", icon: icon("mic"), title: "Dictate", hint: "Turn speech into text", keywords: "voice microphone", run: () => finish(() => document.getElementById("voiceBtn")?.click()) },
         { id: "new", icon: icon("new"), title: "New chat", hint: "Start a fresh conversation", keywords: "clear reset", run: () => finish(() => startNewChat()) },
         { id: "help", icon: icon("help"), title: "Help & feedback", hint: "Contact Genyxo support", keywords: "support report", run: () => finish(() => router.push("/support")) },
@@ -515,7 +519,7 @@ export function ComposerPlusMenu({ disabled }: { disabled: boolean }) {
     }
     return filter([
       { id: "add", entries: [files, ...(coarse ? [camera] : []), libraryEntry, sketchEntry] },
-      { id: "research", entries: [webSearch, research] },
+      { id: "research", entries: [agentEntry, webSearch, research] },
       { id: "create", entries: [image, video, canvas] },
       { id: "work", entries: [project, pluginsEntry, skillsEntry] },
       ...found,

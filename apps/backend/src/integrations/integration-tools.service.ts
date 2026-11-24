@@ -297,6 +297,79 @@ export class IntegrationToolsService {
   }
 
   /**
+   * Built-in actions (the agent's browser) use the same confirm-before-acting
+   * cards as plugins: the chat proposes, and the action runs only when the
+   * user presses Confirm.
+   */
+  private readonly builtins = new Map<
+    string,
+    {
+      name: string;
+      run: (
+        userId: number,
+        tool: string,
+        args: Record<string, any>,
+      ) => Promise<unknown>;
+    }
+  >();
+
+  registerBuiltin(
+    pluginId: string,
+    name: string,
+    run: (
+      userId: number,
+      tool: string,
+      args: Record<string, any>,
+    ) => Promise<unknown>,
+  ) {
+    this.builtins.set(pluginId, { name, run });
+  }
+
+  async proposeBuiltin(
+    userId: number,
+    pluginId: string,
+    tool: string,
+    args: Record<string, any>,
+    preview: ActionPreview,
+    scope: { conversationId?: number },
+  ): Promise<ToolCallOutcome> {
+    const builtin = this.builtins.get(pluginId);
+    if (!builtin) throw new Error(`Unknown built-in action ${pluginId}`);
+    const action = await this.actions.save(
+      this.actions.create({
+        id: randomUUID(),
+        userId,
+        conversationId: scope.conversationId ?? null,
+        messageId: null,
+        pluginId,
+        tool: tool.slice(0, 64),
+        args,
+        preview: preview as unknown as Record<string, unknown>,
+        status: "pending",
+        result: null,
+        expiresAt: new Date(Date.now() + ACTION_TTL_MS),
+      }),
+    );
+    return {
+      actionId: action.id,
+      card: actionFence({
+        id: action.id,
+        plugin: pluginId,
+        pluginName: builtin.name,
+        title: preview.title,
+        fields: preview.fields,
+        body: preview.body,
+        status: "pending",
+      }),
+      output: {
+        status: "awaiting_user_confirmation",
+        actionId: action.id,
+        note: "A confirmation card is now shown to the user. Nothing was clicked or submitted. Stop and tell the user what you are waiting for; continue after they confirm.",
+      },
+    };
+  }
+
+  /**
    * Runs one read-only tool of a connected plugin directly, outside a chat
    * turn (importing a Drive file or Notion page into a knowledge base).
    */
@@ -589,6 +662,16 @@ export class IntegrationToolsService {
     if (!claimed.affected)
       throw new ConflictException("This action is already running");
     try {
+      const builtin = this.builtins.get(action.pluginId);
+      if (builtin) {
+        const result = await builtin.run(userId, action.tool, action.args);
+        await this.finish(action, "done", {
+          summary: `${(action.preview as any).title || builtin.name} — done`,
+          url: resultLink(result),
+          data: compact(result),
+        });
+        return this.publicAction(action);
+      }
       const { tool, args } = await this.resolve(userId, action);
       const result = await this.execute(userId, tool, args);
       const summary = `${(action.preview as any).title || tool.label} — done`;
