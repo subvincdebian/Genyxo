@@ -57,6 +57,33 @@ const TICK_MS = 15_000;
 const STALE_RUN_MS = 15 * 60_000;
 const MAX_TASKS = 50;
 
+/** Plain opening of an answer for a reminder bubble: no Markdown, code or cards. */
+export function answerPreview(markdown: string) {
+  const text = markdown
+    .replace(/```[\s\S]*?(```|$)/g, " ")
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[*_#>`~|]+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return undefined;
+  return text.length > 220 ? `${text.slice(0, 217).trimEnd()}…` : text;
+}
+
+/** The text of every streamed token in one chunk of the chat's SSE output. */
+export function streamedTokens(chunk: string) {
+  let text = "";
+  for (const line of chunk.split("\n")) {
+    if (!line.startsWith("data: ")) continue;
+    try {
+      const data = JSON.parse(line.slice(6)) as { token?: unknown };
+      if (typeof data.token === "string") text += data.token;
+    } catch {
+      /* A partial or non-JSON line carries no token. */
+    }
+  }
+  return text;
+}
+
 /**
  * Scheduled tasks ("every morning — weather, the drive to work and local
  * news"): kept as workspace records, run by a timer in the API process
@@ -379,6 +406,8 @@ export class ScheduledService implements OnModuleInit, OnModuleDestroy {
       }),
     );
     let error: string | null = null;
+    // The answer's opening words, so a reminder can show what it says.
+    let answer = "";
     try {
       const cost = this.pricing.getModelConfig(data.model)?.cost ?? 0;
       if (!(await this.users.deductCredits(row.userId, cost)))
@@ -409,6 +438,7 @@ export class ScheduledService implements OnModuleInit, OnModuleDestroy {
           const text = chunk.toString();
           const match = /"error":"((?:[^"\\]|\\.)*)"/.exec(text);
           if (match) failure = JSON.parse(`"${match[1]}"`);
+          if (answer.length < 600) answer += streamedTokens(text);
           done();
         },
       });
@@ -475,6 +505,7 @@ export class ScheduledService implements OnModuleInit, OnModuleDestroy {
             : `“${data.title}” has a new result ready for you.`,
           link: chat?.publicId ? `/c/${chat.publicId}` : "/scheduled",
           action: error ? "Review task" : "Open result",
+          preview: error ? undefined : answerPreview(answer),
         })
         .catch(() => this.logger.warn(`Task ${row.id} notification failed`));
     }

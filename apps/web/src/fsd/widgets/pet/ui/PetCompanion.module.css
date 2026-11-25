@@ -767,3 +767,18 @@
     display: none;
   }
 }
+
+/* Page text a question is about, above the question in the user's bubble. */
+.quote {
+  display: -webkit-box;
+  margin: 2px 0 6px;
+  padding: 0 0 0 10px;
+  border-left: 2px solid color-mix(in srgb, var(--pet-text) 26%, transparent);
+  overflow: hidden;
+  color: var(--pet-muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+  white-space: normal;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}

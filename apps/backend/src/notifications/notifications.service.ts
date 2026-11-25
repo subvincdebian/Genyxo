@@ -21,6 +21,8 @@ export type NotifyInput = {
   action?: string;
   /** false when the caller sends its own, richer email. */
   email?: boolean;
+  /** A short plain-text look at the result, shown live (e.g. by the pet). */
+  preview?: string;
 };
 
 @Injectable()
@@ -66,7 +68,12 @@ export class NotificationsService {
       input.title,
       input.message,
       input.type || NotificationType.INFO,
-      { category: input.category, link: input.link, push: choice.push },
+      {
+        category: input.category,
+        link: input.link,
+        push: choice.push,
+        ...(input.preview ? { preview: input.preview } : {}),
+      },
     );
     if (choice.email && input.email !== false && this.email) {
       const user = await this.repo.manager.query(
@@ -91,7 +98,12 @@ export class NotificationsService {
     title: string,
     message: string,
     type: NotificationType,
-    delivery: { category?: string; link?: string; push?: boolean } = {},
+    delivery: {
+      category?: string;
+      link?: string;
+      push?: boolean;
+      preview?: string;
+    } = {},
   ) {
     const notification = this.repo.create({ userId, title, message, type });
     const cacheKey = `unread_count:${userId}`;

@@ -14,6 +14,8 @@ export type PetMessage = {
   activity?: string;
   model?: string;
   video?: string;
+  /** Text from the page the question is about, shown above it. */
+  quote?: string;
 };
 export type PetRequest = {
   model: string;

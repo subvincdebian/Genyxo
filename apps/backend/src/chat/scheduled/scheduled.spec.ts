@@ -1,5 +1,9 @@
 import { describeSchedule, nextRun, Repeat, zonedTime } from "./schedule";
-import { ScheduledService } from "./scheduled.service";
+import {
+  answerPreview,
+  ScheduledService,
+  streamedTokens,
+} from "./scheduled.service";
 import { describeTaskFences, taskFence, taskRunContent } from "./task-tools";
 import { ShareService } from "../share/share.service";
 
@@ -291,5 +295,21 @@ describe("shared chats", () => {
     await expect(service.publicView(link.token)).rejects.toThrow(
       "Link not found",
     );
+  });
+});
+
+describe("reminder preview", () => {
+  it("collects streamed tokens and keeps a plain opening of the answer", () => {
+    const chunk = [
+      'data: {"status":"activity","step":"Thinking"}',
+      'data: {"token":"**Time** to ","conversationId":1}',
+      `data: ${JSON.stringify({ token: "drink water.\n\n```js\nx()\n```" })}`,
+      "data: [DONE]",
+    ].join("\n");
+    const text = streamedTokens(chunk);
+    expect(text).toBe("**Time** to drink water.\n\n```js\nx()\n```");
+    expect(answerPreview(text)).toBe("Time to drink water.");
+    expect(answerPreview("")).toBeUndefined();
+    expect(answerPreview("a ".repeat(200))?.length).toBeLessThanOrEqual(220);
   });
 });

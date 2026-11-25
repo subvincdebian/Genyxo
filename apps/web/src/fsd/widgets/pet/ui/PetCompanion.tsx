@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
   type CSSProperties,
 } from "react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/shared/i18n";
 import { WorkspaceIcon } from "@/shared/ui/workspace";
 import {
@@ -48,7 +49,23 @@ import { PetModelPicker } from "./PetModelPicker";
 import { MODE_TITLES, PetPlusMenu, modeIcon, type PetMode } from "./PetPlusMenu";
 import { PetPopover, usePresence } from "./PetPopover";
 import { PetSketch } from "./PetSketch";
+import { PetNudge, PetSelectionBar, PetSuggestions } from "./PetAssist";
+import {
+  dismissReminder,
+  dueReminder,
+  listenForReminders,
+  nextDueAt,
+  pageFile,
+  selectionPrompt,
+  snoozeReminder,
+  subscribeReminders,
+  type SelectionAction,
+} from "../model/pet-assist";
 import styles from "./PetCompanion.module.css";
+import assist from "./PetAssist.module.css";
+
+const EXPLAIN_PAGE =
+  "Explain what is on this page (attached): what it is for, the key information, and what I can do here. Be brief and practical.";
 
 /** The voice call the pet can start; injected by the app so widgets stay independent. */
 export type PetVoice = {
@@ -189,6 +206,7 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
     getServerPetSettings,
   );
   const pet = PETS.find((item) => item.id === settings.id) || PETS[0];
+  const router = useRouter();
   const root = useRef<HTMLDivElement>(null);
   const sprite = useRef<HTMLDivElement>(null);
   const engine = useRef<PetEngine | null>(null);
@@ -233,6 +251,18 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
   useEffect(() => {
     queueMicrotask(() => setReduced(reducedMotion()));
   }, []);
+  // Text from the page the next question is about ("Ask" on a selection).
+  const [quote, setQuote] = useState("");
+  // Reminders: the one due now; a snoozed one wakes the component when it is due.
+  const reminder = useSyncExternalStore(subscribeReminders, dueReminder, () => null);
+  const [, setClock] = useState(0);
+  useEffect(() => listenForReminders(), []);
+  useEffect(() => {
+    const wait = nextDueAt() - Date.now();
+    if (reminder || !Number.isFinite(wait)) return;
+    const timer = setTimeout(() => setClock((value) => value + 1), Math.min(Math.max(wait, 0) + 50, 2 ** 31 - 1));
+    return () => clearTimeout(timer);
+  });
   const showPopover = (next: "plus" | "model" | null) => {
     if (next) setLastPopover(next);
     setPopover(next);
@@ -391,11 +421,24 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
 
   function submit() {
     const message = draft.trim();
-    if ((!message && !files.length) || busy) return;
+    if ((!message && !files.length && !quote) || busy) return;
+    if (!send({ shown: message, message: quote ? `${message || "Tell me about this."}\n\n"""\n${quote}\n"""` : message, attachments: files, quote })) return;
+    setDraft("");
+    setFiles([]);
+    setQuote("");
+    setMode(null);
+    setPopover(null);
+    dictator.current?.stop();
+    if (input.current) input.current.style.height = "auto";
+  }
+
+  /** One question to the pet; `shown` is what the user's bubble says. */
+  function send({ shown, message, attachments, quote: about }: { shown: string; message: string; attachments: PetAttachment[]; quote?: string }) {
+    if (busy) return false;
     if (!petSignedIn()) {
       setNotice(text("sign_in", "Sign in to chat with your pet."));
       engine.current?.play("failed");
-      return;
+      return false;
     }
     const replyId = nextId.current + 1;
     const request = { model, mode: mode || undefined, presetId: skill?.id, projectId: project?.id };
@@ -404,21 +447,15 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
       {
         id: nextId.current,
         role: "user",
-        text: message,
-        files: files.map((item) => item.name),
+        text: shown,
+        quote: about || undefined,
+        files: attachments.map((item) => item.name),
       },
-      { id: replyId, role: "pet", text: "", streaming: true, model, activity: activityFor(model, mode) },
+      { id: replyId, role: "pet", text: "", streaming: true, model, activity: about || attachments.length ? "Reading" : activityFor(model, mode) },
     ]);
     nextId.current += 2;
-    const attachments = files;
-    setDraft("");
-    setFiles([]);
     setNotice("");
-    setMode(null);
-    setPopover(null);
-    dictator.current?.stop();
     setBusy(true);
-    if (input.current) input.current.style.height = "auto";
     engine.current?.setBase("think");
     stop.current = sendToPet(message, attachments, request, {
       onRoute: (routed) =>
@@ -461,6 +498,49 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
         );
       },
     });
+    return true;
+  }
+
+  /** "Explain this page": the page goes along as a text file. */
+  function explainPage() {
+    setMenu(false);
+    setOpen(true);
+    engine.current?.play("wave");
+    send({ shown: text("explain_page", "Explain this page"), message: EXPLAIN_PAGE, attachments: [pageFile()] });
+  }
+
+  /** Summarize, explain or ask about text selected on the page. */
+  function onSelection(action: SelectionAction, selected: string) {
+    setMenu(false);
+    setOpen(true);
+    engine.current?.play("wave");
+    if (action === "ask") {
+      setQuote(selected);
+      requestAnimationFrame(() => input.current?.focus());
+      return;
+    }
+    const shown = action === "summarize" ? text("summarize", "Summarize") : text("explain", "Explain");
+    send({ shown, message: `${selectionPrompt(action)}\n\n"""\n${selected}\n"""`, attachments: [], quote: selected });
+  }
+
+  // A reminder arrives: the pet jumps and waves for a while, then waits calmly.
+  const reminderId = reminder?.id;
+  useEffect(() => {
+    if (!reminderId || !ready) return;
+    engine.current?.play("jump");
+    let beats = 0;
+    const timer = setInterval(() => {
+      beats += 1;
+      engine.current?.play(beats % 2 ? "wave" : "jump");
+      if (beats >= 5) clearInterval(timer);
+    }, 3600);
+    return () => clearInterval(timer);
+  }, [reminderId, ready]);
+
+  function openReminder() {
+    if (!reminder) return;
+    dismissReminder(reminder.id);
+    if (reminder.link && reminder.link !== location.pathname) router.push(reminder.link);
   }
 
   function addFiles(selected: FileList | File[] | null) {
@@ -573,6 +653,7 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
       ref={root}
       className={styles.root}
       data-pet={pet.id}
+      data-pet-root=""
       style={{ "--pet-accent": pet.accent } as CSSProperties}
       onContextMenu={(event) => {
         event.preventDefault();
@@ -599,6 +680,18 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
           }
         }}
       />
+      {reminder && !open && <span className={assist.halo} aria-hidden="true" />}
+      {reminder && !open && !menu && (
+        <PetNudge
+          reminder={reminder}
+          above={side.above}
+          left={side.left}
+          onOpen={openReminder}
+          onSnooze={() => snoozeReminder(reminder.id)}
+          onDismiss={() => dismissReminder(reminder.id)}
+        />
+      )}
+      <PetSelectionBar petName={pet.name} onAction={onSelection} />
       {voice.active && (
         <span className={styles.voiceBadge} data-phase={voice.phase}>
           <i />
@@ -614,6 +707,10 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
           data-left={side.left}
           onPointerDown={(event) => event.stopPropagation()}
         >
+          <button type="button" role="menuitem" onClick={explainPage}>
+            <WorkspaceIcon name="search" size={18} />
+            {text("explain_page", "Explain this page")}
+          </button>
           <a
             role="menuitem"
             href="/profile#pets"
@@ -675,11 +772,13 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
               </button>
             </span>
           </header>
+          {messages.length === 0 && !quote && <PetSuggestions onExplainPage={explainPage} />}
           {messages.length > 0 && (
             <div ref={list} className={styles.messages} aria-live="polite">
               {messages.map((message) =>
                 message.role === "user" ? (
                   <div key={message.id} className={styles.user}>
+                    {message.quote && <blockquote className={styles.quote}>{message.quote}</blockquote>}
                     {message.text}
                     {message.files?.map((name) => (
                       <small key={name}>{name}</small>
@@ -716,8 +815,17 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
                 event.target.value = "";
               }}
             />
-            {(files.length > 0 || mode || skill || project) && (
+            {(files.length > 0 || mode || skill || project || quote) && (
               <div className={styles.chips}>
+                {quote && (
+                  <button type="button" className={styles.chip} title="Remove the selected text" onClick={() => setQuote("")}>
+                    <span className={styles.chipIcon}>
+                      <WorkspaceIcon name="edit" size={14} />
+                    </span>
+                    <span className={styles.chipClose}>{icon(ICONS.close)}</span>
+                    {`“${quote.replace(/\s+/g, " ").slice(0, 48)}${quote.length > 48 ? "…" : ""}”`}
+                  </button>
+                )}
                 {mode && (
                   <button type="button" className={styles.chip} data-kind="mode" title={`Turn off ${MODE_TITLES[mode]}`} onClick={() => setMode(null)}>
                     <span className={styles.chipIcon}>{modeIcon(mode, 14)}</span>
@@ -848,7 +956,7 @@ function Pet({ loadVoice }: { loadVoice: LoadVoice }) {
                 <button type="button" className={styles.action} data-kind="stop" aria-label={text("stop", "Stop answer")} title={text("stop", "Stop answer")} onClick={() => stop.current?.()}>
                   {icon(ICONS.stop)}
                 </button>
-              ) : draft.trim() || files.length ? (
+              ) : draft.trim() || files.length || quote ? (
                 <button key="send" type="submit" className={styles.action} data-kind="send" aria-label={text("send", "Send")} title={text("send", "Send")}>
                   {icon(ICONS.send)}
                 </button>

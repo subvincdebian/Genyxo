@@ -1,0 +1,295 @@
+/* The pet's assistant surfaces: a reminder bubble beside the pet, a bar over
+   selected text and the empty-chat suggestions. Liquid glass in neutral ink;
+   they live on every page, so each colour has a fallback. */
+.nudge,
+.selectionBar {
+  --assist-bg: var(--gx-elevated, #1b1d1d);
+  --assist-text: var(--gx-text, #f3f5f4);
+  --assist-muted: var(--gx-muted, #9aa3a0);
+  --assist-hover: color-mix(in srgb, var(--assist-text) 9%, transparent);
+  --assist-rim: rgba(255, 255, 255, 0.2);
+  isolation: isolate;
+  border: 1px solid var(--assist-rim);
+  color: var(--assist-text);
+  background: color-mix(in srgb, var(--assist-bg) 52%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8) brightness(1.05);
+  backdrop-filter: blur(24px) saturate(1.8) brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0 20px rgba(255, 255, 255, 0.04),
+    0 18px 48px rgba(0, 0, 0, 0.32),
+    0 2px 8px rgba(0, 0, 0, 0.16);
+  font: 450 13.5px/1.45 var(--gx-font, Inter, system-ui, sans-serif);
+}
+:global([data-gx-tone="light"]) :is(.nudge, .selectionBar) {
+  --assist-rim: rgba(255, 255, 255, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 18px 48px rgba(20, 30, 40, 0.16),
+    0 2px 8px rgba(20, 30, 40, 0.08);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nudge,
+  .selectionBar {
+    background: var(--assist-bg);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nudge,
+  .selectionBar {
+    background: var(--assist-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Reminder bubble */
+.nudge {
+  position: absolute;
+  display: grid;
+  gap: 6px;
+  width: min(300px, calc(100vw - 24px));
+  padding: 12px 12px 12px 14px;
+  border-radius: 20px;
+  cursor: default;
+  user-select: text;
+  -webkit-user-select: text;
+  animation: nudgeIn 0.42s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+.nudge[data-above="true"] {
+  bottom: calc(100% + 10px);
+  transform-origin: bottom center;
+}
+.nudge[data-above="false"] {
+  top: calc(100% + 10px);
+  transform-origin: top center;
+}
+.nudge[data-left="true"] {
+  right: 0;
+}
+.nudge[data-left="false"] {
+  left: 0;
+}
+.nudge header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.nudgeIcon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--assist-muted);
+}
+.nudge strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.nudgeClose {
+  display: grid;
+  flex: 0 0 26px;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: -4px -4px -4px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--assist-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.nudgeClose:hover {
+  color: var(--assist-text);
+  background: var(--assist-hover);
+}
+.nudge p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--assist-text) 82%, transparent);
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+}
+.nudge footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+.nudge footer button {
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  font: 560 12.5px/1 inherit;
+  cursor: pointer;
+  transition: background-color 0.15s, opacity 0.15s, transform 0.2s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.nudge footer button:active {
+  transform: scale(0.95);
+}
+.ghost {
+  color: var(--assist-text);
+  background: var(--assist-hover);
+}
+.ghost:hover {
+  background: color-mix(in srgb, var(--assist-text) 15%, transparent);
+}
+.primary {
+  color: var(--gx-bg, #0c0d0d);
+  background: var(--assist-text);
+}
+.primary:hover {
+  opacity: 0.88;
+}
+.nudge :is(button):focus-visible,
+.selectionBar button:focus-visible,
+.suggestions button:focus-visible {
+  outline: 2px solid var(--assist-text, var(--gx-text, #f3f5f4));
+  outline-offset: 2px;
+}
+@keyframes nudgeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+}
+
+/* Selection bar */
+.selectionBar {
+  position: fixed;
+  z-index: 2147483001;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  animation: barIn 0.24s cubic-bezier(0.2, 1.2, 0.4, 1) both;
+}
+.selectionBar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--assist-text);
+  background: transparent;
+  font: 540 13px/1 inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.2s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.selectionBar button:hover {
+  background: var(--assist-hover);
+}
+.selectionBar button:active {
+  transform: scale(0.95);
+}
+.selectionBar button :global(svg) {
+  color: var(--assist-muted);
+}
+@keyframes barIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+}
+.selectionBar[data-below] {
+  animation-name: barInBelow;
+}
+@keyframes barInBelow {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+}
+
+/* Empty chat */
+.suggestions {
+  display: grid;
+  gap: 6px;
+  padding: 2px 10px 8px;
+}
+.suggestions button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--gx-text, #f3f5f4) 10%, transparent);
+  border-radius: 14px;
+  color: var(--gx-text, #f3f5f4);
+  background: color-mix(in srgb, var(--gx-text, #f3f5f4) 4%, transparent);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.2s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.suggestions button:hover {
+  border-color: color-mix(in srgb, var(--gx-text, #f3f5f4) 18%, transparent);
+  background: color-mix(in srgb, var(--gx-text, #f3f5f4) 8%, transparent);
+}
+.suggestions button:active {
+  transform: scale(0.985);
+}
+.suggestions button > :global(svg) {
+  flex: 0 0 auto;
+  color: var(--gx-muted, #9aa3a0);
+}
+.suggestions span {
+  display: grid;
+  gap: 1px;
+}
+.suggestions strong {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.suggestions small {
+  color: var(--gx-muted, #9aa3a0);
+  font-size: 12px;
+}
+.tip {
+  margin: 2px 2px 0;
+  color: var(--gx-muted, #9aa3a0);
+  font-size: 12px;
+}
+
+/* The pet asks for attention while a reminder waits: a soft neutral halo. */
+.halo {
+  position: absolute;
+  inset: 8% 8% 4%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.22), transparent);
+  animation: halo 2.4s ease-in-out infinite;
+}
+@keyframes halo {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nudge,
+  .selectionBar,
+  .halo {
+    animation: none;
+  }
+}
