@@ -123,7 +123,17 @@ import {
   recallOpenAiTools,
   runRecallTool,
 } from "./recall/recall-tools";
-import { autoFailover, type RouteDecision } from "./routing/model-router";
+import {
+  autoFailover,
+  labelOf,
+  type RouteDecision,
+} from "./routing/model-router";
+import {
+  EmptyReplyError,
+  isProviderFailure,
+  nextReserve,
+  reserveRoute,
+} from "./routing/fallback";
 import { ScheduledService } from "./scheduled/scheduled.service";
 import {
   describeTaskFences,
@@ -1934,399 +1944,490 @@ export class ChatService {
       };
       const stepLimitNote = `\n\n_Stopped after ${stepLimit} steps. Ask me to continue if you need more._`;
 
-      if (turnOptions.mode === "research" && this.webSearch) {
-        // Deep research runs its own plan → search → read → report loop.
-        clearTimeout(streamTimeout);
-        streamTimeout = setTimeout(() => abortController.abort(), 420_000);
-        const history = dbMessages
-          .slice(-7, -1)
-          .map(
-            (message) =>
-              `${message.sender === "bot" ? "Assistant" : "User"}: ${describeTaskFences(describeWebFences(String(message.content || ""))).slice(0, 1500)}`,
-          )
-          .join("\n");
-        const found = await deepResearch({
-          question: text,
-          history,
-          language:
-            turnOptions.language || turnOptions.locales?.[0]?.split("-")[0],
-          search: this.webSearch,
-          signal: abortController.signal,
-          step: (step) => {
-            toolSteps.push(step);
-            res.write(
-              `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
-            );
-          },
-          complete: (system, prompt) =>
-            this.completeText(model, system, prompt, abortController.signal),
-          stream: (system, prompt) =>
-            this.streamText(
-              model,
-              `${system}\n\n${baseInstruction}`,
-              prompt,
-              emit,
-              abortController.signal,
-            ),
-        });
-        webSources.push(...found);
-      } else if (model.startsWith("google/gemini")) {
-        let geminiModelName = model.replace("google/", "");
-        const makeGemini = (name: string) =>
-          this.googleAI.getGenerativeModel(
-            {
-              model: name,
-              systemInstruction,
-              ...(hasTools
-                ? {
-                    tools: [
-                      {
-                        functionDeclarations: [
-                          ...(toolset
-                            ? this.integrationTools!.geminiTools(toolset)[0]
-                                .functionDeclarations
-                            : []),
-                          ...mediaGeminiDeclarations(media),
-                          ...(mapsContext ? mapsGeminiDeclarations() : []),
-                          ...(web ? webGeminiDeclarations() : []),
-                          ...(memory ? memoryGeminiDeclarations() : []),
-                          ...(recall ? recallGeminiDeclarations() : []),
-                          ...(code ? codeGeminiDeclarations() : []),
-                          ...(agent ? agentGeminiDeclarations(browsing) : []),
-                          ...(tasks ? taskGeminiDeclarations() : []),
-                        ],
-                      },
-                    ] as any,
-                  }
-                : {}),
-            },
-            // A single Gemini call with tools can take well over a minute. Auto
-            // gives up sooner, since it has a reserve model to move to.
-            {
-              timeout: turnOptions.route ? 45_000 : hasTools ? 120_000 : 60_000,
-            },
-          );
-        let generativeModel = makeGemini(geminiModelName);
-
-        const contents: Content[] = summary
-          ? [
-              {
-                role: "user",
-                parts: [
-                  { text: `Summary of earlier conversation:\n${summary}` },
-                ],
-              },
-            ]
-          : [];
-        let lastRole: string | null = null;
-
-        for (const m of dbMessages) {
-          const role = m.sender === "bot" ? "model" : "user";
-          const isLastMessage = m.id === dbMessages[dbMessages.length - 1].id;
-
-          const textPart = m.content
-            ? {
-                text:
-                  role === "model"
-                    ? describeTaskFences(
-                        describeWebFences(
-                          describeMapFences(
-                            describeMediaFences(
-                              describeActionFences(m.content),
-                            ),
-                          ),
-                        ),
-                      )
-                    : describeTaskFences(m.content),
-              }
-            : { text: " " };
-          const parts: any[] = [textPart];
-
-          if (isLastMessage && m.files && m.files.length > 0) {
-            parts.push(...this.buildGeminiFileParts(m.files));
-          } else if (m.files && m.files.length > 0) {
-            parts.push({ text: this.buildPriorFileContext(m.files) });
-          }
-
-          if (lastRole === role && contents.length > 0) {
-            contents[contents.length - 1].parts.push(...parts);
-          } else {
-            contents.push({ role, parts });
-          }
-          lastRole = role;
-        }
-
-        for (let step = 0; ; step++) {
-          const request = () =>
-            generativeModel
-              .generateContentStream(
-                {
-                  contents,
-                  generationConfig: {
-                    maxOutputTokens: this.getMaxOutputTokens(),
-                    // Spoken replies should start right away instead of reasoning first.
-                    ...(turnOptions.voice &&
-                    geminiModelName.startsWith("gemini-3")
-                      ? { thinkingConfig: { thinkingLevel: "minimal" } }
-                      : {}),
-                  },
-                },
-                { signal: abortController.signal },
+      // Reserve models: a provider that fails before the first word is
+      // replaced by the next model in the chain, without an error.
+      const triedModels = new Set<string>();
+      const originalModel = model;
+      const originalCost = cost;
+      const needsVision = (files || []).some((file) =>
+        /^image\/|pdf/i.test(file.mime_type || ""),
+      );
+      for (;;) {
+        try {
+          if (turnOptions.mode === "research" && this.webSearch) {
+            // Deep research runs its own plan → search → read → report loop.
+            clearTimeout(streamTimeout);
+            streamTimeout = setTimeout(() => abortController.abort(), 420_000);
+            const history = dbMessages
+              .slice(-7, -1)
+              .map(
+                (message) =>
+                  `${message.sender === "bot" ? "Assistant" : "User"}: ${describeTaskFences(describeWebFences(String(message.content || ""))).slice(0, 1500)}`,
               )
-              .then(settleGeminiStream);
-          let resultStream: Awaited<ReturnType<typeof request>>;
-          try {
-            resultStream = await request();
-          } catch (error) {
-            // Auto mode never strands a message on a busy model: before the
-            // first word it moves once to a reserve Gemini model.
-            const reserve = autoFailover(
-              turnOptions.route,
-              geminiModelName,
-              error,
-            );
-            if (
-              step > 0 ||
-              fullReply ||
-              !reserve ||
-              abortController.signal.aborted
-            )
-              throw error;
-            this.logger.warn(
-              `Auto: ${geminiModelName} unavailable, using ${reserve.model}`,
-            );
-            model = reserve.model;
-            turnOptions.route = reserve.route;
-            geminiModelName = model.replace("google/", "");
-            generativeModel = makeGemini(geminiModelName);
-            res.write(`data: ${JSON.stringify({ status: "route", route: reserve.route })}
+              .join("\n");
+            const found = await deepResearch({
+              question: text,
+              history,
+              language:
+                turnOptions.language || turnOptions.locales?.[0]?.split("-")[0],
+              search: this.webSearch,
+              signal: abortController.signal,
+              step: (step) => {
+                toolSteps.push(step);
+                res.write(
+                  `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
+                );
+              },
+              complete: (system, prompt) =>
+                this.completeText(
+                  model,
+                  system,
+                  prompt,
+                  abortController.signal,
+                ),
+              stream: (system, prompt) =>
+                this.streamText(
+                  model,
+                  `${system}\n\n${baseInstruction}`,
+                  prompt,
+                  emit,
+                  abortController.signal,
+                ),
+            });
+            webSources.push(...found);
+          } else if (model.startsWith("google/gemini")) {
+            let geminiModelName = model.replace("google/", "");
+            const makeGemini = (name: string) =>
+              this.googleAI.getGenerativeModel(
+                {
+                  model: name,
+                  systemInstruction,
+                  ...(hasTools
+                    ? {
+                        tools: [
+                          {
+                            functionDeclarations: [
+                              ...(toolset
+                                ? this.integrationTools!.geminiTools(toolset)[0]
+                                    .functionDeclarations
+                                : []),
+                              ...mediaGeminiDeclarations(media),
+                              ...(mapsContext ? mapsGeminiDeclarations() : []),
+                              ...(web ? webGeminiDeclarations() : []),
+                              ...(memory ? memoryGeminiDeclarations() : []),
+                              ...(recall ? recallGeminiDeclarations() : []),
+                              ...(code ? codeGeminiDeclarations() : []),
+                              ...(agent
+                                ? agentGeminiDeclarations(browsing)
+                                : []),
+                              ...(tasks ? taskGeminiDeclarations() : []),
+                            ],
+                          },
+                        ] as any,
+                      }
+                    : {}),
+                },
+                // A single Gemini call with tools can take well over a minute. Auto
+                // gives up sooner, since it has a reserve model to move to.
+                {
+                  timeout: turnOptions.route
+                    ? 45_000
+                    : hasTools
+                      ? 120_000
+                      : 60_000,
+                },
+              );
+            let generativeModel = makeGemini(geminiModelName);
+
+            const contents: Content[] = summary
+              ? [
+                  {
+                    role: "user",
+                    parts: [
+                      { text: `Summary of earlier conversation:\n${summary}` },
+                    ],
+                  },
+                ]
+              : [];
+            let lastRole: string | null = null;
+
+            for (const m of dbMessages) {
+              const role = m.sender === "bot" ? "model" : "user";
+              const isLastMessage =
+                m.id === dbMessages[dbMessages.length - 1].id;
+
+              const textPart = m.content
+                ? {
+                    text:
+                      role === "model"
+                        ? describeTaskFences(
+                            describeWebFences(
+                              describeMapFences(
+                                describeMediaFences(
+                                  describeActionFences(m.content),
+                                ),
+                              ),
+                            ),
+                          )
+                        : describeTaskFences(m.content),
+                  }
+                : { text: " " };
+              const parts: any[] = [textPart];
+
+              if (isLastMessage && m.files && m.files.length > 0) {
+                parts.push(...this.buildGeminiFileParts(m.files));
+              } else if (m.files && m.files.length > 0) {
+                parts.push({ text: this.buildPriorFileContext(m.files) });
+              }
+
+              if (lastRole === role && contents.length > 0) {
+                contents[contents.length - 1].parts.push(...parts);
+              } else {
+                contents.push({ role, parts });
+              }
+              lastRole = role;
+            }
+
+            for (let step = 0; ; step++) {
+              const request = () =>
+                generativeModel
+                  .generateContentStream(
+                    {
+                      contents,
+                      generationConfig: {
+                        maxOutputTokens: this.getMaxOutputTokens(),
+                        // Spoken replies should start right away instead of reasoning first.
+                        ...(turnOptions.voice &&
+                        geminiModelName.startsWith("gemini-3")
+                          ? { thinkingConfig: { thinkingLevel: "minimal" } }
+                          : {}),
+                      },
+                    },
+                    { signal: abortController.signal },
+                  )
+                  .then(settleGeminiStream);
+              let resultStream: Awaited<ReturnType<typeof request>>;
+              try {
+                resultStream = await request();
+              } catch (error) {
+                // Auto mode never strands a message on a busy model: before the
+                // first word it moves once to a reserve Gemini model.
+                const reserve = autoFailover(
+                  turnOptions.route,
+                  geminiModelName,
+                  error,
+                );
+                if (
+                  step > 0 ||
+                  fullReply ||
+                  !reserve ||
+                  abortController.signal.aborted
+                )
+                  throw error;
+                this.logger.warn(
+                  `Auto: ${geminiModelName} unavailable, using ${reserve.model}`,
+                );
+                model = reserve.model;
+                turnOptions.route = reserve.route;
+                geminiModelName = model.replace("google/", "");
+                generativeModel = makeGemini(geminiModelName);
+                res.write(`data: ${JSON.stringify({ status: "route", route: reserve.route })}
 
 `);
-            resultStream = await request();
-          }
+                resultStream = await request();
+              }
 
-          // Raw parts, not the SDK aggregate: Gemini 3 requires each function
-          // call's thoughtSignature to be sent back unchanged.
-          const modelParts: any[] = [];
-          const calls: { name: string; args?: unknown }[] = [];
-          let stopped = false;
-          for await (const chunk of resultStream.stream) {
-            if (abortController.signal.aborted) break;
-            let content = "";
-            for (const part of (chunk.candidates?.[0]?.content?.parts ||
-              []) as any[]) {
-              if (part.functionCall) calls.push(part.functionCall);
-              else if (typeof part.text === "string" && !part.thought)
-                content += part.text;
-              modelParts.push(part);
-            }
-            if (content && !(await emit(content))) {
-              stopped = true;
-              break;
-            }
-          }
-          if (
-            stopped ||
-            abortController.signal.aborted ||
-            !calls.length ||
-            !hasTools
-          )
-            break;
-          if (step >= stepLimit) {
-            await emit(stepLimitNote);
-            break;
-          }
-          contents.push({ role: "model", parts: modelParts });
-          const responses: any[] = [];
-          for (const call of calls)
-            responses.push({
-              functionResponse: {
-                name: call.name,
-                response: await runTool(call.name, call.args),
-              },
-            });
-          contents.push({ role: "user", parts: responses });
-        }
-      } else {
-        const openRouterMessages = dbMessages.map((m) => {
-          const role = m.sender === "bot" ? "assistant" : "user";
-          const isLastMessage = m.id === dbMessages[dbMessages.length - 1].id;
-
-          if (m.sender === "bot") {
-            return {
-              role,
-              content: describeTaskFences(
-                describeWebFences(
-                  describeMapFences(
-                    describeMediaFences(describeActionFences(m.content || " ")),
-                  ),
-                ),
-              ),
-            };
-          }
-
-          const hasFiles = m.files && m.files.length > 0;
-
-          if (!hasFiles) {
-            return { role, content: describeTaskFences(m.content || " ") };
-          }
-
-          const contentArray: any[] = [];
-          if (m.content) {
-            contentArray.push({ type: "text", text: m.content });
-          }
-
-          for (const file of m.files!) {
-            const mimeType = file.mime_type || "application/octet-stream";
-            contentArray.push({
-              type: "text",
-              text: `[Attached file: ${file.name || "attached file"} (${mimeType})]`,
-            });
-
-            if (isLastMessage && mimeType.startsWith("image/") && file.data) {
-              contentArray.push({
-                type: "image_url",
-                image_url: { url: `data:${mimeType};base64,${file.data}` },
-              });
-            } else if (
-              file.extracted_text ||
-              (file.data && this.canReadInlineText(mimeType))
-            ) {
-              contentArray.push({
-                type: "text",
-                text: this.buildTextFilePrompt(file),
-              });
-            } else {
-              contentArray.push({
-                type: "text",
-                text: `[Attachment: ${file.name || "attached file"}; content unavailable to this model]`,
-              });
-            }
-          }
-
-          return { role, content: contentArray };
-        });
-
-        if (summary)
-          openRouterMessages.unshift({
-            role: "system",
-            content: `Summary of earlier conversation:\n${summary}`,
-          });
-        openRouterMessages.unshift({
-          role: "system",
-          content: systemInstruction,
-        });
-        let tools = hasTools
-          ? [
-              ...(toolset ? this.integrationTools!.openAiTools(toolset) : []),
-              ...mediaOpenAiTools(media),
-              ...(mapsContext ? mapsOpenAiTools() : []),
-              ...(web ? webOpenAiTools() : []),
-              ...(memory ? memoryOpenAiTools() : []),
-              ...(recall ? recallOpenAiTools() : []),
-              ...(code ? codeOpenAiTools() : []),
-              ...(agent ? agentOpenAiTools(browsing) : []),
-              ...(tasks ? taskOpenAiTools() : []),
-            ]
-          : undefined;
-        const createStreamCall = () =>
-          this.openRouter.chat.completions.create(
-            {
-              model: model,
-              messages: openRouterMessages as any,
-              stream: true,
-              max_tokens: this.getMaxOutputTokens(),
-              ...(tools ? { tools } : {}),
-            },
-            { signal: abortController.signal },
-          );
-        const openStream = () =>
-          this.circuitBreakerService
-            ? this.circuitBreakerService.execute(
-                CIRCUIT_BREAKER_NAMES.OPENROUTER_CHAT,
-                createStreamCall,
+              // Raw parts, not the SDK aggregate: Gemini 3 requires each function
+              // call's thoughtSignature to be sent back unchanged.
+              const modelParts: any[] = [];
+              const calls: { name: string; args?: unknown }[] = [];
+              let stopped = false;
+              for await (const chunk of resultStream.stream) {
+                if (abortController.signal.aborted) break;
+                let content = "";
+                for (const part of (chunk.candidates?.[0]?.content?.parts ||
+                  []) as any[]) {
+                  if (part.functionCall) calls.push(part.functionCall);
+                  else if (typeof part.text === "string" && !part.thought)
+                    content += part.text;
+                  modelParts.push(part);
+                }
+                if (content && !(await emit(content))) {
+                  stopped = true;
+                  break;
+                }
+              }
+              if (
+                stopped ||
+                abortController.signal.aborted ||
+                !calls.length ||
+                !hasTools
               )
-            : createStreamCall();
-
-        for (let step = 0; ; step++) {
-          let response: Awaited<ReturnType<typeof createStreamCall>>;
-          try {
-            response = await openStream();
-          } catch (error: any) {
-            // Some OpenRouter models have no tool support; answer without plugins.
-            if (
-              !tools ||
-              step > 0 ||
-              !/tool|function/i.test(error?.message || "")
-            )
-              throw error;
-            tools = undefined;
-            response = await openStream();
-          }
-          const calls: { id: string; name: string; arguments: string }[] = [];
-          let stepText = "";
-          let stopped = false;
-          for await (const chunk of response) {
-            const delta = chunk.choices[0]?.delta;
-            const content = delta?.content || "";
-            for (const call of delta?.tool_calls || []) {
-              const slot = (calls[call.index ?? 0] ||= {
-                id: "",
-                name: "",
-                arguments: "",
-              });
-              if (call.id) slot.id = call.id;
-              if (call.function?.name && !slot.name)
-                slot.name = call.function.name;
-              if (call.function?.arguments)
-                slot.arguments += call.function.arguments;
-            }
-            if (content) {
-              stepText += content;
-              if (!(await emit(content))) {
-                stopped = true;
                 break;
+              if (step >= stepLimit) {
+                await emit(stepLimitNote);
+                break;
+              }
+              contents.push({ role: "model", parts: modelParts });
+              const responses: any[] = [];
+              for (const call of calls)
+                responses.push({
+                  functionResponse: {
+                    name: call.name,
+                    response: await runTool(call.name, call.args),
+                  },
+                });
+              contents.push({ role: "user", parts: responses });
+            }
+          } else {
+            const openRouterMessages = dbMessages.map((m) => {
+              const role = m.sender === "bot" ? "assistant" : "user";
+              const isLastMessage =
+                m.id === dbMessages[dbMessages.length - 1].id;
+
+              if (m.sender === "bot") {
+                return {
+                  role,
+                  content: describeTaskFences(
+                    describeWebFences(
+                      describeMapFences(
+                        describeMediaFences(
+                          describeActionFences(m.content || " "),
+                        ),
+                      ),
+                    ),
+                  ),
+                };
+              }
+
+              const hasFiles = m.files && m.files.length > 0;
+
+              if (!hasFiles) {
+                return { role, content: describeTaskFences(m.content || " ") };
+              }
+
+              const contentArray: any[] = [];
+              if (m.content) {
+                contentArray.push({ type: "text", text: m.content });
+              }
+
+              for (const file of m.files!) {
+                const mimeType = file.mime_type || "application/octet-stream";
+                contentArray.push({
+                  type: "text",
+                  text: `[Attached file: ${file.name || "attached file"} (${mimeType})]`,
+                });
+
+                if (
+                  isLastMessage &&
+                  mimeType.startsWith("image/") &&
+                  file.data
+                ) {
+                  contentArray.push({
+                    type: "image_url",
+                    image_url: { url: `data:${mimeType};base64,${file.data}` },
+                  });
+                } else if (
+                  file.extracted_text ||
+                  (file.data && this.canReadInlineText(mimeType))
+                ) {
+                  contentArray.push({
+                    type: "text",
+                    text: this.buildTextFilePrompt(file),
+                  });
+                } else {
+                  contentArray.push({
+                    type: "text",
+                    text: `[Attachment: ${file.name || "attached file"}; content unavailable to this model]`,
+                  });
+                }
+              }
+
+              return { role, content: contentArray };
+            });
+
+            if (summary)
+              openRouterMessages.unshift({
+                role: "system",
+                content: `Summary of earlier conversation:\n${summary}`,
+              });
+            openRouterMessages.unshift({
+              role: "system",
+              content: systemInstruction,
+            });
+            let tools = hasTools
+              ? [
+                  ...(toolset
+                    ? this.integrationTools!.openAiTools(toolset)
+                    : []),
+                  ...mediaOpenAiTools(media),
+                  ...(mapsContext ? mapsOpenAiTools() : []),
+                  ...(web ? webOpenAiTools() : []),
+                  ...(memory ? memoryOpenAiTools() : []),
+                  ...(recall ? recallOpenAiTools() : []),
+                  ...(code ? codeOpenAiTools() : []),
+                  ...(agent ? agentOpenAiTools(browsing) : []),
+                  ...(tasks ? taskOpenAiTools() : []),
+                ]
+              : undefined;
+            const createStreamCall = () =>
+              this.openRouter.chat.completions.create(
+                {
+                  model: model,
+                  messages: openRouterMessages as any,
+                  stream: true,
+                  max_tokens: this.getMaxOutputTokens(),
+                  ...(tools ? { tools } : {}),
+                },
+                { signal: abortController.signal },
+              );
+            const openStream = () =>
+              this.circuitBreakerService
+                ? this.circuitBreakerService.execute(
+                    CIRCUIT_BREAKER_NAMES.OPENROUTER_CHAT,
+                    createStreamCall,
+                  )
+                : createStreamCall();
+
+            for (let step = 0; ; step++) {
+              let response: Awaited<ReturnType<typeof createStreamCall>>;
+              try {
+                response = await openStream();
+              } catch (error: any) {
+                // Some OpenRouter models have no tool support; answer without plugins.
+                if (
+                  !tools ||
+                  step > 0 ||
+                  !/tool|function/i.test(error?.message || "")
+                )
+                  throw error;
+                tools = undefined;
+                response = await openStream();
+              }
+              const calls: { id: string; name: string; arguments: string }[] =
+                [];
+              let stepText = "";
+              let stopped = false;
+              for await (const chunk of response) {
+                const delta = chunk.choices[0]?.delta;
+                const content = delta?.content || "";
+                for (const call of delta?.tool_calls || []) {
+                  const slot = (calls[call.index ?? 0] ||= {
+                    id: "",
+                    name: "",
+                    arguments: "",
+                  });
+                  if (call.id) slot.id = call.id;
+                  if (call.function?.name && !slot.name)
+                    slot.name = call.function.name;
+                  if (call.function?.arguments)
+                    slot.arguments += call.function.arguments;
+                }
+                if (content) {
+                  stepText += content;
+                  if (!(await emit(content))) {
+                    stopped = true;
+                    break;
+                  }
+                }
+              }
+              const pending = calls.filter((call) => call?.name);
+              if (
+                stopped ||
+                abortController.signal.aborted ||
+                !pending.length ||
+                !tools
+              )
+                break;
+              if (step >= stepLimit) {
+                await emit(stepLimitNote);
+                break;
+              }
+              pending.forEach(
+                (call, index) => (call.id ||= `call_${step}_${index}`),
+              );
+              openRouterMessages.push({
+                role: "assistant",
+                content: stepText || null,
+                tool_calls: pending.map((call) => ({
+                  id: call.id,
+                  type: "function",
+                  function: {
+                    name: call.name,
+                    arguments: call.arguments || "{}",
+                  },
+                })),
+              } as any);
+              for (const call of pending) {
+                let args: unknown = {};
+                try {
+                  args = JSON.parse(call.arguments || "{}");
+                } catch {
+                  args = {};
+                }
+                const output = await runTool(call.name, args);
+                openRouterMessages.push({
+                  role: "tool",
+                  tool_call_id: call.id,
+                  content: JSON.stringify(output),
+                } as any);
               }
             }
           }
-          const pending = calls.filter((call) => call?.name);
+
           if (
-            stopped ||
-            abortController.signal.aborted ||
-            !pending.length ||
-            !tools
+            !fullReply.trim() &&
+            !actionIds.length &&
+            !abortController.signal.aborted &&
+            !/dall-e|kling/i.test(model)
           )
-            break;
-          if (step >= stepLimit) {
-            await emit(stepLimitNote);
-            break;
+            throw new EmptyReplyError(model);
+          break;
+        } catch (error) {
+          if (
+            fullReply ||
+            actionIds.length ||
+            abortController.signal.aborted ||
+            !isProviderFailure(error)
+          )
+            throw error;
+          triedModels.add(model);
+          const reserve = nextReserve(model, triedModels, { needsVision });
+          if (!reserve) {
+            if (error instanceof EmptyReplyError) break;
+            throw error;
           }
-          pending.forEach(
-            (call, index) => (call.id ||= `call_${step}_${index}`),
+          const reserveCost =
+            this.pricingService.getModelConfig(reserve)?.cost ?? 0;
+          this.logger.warn(
+            `Reserve: ${model} failed (${String((error as Error)?.message || error).slice(0, 160)}), answering with ${reserve}`,
           );
-          openRouterMessages.push({
-            role: "assistant",
-            content: stepText || null,
-            tool_calls: pending.map((call) => ({
-              id: call.id,
-              type: "function",
-              function: { name: call.name, arguments: call.arguments || "{}" },
-            })),
-          } as any);
-          for (const call of pending) {
-            let args: unknown = {};
-            try {
-              args = JSON.parse(call.arguments || "{}");
-            } catch {
-              args = {};
-            }
-            const output = await runTool(call.name, args);
-            openRouterMessages.push({
-              role: "tool",
-              tool_call_id: call.id,
-              content: JSON.stringify(output),
-            } as any);
+          // The user pays for the model that answered, never more.
+          if (reserveCost < cost) {
+            await Promise.all([
+              this.usersService.addCredits(userId, cost - reserveCost),
+              this.usersService.logTransaction(
+                userId,
+                cost - reserveCost,
+                TransactionType.REFUND,
+                `Reserve model refund: ${labelOf(model)} → ${labelOf(reserve)}`,
+              ),
+            ]);
+            cost = reserveCost;
           }
+          turnOptions.route = reserveRoute(
+            originalModel,
+            reserve,
+            reserveCost,
+            originalCost,
+            turnOptions.route,
+          );
+          res.write(
+            `data: ${JSON.stringify({ status: "route", route: turnOptions.route })}
+
+`,
+          );
+          model = reserve;
         }
       }
 

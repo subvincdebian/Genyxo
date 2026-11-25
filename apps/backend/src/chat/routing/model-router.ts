@@ -71,6 +71,8 @@ export const MODEL_LABELS: Record<string, string> = {
   "openai/dall-e-3": "DALL·E 3",
   "kling-video": "Kling Video",
   "nvidia/nemotron-3-ultra-550b-a55b:free": "Nemotron 3 Ultra",
+  "nvidia/nemotron-3.5-super-vl:free": "Nemotron 3.5 Super",
+  "google/gemma-4-31b-it:free": "Gemma 4",
 };
 
 export const labelOf = (model: string) => MODEL_LABELS[model] || model;
