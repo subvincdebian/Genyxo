@@ -8,6 +8,7 @@ import "@/shared/styles/genyxo-icons.css";
 import "@/shared/styles/genyxo-orb.css";
 import "@/shared/styles/workspace-premium.css";
 import "@/shared/styles/composer-premium.css";
+import "@/shared/styles/motion.css";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (

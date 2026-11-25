@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useWorkspace, type WorkspaceConversation } from "@/features/workspace";
 import { WorkspaceIcon, lockWorkspaceScroll } from "@/shared/ui/workspace";
 import { Keys } from "@/shared/ui/Keys";
+import { prefersReducedMotion } from "@/shared/lib/motion";
 import { getInteractions, getServerInteractions, subscribeInteractions } from "@/shared/lib/interaction-settings";
 import { COMMANDS, SETTING_PAGES, matchScore, modelIcon, type CommandId } from "../model/commands";
 import styles from "./CommandPalette.module.css";
@@ -112,8 +113,7 @@ export function CommandPalette({ onClose, onCommand, initialScope }: { onClose: 
   const list = useRef<HTMLDivElement>(null);
   const listId = useId();
   const inputId = `${listId}-input`;
-  const close = useRef(onClose);
-  useEffect(() => { close.current = onClose; }, [onClose]);
+  const dialogId = `${listId}-dialog`;
 
   // Models come from the chat's own picker, so the list always matches the plan and providers.
   const [models] = useState(() => {
@@ -159,11 +159,20 @@ export function CommandPalette({ onClose, onCommand, initialScope }: { onClose: 
     return () => { clearTimeout(timer); abort.abort(); };
   }, [searchChats, term, request]);
 
-  const finish = (action: () => void) => {
-    onClose();
-    // After the dialog has closed and given focus back, so actions can move it.
-    requestAnimationFrame(() => requestAnimationFrame(action));
+  /** The palette lifts away, then closes; an action runs once focus is back. */
+  const dismiss = (after?: () => void) => {
+    const node = document.getElementById(dialogId);
+    const done = () => {
+      onClose();
+      if (after) requestAnimationFrame(() => requestAnimationFrame(after));
+    };
+    if (!node || prefersReducedMotion()) { done(); return; }
+    if (node.hasAttribute("data-closing")) return;
+    node.setAttribute("data-closing", "");
+    window.setTimeout(done, 150);
   };
+  // Actions run after the dialog has closed and given focus back, so they can move it.
+  const finish = (action: () => void) => dismiss(action);
   const runAsk = (question = term) => {
     askAbort.current?.abort();
     const abort = new AbortController();
@@ -324,10 +333,11 @@ export function CommandPalette({ onClose, onCommand, initialScope }: { onClose: 
   return (
     <dialog
       ref={dialog}
-      className={`ws-dialog ${styles.palette}`}
+      id={dialogId}
+      className={`ws-dialog gx-own-motion ${styles.palette}`}
       aria-label="Command palette"
-      onCancel={(event) => { event.preventDefault(); if (scope) { setScope(null); setQuery(""); } else close.current(); }}
-      onClick={(event) => { if (event.target === event.currentTarget) close.current(); }}
+      onCancel={(event) => { event.preventDefault(); if (scope) { setScope(null); setQuery(""); } else dismiss(); }}
+      onClick={(event) => { if (event.target === event.currentTarget) dismiss(); }}
     >
       <div className={styles.field}>
         <WorkspaceIcon name="search" size={18} />

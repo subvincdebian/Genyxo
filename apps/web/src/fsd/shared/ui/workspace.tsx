@@ -2,6 +2,7 @@
 import { cloneElement, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useTopLayer } from "@/shared/lib/top-layer";
+import { MENU_EXIT, leaveGhost, prefersReducedMotion } from "@/shared/lib/motion";
 import tooltipStyles from "./Tooltip.module.css";
 import { useLanguage } from "@/shared/i18n";
 import { GenyxoIcon, hasGenyxoIcon } from "./genyxo-icons";
@@ -78,6 +79,14 @@ export function WorkspaceDialog({ title, onClose, children, wide = false, classN
   useLayoutEffect(() => { close.current = onClose; }, [onClose]);
   const id = useId();
   const { t } = useLanguage();
+  // Esc, the close button and a click outside let the dialog sink away first.
+  const dismiss = () => {
+    const dialog = ref.current;
+    if (!dialog || prefersReducedMotion()) { close.current(); return; }
+    if (dialog.hasAttribute("data-closing")) return;
+    dialog.setAttribute("data-closing", "");
+    window.setTimeout(() => close.current(), 170);
+  };
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const unlock = lockWorkspaceScroll();
@@ -85,8 +94,8 @@ export function WorkspaceDialog({ title, onClose, children, wide = false, classN
     dialog?.showModal();
     return () => { dialog?.close(); unlock(); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, []);
-  return <dialog ref={ref} aria-labelledby={id} className={`ws-dialog ${wide ? "ws-dialog-wide" : ""} ${className}`} onCancel={(e) => { e.preventDefault(); close.current(); }} onClick={(e) => { if (e.target === e.currentTarget) { const bounds = e.currentTarget.getBoundingClientRect(); if (e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom) close.current(); } }}>
-    <div className="ws-dialog-header"><h2 id={id}>{title}</h2><WorkspaceTooltip label={t("workspace.close", "Close dialog")} side="bottom"><button type="button" className="ws-icon-btn" aria-label={t("workspace.close", "Close dialog")} onClick={onClose}><WorkspaceIcon name="close"/></button></WorkspaceTooltip></div>
+  return <dialog ref={ref} aria-labelledby={id} className={`ws-dialog ${wide ? "ws-dialog-wide" : ""} ${className}`} onCancel={(e) => { e.preventDefault(); dismiss(); }} onClick={(e) => { if (e.target === e.currentTarget) { const bounds = e.currentTarget.getBoundingClientRect(); if (e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom) dismiss(); } }}>
+    <div className="ws-dialog-header"><h2 id={id}>{title}</h2><WorkspaceTooltip label={t("workspace.close", "Close dialog")} side="bottom"><button type="button" className="ws-icon-btn" aria-label={t("workspace.close", "Close dialog")} onClick={dismiss}><WorkspaceIcon name="close"/></button></WorkspaceTooltip></div>
     <div className="ws-dialog-body">{children}</div>
   </dialog>;
 }
@@ -96,6 +105,11 @@ export function WorkspaceMenu({ children, onClose, anchor, trigger, positionTarg
   const [style, setStyle] = useState<CSSProperties>({ visibility: "hidden" });
   const close = useRef(onClose);
   useLayoutEffect(() => { close.current = onClose; }, [onClose]);
+  // However a menu closes (a pick, Esc, a click outside), it shrinks away instead of vanishing.
+  useLayoutEffect(() => {
+    const element = ref.current;
+    return () => leaveGhost(element, MENU_EXIT, 150);
+  }, []);
   useLayoutEffect(() => {
     const element = ref.current; if (!element) return;
     const previous = trigger || document.activeElement as HTMLElement | null;
@@ -135,11 +149,14 @@ export function WorkspaceMenu({ children, onClose, anchor, trigger, positionTarg
     const resize = () => close.current();
     // A menu is pinned where it opened; once the page itself scrolls its trigger moves away, so dismiss it.
     const scroll = (event: Event) => { if (event.target === document || event.target === document.documentElement) close.current(); };
+    // Esc closes the menu even when focus has left it (a hover, a click on the page).
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape" && !element.contains(document.activeElement)) { event.preventDefault(); event.stopPropagation(); close.current(); } };
     document.addEventListener("pointerdown", outside);
     document.addEventListener("click", toggle, true);
+    document.addEventListener("keydown", escape, true);
     window.addEventListener("resize", resize);
     document.addEventListener("scroll", scroll, true);
-    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("click", toggle, true); window.removeEventListener("resize", resize); document.removeEventListener("scroll", scroll, true); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("click", toggle, true); document.removeEventListener("keydown", escape, true); window.removeEventListener("resize", resize); document.removeEventListener("scroll", scroll, true); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, [anchor?.x, anchor?.y, placement, trigger, positionTarget]);
   return createPortal(<div ref={ref} role="menu" className={`ws-menu ${className}`} style={style} onKeyDown={(event) => {
     if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); onClose(); }

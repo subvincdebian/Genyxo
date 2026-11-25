@@ -22,7 +22,7 @@
     0 40px 120px -20px rgba(0, 0, 0, 0.6),
     0 2px 10px rgba(0, 0, 0, 0.2) !important;
   scrollbar-gutter: auto !important;
-  animation: paletteIn 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.05) both !important;
+  animation: paletteIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 .palette::backdrop {
   background: rgba(0, 0, 0, 0.34);
@@ -36,10 +36,26 @@
     0 40px 120px -24px rgba(20, 30, 40, 0.28),
     0 2px 10px rgba(20, 30, 40, 0.08) !important;
 }
+.palette[data-closing] {
+  animation: paletteOut 0.15s cubic-bezier(0.4, 0, 1, 1) both !important;
+  pointer-events: none;
+}
+.palette[data-closing]::backdrop {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+@keyframes paletteOut {
+  to {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(-6px) scale(0.97);
+  }
+}
 @keyframes paletteIn {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
+    filter: blur(8px);
+    transform: perspective(1400px) translate3d(0, -14px, -30px) rotateX(-7deg) scale(0.96);
   }
 }
 

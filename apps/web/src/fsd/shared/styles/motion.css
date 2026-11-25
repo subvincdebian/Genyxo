@@ -1,0 +1,303 @@
+/* Motion for the workspace: every change of place gets a short, physical
+   transition. Depth and focus (scale, a little tilt, blur) carry the
+   meaning; nothing bounces for show. Reduced motion turns all of it off. */
+:root {
+  --gx-m-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --gx-m-in: cubic-bezier(0.4, 0, 1, 1);
+  --gx-m-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- Chat changes (View Transitions) ---------- */
+:root[data-gx-chat-nav] #chatBox:not(.hidden),
+:root[data-gx-chat-nav] #welcomeScreen:not(.hidden) {
+  view-transition-name: gx-chat;
+}
+:root[data-gx-chat-nav] #chatContainer > .chat-input-container {
+  view-transition-name: gx-composer;
+}
+:root[data-gx-chat-nav] #sidebar {
+  view-transition-name: gx-sidebar;
+}
+/* The message box and the sidebar stay put; only what they show changes. */
+::view-transition-old(gx-composer) {
+  display: none;
+}
+::view-transition-new(gx-composer) {
+  animation: none;
+}
+::view-transition-old(gx-sidebar),
+::view-transition-new(gx-sidebar) {
+  animation-duration: 200ms;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
+}
+::view-transition-group(gx-chat) {
+  animation-duration: 640ms;
+  animation-timing-function: var(--gx-m-out);
+}
+::view-transition-old(gx-chat),
+::view-transition-new(gx-chat) {
+  transform-origin: 50% 38%;
+  mix-blend-mode: normal;
+  backface-visibility: hidden;
+}
+
+/* Alt+↓: the list moves up through depth; the next chat rises from below. */
+:root[data-gx-chat-nav="next"]::view-transition-old(gx-chat) {
+  animation: gx-vt-leave-up 380ms var(--gx-m-in) both;
+}
+:root[data-gx-chat-nav="next"]::view-transition-new(gx-chat) {
+  animation: gx-vt-enter-up 680ms var(--gx-m-out) 40ms both;
+}
+/* Alt+↑: the same journey in reverse. */
+:root[data-gx-chat-nav="prev"]::view-transition-old(gx-chat) {
+  animation: gx-vt-leave-down 380ms var(--gx-m-in) both;
+}
+:root[data-gx-chat-nav="prev"]::view-transition-new(gx-chat) {
+  animation: gx-vt-enter-down 680ms var(--gx-m-out) 40ms both;
+}
+/* A chat picked in the sidebar or the palette: the old one falls back out of
+   focus while the new one comes forward and sharpens, like a lens refocusing. */
+:root[data-gx-chat-nav="open"]::view-transition-old(gx-chat) {
+  animation: gx-vt-fall-back 340ms var(--gx-m-in) both;
+}
+:root[data-gx-chat-nav="open"]::view-transition-new(gx-chat) {
+  animation: gx-vt-come-forward 620ms var(--gx-m-out) both;
+}
+/* New chat: the conversation sinks away and the welcome screen settles in. */
+:root[data-gx-chat-nav="new"]::view-transition-old(gx-chat) {
+  animation: gx-vt-sink 360ms var(--gx-m-in) both;
+}
+:root[data-gx-chat-nav="new"]::view-transition-new(gx-chat) {
+  animation: gx-vt-settle 640ms var(--gx-m-out) 60ms both;
+}
+
+@keyframes gx-vt-leave-up {
+  to {
+    opacity: 0;
+    filter: blur(10px);
+    transform: perspective(1600px) translate3d(0, -8%, -140px) rotateX(11deg) scale(0.94);
+  }
+}
+@keyframes gx-vt-enter-up {
+  from {
+    opacity: 0;
+    filter: blur(14px);
+    transform: perspective(1600px) translate3d(0, 11%, -180px) rotateX(-13deg) scale(0.94);
+  }
+}
+@keyframes gx-vt-leave-down {
+  to {
+    opacity: 0;
+    filter: blur(10px);
+    transform: perspective(1600px) translate3d(0, 8%, -140px) rotateX(-11deg) scale(0.94);
+  }
+}
+@keyframes gx-vt-enter-down {
+  from {
+    opacity: 0;
+    filter: blur(14px);
+    transform: perspective(1600px) translate3d(0, -11%, -180px) rotateX(13deg) scale(0.94);
+  }
+}
+@keyframes gx-vt-fall-back {
+  to {
+    opacity: 0;
+    filter: blur(12px);
+    transform: perspective(1600px) translate3d(0, 1.5%, -220px) scale(0.92);
+  }
+}
+@keyframes gx-vt-come-forward {
+  from {
+    opacity: 0;
+    filter: blur(16px) saturate(0.7);
+    transform: perspective(1600px) translate3d(0, 0, 90px) scale(1.05);
+  }
+}
+@keyframes gx-vt-sink {
+  to {
+    opacity: 0;
+    filter: blur(12px);
+    transform: perspective(1600px) translate3d(0, 6%, -160px) rotateX(-8deg) scale(0.93);
+  }
+}
+@keyframes gx-vt-settle {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translate3d(0, -3%, 0) scale(0.97);
+  }
+}
+
+/* While a chat that is not cached yet loads, the current one recedes a
+   little instead of freezing, so the click is acknowledged at once. */
+.workspace-shell #chatBox {
+  transition:
+    opacity 280ms ease,
+    filter 280ms ease,
+    transform 480ms var(--gx-m-out);
+}
+.workspace-shell #chatBox.gx-chat-pending {
+  opacity: 0.55;
+  filter: blur(2px) saturate(0.85);
+  transform: scale(0.985) translateY(-4px);
+  pointer-events: none;
+}
+/* Messages restored from history arrive with the chat, not one by one. */
+.workspace-shell #chatBox .message.is-restored {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+/* ---------- Dialogs ---------- */
+.ws-dialog:not(.gx-own-motion)[open] {
+  animation: gx-dialog-enter 460ms var(--gx-m-out) both !important;
+  transform-origin: 50% 40%;
+}
+.ws-dialog:not(.gx-own-motion)[data-closing] {
+  animation: gx-dialog-leave 170ms var(--gx-m-in) both !important;
+  pointer-events: none;
+}
+.ws-dialog[open]::backdrop {
+  animation: gx-backdrop-in 360ms ease both;
+}
+.ws-dialog[data-closing]::backdrop {
+  animation: gx-backdrop-out 170ms ease both;
+}
+@keyframes gx-dialog-enter {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: perspective(1400px) translate3d(0, 22px, -40px) rotateX(9deg) scale(0.95);
+  }
+}
+@keyframes gx-dialog-leave {
+  to {
+    opacity: 0;
+    filter: blur(6px);
+    transform: perspective(1400px) translate3d(0, 12px, -30px) rotateX(-5deg) scale(0.96);
+  }
+}
+@keyframes gx-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes gx-backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* ---------- Menus ---------- */
+.ws-menu {
+  animation: gx-menu-enter 280ms var(--gx-m-out) both !important;
+}
+@keyframes gx-menu-enter {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(-4px) scale(0.95);
+  }
+}
+
+/* ---------- Toasts ---------- */
+.workspace-shell .ws-toast {
+  animation: gx-toast-enter 560ms var(--gx-m-out) both;
+  transform-origin: 100% 100%;
+}
+@keyframes gx-toast-enter {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translate3d(0, 18px, 0) scale(0.92);
+  }
+}
+
+/* ---------- Buttons ---------- */
+/* Every button answers a press with a small, springy give. `scale` composes
+   with any transform a button already uses. */
+:where(.workspace-shell) :where(button, [role="button"], a.ws-btn),
+:where(.ws-menu) :where(button, [role="menuitem"]),
+:where(.ws-dialog) :where(button) {
+  transition:
+    scale 320ms var(--gx-m-spring),
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 200ms ease,
+    opacity 160ms ease;
+}
+.workspace-shell :where(button, [role="button"], a.ws-btn):active:not(:disabled),
+.ws-dialog :where(button):active:not(:disabled) {
+  scale: 0.96;
+  transition-duration: 90ms;
+}
+.ws-menu :where(button, [role="menuitem"]):active:not(:disabled),
+.workspace-shell :where(.ws-row-open):active {
+  scale: 0.985;
+  transition-duration: 90ms;
+}
+
+/* ---------- Pages and small things ---------- */
+/* Library, Plugins and Scheduled rise in when opened. */
+.workspace-shell :where(.wp-page, .wp-library) {
+  animation: gx-page-enter 520ms var(--gx-m-out) both;
+}
+@keyframes gx-page-enter {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translate3d(0, 10px, 0) scale(0.99);
+  }
+}
+/* The model name refocuses when it changes. */
+.workspace-shell .current-model-name .model-option-label {
+  animation: gx-refocus 420ms var(--gx-m-out) both;
+}
+@keyframes gx-refocus {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(3px);
+  }
+}
+/* The sidebar's current chat glides its highlight in. */
+.workspace-shell .ws-row-open[aria-current="page"] {
+  animation: gx-row-select 360ms var(--gx-m-out) both;
+}
+@keyframes gx-row-select {
+  from {
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .workspace-shell #chatBox,
+  .workspace-shell :where(button, [role="button"], a.ws-btn),
+  .ws-menu :where(button, [role="menuitem"]) {
+    transition: none !important;
+  }
+  .ws-dialog,
+  .ws-dialog::backdrop,
+  .ws-menu,
+  .workspace-shell .ws-toast,
+  .workspace-shell :where(.wp-page, .wp-library),
+  .workspace-shell .current-model-name .model-option-label,
+  .workspace-shell .ws-row-open[aria-current="page"] {
+    animation: none !important;
+  }
+}
+:root[data-gx-motion="on"] .ws-dialog,
+:root[data-gx-motion="on"] .ws-menu,
+:root[data-gx-motion="on"] .workspace-shell .ws-toast {
+  animation: none !important;
+}

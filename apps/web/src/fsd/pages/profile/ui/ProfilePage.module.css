@@ -389,8 +389,30 @@
   line-height: 1.7;
 }
 .content {
-  animation: account-enter 0.35s var(--gx-ease) both;
+  animation: account-section-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   min-height: 480px;
+}
+/* A section's groups arrive one after another, a beat apart. */
+.content > * > :is(section, div):nth-child(-n + 6) {
+  animation: account-section-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.content > * > :is(section, div):nth-child(2) { animation-delay: 50ms; }
+.content > * > :is(section, div):nth-child(3) { animation-delay: 100ms; }
+.content > * > :is(section, div):nth-child(4) { animation-delay: 150ms; }
+.content > * > :is(section, div):nth-child(5) { animation-delay: 200ms; }
+.content > * > :is(section, div):nth-child(6) { animation-delay: 250ms; }
+@keyframes account-section-enter {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translate3d(0, 12px, 0) scale(0.995);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .content,
+  .content > * > :is(section, div) {
+    animation: none !important;
+  }
 }
 .identity {
   padding: 0 0 30px;

@@ -442,10 +442,14 @@ export default function initialize(scope, context) {
     if (scope.window.attachedFiles) scope.window.attachedFiles.length = 0;
     context.renderAllPreviews?.();
     publishWorkspaceState();
-    if (DOM.chatBox) {
-      DOM.chatBox.innerHTML = scope.sanitizeHtml("");
-    }
-    toggleChatView(false);
+    const clear = () => {
+      if (DOM.chatBox) DOM.chatBox.innerHTML = scope.sanitizeHtml("");
+      DOM.chatBox?.classList.remove("gx-chat-pending");
+      toggleChatView(false);
+    };
+    // Leaving a chat for a fresh one settles back to the welcome screen.
+    if (DOM.chatBox?.childElementCount && !DOM.chatBox.classList.contains("hidden")) void transitionChat("new", clear);
+    else clear();
     scope.document
       .querySelectorAll(".chat-item")
       .forEach((item) => item.classList.remove("active"));
@@ -2155,12 +2159,124 @@ export default function initialize(scope, context) {
     scrollToBottom();
     return msgDiv;
   }
+  /* ---------- Chat history: cached, prefetched, revalidated ---------- */
+  // Opened and hovered chats are kept for a while, so switching back and forth
+  // shows them at once; every open still checks the server for newer messages.
+  // Kept on the function itself so code that runs before this line can use them.
+  function historyStore() {
+    historyStore.state ||= { cache: new Map(), requests: new Map() };
+    return historyStore.state;
+  }
+  function fetchHistory(id) {
+    const { cache: historyCache, requests: historyRequests } = historyStore();
+    const HISTORY_CACHE_SIZE = 30;
+    const key = String(id);
+    if (historyRequests.has(key)) return historyRequests.get(key);
+    const request = scope
+      .fetch(`${context.API_BASE_URL}/chat/history/${id}`, { headers: { Authorization: `Bearer ${context.token}` } })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`History ${res.status}`))))
+      .then((messages) => {
+        const list = Array.isArray(messages) ? messages : [];
+        historyCache.delete(key);
+        historyCache.set(key, list);
+        while (historyCache.size > HISTORY_CACHE_SIZE) historyCache.delete(historyCache.keys().next().value);
+        return list;
+      })
+      .finally(() => historyRequests.delete(key));
+    historyRequests.set(key, request);
+    return request;
+  }
+  const historySignature = (messages) => messages.map((msg) => `${msg.id}:${String(msg.content || "").length}`).join(",");
+  /** Chats in the sidebar's order, latest activity first. */
+  function orderedChats() {
+    return conversations
+      .filter((chat) => !chat.archivedAt)
+      .slice()
+      .sort((a, b) => new Date(b.lastActivityAt || b.updatedAt || b.createdAt).getTime() - new Date(a.lastActivityAt || a.updatedAt || a.createdAt).getTime() || b.id - a.id);
+  }
+  /** Loads the chats next to this one, ready for Alt+↑/↓. */
+  function prefetchNeighbours(id) {
+    const list = orderedChats();
+    const at = list.findIndex((chat) => String(chat.id) === String(id));
+    if (at < 0) return;
+    [list[at - 1], list[at + 1]].forEach((chat) => {
+      if (chat && !historyStore().cache.has(String(chat.id))) void fetchHistory(chat.id).catch(() => {});
+    });
+  }
+  // A chat that just got a new answer is reloaded next time, not shown from memory.
+  scope.listen(scope.document, "genyxo:answer-done", () => { if (currentChatId) historyStore().cache.delete(String(currentChatId)); });
+  scope.listen(scope.document, "genyxo:generation-finished", (event) => { if (event.detail?.id) historyStore().cache.delete(String(event.detail.id)); });
+  scope.listen(scope.document, "genyxo:prefetch-chat", (event) => {
+    const ids = Array.isArray(event.detail?.ids) ? event.detail.ids.slice(0, 4) : [];
+    ids.forEach((id) => { if (context.token && !historyStore().cache.has(String(id))) void fetchHistory(id).catch(() => {}); });
+  });
+
+  /* ---------- Cinematic chat transitions ---------- */
+  function reducedMotion() {
+    const setting = scope.document.documentElement.dataset.gxMotion;
+    return setting === "on" || (setting !== "off" && scope.window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+  /**
+   * Swaps what the chat shows inside one transition. "next" and "prev" travel
+   * through the list in depth (Alt+↓/↑), "open" dollies into a chosen chat and
+   * "new" settles back to the welcome screen. View Transitions morph the two
+   * states; elsewhere the new content plays the same entrance on its own.
+   */
+  function transitionChat(kind, update) {
+    const root = scope.document.documentElement;
+    if (reducedMotion() || scope.document.hidden) {
+      update();
+      return Promise.resolve();
+    }
+    if (typeof scope.document.startViewTransition === "function") {
+      root.dataset.gxChatNav = kind;
+      const transition = scope.document.startViewTransition(() => {
+        update();
+        DOM.chatBox?.classList.remove("gx-chat-pending");
+      });
+      return transition.finished.catch(() => {}).finally(() => {
+        if (root.dataset.gxChatNav === kind) delete root.dataset.gxChatNav;
+      });
+    }
+    update();
+    DOM.chatBox?.classList.remove("gx-chat-pending");
+    const target = DOM.chatBox && !DOM.chatBox.classList.contains("hidden") ? DOM.chatBox : DOM.welcomeScreen;
+    const from = { next: "translate3d(0, 7%, 0) scale(.965) rotateX(-9deg)", prev: "translate3d(0, -7%, 0) scale(.965) rotateX(9deg)", open: "scale(1.035)", new: "translate3d(0, 4%, 0) scale(.97)" }[kind];
+    target?.animate(
+      [{ opacity: 0, filter: "blur(10px)", transform: `perspective(1400px) ${from}` }, { opacity: 1, filter: "blur(0)", transform: "none" }],
+      { duration: 560, easing: "cubic-bezier(.16, 1, .3, 1)" },
+    );
+    return Promise.resolve();
+  }
+  /** How the next chat change should move: set by shortcuts, read once. */
+  function takeChatNav(fallback) {
+    const root = scope.document.documentElement;
+    const kind = root.dataset.gxNavIntent || fallback;
+    delete root.dataset.gxNavIntent;
+    return kind;
+  }
+
+  function renderHistory(id, messages) {
+    if (DOM.chatBox) DOM.chatBox.innerHTML = scope.sanitizeHtml("");
+    toggleChatView(true);
+    if (messages && messages.length > 0) {
+      messages.forEach((msg) =>
+        appendMessage(msg.sender, msg.content, msg.model, msg.files || [], msg.activity, msg.sources, msg.id, msg.alternativeToMessageId, msg.meta),
+      );
+      refreshVariantActions();
+      DOM.chatBox?.querySelectorAll(".message").forEach((node) => node.classList.add("is-restored"));
+    }
+    if (scope.window.genyxoGenerating?.has(Number(id)) && !activeSendController) showPendingReply();
+    scrollToBottom(true);
+  }
+
   async function selectChat(id) {
     if (!id || id === "null") {
       startNewChat();
       return;
     }
     if (currentChatId === id) return;
+    const kind = takeChatNav("open");
     activePresetId = undefined;
     pendingFirstSend = null;
     chatViewRevision++;
@@ -2172,31 +2288,24 @@ export default function initialize(scope, context) {
     currentChatId = id;
     setActiveProject(conversations.find((item) => String(item.id) === String(id))?.projectId || null);
     renderHistoryList();
-    toggleChatView(true);
     updateUrl(id);
+    const cached = historyStore().cache.get(String(id));
     try {
-      const res = await scope.fetch(
-        `${context.API_BASE_URL}/chat/history/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${context.token}`,
-          },
-        },
-      );
-      if (res.ok) {
-        const messages = await res.json();
+      if (cached) {
+        // Instant: show what we have, then quietly bring in anything newer.
+        await transitionChat(kind, () => renderHistory(id, cached));
+        const fresh = await fetchHistory(id);
+        if (revision === chatViewRevision && historySignature(fresh) !== historySignature(cached) && !activeSendController) renderHistory(id, fresh);
+      } else {
+        // While it loads, the current chat recedes a little instead of freezing.
+        if (DOM.chatBox && !DOM.chatBox.classList.contains("hidden") && !reducedMotion()) DOM.chatBox.classList.add("gx-chat-pending");
+        const messages = await fetchHistory(id);
         if (revision !== chatViewRevision) return;
-        if (DOM.chatBox) DOM.chatBox.innerHTML = scope.sanitizeHtml("");
-        if (messages && messages.length > 0) {
-          messages.forEach((msg) =>
-            appendMessage(msg.sender, msg.content, msg.model, msg.files || [], msg.activity, msg.sources, msg.id, msg.alternativeToMessageId, msg.meta),
-          );
-          refreshVariantActions();
-        }
-        if (scope.window.genyxoGenerating?.has(Number(id)) && !activeSendController) showPendingReply();
-        scrollToBottom(true);
+        await transitionChat(kind, () => renderHistory(id, messages));
       }
+      prefetchNeighbours(id);
     } catch (e) {
+      DOM.chatBox?.classList.remove("gx-chat-pending");
       console.error("Failed to load chat history:", e);
     }
   }

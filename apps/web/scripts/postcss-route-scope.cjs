@@ -42,6 +42,7 @@ const routeStylesheets = {
   "src/fsd/shared/styles/genyxo-orb.css": workspace,
   "src/fsd/shared/styles/workspace-premium.css": workspace,
   "src/fsd/shared/styles/composer-premium.css": workspace,
+  "src/fsd/shared/styles/motion.css": workspace,
   "src/fsd/pages/workspace/ui/library-page.css": workspace,
   "src/fsd/pages/workspace/ui/plugin-pages.css": workspace,
   "src/fsd/pages/workspace/ui/plugins-page.css": workspace,

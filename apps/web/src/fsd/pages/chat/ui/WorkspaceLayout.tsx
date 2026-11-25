@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { matchesShortcut } from "@/shared/lib/interaction-settings";
+import { leaveGhost } from "@/shared/lib/motion";
 import { ShortcutHelp } from "@/shared/ui/ShortcutHelp";
 import { usePathname, useRouter } from "next/navigation";
 import { WorkspaceProvider, useWorkspace, type WorkspaceConversation } from "@/features/workspace";
@@ -22,6 +23,8 @@ const SIDEBAR = { fallback: 280, min: 220, max: 480, snap: 150, step: 16 };
 const sidebarMax = () => Math.max(SIDEBAR.min, Math.min(SIDEBAR.max, innerWidth - 600));
 const clampSidebar = (value: number) => Math.round(Math.min(sidebarMax(), Math.max(SIDEBAR.min, value)));
 const storeSidebar = (key: string, value: string) => { try { localStorage.setItem(`genyxo:sidebar-${key}`, value); } catch { /* Storage is optional. */ } };
+// A toast drifts down and fades when it goes, however it is dismissed.
+const toastExit = (node: HTMLDivElement | null) => () => leaveGhost(node, [{ opacity: 1, transform: "none", filter: "blur(0)" }, { opacity: 0, transform: "translateY(10px) scale(.96)", filter: "blur(4px)" }], 220);
 // Shortcuts that run a command straight away. Esc (stop) lives with the chat and
 // ↑ (edit last message) only works in an empty message box, so both are handled apart.
 const KEY_COMMANDS: CommandId[] = ["sidebar", "new", "focus", "attach", "effort", "help", "delete", "settings", "instructions", "dictate", "voice", "regenerate", "copyLast", "copyCode", "prevChat", "nextChat"];
@@ -139,7 +142,10 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
         if (!list.length) break;
         const at = list.findIndex((item) => item.id === selectedChatId);
         const next = at < 0 ? 0 : at + (id === "nextChat" ? 1 : -1);
-        if (list[next]) selectChat(list[next].id);
+        if (!list[next]) break;
+        // The chat travels through the list in depth: down for the next one, up for the previous.
+        document.documentElement.dataset.gxNavIntent = id === "nextChat" ? "next" : "prev";
+        selectChat(list[next].id);
         break;
       }
       default: break;
@@ -260,7 +266,7 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
     {shortcutsOpen && <ShortcutHelp onClose={() => setShortcutsOpen(false)} />}
     {searchOpen && <CommandPalette onClose={() => setSearchOpen(false)} onCommand={runCommand}/>}
     {projectId !== null && <WorkspaceProjectDialog project={projects.find((item) => item.id === projectId)} onClose={() => setProjectId(null)}/>}
-    <div className="ws-toast-region" aria-live="polite" aria-atomic="true">{toast && <div className={`ws-toast ws-toast-${toast.type}`}><WorkspaceIcon name={toast.type === "error" ? "info" : "check"} size={17}/>{toast.message}<WorkspaceTooltip label={t("workspace.dismiss", "Dismiss")} side="bottom"><button className="ws-icon-btn" onClick={() => setToast(null)} aria-label={t("workspace.dismiss", "Dismiss")}><WorkspaceIcon name="close" size={16}/></button></WorkspaceTooltip></div>}</div>
+    <div className="ws-toast-region" aria-live="polite" aria-atomic="true">{toast && <div className={`ws-toast ws-toast-${toast.type}`} ref={toastExit}><WorkspaceIcon name={toast.type === "error" ? "info" : "check"} size={17}/>{toast.message}<WorkspaceTooltip label={t("workspace.dismiss", "Dismiss")} side="bottom"><button className="ws-icon-btn" onClick={() => setToast(null)} aria-label={t("workspace.dismiss", "Dismiss")}><WorkspaceIcon name="close" size={16}/></button></WorkspaceTooltip></div>}</div>
   </div>;
 }
 export function WorkspaceLayout({ children }: { children: ReactNode }) { return <WorkspaceProvider><WorkspaceFrame>{children}</WorkspaceFrame></WorkspaceProvider>; }

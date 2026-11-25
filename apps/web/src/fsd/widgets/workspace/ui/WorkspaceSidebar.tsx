@@ -783,6 +783,9 @@ export function WorkspaceSidebar({
           <button
             type="button"
             className="ws-row-open ws-btn"
+            // Hovering or focusing a chat loads it ahead, so opening it is instant.
+            onPointerEnter={() => document.dispatchEvent(new CustomEvent("genyxo:prefetch-chat", { detail: { ids: [chat.id] } }))}
+            onFocus={() => document.dispatchEvent(new CustomEvent("genyxo:prefetch-chat", { detail: { ids: [chat.id] } }))}
             onClick={() => {
               if (archived) setArchive(false);
               selectChat(chat.id);
