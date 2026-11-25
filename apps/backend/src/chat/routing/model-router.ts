@@ -94,6 +94,13 @@ export const MODEL_LABELS: Record<string, string> = {
   "recursive/flint-v1.0:free": "Flint 1.0",
   "liquid/lfm-3-1.7b:free": "LFM 3",
   "openrouter/free": "Any free model",
+  "nim/mistralai/mistral-large-4-1t-a52b": "Mistral Large 4",
+  "nim/minimaxai/minimax-m3.1-flash": "MiniMax M3.1 Flash",
+  "nim/stepfun-ai/step-5-preview": "Step 5",
+  "nim/nvidia/nemotron-3.5-bolt-e4b": "Nemotron 3.5 Bolt",
+  "nim/nvidia/nemotron-3-ultra-550b-a55b": "Nemotron 3 Ultra",
+  "nim/nvidia/nemotron-3.5-super-vl-120b-a12b": "Nemotron 3.5 Super",
+  "nim/nvidia/nemotron-3.5-lightning-30b-a3b": "Nemotron 3.5 Lightning",
 };
 
 export const labelOf = (model: string) => MODEL_LABELS[model] || model;

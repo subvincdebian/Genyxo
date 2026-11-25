@@ -1,4 +1,5 @@
 import { labelOf, type RouteDecision } from "./model-router";
+import { seesImages } from "./providers";
 
 /**
  * Reserve models: when a provider fails before the first word of an answer
@@ -20,34 +21,35 @@ export const QUALITY = [
   "nvidia/nemotron-3-ultra-550b-a55b:free",
   "google/gemini-2.5-flash",
   "groq/qwen/qwen3.8-27b",
-  "cf/meta/llama-3.3-70b-instruct-fp8-fast",
-  "cf/openai/gpt-oss-120b",
-  "google/gemini-3.5-flash-lite",
-  "cf/mistralai/mistral-small-3.1-24b-instruct",
   "nvidia/nemotron-3.5-super-vl:free",
-  "cf/meta/llama-4-scout-17b-16e-instruct",
+  "google/gemini-3.5-flash-lite",
   "google/gemini-3.1-flash-lite",
   "groq/openai/gpt-oss-20b",
   "nvidia/nemotron-3.5-lightning:free",
+  "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  // NVIDIA NIM: strong but its free queue answers in 30 s to 3 min, so it
+  // only steps in once the fast providers are out.
+  "nim/mistralai/mistral-large-4-1t-a52b",
+  "nim/stepfun-ai/step-5-preview",
+  "nim/minimaxai/minimax-m3.1-flash",
+  "nim/nvidia/nemotron-3-ultra-550b-a55b",
+  "nim/nvidia/nemotron-3.5-super-vl-120b-a12b",
   "google/gemma-4-31b-it:free",
   "openrouter/free",
+  // Cloudflare last: its small daily allowance is kept for images.
+  "cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "cf/openai/gpt-oss-120b",
+  "cf/mistralai/mistral-small-3.1-24b-instruct",
+  "cf/meta/llama-4-scout-17b-16e-instruct",
   "cf/qwen/qwen2.5-coder-32b-instruct",
   "cf/ibm-granite/granite-4.0-h-micro",
 ];
-/** Reserves that can read images and PDFs attached to the turn. */
-const SEES_FILES = new Set([
-  "google/gemini-3.5-flash",
-  "google/gemini-2.5-flash",
-  "google/gemini-3.5-flash-lite",
-  "google/gemini-3.1-flash-lite",
-  "groq/qwen/qwen3.8-27b",
-  "cf/mistralai/mistral-small-3.1-24b-instruct",
-  "cf/meta/llama-4-scout-17b-16e-instruct",
-  "nvidia/nemotron-3.5-super-vl:free",
-  "google/gemma-4-31b-it:free",
-  "openrouter/free",
-]);
 const MAX_RESERVES = 5;
+
+/** The smartest free model that can look at images, for turns with pictures. */
+export function bestVisionModel(exclude: Set<string> = new Set()) {
+  return QUALITY.find((model) => seesImages(model) && !exclude.has(model));
+}
 
 export class EmptyReplyError extends Error {
   constructor(model: string) {
@@ -100,7 +102,7 @@ export function nextReserve(
       (model) =>
         model !== failed &&
         !tried.has(model) &&
-        (!options.needsVision || SEES_FILES.has(model)),
+        (!options.needsVision || seesImages(model)),
     ) || null
   );
 }
@@ -112,6 +114,7 @@ export function reserveRoute(
   cost: number,
   originalCost: number,
   route?: RouteDecision,
+  reason?: string,
 ): RouteDecision {
   const label = labelOf(reserve);
   const from = route?.label || labelOf(original);
@@ -127,7 +130,9 @@ export function reserveRoute(
     model: reserve,
     label,
     cost,
-    reason: `${from} is not responding right now, so ${label} answered instead. You can ask ${from} again from here.`,
+    reason:
+      reason ||
+      `${from} is not responding right now, so ${label} answered instead. You can ask ${from} again from here.`,
     signals: [
       ...(route?.signals || []).slice(0, 3),
       "reserve: provider unavailable",

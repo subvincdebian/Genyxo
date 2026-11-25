@@ -33,7 +33,10 @@ export const PET_MODELS: PetModel[] = [
   chat("cf/qwen/qwen2.5-coder-32b-instruct", "Qwen 2.5 Coder", "Qwen"),
   chat("cf/meta/llama-3.3-70b-instruct-fp8-fast", "Llama 3.3 70B", "Llama"),
   chat("cf/meta/llama-4-scout-17b-16e-instruct", "Llama 4 Scout", "Llama"),
+  chat("nim/mistralai/mistral-large-4-1t-a52b", "Mistral Large 4", "Mistral"),
   chat("cf/mistralai/mistral-small-3.1-24b-instruct", "Mistral Small 3.1", "Mistral"),
+  chat("nim/minimaxai/minimax-m3.1-flash", "MiniMax M3.1 Flash", "MiniMax"),
+  chat("nim/stepfun-ai/step-5-preview", "Step 5", "StepFun"),
   chat("cf/zai-org/glm-4.7-flash", "GLM 4.7 Flash", "GLM"),
   chat("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra", "NVIDIA Nemotron"),
   chat("nvidia/nemotron-3.5-super-vl:free", "Nemotron 3.5 Super", "NVIDIA Nemotron"),
@@ -43,7 +46,7 @@ export const PET_MODELS: PetModel[] = [
   { value: "cf/black-forest-labs/flux-2-dev", label: "FLUX.2 Dev", provider: "FLUX", kind: "image", credits: 0 },
   { value: "cf/leonardo/lucid-origin", label: "Lucid Origin", provider: "Leonardo", kind: "image", credits: 0 },
 ];
-export const PROVIDER_ORDER = ["Auto", "Gemini", "OpenAI", "Qwen", "Llama", "Mistral", "GLM", "NVIDIA Nemotron", "Gemma", "FLUX", "Leonardo"];
+export const PROVIDER_ORDER = ["Auto", "Gemini", "OpenAI", "Qwen", "Llama", "Mistral", "MiniMax", "StepFun", "GLM", "NVIDIA Nemotron", "Gemma", "FLUX", "Leonardo"];
 export const DEFAULT_PET_MODEL = PET_MODELS[0].value;
 export const IMAGE_MODEL = "cf/black-forest-labs/flux-2-dev";
 export const VIDEO_MODEL = "kling-video";
@@ -55,7 +58,7 @@ export function modelIcon(value: string) {
   if (value === "auto") return "/images/auto-route.svg";
   if (value.includes("dall-e")) return "/images/dalle-text.png";
   if (/flux|leonardo/.test(value)) return "/images/model-image.svg";
-  if (/mistral|glm|granite|flint|lfm/.test(value)) return "/images/model-open.svg";
+  if (/mistral|glm|granite|flint|lfm|minimax|stepfun/.test(value)) return "/images/model-open.svg";
   if (value.includes("qwen")) return "/images/qwen-icon.svg";
   if (value.includes("llama") || value.includes("/meta/")) return "/images/meta-icon.svg";
   if (value.includes("gemini") || value.includes("gemma")) return "/images/google-gemini.svg";

@@ -130,12 +130,14 @@ import {
 } from "./routing/model-router";
 import {
   maxOutputFor,
+  usesTools,
   providerOf,
   providerParams,
   providerModelId,
   seesImages,
 } from "./routing/providers";
 import {
+  bestVisionModel,
   EmptyReplyError,
   isProviderFailure,
   nextReserve,
@@ -242,17 +244,21 @@ export class ChatService {
   /** Free OpenAI-compatible providers; set only when their keys are configured. */
   private groq?: OpenAI;
   private cloudflare?: OpenAI;
+  private nvidia?: OpenAI;
+  private mistral?: OpenAI;
   private googleAI: GoogleGenerativeAI;
 
   /** The OpenAI-compatible client and model id for a Groq, Cloudflare or OpenRouter model. */
   private chatClient(model: string): { client: OpenAI; id: string } {
     const provider = providerOf(model);
-    const client =
-      provider === "groq"
-        ? this.groq
-        : provider === "cloudflare"
-          ? this.cloudflare
-          : this.openRouter;
+    const client = {
+      groq: this.groq,
+      cloudflare: this.cloudflare,
+      nvidia: this.nvidia,
+      mistral: this.mistral,
+      openrouter: this.openRouter,
+      gemini: undefined,
+    }[provider];
     if (!client)
       throw Object.assign(
         new Error(`${model} is unavailable: its provider is not configured`),
@@ -315,6 +321,22 @@ export class ChatService {
       this.cloudflare = new OpenAI({
         baseURL: `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccount}/ai/v1`,
         apiKey: cloudflareKey,
+        timeout: 60000,
+        maxRetries: 1,
+      });
+    const nvidiaKey = this.configService.get<string>("NVIDIA_API_KEY");
+    if (nvidiaKey)
+      this.nvidia = new OpenAI({
+        baseURL: "https://integrate.api.nvidia.com/v1",
+        apiKey: nvidiaKey,
+        timeout: 90000,
+        maxRetries: 1,
+      });
+    const mistralKey = this.configService.get<string>("MISTRAL_API_KEY");
+    if (mistralKey)
+      this.mistral = new OpenAI({
+        baseURL: "https://api.mistral.ai/v1",
+        apiKey: mistralKey,
         timeout: 60000,
         maxRetries: 1,
       });
@@ -1616,9 +1638,33 @@ export class ChatService {
             file.mime_type === "application/pdf" && !file.extracted_text,
         )
       ) {
-        throw new BadRequestException(
-          "This PDF has no extractable text. Try a text PDF or a Gemini model.",
+        // A scanned PDF has no text layer: Gemini reads the pages themselves,
+        // so the turn moves to it instead of failing.
+        const reader = "google/gemini-3.5-flash";
+        if (cost > 0) {
+          await Promise.all([
+            this.usersService.addCredits(userId, cost),
+            this.usersService.logTransaction(
+              userId,
+              cost,
+              TransactionType.REFUND,
+              `Scanned PDF read by ${labelOf(reader)}`,
+            ),
+          ]);
+        }
+        turnOptions.route = reserveRoute(
+          model,
+          reader,
+          0,
+          cost,
+          turnOptions.route,
+          `This PDF is a scan, so ${labelOf(reader)} read its pages: ${labelOf(model)} only reads PDFs with text.`,
         );
+        res.write(
+          `data: ${JSON.stringify({ status: "route", route: turnOptions.route })}\n\n`,
+        );
+        cost = 0;
+        model = reader;
       }
       const displayTitle =
         text ||
@@ -2002,8 +2048,43 @@ export class ChatService {
       const originalModel = model;
       const originalCost = cost;
       const needsVision = (files || []).some((file) =>
-        /^image\/|pdf/i.test(file.mime_type || ""),
+        /^image\//i.test(file.mime_type || ""),
       );
+      if (
+        needsVision &&
+        !seesImages(model) &&
+        this.pricingService.getModelConfig(model)?.type === ModelType.TEXT
+      ) {
+        const viewer = bestVisionModel();
+        if (viewer) {
+          const viewerCost =
+            this.pricingService.getModelConfig(viewer)?.cost ?? 0;
+          if (viewerCost < cost) {
+            await Promise.all([
+              this.usersService.addCredits(userId, cost - viewerCost),
+              this.usersService.logTransaction(
+                userId,
+                cost - viewerCost,
+                TransactionType.REFUND,
+                `Vision model refund: ${labelOf(model)} → ${labelOf(viewer)}`,
+              ),
+            ]);
+            cost = viewerCost;
+          }
+          turnOptions.route = reserveRoute(
+            model,
+            viewer,
+            viewerCost,
+            originalCost,
+            turnOptions.route,
+            `${labelOf(model)} cannot see images, so ${labelOf(viewer)} looked at yours. You can ask ${labelOf(model)} again from here.`,
+          );
+          res.write(
+            `data: ${JSON.stringify({ status: "route", route: turnOptions.route })}\n\n`,
+          );
+          model = viewer;
+        }
+      }
       for (;;) {
         try {
           if (turnOptions.mode === "research" && this.webSearch) {
@@ -2311,7 +2392,7 @@ export class ChatService {
             // Cloudflare's OpenAI-compatible API mishandles tool calls (models
             // call them unasked and the follow-up is rejected): plain answers.
             let tools =
-              hasTools && providerOf(model) !== "cloudflare"
+              hasTools && usesTools(model)
                 ? [
                     ...(toolset
                       ? this.integrationTools!.openAiTools(toolset)

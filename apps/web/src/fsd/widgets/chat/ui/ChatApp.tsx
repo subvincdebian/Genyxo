@@ -701,12 +701,16 @@ export function ChatApp({
               <option value="cf/qwen/qwen2.5-coder-32b-instruct">{"Qwen 2.5 Coder"}</option>
               <option value="cf/meta/llama-3.3-70b-instruct-fp8-fast">{"Llama 3.3 70B"}</option>
               <option value="cf/meta/llama-4-scout-17b-16e-instruct">{"Llama 4 Scout"}</option>
+              <option value="nim/mistralai/mistral-large-4-1t-a52b">{"Mistral Large 4"}</option>
               <option value="cf/mistralai/mistral-small-3.1-24b-instruct">{"Mistral Small 3.1"}</option>
+              <option value="nim/minimaxai/minimax-m3.1-flash">{"MiniMax M3.1 Flash"}</option>
+              <option value="nim/stepfun-ai/step-5-preview">{"Step 5"}</option>
               <option value="cf/zai-org/glm-4.7-flash">{"GLM 4.7 Flash"}</option>
               <option value="nvidia/nemotron-3-ultra-550b-a55b:free">{"Nemotron 3 Ultra"}</option>
               <option value="nvidia/nemotron-3.5-super-vl:free">{"Nemotron 3.5 Super"}</option>
               <option value="nvidia/nemotron-3.5-lightning:free">{"Nemotron 3.5 Lightning"}</option>
               <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">{"Nemotron 3 Nano Omni"}</option>
+              <option value="nim/nvidia/nemotron-3.5-bolt-e4b">{"Nemotron 3.5 Bolt"}</option>
               <option value="google/gemma-4-31b-it:free">{"Gemma 4"}</option>
               <option value="cf/ibm-granite/granite-4.0-h-micro">{"Granite 4.0 Micro"}</option>
               <option value="recursive/flint-v1.0:free">{"Flint 1.0"}</option>

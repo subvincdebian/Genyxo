@@ -48,7 +48,7 @@ export function modelIcon(value = "") {
   if (value === "auto") return "/images/auto-route.svg";
   if (value.includes("dall-e")) return "/images/dalle-text.png";
   if (/flux|leonardo/.test(value)) return "/images/model-image.svg";
-  if (/mistral|glm|granite|flint|lfm|openrouter\/free/.test(value)) return "/images/model-open.svg";
+  if (/mistral|glm|granite|flint|lfm|minimax|stepfun|openrouter\/free/.test(value)) return "/images/model-open.svg";
   if (value.includes("qwen")) return "/images/qwen-icon.svg";
   if (value.includes("llama") || value.includes("/meta/")) return "/images/meta-icon.svg";
   if (value.includes("google/") || value.includes("gemma")) return "/images/google-gemini.svg";

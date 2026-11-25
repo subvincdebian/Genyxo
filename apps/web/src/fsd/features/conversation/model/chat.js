@@ -1878,7 +1878,7 @@ export default function initialize(scope, context) {
     if (value === "auto") return "/images/auto-route.svg";
     if (value.includes("dall-e")) return "/images/dalle-text.png";
     if (/flux|leonardo/.test(value)) return "/images/model-image.svg";
-    if (/mistral|glm|granite|flint|lfm|openrouter\/free/.test(value)) return "/images/model-open.svg";
+    if (/mistral|glm|granite|flint|lfm|minimax|stepfun|openrouter\/free/.test(value)) return "/images/model-open.svg";
     if (value.includes("qwen")) return "/images/qwen-icon.svg";
     if (value.includes("llama") || value.includes("/meta/")) return "/images/meta-icon.svg";
     if (value.includes("google/gemini") || value.includes("gemma"))
@@ -3706,6 +3706,9 @@ export default function initialize(scope, context) {
       if (value.includes("leonardo")) return "Leonardo";
       if (value.includes("gpt-oss")) return "OpenAI";
       if (value.includes("glm")) return "GLM";
+      if (value.includes("minimax")) return "MiniMax";
+      if (value.includes("stepfun")) return "StepFun";
+      if (value.includes("nemotron")) return "NVIDIA Nemotron";
       if (/granite|flint|lfm|openrouter\/free/.test(value)) return "More models";
       if (value.includes("qwen")) return "Qwen";
       if (value.includes("llama") || value.includes("/meta/")) return "Llama";
@@ -3795,7 +3798,7 @@ export default function initialize(scope, context) {
         if (!groups.has(provider)) groups.set(provider, []);
         groups.get(provider).push(opt);
       });
-      const providerOrder = ["Gemini", "OpenAI", "Qwen", "Llama", "Mistral", "GLM", "NVIDIA Nemotron", "Gemma", "More models", "FLUX", "Leonardo", "ChatGPT", "Claude", "DALL·E", "Kling"];
+      const providerOrder = ["Gemini", "OpenAI", "Qwen", "Llama", "Mistral", "MiniMax", "StepFun", "GLM", "NVIDIA Nemotron", "Gemma", "More models", "FLUX", "Leonardo", "ChatGPT", "Claude", "DALL·E", "Kling"];
       Array.from(groups.entries()).sort((a, b) => providerOrder.indexOf(a[0]) - providerOrder.indexOf(b[0])).forEach(([provider, models]) => {
         const group = scope.document.createElement("li");
         group.className = "model-provider";

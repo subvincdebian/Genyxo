@@ -40,6 +40,20 @@ export class PricingService {
     "cf/leonardo/phoenix-1.0": { cost: 0, type: ModelType.IMAGE },
     "cf/black-forest-labs/flux-2-klein-4b": { cost: 0, type: ModelType.IMAGE },
     "cf/black-forest-labs/flux-1-schnell": { cost: 0, type: ModelType.IMAGE },
+    // NVIDIA NIM free tier (build.nvidia.com): checked for tools and vision.
+    "nim/mistralai/mistral-large-4-1t-a52b": { cost: 0, type: ModelType.TEXT },
+    "nim/minimaxai/minimax-m3.1-flash": { cost: 0, type: ModelType.TEXT },
+    "nim/stepfun-ai/step-5-preview": { cost: 0, type: ModelType.TEXT },
+    "nim/nvidia/nemotron-3.5-bolt-e4b": { cost: 0, type: ModelType.TEXT },
+    "nim/nvidia/nemotron-3-ultra-550b-a55b": { cost: 0, type: ModelType.TEXT },
+    "nim/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+      cost: 0,
+      type: ModelType.TEXT,
+    },
+    "nim/nvidia/nemotron-3.5-lightning-30b-a3b": {
+      cost: 0,
+      type: ModelType.TEXT,
+    },
     // More OpenRouter free models; "openrouter/free" picks any free model that is up.
     "nvidia/nemotron-3.5-lightning:free": { cost: 0, type: ModelType.TEXT },
     "recursive/flint-v1.0:free": { cost: 0, type: ModelType.TEXT },

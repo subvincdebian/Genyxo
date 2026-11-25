@@ -91,7 +91,7 @@ export const modelIcon = (value = "") =>
   value === "auto" ? "/images/auto-route.svg"
   : value.includes("dall-e") ? "/images/dalle-text.png"
   : /flux|leonardo/.test(value) ? "/images/model-image.svg"
-  : /mistral|glm|granite|flint|lfm|openrouter\/free/.test(value) ? "/images/model-open.svg"
+  : /mistral|glm|granite|flint|lfm|minimax|stepfun|openrouter\/free/.test(value) ? "/images/model-open.svg"
   : value.includes("qwen") ? "/images/qwen-icon.svg"
   : value.includes("llama") || value.includes("/meta/") ? "/images/meta-icon.svg"
   : value.includes("google/") || value.includes("gemma") ? "/images/google-gemini.svg"
