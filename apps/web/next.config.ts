@@ -48,7 +48,7 @@ const config: NextConfig = {
           {
             key: "Permissions-Policy",
             value:
-              "camera=(), microphone=(self), geolocation=(self), browsing-topics=()",
+              "camera=(self), microphone=(self), display-capture=(self), geolocation=(self), browsing-topics=()",
           },
           {
             key: "Content-Security-Policy",

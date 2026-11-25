@@ -428,6 +428,7 @@ export class ChatService {
         "Talk like a person on a call. Greetings and small talk get one short sentence. Other answers stay under about 70 words unless the user asks for detail.",
         "No markdown, lists, headings, emoji, tables or links in spoken text.",
         "When the user asks for code, a document or any file, say in one short sentence what you made, then add it as a fenced block with file=<name>. It appears in the chat as a file and is not read aloud, so do not describe it line by line.",
+        "An image named screen-<time>.jpg is a frame of the camera or the screen the user is showing you right now; answer about what it shows as if you are looking at it together, without mentioning the image or the file.",
       );
     return lines.filter(Boolean).join("\n");
   }

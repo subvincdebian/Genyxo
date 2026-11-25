@@ -2,7 +2,8 @@
 // Gemini Live voice calls: the microphone streams to Gemini as 16 kHz PCM over
 // a WebSocket and the spoken reply streams back as 24 kHz PCM, so an answer
 // starts in about a second. Gemini detects when the user stops talking and
-// handles barge-in; the server only issues a single-use token whose model,
+// handles barge-in. Camera and screen frames go over the same socket as
+// video. The server only issues a single-use token whose model,
 // voice, instructions and tools are fixed.
 
 import { getAudioSettings, routeAudioOutput, subscribeAudioSettings } from "@/shared/lib/audio-settings";
@@ -22,7 +23,13 @@ export type LiveHooks = {
   /** Runs a map tool the call asked for (Maps page); the card goes into the reply. */
   onMapsTool?: (name: string, args: Record<string, unknown>) => Promise<{ output: unknown; markdown?: string }>;
 };
-export type LiveSession = { stop: () => void; setMuted: (muted: boolean) => void; interrupt: () => void };
+export type LiveSession = {
+  stop: () => void;
+  setMuted: (muted: boolean) => void;
+  interrupt: () => void;
+  /** One JPEG frame of the camera or a shared screen; Gemini watches them as video. */
+  sendVideo: (base64Jpeg: string) => void;
+};
 
 const INPUT_RATE = 16000;
 const OUTPUT_RATE = 24000;
@@ -241,5 +248,6 @@ export async function startLiveSession(stream: MediaStream, session: { token: st
       if (spoken) finishTurn(true);
       setPhase("listening");
     },
+    sendVideo: (data) => { if (ready && !closed) send({ realtimeInput: { video: { data, mimeType: "image/jpeg" } } }); },
   };
 }

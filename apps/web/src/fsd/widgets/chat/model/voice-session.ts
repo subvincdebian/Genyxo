@@ -10,11 +10,18 @@ import { getAudioSettings, microphoneConstraints, routeAudioOutput, subscribeAud
 import { getVoiceName } from "./voice-preferences";
 import { openChatId } from "@/shared/lib/chat-url";
 import { startLiveSession, type LiveSession } from "./live-engine";
+import { captureBase64, captureFrame, isSeeing, onVisionChange, stopVision } from "./voice-vision";
 
 export type VoicePhase = "idle" | "listening" | "thinking" | "speaking";
-export type VoiceSnapshot = { active: boolean; phase: VoicePhase; muted: boolean; level: number; transcript: string; error: string; language: string };
+/**
+ * "live": Gemini Live hears, sees and answers in real time.
+ * "model": the chat's selected model answers each spoken question and sees a
+ * frame of the camera or screen taken when the question ends.
+ */
+export type VoiceEngine = "live" | "model";
+export type VoiceSnapshot = { active: boolean; phase: VoicePhase; muted: boolean; level: number; transcript: string; error: string; language: string; engine: VoiceEngine; modelName: string };
 
-const idle: VoiceSnapshot = { active: false, phase: "idle", muted: false, level: 0, transcript: "", error: "", language: "" };
+const idle: VoiceSnapshot = { active: false, phase: "idle", muted: false, level: 0, transcript: "", error: "", language: "", engine: "live", modelName: "" };
 let snapshot = idle;
 const listeners = new Set<() => void>();
 const set = (patch: Partial<VoiceSnapshot>) => { snapshot = { ...snapshot, ...patch }; listeners.forEach((listener) => listener()); };
@@ -161,18 +168,28 @@ async function finishPhrase() {
     if (current !== turn || !snapshot.active) return;
     if (!text) { listen(); return; }
     set({ transcript: text, language: getInteractions().settings.callLanguage === "auto" ? language || snapshot.language : getInteractions().settings.callLanguage });
-    send(text);
+    await send(text);
   } catch (error) {
     set({ error: error instanceof Error ? error.message : "Could not understand that." });
     window.setTimeout(listen, 1200);
   }
 }
 
-function send(text: string) {
+async function send(text: string) {
   const field = document.getElementById("userInput") as HTMLTextAreaElement | null;
   const form = document.getElementById("chatForm") as HTMLFormElement | null;
   const sendButton = document.getElementById("sendBtn") as HTMLButtonElement | null;
   if (!field || !form || sendButton?.disabled) { listen(); return; }
+  // The model sees what the camera or the shared screen shows as the question ends.
+  if (isSeeing()) {
+    const frame = await captureFrame(1600, .8).catch(() => null);
+    if (frame && snapshot.active) {
+      const host = window as unknown as { attachedFiles?: File[] };
+      const attached = (host.attachedFiles ||= []);
+      attached.push(new File([frame], `screen-${new Date().toISOString().slice(11, 19).replace(/:/g, "")}.jpg`, { type: "image/jpeg" }));
+      window.dispatchEvent(new Event("genyxo:attachments-changed"));
+    }
+  }
   speechBuffer = ""; inCode = false; codeAnnounced = false; answerDone = false;
   field.value = text;
   field.dispatchEvent(new Event("input", { bubbles: true }));
@@ -314,6 +331,35 @@ const onDone = (event: Event) => {
 // start (no key, quota, blocked WebSocket) the call falls back to the
 // record → transcribe → chat → speech pipeline below.
 let live: LiveSession | null = null;
+let videoTimer = 0;
+let videoBusy = false;
+
+// About one frame a second, as Gemini Live expects; a change of source is sent at once.
+async function sendVideoFrame() {
+  if (!live || videoBusy || !isSeeing()) return;
+  videoBusy = true;
+  try {
+    const data = await captureBase64(1024, .7);
+    if (data) live?.sendVideo(data);
+  } finally {
+    videoBusy = false;
+  }
+}
+function startVideoLoop() {
+  window.clearInterval(videoTimer);
+  videoTimer = window.setInterval(() => void sendVideoFrame(), 1000);
+  onVisionChange(() => void sendVideoFrame());
+}
+
+/** Gemini models (and Auto) talk over Gemini Live; any other model answers turn by turn. */
+function chosenEngine(): { engine: VoiceEngine; modelName: string } {
+  const select = document.getElementById("modelSelect") as HTMLSelectElement | null;
+  const value = select?.value || "auto";
+  // "ChatGPT-5.1 (150 cr)" → "ChatGPT-5.1"
+  const label = (select?.selectedOptions[0]?.textContent || value).replace(/\s*\([^)]*\bcr\)\s*$/, "").trim();
+  if (value === "auto" || /^google\/|gemini/i.test(value) || /dall-e|kling|imagen|veo/i.test(value)) return { engine: "live", modelName: "Gemini Live" };
+  return { engine: "model", modelName: label };
+}
 
 const currentConversationId = () => openChatId();
 
@@ -349,6 +395,8 @@ async function startLive() {
     });
     if (!snapshot.active) { started.stop(); return true; }
     live = started;
+    set({ engine: "live", modelName: "Gemini Live" });
+    startVideoLoop();
     return true;
   } catch (error) {
     console.warn("Live voice unavailable, using the fallback pipeline:", error);
@@ -366,9 +414,13 @@ export async function startVoice() {
     notify("Allow microphone access to talk with the model.");
     return;
   }
-  set({ ...idle, active: true, language: getInteractions().settings.callLanguage === "auto" ? "" : getInteractions().settings.callLanguage });
-  if (await startLive()) return;
+  const choice = chosenEngine();
+  set({ ...idle, active: true, ...choice, language: getInteractions().settings.callLanguage === "auto" ? "" : getInteractions().settings.callLanguage });
+  watchModel();
+  if (choice.engine === "live" && await startLive()) return;
   if (!snapshot.active) return;
+  // Gemini Live could not start: the chat's model answers instead.
+  if (choice.engine === "live") set({ engine: "model", modelName: "Gemini" });
   audio = new AudioContext();
   // Created after the permission prompt, the context can start suspended and would hear silence.
   if (audio.state === "suspended") await audio.resume().catch(() => {});
@@ -399,8 +451,34 @@ export async function startVoice() {
   listen();
 }
 
+// Picking another model during a call moves the call to it; the camera and screen stay on.
+let releaseModelWatch: (() => void) | null = null;
+function watchModel() {
+  releaseModelWatch?.();
+  const select = document.getElementById("modelSelect");
+  if (!select) return;
+  const onChange = () => {
+    if (!snapshot.active) return;
+    const next = chosenEngine();
+    if (next.engine === snapshot.engine && next.modelName === snapshot.modelName) return;
+    if (next.engine === "model" && snapshot.engine === "model") { set({ modelName: next.modelName }); return; }
+    teardown(true);
+    void startVoice();
+  };
+  select.addEventListener("change", onChange);
+  releaseModelWatch = () => select.removeEventListener("change", onChange);
+}
+
 export function stopVoice() {
+  teardown(false);
+}
+
+function teardown(keepVision: boolean) {
+  releaseModelWatch?.(); releaseModelWatch = null;
   releaseAudioSettings?.(); releaseAudioSettings = null;
+  window.clearInterval(videoTimer);
+  onVisionChange(null);
+  if (!keepVision) stopVision();
   live?.stop();
   live = null;
   turn += 1;

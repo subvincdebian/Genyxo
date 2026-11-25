@@ -1,11 +1,75 @@
 "use client";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { GenyxoOrb } from "@/shared/ui/GenyxoOrb";
 import { WorkspaceIcon, WorkspaceMenu, WorkspaceTooltip } from "@/shared/ui/workspace";
 import { getServerVoiceSnapshot, getVoiceSnapshot, interruptVoice, previewVoice, startVoice, stopVoice, subscribeVoice, toggleVoiceMute } from "../model/voice-session";
+import { canShareScreen, canUseCamera, getServerVisionSnapshot, getVisionSnapshot, nextCamera, shareScreen, startCamera, stopCamera, stopScreen, subscribeVision } from "../model/voice-vision";
 import { VOICE_OPTIONS, getServerVoiceName, getVoiceName, setVoiceName, subscribeVoiceName, type VoiceOption } from "../model/voice-preferences";
 
 const useVoice = () => useSyncExternalStore(subscribeVoice, getVoiceSnapshot, getServerVoiceSnapshot);
+const useVision = () => useSyncExternalStore(subscribeVision, getVisionSnapshot, getServerVisionSnapshot);
+
+const notify = (message: string) => { if (message) document.dispatchEvent(new CustomEvent("genyxo:workspace-notify", { detail: { message, type: "info" } })); };
+
+function StreamVideo({ stream, className, mirror = false }: { stream: MediaStream; className: string; mirror?: boolean }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    video.srcObject = stream;
+    void video.play().catch(() => {});
+    return () => { video.srcObject = null; };
+  }, [stream]);
+  // A front camera reads like a mirror; a back camera and a screen do not.
+  const flip = mirror && stream.getVideoTracks()[0]?.getSettings().facingMode !== "environment";
+  return <video ref={ref} className={className} data-mirror={flip ? "" : undefined} muted playsInline autoPlay />;
+}
+
+/**
+ * What the model sees: a shared screen fills the tile with the camera in its
+ * corner, like a meeting. Changing the source or flipping the camera lives on
+ * the tile; turning either off lives on the call controls too.
+ */
+function VisionTile({ engine, modelName }: { engine: "live" | "model"; modelName: string }) {
+  const vision = useVision();
+  const main = vision.screen || vision.camera;
+  if (!main) return null;
+  const pip = vision.screen && vision.camera;
+  const what = vision.screen ? (vision.screenKind === "Entire screen" ? "your screen" : `your ${vision.screenKind.toLowerCase()}`) : "your camera";
+  return <figure className={`gx-vision${vision.screen ? " is-screen" : " is-camera"}`}>
+    <StreamVideo key={main.id} stream={main} className="gx-vision-main" mirror={!vision.screen} />
+    {pip && <StreamVideo key={pip.id} stream={pip} className="gx-vision-pip" mirror />}
+    <figcaption className="gx-vision-meta">
+      <span className="gx-vision-live" aria-hidden="true" />
+      {engine === "live" ? `${modelName || "The model"} sees ${what}` : `${modelName || "The model"} sees ${what} when you ask`}
+    </figcaption>
+    <div className="gx-vision-actions">
+      {vision.camera && vision.cameras.length > 1 && <WorkspaceTooltip label="Switch camera" side="bottom"><button type="button" aria-label="Switch camera" onClick={nextCamera}><WorkspaceIcon name="flip" size={17} /></button></WorkspaceTooltip>}
+      {vision.screen && <WorkspaceTooltip label="Share something else" side="bottom"><button type="button" aria-label="Share something else" onClick={() => void shareScreen().then(notify)}><WorkspaceIcon name="screen" size={17} /></button></WorkspaceTooltip>}
+      <WorkspaceTooltip label={vision.screen ? "Stop sharing" : "Turn off camera"} side="bottom"><button type="button" aria-label={vision.screen ? "Stop sharing" : "Turn off camera"} onClick={vision.screen ? stopScreen : stopCamera}><WorkspaceIcon name="close" size={16} /></button></WorkspaceTooltip>
+    </div>
+  </figure>;
+}
+
+function VisionButtons() {
+  const vision = useVision();
+  const [busy, setBusy] = useState("");
+  const run = (kind: string, action: () => Promise<string>) => {
+    if (busy) return;
+    setBusy(kind);
+    void action().then(notify).finally(() => setBusy(""));
+  };
+  const camera = Boolean(vision.camera);
+  const screen = Boolean(vision.screen);
+  return <>
+    {canUseCamera() && <WorkspaceTooltip label={camera ? "Turn off camera" : "Show your camera"} side="bottom"><button type="button" className={`gx-voice-tool${camera ? " is-on" : ""}`} aria-pressed={camera} aria-busy={busy === "camera"} aria-label={camera ? "Turn off camera" : "Show your camera"} onClick={() => (camera ? stopCamera() : run("camera", () => startCamera(vision.cameraId || undefined)))}>
+      <WorkspaceIcon name={camera ? "video" : "video-off"} size={19} />
+    </button></WorkspaceTooltip>}
+    {canShareScreen() && <WorkspaceTooltip label={screen ? "Stop sharing" : "Share your screen"} side="bottom"><button type="button" className={`gx-voice-tool${screen ? " is-on" : ""}`} aria-pressed={screen} aria-busy={busy === "screen"} aria-label={screen ? "Stop sharing" : "Share your screen"} onClick={() => (screen ? stopScreen() : run("screen", shareScreen))}>
+      <WorkspaceIcon name="screen" size={19} />
+    </button></WorkspaceTooltip>}
+  </>;
+}
 
 // Moves the composer to its new place with a FLIP transform so the layout
 // change reads as one continuous motion instead of a jump.
@@ -36,22 +100,30 @@ const phaseLabel = { idle: "Starting…", listening: "Listening", thinking: "Thi
 
 export function VoiceStage() {
   const voice = useVoice();
+  const vision = useVision();
+  const seeing = Boolean(vision.screen || vision.camera);
   useEffect(() => {
     flipComposer(() => document.documentElement.toggleAttribute("data-voice-mode", voice.active));
   }, [voice.active]);
   useEffect(() => () => { document.documentElement.removeAttribute("data-voice-mode"); stopVoice(); }, []);
   if (!voice.active) return null;
   const state = voice.muted ? "muted" : voice.phase === "idle" ? "idle" : voice.phase;
-  const prompt = voice.phase === "listening" ? "Go ahead, I'm listening." : voice.phase === "speaking" ? "Tap the orb to interrupt." : " ";
+  const prompt = voice.phase === "listening" ? (seeing ? "Ask about what you're showing." : "Go ahead, I'm listening.") : voice.phase === "speaking" ? "Just start talking to interrupt." : " ";
+  const orb = <button type="button" className="gx-voice-orb" onClick={interruptVoice} aria-label={voice.phase === "speaking" || voice.phase === "thinking" ? "Interrupt and speak" : "Voice conversation orb"}>
+    <GenyxoOrb size={seeing ? 56 : 220} state={state} level={voice.level} logo={false} />
+  </button>;
+  const caption = <div className="gx-voice-caption" aria-live="polite">
+    <span key={state} className={`gx-voice-phase is-${state}`}><span className="gx-voice-dot" />{voice.muted ? "Microphone muted" : phaseLabel[voice.phase]}</span>
+    <p key={voice.error || voice.transcript || prompt} className={voice.error ? "is-error" : voice.transcript ? "is-transcript" : ""}>{voice.error || voice.transcript || prompt}</p>
+  </div>;
+  if (seeing) return <div className="gx-voice-stage is-seeing" role="region" aria-label="Voice conversation">
+    <VisionTile engine={voice.engine} modelName={voice.modelName} />
+    <div className="gx-voice-bar">{orb}{caption}</div>
+  </div>;
   return <div className="gx-voice-stage" role="region" aria-label="Voice conversation">
-    <button type="button" className="gx-voice-orb" onClick={interruptVoice} aria-label={voice.phase === "speaking" || voice.phase === "thinking" ? "Interrupt and speak" : "Voice conversation orb"}>
-      <GenyxoOrb size={220} state={state} level={voice.level} logo={false} />
-    </button>
-    <div className="gx-voice-caption" aria-live="polite">
-      <span key={state} className={`gx-voice-phase is-${state}`}><span className="gx-voice-dot" />{voice.muted ? "Microphone muted" : phaseLabel[voice.phase]}</span>
-      <p key={voice.error || voice.transcript || prompt} className={voice.error ? "is-error" : voice.transcript ? "is-transcript" : ""}>{voice.error || voice.transcript || prompt}</p>
-    </div>
-    {!voice.transcript && <small className="gx-voice-note">Speak in any language · replies come back in the language you used</small>}
+    {orb}
+    {caption}
+    {!voice.transcript && <small className="gx-voice-note">{voice.engine === "model" && voice.modelName ? `${voice.modelName} · ` : ""}Speak in any language · show your camera or screen anytime</small>}
   </div>;
 }
 
@@ -115,6 +187,7 @@ export function VoiceControls() {
   </button></WorkspaceTooltip>;
   return <span className="gx-voice-controls">
     <VoicePicker language={voice.language} />
+    <VisionButtons />
     <WorkspaceTooltip label={voice.muted ? "Unmute microphone" : "Mute microphone"} side="bottom"><button type="button" className={`gx-voice-mute${voice.muted ? " is-muted" : ""}`} aria-pressed={voice.muted} aria-label={voice.muted ? "Unmute microphone" : "Mute microphone"} onClick={toggleVoiceMute}>
       <WorkspaceIcon name={voice.muted ? "mic-off" : "mic"} size={19} />
     </button></WorkspaceTooltip>

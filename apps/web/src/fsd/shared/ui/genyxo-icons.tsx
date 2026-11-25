@@ -250,6 +250,24 @@ const icons: Record<string, ReactNode> = {
   chat: <path d="M5 3.5h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H8L3 17V5.5a2 2 0 0 1 2-2Z" />,
   restore: <><path d="M3.5 11.5v4A1.5 1.5 0 0 0 5 17h10a1.5 1.5 0 0 0 1.5-1.5v-4M7 3.5 10 1l3 2.5M10 1v10" /><path d="M3.5 11.5h3l1.5 2h4l1.5-2h3" /></>,
   volume: <><path d="M8 6H4v8h4l4 3V3L8 6Z" /><path className="gi-draw" pathLength={1} d="M14.5 6.5a5 5 0 0 1 0 7m2-9a8 8 0 0 1 0 11" /></>,
+  "video-off": <>
+    <path d="M9 5h2a2.5 2.5 0 0 1 2.5 2.5v1.1l4-2.35v7.5l-1.6-.94M13.5 13.5A2.5 2.5 0 0 1 11 15H5a2.5 2.5 0 0 1-2.5-2.5v-5A2.5 2.5 0 0 1 4.6 5.03" />
+    <path className="gi-draw" pathLength={1} d="m3 3 14 14" />
+  </>,
+  screen: <>
+    <rect x="2.5" y="3.5" width="15" height="10.5" rx="2" />
+    <path d="M7 17h6M10 14v3" />
+    <path className="gi-lift" d="M10 11.25V6.5M7.9 8.5 10 6.4l2.1 2.1" />
+  </>,
+  "screen-off": <>
+    <rect x="2.5" y="3.5" width="15" height="10.5" rx="2" />
+    <path d="M7 17h6M10 14v3" />
+    <path className="gi-draw" pathLength={1} d="m7.75 6.5 4.5 4.5m0-4.5-4.5 4.5" />
+  </>,
+  flip: <>
+    <path d="M3.5 8.5A6.5 6.5 0 0 1 15.4 6M16.5 11.5A6.5 6.5 0 0 1 4.6 14" />
+    <path className="gi-pop" d="M15.6 2.8 15.4 6l-3.2-.3M4.4 17.2l.2-3.2 3.2.3" />
+  </>,
 };
 
 export const genyxoIconNames = Object.keys(icons);

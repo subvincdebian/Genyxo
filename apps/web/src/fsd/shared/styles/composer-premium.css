@@ -571,3 +571,51 @@
 @media (prefers-reduced-motion: reduce) { .gx-mode-chip, .gx-think-steps li, .gx-src-list, .gx-memory-pill, .gx-memory-list li { animation: none !important; } }
 /* The streaming dot belongs to text, not to the progress list or the orb. */
 .workspace-shell #chatBox .bot-message.streaming .message-text > .gx-think-steps::after, .workspace-shell #chatBox .bot-message.streaming .message-text > .gx-think-loader::after { content: none; display: none; }
+
+/* Voice call with the camera or a shared screen: one glass tile with what the
+   model sees, a quiet line saying so, and the orb shrinking to sit beside the
+   caption. Neutral ink only; "on" is shown by an inverted button, not a colour. */
+.gx-voice-tool { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; color: var(--gx-text); background: var(--gx-hover); cursor: pointer; transition: transform 220ms var(--gx-spring), background-color 160ms, color 160ms; }
+.gx-voice-tool:hover { background: var(--gx-active); }
+.gx-voice-tool:active { transform: scale(.9); }
+.gx-voice-tool.is-on { color: var(--gx-bg, #0c0d0d); background: var(--gx-text, #f3f5f4); }
+.gx-voice-tool.is-on:hover { opacity: .88; }
+.gx-voice-tool[aria-busy="true"] { opacity: .55; pointer-events: none; }
+.gx-voice-tool:focus-visible, .gx-vision-actions button:focus-visible { outline: 2px solid var(--gx-text); outline-offset: 2px; }
+
+.gx-voice-stage.is-seeing { justify-content: center; gap: 18px; padding: 20px 16px 6px; }
+.gx-vision { position: relative; display: block; max-width: min(960px, 100%); margin: 0; padding: 0; overflow: hidden; border-radius: 22px; background: #050606; box-shadow: 0 0 0 1px var(--gx-border-strong), 0 28px 70px -24px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .06); isolation: isolate; animation: gx-vision-in 520ms var(--gx-spring) both; }
+.gx-vision-main { display: block; width: auto; max-width: 100%; height: auto; max-height: min(56dvh, 600px); min-height: 160px; object-fit: contain; background: #050606; }
+.gx-vision.is-camera .gx-vision-main { max-height: min(50dvh, 480px); }
+.gx-vision video[data-mirror] { transform: scaleX(-1); }
+.gx-vision-pip { position: absolute; right: 12px; bottom: 12px; width: clamp(96px, 22%, 200px); aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; background: #0b0c0c; box-shadow: 0 0 0 1px rgba(255, 255, 255, .16), 0 12px 30px -10px rgba(0, 0, 0, .7); animation: gx-vision-in 420ms var(--gx-spring) both; }
+.gx-vision-meta, .gx-vision-actions { position: absolute; display: inline-flex; align-items: center; border: 1px solid rgba(255, 255, 255, .12); color: rgba(255, 255, 255, .92); background: rgba(14, 15, 15, .5); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); }
+.gx-vision-meta { left: 12px; bottom: 12px; gap: 8px; max-width: calc(100% - 24px); height: 30px; padding: 0 12px 0 10px; overflow: hidden; border-radius: 999px; font: 550 12px/1 var(--gx-font, inherit); letter-spacing: -.005em; white-space: nowrap; text-overflow: ellipsis; }
+.gx-vision.is-screen:has(.gx-vision-pip) .gx-vision-meta { max-width: calc(100% - clamp(96px, 22%, 200px) - 36px); }
+.gx-vision-live { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: gx-breathe 1.6s ease-in-out infinite; }
+.gx-vision-actions { top: 12px; right: 12px; gap: 2px; padding: 3px; border-radius: 999px; opacity: 0; transform: translateY(-4px); transition: opacity 200ms var(--gx-ease), transform 260ms var(--gx-spring); }
+.gx-vision:hover .gx-vision-actions, .gx-vision:focus-within .gx-vision-actions { opacity: 1; transform: none; }
+.gx-vision-actions button { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; color: inherit; background: transparent; cursor: pointer; transition: background-color 140ms, transform 200ms var(--gx-spring); }
+.gx-vision-actions button:hover { background: rgba(255, 255, 255, .14); }
+.gx-vision-actions button:active { transform: scale(.9); }
+@media (hover: none) { .gx-vision-actions { opacity: 1; transform: none; } }
+
+.gx-voice-bar { display: flex; align-items: center; gap: 14px; max-width: min(640px, 100%); min-height: 56px; animation: gx-voice-fade 420ms var(--gx-ease) both; }
+.gx-voice-bar .gx-voice-orb { flex: 0 0 auto; }
+.gx-voice-bar .gx-voice-caption { align-items: flex-start; gap: 4px; text-align: left; }
+.gx-voice-bar .gx-voice-phase { font-size: 11px; }
+.gx-voice-bar .gx-voice-caption p { min-height: 1.4em; font-size: clamp(15px, 1.6vw, 17px); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@keyframes gx-vision-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 767px) {
+  .gx-voice-stage.is-seeing { gap: 14px; padding: 12px 12px 4px; }
+  .gx-vision { border-radius: 18px; }
+  .gx-vision-main { max-height: 50dvh; }
+  .gx-vision-pip { right: 8px; bottom: 8px; border-radius: 11px; }
+  .gx-vision-meta { left: 8px; bottom: 8px; height: 28px; font-size: 11.5px; }
+  .gx-vision-actions { top: 8px; right: 8px; }
+  .gx-voice-controls { gap: 4px; }
+  .gx-voice-tool, .gx-voice-mute, .gx-voice-end { width: 36px; height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { .gx-vision, .gx-vision-pip, .gx-vision-live, .gx-voice-bar { animation: none !important; } }
+@media (prefers-reduced-transparency: reduce) { .gx-vision-meta, .gx-vision-actions { background: rgba(14, 15, 15, .92); backdrop-filter: none; -webkit-backdrop-filter: none; } }
