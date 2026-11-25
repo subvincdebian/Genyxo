@@ -25,7 +25,7 @@ const TOOLS: MediaTool[] = [
     name: "genyxo_generate_image",
     kind: "image",
     label: "Generating image",
-    description: `Create or edit an image from a detailed English prompt (subject, style, composition, lighting). Set useAttachedImages to edit or reference images the user attached. Costs ${MEDIA_COSTS.image} credits.`,
+    description: `Create or edit an image from a detailed English prompt (subject, style, composition, lighting). Set useAttachedImages to edit or reference images the user attached. New images are free; editing attached images uses credits.`,
     parameters: {
       type: "object",
       properties: {

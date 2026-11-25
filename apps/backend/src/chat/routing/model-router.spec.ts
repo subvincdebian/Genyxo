@@ -14,13 +14,13 @@ const route = (text: string, extra: Partial<RouteInput> = {}) =>
   routeModel({ text, costOf: (model) => costs[model] ?? 0, ...extra });
 
 describe("routeModel", () => {
-  it("sends code to Claude", () => {
+  it("sends code to the strongest free coder", () => {
     const pick = route(
       "Why does this TypeScript function throw?\n```ts\nconst a = b!;\n```",
     );
     expect(pick.category).toBe("code");
-    expect(pick.model).toBe("anthropic/claude-sonnet-4.6");
-    expect(pick.cost).toBe(75);
+    expect(pick.model).toBe("google/gemini-3.5-flash");
+    expect(pick.cost).toBe(0);
   });
 
   it("sends current events to Gemini with web search", () => {
@@ -32,11 +32,11 @@ describe("routeModel", () => {
     expect(pick.search).toBe(true);
   });
 
-  it("sends image requests to DALL·E, in Russian too", () => {
+  it("sends image requests to a free FLUX model, in Russian too", () => {
     expect(route("Draw a picture of a cat astronaut").model).toBe(
-      "openai/dall-e-3",
+      "cf/leonardo/lucid-origin",
     );
-    expect(route("Нарисуй кота в космосе").model).toBe("openai/dall-e-3");
+    expect(route("Нарисуй кота в космосе").model).toMatch(/^cf\//);
   });
 
   it("answers short questions with the free fast model", () => {
@@ -53,28 +53,26 @@ describe("routeModel", () => {
     expect(pick.model).toBe("google/gemini-3.5-flash");
   });
 
-  it("steps down to an affordable model and says why", () => {
-    const pick = route("Refactor this python function to be faster", {
-      balance: 10,
-    });
-    expect(pick.model).toBe("google/gemini-3.5-flash");
-    expect(pick.downgradedFrom?.model).toBe("anthropic/claude-sonnet-4.6");
-    expect(pick.reason).toContain("75 credits");
-  });
-
-  it("reports a shortfall when nothing cheaper can do the job", () => {
-    const pick = route("Generate an image of a sunset logo", { balance: 0 });
-    expect(pick.model).toBe("openai/dall-e-3");
-    expect(pick.shortfall).toBe(120);
+  it("never needs credits: every Auto pick is free", () => {
+    for (const text of [
+      "Refactor this python function to be faster",
+      "Generate an image of a sunset logo",
+      "Write an essay about the sea",
+      "Solve 2x + 3 = 11 step by step",
+    ]) {
+      const pick = route(text, { balance: 0 });
+      expect(pick.cost).toBe(0);
+      expect(pick.shortfall).toBeFalsy();
+    }
   });
 
   it("follows the quality preference", () => {
     expect(
       route("Write an essay about the sea", { preference: "quality" }).model,
-    ).toBe("anthropic/claude-opus-4.6");
-    expect(
-      route("Write an essay about the sea", { preference: "economy" }).cost,
-    ).toBe(0);
+    ).toBe("google/gemini-3.5-flash");
+    expect(route("hi, what's up?", { preference: "economy" }).model).toBe(
+      "groq/openai/gpt-oss-20b",
+    );
   });
 
   it("is deterministic for the preview and the send", () => {

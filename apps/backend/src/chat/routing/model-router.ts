@@ -76,6 +76,24 @@ export const MODEL_LABELS: Record<string, string> = {
   "groq/openai/gpt-oss-120b": "GPT-OSS 120B",
   "groq/openai/gpt-oss-20b": "GPT-OSS 20B",
   "groq/qwen/qwen3.8-27b": "Qwen 3.8",
+  "cf/meta/llama-3.3-70b-instruct-fp8-fast": "Llama 3.3 70B",
+  "cf/meta/llama-4-scout-17b-16e-instruct": "Llama 4 Scout",
+  "cf/mistralai/mistral-small-3.1-24b-instruct": "Mistral Small 3.1",
+  "cf/qwen/qwen2.5-coder-32b-instruct": "Qwen 2.5 Coder",
+  "cf/openai/gpt-oss-120b": "GPT-OSS 120B",
+  "cf/zai-org/glm-4.7-flash": "GLM 4.7 Flash",
+  "cf/ibm-granite/granite-4.0-h-micro": "Granite 4.0 Micro",
+  "cf/black-forest-labs/flux-2-dev": "FLUX.2 Dev",
+  "cf/leonardo/lucid-origin": "Lucid Origin",
+  "cf/black-forest-labs/flux-2-klein-9b": "FLUX.2 Klein 9B",
+  "cf/leonardo/phoenix-1.0": "Phoenix 1.0",
+  "cf/black-forest-labs/flux-2-klein-4b": "FLUX.2 Klein 4B",
+  "cf/black-forest-labs/flux-1-schnell": "FLUX.1 Schnell",
+  "nvidia/nemotron-3.5-lightning:free": "Nemotron 3.5 Lightning",
+  "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": "Nemotron 3 Nano Omni",
+  "recursive/flint-v1.0:free": "Flint 1.0",
+  "liquid/lfm-3-1.7b:free": "LFM 3",
+  "openrouter/free": "Any free model",
 };
 
 export const labelOf = (model: string) => MODEL_LABELS[model] || model;
@@ -93,19 +111,32 @@ const CATEGORY_LABELS: Record<RouteCategory, string> = {
   general: "General",
 };
 
-/** Models per task, cheapest first: economy, balanced, quality. */
+/**
+ * Models per task: economy, balanced, quality. Only free models that answer
+ * on our keys; when one is out of quota the reserve chain continues with the
+ * next smartest (see QUALITY in fallback.ts).
+ */
 const TABLE: Record<RouteCategory, [string, string, string]> = {
-  image: ["openai/dall-e-3", "openai/dall-e-3", "openai/dall-e-3"],
-  video: ["kling-video", "kling-video", "kling-video"],
-  code: [
+  image: [
+    "cf/black-forest-labs/flux-2-klein-4b",
+    "cf/leonardo/lucid-origin",
+    "cf/black-forest-labs/flux-2-dev",
+  ],
+  // No free video model yet: Auto answers in text and offers what it can.
+  video: [
     "google/gemini-3.5-flash",
-    "anthropic/claude-sonnet-4.6",
-    "anthropic/claude-opus-4.6",
+    "google/gemini-3.5-flash",
+    "google/gemini-3.5-flash",
+  ],
+  code: [
+    "groq/openai/gpt-oss-120b",
+    "google/gemini-3.5-flash",
+    "google/gemini-3.5-flash",
   ],
   reasoning: [
+    "groq/openai/gpt-oss-120b",
     "google/gemini-3.5-flash",
-    "openai/gpt-5-mini",
-    "openai/o3-reasoning",
+    "google/gemini-3.5-flash",
   ],
   search: [
     "google/gemini-3.5-flash",
@@ -119,23 +150,23 @@ const TABLE: Record<RouteCategory, [string, string, string]> = {
   ],
   writing: [
     "google/gemini-3.5-flash",
-    "anthropic/claude-sonnet-4.6",
-    "anthropic/claude-opus-4.6",
+    "google/gemini-3.5-flash",
+    "google/gemini-3.5-flash",
   ],
   translate: [
+    "google/gemini-3.5-flash-lite",
     "google/gemini-3.5-flash",
     "google/gemini-3.5-flash",
-    "openai/gpt-4.1",
   ],
   quick: [
-    "google/gemini-3.5-flash-lite",
+    "groq/openai/gpt-oss-20b",
     "google/gemini-3.5-flash-lite",
     "google/gemini-3.5-flash",
   ],
   general: [
     "google/gemini-3.5-flash",
     "google/gemini-3.5-flash",
-    "openai/gpt-5.1",
+    "google/gemini-3.5-flash",
   ],
 };
 

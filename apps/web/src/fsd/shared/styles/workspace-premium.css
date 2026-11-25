@@ -446,3 +446,7 @@
 .workspace-chat-app > .main-container, .workspace-main { overflow: clip !important; }
 .workspace-shell #chatBox .message-action-btn { background: transparent !important; border: 0 !important; box-shadow: none !important; }
 .workspace-shell .input-form .textarea-wrapper:has(textarea:placeholder-shown) .composer-scrollbar { display: none !important; }
+/* Model families that are not offered yet: shown, quiet, not selectable. */
+.workspace-chat-app .model-provider.is-soon .model-provider-heading { cursor: default; opacity: .55; }
+.workspace-chat-app .model-provider.is-soon .model-provider-heading:hover { background: transparent !important; }
+.workspace-chat-app .model-provider.is-soon .model-soon { margin-left: auto; padding: 3px 8px; border: 1px solid var(--gx-border-strong); border-radius: 999px; color: var(--gx-muted) !important; font: 600 10.5px/1 var(--gx-font) !important; letter-spacing: .04em; text-transform: uppercase; }

@@ -1,5 +1,4 @@
 import { labelOf, type RouteDecision } from "./model-router";
-import { providerOf } from "./providers";
 
 /**
  * Reserve models: when a provider fails before the first word of an answer
@@ -9,26 +8,46 @@ import { providerOf } from "./providers";
  * Gemini is free on our key and answers most things well; Groq and
  * OpenRouter's free models run elsewhere, so one outage never takes all down.
  */
-const GEMINI_RESERVES = [
+/**
+ * Every free text model, smartest first. A failed model hands the turn to the
+ * next one here that has not failed yet, so a medium question never lands on
+ * a weak model while a stronger one still has quota. Providers alternate
+ * near the top, so one provider's outage costs a single step.
+ */
+export const QUALITY = [
   "google/gemini-3.5-flash",
-  "google/gemini-2.5-flash",
-  "google/gemini-3.5-flash-lite",
-];
-/** Other providers' free models; Groq first, it answers in about a second. */
-const OTHER_RESERVES = [
   "groq/openai/gpt-oss-120b",
-  "groq/qwen/qwen3.8-27b",
   "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "google/gemini-2.5-flash",
+  "groq/qwen/qwen3.8-27b",
+  "cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "cf/openai/gpt-oss-120b",
+  "google/gemini-3.5-flash-lite",
+  "cf/mistralai/mistral-small-3.1-24b-instruct",
+  "nvidia/nemotron-3.5-super-vl:free",
+  "cf/meta/llama-4-scout-17b-16e-instruct",
+  "google/gemini-3.1-flash-lite",
+  "groq/openai/gpt-oss-20b",
+  "nvidia/nemotron-3.5-lightning:free",
   "google/gemma-4-31b-it:free",
+  "openrouter/free",
+  "cf/qwen/qwen2.5-coder-32b-instruct",
+  "cf/ibm-granite/granite-4.0-h-micro",
 ];
 /** Reserves that can read images and PDFs attached to the turn. */
 const SEES_FILES = new Set([
-  ...GEMINI_RESERVES,
+  "google/gemini-3.5-flash",
+  "google/gemini-2.5-flash",
+  "google/gemini-3.5-flash-lite",
+  "google/gemini-3.1-flash-lite",
   "groq/qwen/qwen3.8-27b",
-  "google/gemma-4-31b-it:free",
+  "cf/mistralai/mistral-small-3.1-24b-instruct",
+  "cf/meta/llama-4-scout-17b-16e-instruct",
   "nvidia/nemotron-3.5-super-vl:free",
+  "google/gemma-4-31b-it:free",
+  "openrouter/free",
 ]);
-const MAX_RESERVES = 3;
+const MAX_RESERVES = 5;
 
 export class EmptyReplyError extends Error {
   constructor(model: string) {
@@ -64,33 +83,26 @@ export function isProviderFailure(error: unknown) {
 }
 
 /**
- * The next model to try after `failed`: other Gemini models first when an
- * OpenRouter model failed and the other way round, so a provider-wide outage
- * is skipped at once. Image and video models have no reserve.
+ * The next model to try after `failed`: the smartest model in QUALITY that
+ * has not failed in this turn (and can read the attachments, if any). A
+ * paid or unlisted model that fails starts from the top of the ranking.
+ * Image and video models have no text reserve.
  */
 export function nextReserve(
   failed: string,
   tried: Set<string>,
   options: { needsVision?: boolean } = {},
 ) {
-  if (/dall-e|kling|imagen|veo|-image/i.test(failed)) return null;
+  if (/dall-e|kling|imagen|veo|flux|leonardo|-image/i.test(failed)) return null;
   if (tried.size > MAX_RESERVES) return null;
-  const usable = (model: string) =>
-    model !== failed &&
-    !tried.has(model) &&
-    (!options.needsVision || SEES_FILES.has(model));
-  if (providerOf(failed) !== "gemini")
-    return [...GEMINI_RESERVES, ...OTHER_RESERVES].find(usable) || null;
-  // Each Gemini model has its own quota, so one more is worth a try; after
-  // two Gemini failures the provider itself is likely down: cross over.
-  const geminiFailures = [...new Set([failed, ...tried])].filter(
-    (model) => providerOf(model) === "gemini",
-  ).length;
-  const order =
-    geminiFailures >= 2
-      ? [...OTHER_RESERVES, ...GEMINI_RESERVES]
-      : [...GEMINI_RESERVES, ...OTHER_RESERVES];
-  return order.find(usable) || null;
+  return (
+    QUALITY.find(
+      (model) =>
+        model !== failed &&
+        !tried.has(model) &&
+        (!options.needsVision || SEES_FILES.has(model)),
+    ) || null
+  );
 }
 
 /** The quiet route line above the answer: who answered and why. */

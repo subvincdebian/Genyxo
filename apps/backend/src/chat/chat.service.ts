@@ -307,9 +307,10 @@ export class ChatService {
     const cloudflareKey =
       this.configService.get<string>("CLOUDFLARE_WORKERS_API_KEY") ||
       this.configService.get<string>("CLOUDFARE_WORKERS_API_KEY");
-    const cloudflareAccount = this.configService.get<string>(
-      "CLOUDFLARE_ACCOUNT_ID",
-    );
+    const cloudflareAccount =
+      this.configService.get<string>("CLOUDFLARE_ACCOUNT_ID") ||
+      this.configService.get<string>("CLOUDFLARE_WORKERS_ACCOUNT_ID") ||
+      this.configService.get<string>("CLOUDFARE_WORKERS_ACCOUNT_ID");
     if (cloudflareKey && cloudflareAccount)
       this.cloudflare = new OpenAI({
         baseURL: `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccount}/ai/v1`,
@@ -1451,7 +1452,10 @@ export class ChatService {
         summary,
         projectSources,
       } = await this.prepareConversationContext(conversation, userMsg);
-      const aiResponse = await this.getAiResponse(dbMessages, model, summary);
+      const aiResponse = await this.getAiResponse(dbMessages, model, summary, {
+        userId,
+        conversationId: conversation.id,
+      });
       const sources =
         modelConfig.type === ModelType.IMAGE
           ? []
@@ -2304,21 +2308,24 @@ export class ChatService {
               role: "system",
               content: systemInstruction,
             });
-            let tools = hasTools
-              ? [
-                  ...(toolset
-                    ? this.integrationTools!.openAiTools(toolset)
-                    : []),
-                  ...mediaOpenAiTools(media),
-                  ...(mapsContext ? mapsOpenAiTools() : []),
-                  ...(web ? webOpenAiTools() : []),
-                  ...(memory ? memoryOpenAiTools() : []),
-                  ...(recall ? recallOpenAiTools() : []),
-                  ...(code ? codeOpenAiTools() : []),
-                  ...(agent ? agentOpenAiTools(browsing) : []),
-                  ...(tasks ? taskOpenAiTools() : []),
-                ]
-              : undefined;
+            // Cloudflare's OpenAI-compatible API mishandles tool calls (models
+            // call them unasked and the follow-up is rejected): plain answers.
+            let tools =
+              hasTools && providerOf(model) !== "cloudflare"
+                ? [
+                    ...(toolset
+                      ? this.integrationTools!.openAiTools(toolset)
+                      : []),
+                    ...mediaOpenAiTools(media),
+                    ...(mapsContext ? mapsOpenAiTools() : []),
+                    ...(web ? webOpenAiTools() : []),
+                    ...(memory ? memoryOpenAiTools() : []),
+                    ...(recall ? recallOpenAiTools() : []),
+                    ...(code ? codeOpenAiTools() : []),
+                    ...(agent ? agentOpenAiTools(browsing) : []),
+                    ...(tasks ? taskOpenAiTools() : []),
+                  ]
+                : undefined;
             const createStreamCall = () =>
               this.chatClient(model).client.chat.completions.create(
                 {
@@ -2795,8 +2802,35 @@ export class ChatService {
     }
   }
 
-  async getAiResponse(dbMessages: Message[], model: string, summary = "") {
+  async getAiResponse(
+    dbMessages: Message[],
+    model: string,
+    summary = "",
+    owner?: { userId: number; conversationId?: number },
+  ) {
     try {
+      // Free image models (Cloudflare) go through the media service, which
+      // stores the picture and falls back to the next model on a quota.
+      if (
+        model.startsWith("cf/") &&
+        this.pricingService.getModelConfig(model)?.type === ModelType.IMAGE
+      ) {
+        if (!this.mediaService || !owner)
+          throw new Error("Image generation is unavailable right now");
+        const lastMsg = dbMessages[dbMessages.length - 1];
+        const prompt = String(lastMsg?.content || "").trim();
+        const record = await this.mediaService.image({
+          userId: owner.userId,
+          conversationId: owner.conversationId,
+          prompt: [summary.slice(0, 600), prompt].filter(Boolean).join("\n\n"),
+          model,
+        });
+        const alt = prompt.replace(/[[\]()\n]/g, " ").slice(0, 120);
+        return {
+          reply: `![${alt}](/api/chat/media/${record.id})`,
+          tokensUsed: 0,
+        };
+      }
       if (model.includes("dall-e")) {
         const lastMsg = dbMessages[dbMessages.length - 1];
         const prompt = [summary.slice(0, 1500), lastMsg.content]

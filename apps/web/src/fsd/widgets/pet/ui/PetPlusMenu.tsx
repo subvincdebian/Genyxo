@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type 
 import { workspaceRequest } from "@/features/workspace";
 import { PluginLogo } from "@/shared/ui/plugin-logos";
 import { WorkspaceIcon } from "@/shared/ui/workspace";
-import { IMAGE_MODEL, VIDEO_MODEL } from "../model/pet-models";
+import { IMAGE_MODEL } from "../model/pet-models";
 import styles from "./PetComposer.module.css";
 
 export type PetMode = "search" | "research";
@@ -251,8 +251,7 @@ export function PetPlusMenu({
       {
         id: "create",
         entries: [
-          { id: "image", icon: icon("image"), title: "Create an image", hint: "Switch to DALL·E 3", keywords: "picture generate", current: model === IMAGE_MODEL, run: () => done(() => onModel(IMAGE_MODEL)) },
-          { id: "video", icon: icon("video"), title: "Make a video", hint: "Switch to Kling video", keywords: "clip generate", current: model === VIDEO_MODEL, run: () => done(() => onModel(VIDEO_MODEL)) },
+          { id: "image", icon: icon("image"), title: "Create an image", hint: "Free with FLUX.2", keywords: "picture generate draw", current: model === IMAGE_MODEL, run: () => done(() => onModel(IMAGE_MODEL)) },
         ],
       },
       {

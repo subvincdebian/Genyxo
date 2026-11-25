@@ -25,37 +25,27 @@ export const PET_MODELS: PetModel[] = [
   // Picks the model per message on the server, as in the main composer.
   chat("auto", "Auto", "Auto"),
   chat("google/gemini-3.5-flash", "Gemini 3.5 Flash", "Gemini"),
-  chat("google/gemini-3.1-flash-lite", "Gemini 3.1 Flash", "Gemini"),
-  chat("google/gemini-2.5-pro", "Gemini 2.5 Pro", "Gemini"),
   chat("google/gemini-2.5-flash", "Gemini 2.5 Flash", "Gemini"),
-  chat("openai/gpt-5.1", "ChatGPT-5.1", "ChatGPT", 150),
-  chat("openai/gpt-5-mini", "GPT-5 Mini", "ChatGPT", 70),
-  chat("openai/gpt-5-nano", "GPT-5 Nano", "ChatGPT", 45),
-  chat("openai/gpt-4.1", "ChatGPT-4.1", "ChatGPT", 55),
-  chat("openai/gpt-4.1-mini", "ChatGPT-4 Mini", "ChatGPT", 25),
-  chat("openai/gpt-4o", "ChatGPT-4o", "ChatGPT", 40),
-  chat("openai/gpt-4o-mini", "ChatGPT-4o Mini", "ChatGPT", 20),
-  chat("openai/o1-preview", "ChatGPT-o1", "ChatGPT", 100),
-  chat("openai/o3-reasoning", "ChatGPT-o3 Reasoning", "ChatGPT", 150),
-  chat("anthropic/claude-sonnet-4.6", "Claude Sonnet 4.6", "Claude"),
-  chat("anthropic/claude-sonnet-4.5", "Claude Sonnet 4.5", "Claude"),
-  chat("anthropic/claude-opus-4.6", "Claude Opus 4.6", "Claude"),
-  chat("anthropic/claude-opus-4.5", "Claude Opus 4.5", "Claude"),
-  chat("anthropic/claude-haiku-4.5", "Claude Haiku 4.5", "Claude"),
-  chat("anthropic/claude-3-haiku", "Claude 3 Haiku", "Claude"),
+  chat("google/gemini-3.1-flash-lite", "Gemini 3.1 Flash-Lite", "Gemini"),
+  chat("groq/openai/gpt-oss-120b", "GPT-OSS 120B", "OpenAI"),
+  chat("groq/openai/gpt-oss-20b", "GPT-OSS 20B", "OpenAI"),
+  chat("groq/qwen/qwen3.8-27b", "Qwen 3.8", "Qwen"),
+  chat("cf/qwen/qwen2.5-coder-32b-instruct", "Qwen 2.5 Coder", "Qwen"),
+  chat("cf/meta/llama-3.3-70b-instruct-fp8-fast", "Llama 3.3 70B", "Llama"),
+  chat("cf/meta/llama-4-scout-17b-16e-instruct", "Llama 4 Scout", "Llama"),
+  chat("cf/mistralai/mistral-small-3.1-24b-instruct", "Mistral Small 3.1", "Mistral"),
+  chat("cf/zai-org/glm-4.7-flash", "GLM 4.7 Flash", "GLM"),
   chat("nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra", "NVIDIA Nemotron"),
   chat("nvidia/nemotron-3.5-super-vl:free", "Nemotron 3.5 Super", "NVIDIA Nemotron"),
+  chat("nvidia/nemotron-3.5-lightning:free", "Nemotron 3.5 Lightning", "NVIDIA Nemotron"),
   chat("nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "Nemotron 3 Nano Omni", "NVIDIA Nemotron"),
   chat("google/gemma-4-31b-it:free", "Gemma 4", "Gemma"),
-  chat("groq/openai/gpt-oss-120b", "GPT-OSS 120B", "GPT-OSS"),
-  chat("groq/openai/gpt-oss-20b", "GPT-OSS 20B", "GPT-OSS"),
-  chat("groq/qwen/qwen3.8-27b", "Qwen 3.8", "Qwen"),
-  { value: "openai/dall-e-3", label: "DALL·E 3", provider: "DALL·E", kind: "image", credits: 120 },
-  { value: "kling-video", label: "Kling Video", provider: "Kling", kind: "video", credits: 500 },
+  { value: "cf/black-forest-labs/flux-2-dev", label: "FLUX.2 Dev", provider: "FLUX", kind: "image", credits: 0 },
+  { value: "cf/leonardo/lucid-origin", label: "Lucid Origin", provider: "Leonardo", kind: "image", credits: 0 },
 ];
-export const PROVIDER_ORDER = ["Auto", "Gemini", "ChatGPT", "Claude", "GPT-OSS", "Qwen", "Llama", "Mistral", "DeepSeek", "NVIDIA Nemotron", "Gemma", "DALL·E", "Kling"];
+export const PROVIDER_ORDER = ["Auto", "Gemini", "OpenAI", "Qwen", "Llama", "Mistral", "GLM", "NVIDIA Nemotron", "Gemma", "FLUX", "Leonardo"];
 export const DEFAULT_PET_MODEL = PET_MODELS[0].value;
-export const IMAGE_MODEL = "openai/dall-e-3";
+export const IMAGE_MODEL = "cf/black-forest-labs/flux-2-dev";
 export const VIDEO_MODEL = "kling-video";
 
 export const findPetModel = (value: string) =>
@@ -64,6 +54,8 @@ export const findPetModel = (value: string) =>
 export function modelIcon(value: string) {
   if (value === "auto") return "/images/auto-route.svg";
   if (value.includes("dall-e")) return "/images/dalle-text.png";
+  if (/flux|leonardo/.test(value)) return "/images/model-image.svg";
+  if (/mistral|glm|granite|flint|lfm/.test(value)) return "/images/model-open.svg";
   if (value.includes("qwen")) return "/images/qwen-icon.svg";
   if (value.includes("llama") || value.includes("/meta/")) return "/images/meta-icon.svg";
   if (value.includes("gemini") || value.includes("gemma")) return "/images/google-gemini.svg";

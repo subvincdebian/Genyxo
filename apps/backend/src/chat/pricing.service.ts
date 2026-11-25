@@ -20,6 +20,31 @@ export class PricingService {
     "groq/openai/gpt-oss-120b": { cost: 0, type: ModelType.TEXT },
     "groq/openai/gpt-oss-20b": { cost: 0, type: ModelType.TEXT },
     "groq/qwen/qwen3.8-27b": { cost: 0, type: ModelType.TEXT },
+    // Cloudflare Workers AI: free daily allowance on the account, checked by real calls.
+    "cf/meta/llama-3.3-70b-instruct-fp8-fast": {
+      cost: 0,
+      type: ModelType.TEXT,
+    },
+    "cf/meta/llama-4-scout-17b-16e-instruct": { cost: 0, type: ModelType.TEXT },
+    "cf/mistralai/mistral-small-3.1-24b-instruct": {
+      cost: 0,
+      type: ModelType.TEXT,
+    },
+    "cf/qwen/qwen2.5-coder-32b-instruct": { cost: 0, type: ModelType.TEXT },
+    "cf/openai/gpt-oss-120b": { cost: 0, type: ModelType.TEXT },
+    "cf/zai-org/glm-4.7-flash": { cost: 0, type: ModelType.TEXT },
+    "cf/ibm-granite/granite-4.0-h-micro": { cost: 0, type: ModelType.TEXT },
+    "cf/black-forest-labs/flux-2-dev": { cost: 0, type: ModelType.IMAGE },
+    "cf/leonardo/lucid-origin": { cost: 0, type: ModelType.IMAGE },
+    "cf/black-forest-labs/flux-2-klein-9b": { cost: 0, type: ModelType.IMAGE },
+    "cf/leonardo/phoenix-1.0": { cost: 0, type: ModelType.IMAGE },
+    "cf/black-forest-labs/flux-2-klein-4b": { cost: 0, type: ModelType.IMAGE },
+    "cf/black-forest-labs/flux-1-schnell": { cost: 0, type: ModelType.IMAGE },
+    // More OpenRouter free models; "openrouter/free" picks any free model that is up.
+    "nvidia/nemotron-3.5-lightning:free": { cost: 0, type: ModelType.TEXT },
+    "recursive/flint-v1.0:free": { cost: 0, type: ModelType.TEXT },
+    "liquid/lfm-3-1.7b:free": { cost: 0, type: ModelType.TEXT },
+    "openrouter/free": { cost: 0, type: ModelType.TEXT },
     // Default chat model: the newest Flash-Lite on the Gemini API key, free for signed-in users.
     "google/gemini-3.5-flash-lite": { cost: 0, type: ModelType.TEXT },
     "google/gemini-3.5-flash": { cost: 0, type: ModelType.TEXT },

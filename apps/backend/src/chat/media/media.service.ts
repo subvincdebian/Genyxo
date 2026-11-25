@@ -35,9 +35,31 @@ export interface MediaRequest {
   images?: { mimeType: string; data: string }[];
   voice?: string;
   language?: string;
+  /** A specific image model the user picked, e.g. "cf/black-forest-labs/flux-2-dev". */
+  model?: string;
 }
 
 class ProviderUnavailable extends Error {}
+
+/**
+ * Free image models on Cloudflare Workers AI, best first. They run on the
+ * account's free daily allowance, so users pay nothing for them.
+ */
+export const CLOUDFLARE_IMAGE_MODELS = [
+  "cf/black-forest-labs/flux-2-dev",
+  "cf/leonardo/lucid-origin",
+  "cf/black-forest-labs/flux-2-klein-9b",
+  "cf/leonardo/phoenix-1.0",
+  "cf/black-forest-labs/flux-2-klein-4b",
+  "cf/black-forest-labs/flux-1-schnell",
+];
+const ASPECT_SIZES: Record<string, [number, number]> = {
+  "1:1": [1024, 1024],
+  "16:9": [1344, 768],
+  "9:16": [768, 1344],
+  "4:3": [1152, 864],
+  "3:4": [864, 1152],
+};
 
 /** Wraps raw 16-bit PCM (as some Gemini TTS models return it) in a WAV header. */
 function pcmToWav(pcm: Buffer, rate: number) {
@@ -104,13 +126,24 @@ export class MediaService implements OnModuleInit, OnModuleDestroy {
   private get falKey() {
     return this.env("FAL_KEY");
   }
+  private get cloudflare() {
+    const key =
+      this.env("CLOUDFLARE_WORKERS_API_KEY") ||
+      this.env("CLOUDFARE_WORKERS_API_KEY") ||
+      this.env("CLOUDFLARE_API_TOKEN");
+    const account =
+      this.env("CLOUDFLARE_ACCOUNT_ID") ||
+      this.env("CLOUDFLARE_WORKERS_ACCOUNT_ID") ||
+      this.env("CLOUDFARE_WORKERS_ACCOUNT_ID");
+    return key && account ? { key, account } : null;
+  }
 
   /** Which kinds this server can generate at all. */
   available(): Record<MediaKind, boolean> {
     const gemini = Boolean(this.geminiKey);
     const fal = Boolean(this.falKey);
     return {
-      image: gemini || fal,
+      image: gemini || fal || Boolean(this.cloudflare),
       video: fal,
       music: gemini || fal,
       speech: gemini,
@@ -158,6 +191,69 @@ export class MediaService implements OnModuleInit, OnModuleDestroy {
       bytes: Buffer.from(inline.data, "base64"),
       mimeType: String(inline.mimeType || "application/octet-stream"),
     };
+  }
+
+  /** One image from a Cloudflare Workers AI model; each family takes its own input. */
+  private async cloudflareImage(model: string, prompt: string, aspect: string) {
+    const cf = this.cloudflare;
+    if (!cf) throw new ProviderUnavailable("Cloudflare is not configured");
+    const id = `@cf/${model.replace(/^cf\//, "")}`;
+    const [width, height] = ASPECT_SIZES[aspect] || ASPECT_SIZES["1:1"];
+    const url = `https://api.cloudflare.com/client/v4/accounts/${cf.account}/ai/run/${id}`;
+    const headers = { Authorization: `Bearer ${cf.key}` };
+    let response: Response;
+    if (id.includes("flux-2")) {
+      // FLUX.2 takes a multipart form.
+      const form = new FormData();
+      form.append("prompt", prompt.slice(0, 2000));
+      form.append("width", String(width));
+      form.append("height", String(height));
+      response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: form,
+        signal: AbortSignal.timeout(120_000),
+      });
+    } else {
+      const body = id.includes("flux-1-schnell")
+        ? { prompt: prompt.slice(0, 2000), steps: 8 }
+        : { prompt: prompt.slice(0, 2000), width, height };
+      response = await fetch(url, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(120_000),
+      });
+    }
+    // Out of the daily allowance, rate limited or not on this plan: next model.
+    if (
+      [402, 403, 404, 429].includes(response.status) ||
+      response.status >= 500
+    )
+      throw new ProviderUnavailable(`${id}: ${response.status}`);
+    const type = response.headers.get("content-type") || "";
+    if (!type.includes("json")) {
+      if (!response.ok)
+        throw new Error(`Cloudflare image error ${response.status}`);
+      return {
+        bytes: Buffer.from(await response.arrayBuffer()),
+        mimeType: type.split(";")[0] || "image/png",
+      };
+    }
+    const data = (await response.json().catch(() => ({}))) as {
+      result?: { image?: string };
+      errors?: { message?: string }[];
+    };
+    if (!response.ok || !data.result?.image)
+      throw new Error(
+        String(
+          data.errors?.[0]?.message ||
+            `Cloudflare image error ${response.status}`,
+        ).slice(0, 200),
+      );
+    const bytes = Buffer.from(data.result.image, "base64");
+    // PNG starts with 0x89, JPEG with 0xFF.
+    return { bytes, mimeType: bytes[0] === 0xff ? "image/jpeg" : "image/png" };
   }
 
   private async fal(model: string, input: Record<string, unknown>) {
@@ -276,12 +372,30 @@ export class MediaService implements OnModuleInit, OnModuleDestroy {
   // ---------- Kinds ----------
 
   async image(request: MediaRequest) {
-    const cost = await this.ensureCredits(request.userId, "image");
     const aspect = request.aspectRatio || "1:1";
     const references = (request.images || []).slice(0, 3);
+    // New pictures come from Cloudflare's free models, the picked one first;
+    // editing attached images needs Gemini or fal, which cost credits.
+    const freeModels =
+      this.cloudflare && !references.length
+        ? [
+            ...(request.model?.startsWith("cf/") ? [request.model] : []),
+            ...CLOUDFLARE_IMAGE_MODELS.filter(
+              (model) => model !== request.model,
+            ),
+          ]
+        : [];
+    const free = freeModels.map((model) => ({
+      provider: model,
+      run: () => this.cloudflareImage(model, request.prompt, aspect),
+    }));
+    const cost = free.length
+      ? 0
+      : await this.ensureCredits(request.userId, "image");
     const geminiModel =
       this.env("MEDIA_IMAGE_MODEL") || "gemini-3.1-flash-image";
     const result = await this.firstAvailable([
+      ...free,
       ...(this.geminiKey
         ? [
             {
@@ -336,12 +450,16 @@ export class MediaService implements OnModuleInit, OnModuleDestroy {
           ]
         : []),
     ]);
-    await this.charge(request.userId, "image", cost, result.provider);
+    // Free Cloudflare models cost nothing; a paid fallback is charged as usual.
+    const paid = result.provider.startsWith("cf/")
+      ? 0
+      : cost || MEDIA_COSTS.image;
+    await this.charge(request.userId, "image", paid, result.provider);
     return this.save(request, "image", {
       provider: result.provider,
       mimeType: result.mimeType,
       data: result.bytes,
-      cost,
+      cost: paid,
     });
   }
 

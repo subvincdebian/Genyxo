@@ -691,109 +691,32 @@ export function ChatApp({
             >
               {"\n                            "}
               <option value="auto">{"Auto"}</option>
+              <option value="google/gemini-3.5-flash">{"Gemini 3.5 Flash"}</option>
               <option value="google/gemini-3.5-flash-lite">{"Gemini 3.5 Flash-Lite"}</option>
-              <option value="nvidia/nemotron-3-ultra-550b-a55b:free">{"Nemotron 3 Ultra"}</option>
-              {"\n                            "}
-              <option value="google/gemini-3.5-flash">
-                {"Gemini 3.5 Flash"}
-              </option>
-              {"\n                            "}
-              <option value="google/gemini-3.5-live-translate-preview">
-                {"Gemini 3.5 Live Translate"}
-              </option>
-              {"\n                            "}
-              <option value="google/gemini-3.1-flash-lite">
-                {"Gemini 3.1 Flash"}
-              </option>
-              {"\n                            "}
-              <option value="google/gemini-2.5-pro">{"Gemini 2.5 Pro"}</option>
-              {"\n                            "}
-              <option value="google/gemini-2.5-flash">
-                {"Gemini 2.5 Flash"}
-              </option>
-              {"\n                            "}
-              <option value="google/gemini-2.5-flash-native-audio-preview-12-2025">
-                {"Gemini 2.5 Flash Audio"}
-              </option>
-              {"\n                            "}
-              <option value="google/gemini-embedding-2">
-                {"Gemini Embedding 2"}
-              </option>
-              {"\n                            "}
-              <option value="google/gemini-robotics-er-1.6-preview">
-                {"Gemini Robotics-ER 1.6"}
-              </option>
-              {"\n                            "}
-              <option value="nvidia/nemotron-3.5-super-vl:free">
-                {"Nemotron 3.5 Super"}
-              </option>
-              {"\n                            "}
-              <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">
-                {"Nemotron 3 Nano Omni"}
-              </option>
-              {"\n                            "}
-              <option value="google/gemma-4-31b-it:free">{"Gemma 4"}</option>
-              {"\n                            "}
+              <option value="google/gemini-2.5-flash">{"Gemini 2.5 Flash"}</option>
+              <option value="google/gemini-3.1-flash-lite">{"Gemini 3.1 Flash-Lite"}</option>
               <option value="groq/openai/gpt-oss-120b">{"GPT-OSS 120B"}</option>
-              {"\n                            "}
               <option value="groq/openai/gpt-oss-20b">{"GPT-OSS 20B"}</option>
-              {"\n                            "}
               <option value="groq/qwen/qwen3.8-27b">{"Qwen 3.8"}</option>
-              {"\n                            "}
-              <option value="openai/gpt-5.1">{"ChatGPT-5.1 (150 cr)"}</option>
-              {"\n                            "}
-              <option value="openai/gpt-5-mini">{"GPT-5 Mini (70 cr)"}</option>
-              {"\n                            "}
-              <option value="openai/gpt-5-nano">
-                {"GPT-5 Nano (45 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="openai/gpt-4.1">{"ChatGPT-4.1 (55 cr)"}</option>
-              {"\n                            "}
-              <option value="openai/gpt-4.1-mini">
-                {"ChatGPT-4 Mini (25 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="openai/gpt-4o">{"ChatGPT-4o (40 cr)"}</option>
-              {"\n                            "}
-              <option value="openai/gpt-4o-mini">
-                {"ChatGPT-4o Mini (20 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="openai/o1-preview">{"ChatGPT-o1 (100 cr)"}</option>
-              {"\n                            "}
-              <option value="openai/o3-reasoning">
-                {"ChatGPT-o3 Reasoning (150 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="anthropic/claude-sonnet-4.6">
-                {"Claude Sonnet 4.6 (75 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="anthropic/claude-sonnet-4.5">
-                {"Claude Sonnet 4.5 (70 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="anthropic/claude-opus-4.6">
-                {"Claude-Opus 4.6 (150 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="anthropic/claude-opus-4.5">
-                {"Claude-Opus 4.5 (140 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="anthropic/claude-haiku-4.5">
-                {"Claude-Haiku 4.5 (50 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="anthropic/claude-3-haiku">
-                {"Claude-Haiku 3 (30 cr)"}
-              </option>
-              {"\n                            "}
-              <option value="openai/dall-e-3">{"DALL-E Image (120 cr)"}</option>
-              {"\n                            "}
-              <option value="kling-video">{"Kling Video (500 cr)"}</option>
-              {"\n                        "}
+              <option value="cf/qwen/qwen2.5-coder-32b-instruct">{"Qwen 2.5 Coder"}</option>
+              <option value="cf/meta/llama-3.3-70b-instruct-fp8-fast">{"Llama 3.3 70B"}</option>
+              <option value="cf/meta/llama-4-scout-17b-16e-instruct">{"Llama 4 Scout"}</option>
+              <option value="cf/mistralai/mistral-small-3.1-24b-instruct">{"Mistral Small 3.1"}</option>
+              <option value="cf/zai-org/glm-4.7-flash">{"GLM 4.7 Flash"}</option>
+              <option value="nvidia/nemotron-3-ultra-550b-a55b:free">{"Nemotron 3 Ultra"}</option>
+              <option value="nvidia/nemotron-3.5-super-vl:free">{"Nemotron 3.5 Super"}</option>
+              <option value="nvidia/nemotron-3.5-lightning:free">{"Nemotron 3.5 Lightning"}</option>
+              <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">{"Nemotron 3 Nano Omni"}</option>
+              <option value="google/gemma-4-31b-it:free">{"Gemma 4"}</option>
+              <option value="cf/ibm-granite/granite-4.0-h-micro">{"Granite 4.0 Micro"}</option>
+              <option value="recursive/flint-v1.0:free">{"Flint 1.0"}</option>
+              <option value="liquid/lfm-3-1.7b:free">{"LFM 3"}</option>
+              <option value="cf/black-forest-labs/flux-2-dev">{"FLUX.2 Dev"}</option>
+              <option value="cf/leonardo/lucid-origin">{"Lucid Origin"}</option>
+              <option value="cf/black-forest-labs/flux-2-klein-9b">{"FLUX.2 Klein 9B"}</option>
+              <option value="cf/leonardo/phoenix-1.0">{"Phoenix 1.0"}</option>
+              <option value="cf/black-forest-labs/flux-2-klein-4b">{"FLUX.2 Klein 4B"}</option>
+              <option value="cf/black-forest-labs/flux-1-schnell">{"FLUX.1 Schnell"}</option>
             </select>
             {"\n                "}
           </div>

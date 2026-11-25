@@ -40,27 +40,25 @@ describe("reserve models", () => {
     expect(isProviderFailure(undefined)).toBe(false);
   });
 
-  it("moves an OpenRouter failure to Gemini, and a Gemini outage across providers", () => {
+  it("hands a failed turn to the next smartest free model", () => {
     expect(
       nextReserve(
         "anthropic/claude-opus-4.6",
         new Set(["anthropic/claude-opus-4.6"]),
       ),
     ).toBe("google/gemini-3.5-flash");
-    // One Gemini failure: another Gemini model (its own quota).
     expect(
       nextReserve(
         "google/gemini-3.5-flash",
         new Set(["google/gemini-3.5-flash"]),
       ),
-    ).toBe("google/gemini-2.5-flash");
-    // Two Gemini failures: the provider is likely down, cross to OpenRouter.
+    ).toBe("groq/openai/gpt-oss-120b");
     expect(
       nextReserve(
-        "google/gemini-2.5-flash",
-        new Set(["google/gemini-3.5-flash", "google/gemini-2.5-flash"]),
+        "groq/openai/gpt-oss-120b",
+        new Set(["google/gemini-3.5-flash", "groq/openai/gpt-oss-120b"]),
       ),
-    ).toBe("groq/openai/gpt-oss-120b");
+    ).toBe("nvidia/nemotron-3-ultra-550b-a55b:free");
   });
 
   it("keeps attachments readable and stops after a few reserves", () => {
@@ -72,10 +70,10 @@ describe("reserve models", () => {
       nextReserve("google/gemini-2.5-flash", tried, { needsVision: true }),
     ).toBe("groq/qwen/qwen3.8-27b");
     expect(
-      nextReserve("openai/gpt-5.1", new Set(["a", "b", "c", "d"])),
+      nextReserve("openai/gpt-5.1", new Set(["a", "b", "c", "d", "e", "f"])),
     ).toBeNull();
     expect(
-      nextReserve("openai/dall-e-3", new Set(["openai/dall-e-3"])),
+      nextReserve("cf/black-forest-labs/flux-2-dev", new Set(["x"])),
     ).toBeNull();
   });
 

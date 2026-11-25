@@ -462,8 +462,7 @@ export function ComposerPlusMenu({ disabled }: { disabled: boolean }) {
     const camera: PaletteEntry = { id: "camera", icon: icon("camera"), title: "Take a photo", hint: "Use your camera", run: () => finish(() => document.getElementById("gxPlusCamera")?.click()) };
     const libraryEntry: PaletteEntry = { id: "library", icon: icon("library"), title: "From Library", hint: "Saved documents and images", keywords: "attach saved", submenu: true, run: () => goTo("library") };
     const sketchEntry: PaletteEntry = { id: "sketch", icon: icon("draw"), title: "Draw", hint: "Sketch and attach it as an image", keywords: "sketch drawing", run: () => finish(() => setSketch(true)) };
-    const image: PaletteEntry = { id: "image", icon: icon("image"), title: "Create an image", hint: "Switch to DALL·E 3", keywords: "picture generate", run: () => finish(() => switchModel("openai/dall-e-3", "Describe the image you want…")) };
-    const video: PaletteEntry = { id: "video", icon: icon("video"), title: "Make a video", hint: "Switch to Kling video", keywords: "clip generate", run: () => finish(() => switchModel("kling-video", "Describe the video you want…")) };
+    const image: PaletteEntry = { id: "image", icon: icon("image"), title: "Create an image", hint: "Free with FLUX.2", keywords: "picture generate draw", run: () => finish(() => switchModel("cf/black-forest-labs/flux-2-dev", "Describe the image you want…")) };
     const webSearch: PaletteEntry = { id: "web-search", icon: modeIcon("search"), title: "Web search", hint: "Search for current news and information", keywords: "internet browse google news online", current: chatMode === "search", run: () => finish(() => toggleMode("search")) };
     const research: PaletteEntry = { id: "deep-research", icon: modeIcon("research"), title: "Deep research", hint: "Get a detailed report with sources", keywords: "report analysis investigate study", current: chatMode === "research", run: () => finish(() => toggleMode("research")) };
     const agentEntry: PaletteEntry = { id: "agent", icon: modeIcon("agent"), title: "Agent", hint: "Plans and does the task: browses, fills in, drafts. Asks before sending or paying", keywords: "agent automate task do browse operator", current: chatMode === "agent", run: () => finish(() => toggleMode("agent")) };
@@ -511,7 +510,7 @@ export function ComposerPlusMenu({ disabled }: { disabled: boolean }) {
       const currentLabel = models.find((model) => model.value === current)?.label;
       return filter([{ id: "commands", entries: [
         { id: "model", icon: icon("cube"), title: "Model", hint: currentLabel ? `Switch from ${currentLabel}` : "Choose a model", submenu: true, run: () => goTo("model") },
-        agentEntry, webSearch, research, project, skillsEntry, pluginsEntry, image, video, canvas,
+        agentEntry, webSearch, research, project, skillsEntry, pluginsEntry, image, canvas,
         { id: "dictate", icon: icon("mic"), title: "Dictate", hint: "Turn speech into text", keywords: "voice microphone", run: () => finish(() => document.getElementById("voiceBtn")?.click()) },
         { id: "new", icon: icon("new"), title: "New chat", hint: "Start a fresh conversation", keywords: "clear reset", run: () => finish(() => startNewChat()) },
         { id: "help", icon: icon("help"), title: "Help & feedback", hint: "Contact Genyxo support", keywords: "support report", run: () => finish(() => router.push("/support")) },
@@ -529,7 +528,7 @@ export function ComposerPlusMenu({ disabled }: { disabled: boolean }) {
     return filter([
       { id: "add", entries: [files, ...(coarse ? [camera] : []), libraryEntry, sketchEntry] },
       { id: "research", entries: [agentEntry, webSearch, research] },
-      { id: "create", entries: [image, video, canvas] },
+      { id: "create", entries: [image, canvas] },
       { id: "work", entries: [project, pluginsEntry, skillsEntry] },
       ...found,
     ]);

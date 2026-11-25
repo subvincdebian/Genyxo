@@ -1877,6 +1877,8 @@ export default function initialize(scope, context) {
   function getModelIconSrc(value = "") {
     if (value === "auto") return "/images/auto-route.svg";
     if (value.includes("dall-e")) return "/images/dalle-text.png";
+    if (/flux|leonardo/.test(value)) return "/images/model-image.svg";
+    if (/mistral|glm|granite|flint|lfm|openrouter\/free/.test(value)) return "/images/model-open.svg";
     if (value.includes("qwen")) return "/images/qwen-icon.svg";
     if (value.includes("llama") || value.includes("/meta/")) return "/images/meta-icon.svg";
     if (value.includes("google/gemini") || value.includes("gemma"))
@@ -3691,6 +3693,7 @@ export default function initialize(scope, context) {
     if (!Array.isArray(favorites)) favorites = [];
     const modeFor = (value) => {
       if (value === "auto") return "chat";
+      if (/flux|leonardo/.test(value)) return "image";
       if (value === "openai/dall-e-3") return "image";
       if (value === "kling-video") return "video";
       if (/embedding|robotics|audio|live-translate/.test(value)) return "unsupported";
@@ -3698,8 +3701,12 @@ export default function initialize(scope, context) {
     };
     let activeMode = modeFor(native.value);
     const providerFor = (value) => {
-      // Free open models served by Groq and Cloudflare group by model family.
-      if (value.includes("gpt-oss")) return "GPT-OSS";
+      // Free models from Groq, Cloudflare and OpenRouter group by model family.
+      if (value.includes("black-forest-labs")) return "FLUX";
+      if (value.includes("leonardo")) return "Leonardo";
+      if (value.includes("gpt-oss")) return "OpenAI";
+      if (value.includes("glm")) return "GLM";
+      if (/granite|flint|lfm|openrouter\/free/.test(value)) return "More models";
       if (value.includes("qwen")) return "Qwen";
       if (value.includes("llama") || value.includes("/meta/")) return "Llama";
       if (value.includes("mistral")) return "Mistral";
@@ -3788,7 +3795,7 @@ export default function initialize(scope, context) {
         if (!groups.has(provider)) groups.set(provider, []);
         groups.get(provider).push(opt);
       });
-      const providerOrder = ["ChatGPT", "Gemini", "Claude", "GPT-OSS", "Qwen", "Llama", "Mistral", "DeepSeek", "NVIDIA Nemotron", "Gemma", "DALL·E", "Kling"];
+      const providerOrder = ["Gemini", "OpenAI", "Qwen", "Llama", "Mistral", "GLM", "NVIDIA Nemotron", "Gemma", "More models", "FLUX", "Leonardo", "ChatGPT", "Claude", "DALL·E", "Kling"];
       Array.from(groups.entries()).sort((a, b) => providerOrder.indexOf(a[0]) - providerOrder.indexOf(b[0])).forEach(([provider, models]) => {
         const group = scope.document.createElement("li");
         group.className = "model-provider";
@@ -3834,10 +3841,28 @@ export default function initialize(scope, context) {
         group.append(heading, children);
         optionsList.appendChild(group);
       });
+      if (activeMode === "chat" && (!query || "claude anthropic".includes(query) || query.includes("claude"))) {
+        const soon = scope.document.createElement("li");
+        soon.className = "model-provider is-soon";
+        soon.setAttribute("aria-disabled", "true");
+        const heading = scope.document.createElement("div");
+        heading.className = "model-provider-heading";
+        const icon = scope.document.createElement("img");
+        icon.src = "/images/claude-ai.svg";
+        icon.alt = "";
+        const title = scope.document.createElement("span");
+        title.textContent = "Claude";
+        const badge = scope.document.createElement("small");
+        badge.className = "model-soon";
+        badge.textContent = "Soon";
+        heading.append(icon, title, badge);
+        soon.appendChild(heading);
+        optionsList.appendChild(soon);
+      }
       if (!matching.length && !optionsList.querySelector(".model-auto-row")) {
         const empty = scope.document.createElement("li");
         empty.className = "model-picker-empty";
-        empty.textContent = "No compatible models found";
+        empty.textContent = activeMode === "video" && !query ? "Video models are coming soon" : "No compatible models found";
         optionsList.appendChild(empty);
       }
       modeTabs.forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.mode === activeMode)));
