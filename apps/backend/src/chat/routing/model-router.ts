@@ -73,6 +73,9 @@ export const MODEL_LABELS: Record<string, string> = {
   "nvidia/nemotron-3-ultra-550b-a55b:free": "Nemotron 3 Ultra",
   "nvidia/nemotron-3.5-super-vl:free": "Nemotron 3.5 Super",
   "google/gemma-4-31b-it:free": "Gemma 4",
+  "groq/openai/gpt-oss-120b": "GPT-OSS 120B",
+  "groq/openai/gpt-oss-20b": "GPT-OSS 20B",
+  "groq/qwen/qwen3.8-27b": "Qwen 3.8",
 };
 
 export const labelOf = (model: string) => MODEL_LABELS[model] || model;

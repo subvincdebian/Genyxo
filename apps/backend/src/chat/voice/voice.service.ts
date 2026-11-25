@@ -27,6 +27,44 @@ type GeminiResponse = {
  * language detection, and speech synthesis that works in any language the
  * user spoke. Both use the server's Gemini key, never the browser's.
  */
+/** Whisper names languages in English; the app works with codes. */
+const WHISPER_LANGUAGES: Record<string, string> = {
+  english: "en",
+  ukrainian: "uk",
+  russian: "ru",
+  german: "de",
+  french: "fr",
+  spanish: "es",
+  italian: "it",
+  portuguese: "pt",
+  polish: "pl",
+  czech: "cs",
+  slovak: "sk",
+  turkish: "tr",
+  dutch: "nl",
+  swedish: "sv",
+  romanian: "ro",
+  japanese: "ja",
+  korean: "ko",
+  chinese: "zh",
+  arabic: "ar",
+  hindi: "hi",
+  indonesian: "id",
+  vietnamese: "vi",
+  belarusian: "be",
+  kazakh: "kk",
+  georgian: "ka",
+  hebrew: "he",
+  greek: "el",
+  finnish: "fi",
+  danish: "da",
+  norwegian: "no",
+  hungarian: "hu",
+  bulgarian: "bg",
+  serbian: "sr",
+  croatian: "hr",
+};
+
 @Injectable()
 export class VoiceService {
   private readonly logger = new Logger(VoiceService.name);
@@ -35,6 +73,45 @@ export class VoiceService {
 
   /** TTS models whose quota ran out, with the time to try them again. */
   private readonly exhausted = new Map<string, number>();
+
+  /** Speech to text on Groq's free Whisper, as {text, language}. */
+  private async whisper(audio: string, mimeType: string, language?: string) {
+    const key = this.config.get<string>("GROQ_API_KEY");
+    if (!key) return null;
+    const type = mimeType.split(";")[0] || "audio/webm";
+    const extension = type.split("/")[1]?.replace("x-", "") || "webm";
+    const form = new FormData();
+    form.append(
+      "file",
+      new Blob([Buffer.from(audio, "base64")], { type }),
+      `speech.${extension === "mpeg" ? "mp3" : extension}`,
+    );
+    form.append("model", "whisper-large-v3-turbo");
+    form.append("response_format", "verbose_json");
+    form.append("temperature", "0");
+    if (language) form.append("language", language);
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/audio/transcriptions",
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}` },
+        body: form,
+        signal: AbortSignal.timeout(20000),
+      },
+    );
+    if (!response.ok) throw new Error(`Whisper ${response.status}`);
+    const data = (await response.json()) as {
+      text?: string;
+      language?: string;
+    };
+    return {
+      text: String(data.text || "").trim(),
+      language:
+        WHISPER_LANGUAGES[String(data.language || "").toLowerCase()] ||
+        language ||
+        "",
+    };
+  }
 
   private async gemini(model: string, body: unknown): Promise<GeminiResponse> {
     const key = this.config.get<string>("GOOGLE_API_KEY");
@@ -91,31 +168,46 @@ export class VoiceService {
     const model =
       this.config.get<string>("VOICE_TRANSCRIBE_MODEL") ||
       "gemini-3.5-flash-lite";
-    const data = await this.gemini(model, {
-      contents: [
-        {
-          parts: [
-            { inlineData: { mimeType: mimeType.split(";")[0], data: audio } },
-            {
-              text: `Transcribe the speech exactly, in the language it is spoken (never translate). ${context} Reply with JSON only: {"text": string, "language": BCP-47 code}. If there is no intelligible speech, return {"text": "", "language": ""}.`,
-            },
-          ],
+    // Gemini first (it tells close languages apart best); Groq's Whisper
+    // takes over when Gemini's small free speech quota runs out or it fails.
+    let raw: string;
+    try {
+      const data = await this.gemini(model, {
+        contents: [
+          {
+            parts: [
+              { inlineData: { mimeType: mimeType.split(";")[0], data: audio } },
+              {
+                text: `Transcribe the speech exactly, in the language it is spoken (never translate). ${context} Reply with JSON only: {"text": string, "language": BCP-47 code}. If there is no intelligible speech, return {"text": "", "language": ""}.`,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          responseMimeType: "application/json",
+          maxOutputTokens: 1024,
+          temperature: 0,
+          // Transcription needs no reasoning; skipping it saves about half a second.
+          ...(model.startsWith("gemini-3")
+            ? { thinkingConfig: { thinkingLevel: "minimal" } }
+            : {}),
         },
-      ],
-      generationConfig: {
-        responseMimeType: "application/json",
-        maxOutputTokens: 1024,
-        temperature: 0,
-        // Transcription needs no reasoning; skipping it saves about half a second.
-        ...(model.startsWith("gemini-3")
-          ? { thinkingConfig: { thinkingLevel: "minimal" } }
-          : {}),
-      },
-    });
-    const raw =
-      data.candidates?.[0]?.content?.parts
-        ?.map((part) => part.text || "")
-        .join("") || "{}";
+      });
+      raw =
+        data.candidates?.[0]?.content?.parts
+          ?.map((part) => part.text || "")
+          .join("") || "{}";
+    } catch (error) {
+      const whisper = await this.whisper(audio, mimeType, session).catch(
+        () => null,
+      );
+      if (!whisper) throw error;
+      this.logger.warn(
+        `Transcription moved to Groq Whisper: ${(error as Error)?.message?.slice(0, 120)}`,
+      );
+      raw = JSON.stringify(whisper);
+    }
+
     try {
       const parsed = JSON.parse(raw) as { text?: unknown; language?: unknown };
       const text =

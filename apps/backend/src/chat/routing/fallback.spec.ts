@@ -60,7 +60,7 @@ describe("reserve models", () => {
         "google/gemini-2.5-flash",
         new Set(["google/gemini-3.5-flash", "google/gemini-2.5-flash"]),
       ),
-    ).toBe("nvidia/nemotron-3-ultra-550b-a55b:free");
+    ).toBe("groq/openai/gpt-oss-120b");
   });
 
   it("keeps attachments readable and stops after a few reserves", () => {
@@ -70,7 +70,7 @@ describe("reserve models", () => {
     ]);
     expect(
       nextReserve("google/gemini-2.5-flash", tried, { needsVision: true }),
-    ).toBe("google/gemma-4-31b-it:free");
+    ).toBe("groq/qwen/qwen3.8-27b");
     expect(
       nextReserve("openai/gpt-5.1", new Set(["a", "b", "c", "d"])),
     ).toBeNull();

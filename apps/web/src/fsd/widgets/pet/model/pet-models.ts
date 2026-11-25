@@ -47,10 +47,13 @@ export const PET_MODELS: PetModel[] = [
   chat("nvidia/nemotron-3.5-super-vl:free", "Nemotron 3.5 Super", "NVIDIA Nemotron"),
   chat("nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "Nemotron 3 Nano Omni", "NVIDIA Nemotron"),
   chat("google/gemma-4-31b-it:free", "Gemma 4", "Gemma"),
+  chat("groq/openai/gpt-oss-120b", "GPT-OSS 120B", "GPT-OSS"),
+  chat("groq/openai/gpt-oss-20b", "GPT-OSS 20B", "GPT-OSS"),
+  chat("groq/qwen/qwen3.8-27b", "Qwen 3.8", "Qwen"),
   { value: "openai/dall-e-3", label: "DALL·E 3", provider: "DALL·E", kind: "image", credits: 120 },
   { value: "kling-video", label: "Kling Video", provider: "Kling", kind: "video", credits: 500 },
 ];
-export const PROVIDER_ORDER = ["Auto", "Gemini", "ChatGPT", "Claude", "NVIDIA Nemotron", "Gemma", "DALL·E", "Kling"];
+export const PROVIDER_ORDER = ["Auto", "Gemini", "ChatGPT", "Claude", "GPT-OSS", "Qwen", "Llama", "Mistral", "DeepSeek", "NVIDIA Nemotron", "Gemma", "DALL·E", "Kling"];
 export const DEFAULT_PET_MODEL = PET_MODELS[0].value;
 export const IMAGE_MODEL = "openai/dall-e-3";
 export const VIDEO_MODEL = "kling-video";
@@ -61,6 +64,8 @@ export const findPetModel = (value: string) =>
 export function modelIcon(value: string) {
   if (value === "auto") return "/images/auto-route.svg";
   if (value.includes("dall-e")) return "/images/dalle-text.png";
+  if (value.includes("qwen")) return "/images/qwen-icon.svg";
+  if (value.includes("llama") || value.includes("/meta/")) return "/images/meta-icon.svg";
   if (value.includes("gemini") || value.includes("gemma")) return "/images/google-gemini.svg";
   if (value.includes("openai")) return "/images/openai-mark.svg";
   if (value.includes("anthropic")) return "/images/claude-ai.svg";

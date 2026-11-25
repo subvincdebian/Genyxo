@@ -129,6 +129,13 @@ import {
   type RouteDecision,
 } from "./routing/model-router";
 import {
+  maxOutputFor,
+  providerOf,
+  providerParams,
+  providerModelId,
+  seesImages,
+} from "./routing/providers";
+import {
   EmptyReplyError,
   isProviderFailure,
   nextReserve,
@@ -232,7 +239,27 @@ export class ChatService {
   private readonly maxExtractedTextLength = 45_000;
   private readonly contextInputBudget = 18_000;
   private openRouter: OpenAI;
+  /** Free OpenAI-compatible providers; set only when their keys are configured. */
+  private groq?: OpenAI;
+  private cloudflare?: OpenAI;
   private googleAI: GoogleGenerativeAI;
+
+  /** The OpenAI-compatible client and model id for a Groq, Cloudflare or OpenRouter model. */
+  private chatClient(model: string): { client: OpenAI; id: string } {
+    const provider = providerOf(model);
+    const client =
+      provider === "groq"
+        ? this.groq
+        : provider === "cloudflare"
+          ? this.cloudflare
+          : this.openRouter;
+    if (!client)
+      throw Object.assign(
+        new Error(`${model} is unavailable: its provider is not configured`),
+        { status: 503 },
+      );
+    return { client, id: providerModelId(model) };
+  }
 
   constructor(
     private configService: ConfigService,
@@ -269,6 +296,27 @@ export class ChatService {
     @Optional() private sandbox?: SandboxService,
     @Optional() private browser?: BrowserService,
   ) {
+    const groqKey = this.configService.get<string>("GROQ_API_KEY");
+    if (groqKey)
+      this.groq = new OpenAI({
+        baseURL: "https://api.groq.com/openai/v1",
+        apiKey: groqKey,
+        timeout: 60000,
+        maxRetries: 1,
+      });
+    const cloudflareKey =
+      this.configService.get<string>("CLOUDFLARE_WORKERS_API_KEY") ||
+      this.configService.get<string>("CLOUDFARE_WORKERS_API_KEY");
+    const cloudflareAccount = this.configService.get<string>(
+      "CLOUDFLARE_ACCOUNT_ID",
+    );
+    if (cloudflareKey && cloudflareAccount)
+      this.cloudflare = new OpenAI({
+        baseURL: `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccount}/ai/v1`,
+        apiKey: cloudflareKey,
+        timeout: 60000,
+        maxRetries: 1,
+      });
     this.openRouter = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: this.configService.get("OPENROUTER_API_KEY"),
@@ -2221,7 +2269,8 @@ export class ChatService {
                 if (
                   isLastMessage &&
                   mimeType.startsWith("image/") &&
-                  file.data
+                  file.data &&
+                  seesImages(model)
                 ) {
                   contentArray.push({
                     type: "image_url",
@@ -2271,18 +2320,19 @@ export class ChatService {
                 ]
               : undefined;
             const createStreamCall = () =>
-              this.openRouter.chat.completions.create(
+              this.chatClient(model).client.chat.completions.create(
                 {
-                  model: model,
+                  model: this.chatClient(model).id,
+                  ...providerParams(model),
                   messages: openRouterMessages as any,
                   stream: true,
-                  max_tokens: this.getMaxOutputTokens(),
+                  max_tokens: maxOutputFor(model, this.getMaxOutputTokens()),
                   ...(tools ? { tools } : {}),
                 },
                 { signal: abortController.signal },
               );
             const openStream = () =>
-              this.circuitBreakerService
+              this.circuitBreakerService && providerOf(model) === "openrouter"
                 ? this.circuitBreakerService.execute(
                     CIRCUIT_BREAKER_NAMES.OPENROUTER_CHAT,
                     createStreamCall,
@@ -2574,9 +2624,11 @@ export class ChatService {
       );
       return result.response.text();
     }
-    const response = await this.openRouter.chat.completions.create(
+    const { client, id } = this.chatClient(model);
+    const response = await client.chat.completions.create(
       {
-        model,
+        model: id,
+        ...providerParams(model),
         messages: [
           { role: "system", content: system },
           { role: "user", content: prompt },
@@ -2613,15 +2665,17 @@ export class ChatService {
       }
       return;
     }
-    const stream = await this.openRouter.chat.completions.create(
+    const target = this.chatClient(model);
+    const stream = await target.client.chat.completions.create(
       {
-        model,
+        model: target.id,
+        ...providerParams(model),
         messages: [
           { role: "system", content: system },
           { role: "user", content: prompt },
         ],
         stream: true,
-        max_tokens: this.getMaxOutputTokens(),
+        max_tokens: maxOutputFor(model, this.getMaxOutputTokens()),
       },
       { signal },
     );
@@ -2865,10 +2919,11 @@ export class ChatService {
           content: `Summary of earlier conversation:\n${summary}`,
         });
       const createChatCall = () =>
-        this.openRouter.chat.completions.create({
-          model,
+        this.chatClient(model).client.chat.completions.create({
+          model: this.chatClient(model).id,
+          ...providerParams(model),
           messages: openRouterMessages as any,
-          max_tokens: this.getMaxOutputTokens(),
+          max_tokens: maxOutputFor(model, this.getMaxOutputTokens()),
           temperature: 0.7,
         });
 

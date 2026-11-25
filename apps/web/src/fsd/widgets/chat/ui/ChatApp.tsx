@@ -734,6 +734,12 @@ export function ChatApp({
               {"\n                            "}
               <option value="google/gemma-4-31b-it:free">{"Gemma 4"}</option>
               {"\n                            "}
+              <option value="groq/openai/gpt-oss-120b">{"GPT-OSS 120B"}</option>
+              {"\n                            "}
+              <option value="groq/openai/gpt-oss-20b">{"GPT-OSS 20B"}</option>
+              {"\n                            "}
+              <option value="groq/qwen/qwen3.8-27b">{"Qwen 3.8"}</option>
+              {"\n                            "}
               <option value="openai/gpt-5.1">{"ChatGPT-5.1 (150 cr)"}</option>
               {"\n                            "}
               <option value="openai/gpt-5-mini">{"GPT-5 Mini (70 cr)"}</option>

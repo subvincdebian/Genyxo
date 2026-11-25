@@ -1,25 +1,30 @@
 import { labelOf, type RouteDecision } from "./model-router";
+import { providerOf } from "./providers";
 
 /**
  * Reserve models: when a provider fails before the first word of an answer
  * (an outage, a quota, a removed model, a timeout or an empty reply), the turn
  * moves on to the next model in the chain instead of showing an error.
  *
- * Gemini is free on our key and answers most things well; OpenRouter's free
- * models are a separate provider, so one outage never takes both down.
+ * Gemini is free on our key and answers most things well; Groq and
+ * OpenRouter's free models run elsewhere, so one outage never takes all down.
  */
 const GEMINI_RESERVES = [
   "google/gemini-3.5-flash",
   "google/gemini-2.5-flash",
   "google/gemini-3.5-flash-lite",
 ];
-const OPENROUTER_RESERVES = [
+/** Other providers' free models; Groq first, it answers in about a second. */
+const OTHER_RESERVES = [
+  "groq/openai/gpt-oss-120b",
+  "groq/qwen/qwen3.8-27b",
   "nvidia/nemotron-3-ultra-550b-a55b:free",
   "google/gemma-4-31b-it:free",
 ];
 /** Reserves that can read images and PDFs attached to the turn. */
 const SEES_FILES = new Set([
   ...GEMINI_RESERVES,
+  "groq/qwen/qwen3.8-27b",
   "google/gemma-4-31b-it:free",
   "nvidia/nemotron-3.5-super-vl:free",
 ]);
@@ -48,17 +53,15 @@ export function isProviderFailure(error: unknown) {
     status === 402 ||
     status === 404 ||
     status === 408 ||
+    status === 413 ||
     status === 429 ||
     status >= 500
   )
     return true;
-  return /\b(402|404|408|429|500|502|503|504)\b|overloaded|high demand|unavailable|quota|rate.?limit|resource.?exhausted|no endpoints|not found|is not supported|deprecated|insufficient credits|timed? ?out|timeout|fetch failed|ECONNRESET|ECONNREFUSED|ETIMEDOUT|socket hang up|network|circuit|empty reply|Failed to parse stream/i.test(
+  return /\b(402|404|408|429|500|502|503|504)\b|overloaded|high demand|unavailable|quota|rate.?limit|resource.?exhausted|no endpoints|not found|is not supported|deprecated|insufficient credits|timed? ?out|timeout|fetch failed|ECONNRESET|ECONNREFUSED|ETIMEDOUT|socket hang up|network|circuit|empty reply|Failed to parse stream|request too large|tokens per minute|context.?length|is unavailable: its provider/i.test(
     String(anyError.message || anyError.code || ""),
   );
 }
-
-const providerOf = (model: string) =>
-  model.startsWith("google/gemini") ? "gemini" : "openrouter";
 
 /**
  * The next model to try after `failed`: other Gemini models first when an
@@ -76,8 +79,8 @@ export function nextReserve(
     model !== failed &&
     !tried.has(model) &&
     (!options.needsVision || SEES_FILES.has(model));
-  if (providerOf(failed) === "openrouter")
-    return [...GEMINI_RESERVES, ...OPENROUTER_RESERVES].find(usable) || null;
+  if (providerOf(failed) !== "gemini")
+    return [...GEMINI_RESERVES, ...OTHER_RESERVES].find(usable) || null;
   // Each Gemini model has its own quota, so one more is worth a try; after
   // two Gemini failures the provider itself is likely down: cross over.
   const geminiFailures = [...new Set([failed, ...tried])].filter(
@@ -85,8 +88,8 @@ export function nextReserve(
   ).length;
   const order =
     geminiFailures >= 2
-      ? [...OPENROUTER_RESERVES, ...GEMINI_RESERVES]
-      : [...GEMINI_RESERVES, ...OPENROUTER_RESERVES];
+      ? [...OTHER_RESERVES, ...GEMINI_RESERVES]
+      : [...GEMINI_RESERVES, ...OTHER_RESERVES];
   return order.find(usable) || null;
 }
 

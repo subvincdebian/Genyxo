@@ -16,6 +16,10 @@ export class PricingService {
       cost: 0,
       type: ModelType.TEXT,
     },
+    // Groq free tier (console.groq.com): fast open models, checked against /openai/v1/models.
+    "groq/openai/gpt-oss-120b": { cost: 0, type: ModelType.TEXT },
+    "groq/openai/gpt-oss-20b": { cost: 0, type: ModelType.TEXT },
+    "groq/qwen/qwen3.8-27b": { cost: 0, type: ModelType.TEXT },
     // Default chat model: the newest Flash-Lite on the Gemini API key, free for signed-in users.
     "google/gemini-3.5-flash-lite": { cost: 0, type: ModelType.TEXT },
     "google/gemini-3.5-flash": { cost: 0, type: ModelType.TEXT },

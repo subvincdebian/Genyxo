@@ -1877,6 +1877,8 @@ export default function initialize(scope, context) {
   function getModelIconSrc(value = "") {
     if (value === "auto") return "/images/auto-route.svg";
     if (value.includes("dall-e")) return "/images/dalle-text.png";
+    if (value.includes("qwen")) return "/images/qwen-icon.svg";
+    if (value.includes("llama") || value.includes("/meta/")) return "/images/meta-icon.svg";
     if (value.includes("google/gemini") || value.includes("gemma"))
       return "/images/google-gemini.svg";
     if (value.includes("openai") || value.includes("gpt"))
@@ -1889,6 +1891,9 @@ export default function initialize(scope, context) {
   }
   function getModelProviderName(value = "") {
     if (value === "auto") return "Auto";
+    if (value.includes("qwen")) return "Qwen";
+    if (value.includes("llama") || value.includes("/meta/")) return "Llama";
+    if (value.includes("gpt-oss")) return "GPT-OSS";
     if (value.includes("google/gemini") || value.includes("gemma"))
       return "Gemini";
     if (value.includes("openai") || value.includes("gpt")) return "OpenAI";
@@ -3693,6 +3698,12 @@ export default function initialize(scope, context) {
     };
     let activeMode = modeFor(native.value);
     const providerFor = (value) => {
+      // Free open models served by Groq and Cloudflare group by model family.
+      if (value.includes("gpt-oss")) return "GPT-OSS";
+      if (value.includes("qwen")) return "Qwen";
+      if (value.includes("llama") || value.includes("/meta/")) return "Llama";
+      if (value.includes("mistral")) return "Mistral";
+      if (value.includes("deepseek")) return "DeepSeek";
       if (value.startsWith("openai/") && value !== "openai/dall-e-3") return "ChatGPT";
       if (value.startsWith("google/") && !value.includes("gemma")) return "Gemini";
       if (value.startsWith("anthropic/")) return "Claude";
@@ -3777,7 +3788,7 @@ export default function initialize(scope, context) {
         if (!groups.has(provider)) groups.set(provider, []);
         groups.get(provider).push(opt);
       });
-      const providerOrder = ["ChatGPT", "Gemini", "Claude", "NVIDIA Nemotron", "Gemma", "DALL·E", "Kling"];
+      const providerOrder = ["ChatGPT", "Gemini", "Claude", "GPT-OSS", "Qwen", "Llama", "Mistral", "DeepSeek", "NVIDIA Nemotron", "Gemma", "DALL·E", "Kling"];
       Array.from(groups.entries()).sort((a, b) => providerOrder.indexOf(a[0]) - providerOrder.indexOf(b[0])).forEach(([provider, models]) => {
         const group = scope.document.createElement("li");
         group.className = "model-provider";

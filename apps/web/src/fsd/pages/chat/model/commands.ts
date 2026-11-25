@@ -90,6 +90,8 @@ export function matchScore(query: string, title: string, extra = "") {
 export const modelIcon = (value = "") =>
   value === "auto" ? "/images/auto-route.svg"
   : value.includes("dall-e") ? "/images/dalle-text.png"
+  : value.includes("qwen") ? "/images/qwen-icon.svg"
+  : value.includes("llama") || value.includes("/meta/") ? "/images/meta-icon.svg"
   : value.includes("google/") || value.includes("gemma") ? "/images/google-gemini.svg"
   : value.includes("openai") || value.includes("gpt") ? "/images/openai-mark.svg"
   : value.includes("anthropic") || value.includes("claude") ? "/images/claude-ai.svg"
