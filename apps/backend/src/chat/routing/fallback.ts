@@ -79,7 +79,7 @@ export function isProviderFailure(error: unknown) {
     status >= 500
   )
     return true;
-  return /\b(402|404|408|429|500|502|503|504)\b|overloaded|high demand|unavailable|quota|rate.?limit|resource.?exhausted|no endpoints|not found|is not supported|deprecated|insufficient credits|timed? ?out|timeout|fetch failed|ECONNRESET|ECONNREFUSED|ETIMEDOUT|socket hang up|network|circuit|empty reply|Failed to parse stream|request too large|tokens per minute|context.?length|is unavailable: its provider/i.test(
+  return /\b(402|404|408|429|500|502|503|504)\b|overloaded|high demand|unavailable|quota|rate.?limit|resource.?exhausted|no endpoints|not found|is not supported|deprecated|insufficient credits|timed? ?out|timeout|fetch failed|ECONNRESET|ECONNREFUSED|ETIMEDOUT|socket hang up|network|circuit|empty reply|Failed to parse stream|request too large|tokens per minute|context.?length|is unavailable: its provider|tool call validation failed|not in request.tools/i.test(
     String(anyError.message || anyError.code || ""),
   );
 }

@@ -1695,6 +1695,8 @@ export class ChatService {
       );
 
       let fullReply = "";
+      // Bumped by every token and tool call; a silent model is moved on from.
+      let turnProgress = 0;
 
       // A task run shows as a header with the task's name, not a user bubble.
       const userMsg = await this.saveMessage(
@@ -1852,6 +1854,7 @@ export class ChatService {
       // A browser that left only stops receiving tokens; the reply goes on
       // until it is complete (and saved) unless Stop or a timeout aborts it.
       const emit = async (token: string) => {
+        turnProgress++;
         fullReply += token;
         await this.writeStreamChunk(
           res,
@@ -1860,6 +1863,7 @@ export class ChatService {
         return !abortController.signal.aborted;
       };
       const runTool = async (name: string, args: unknown) => {
+        turnProgress++;
         const input =
           args && typeof args === "object" ? (args as Record<string, any>) : {};
         if (web && isWebTool(name)) {
@@ -2024,14 +2028,24 @@ export class ChatService {
           if (made.markdown) await emit(made.markdown);
           return made.output;
         }
-        const step = this.integrationTools!.activity(toolset!, name);
+        // A tool the model made up (or a plugin the user has not connected):
+        // tell it so it answers without, instead of failing the turn.
+        if (
+          !toolset ||
+          !this.integrationTools ||
+          !toolset.tools.some((tool) => tool.name === name)
+        )
+          return {
+            error: `There is no tool named "${name}". Answer with what you know, or use one of the tools you were given.`,
+          };
+        const step = this.integrationTools.activity(toolset, name);
         toolSteps.push(step);
         res.write(
           `data: ${stringifyActivityEvent({ status: "activity", step })}\n\n`,
         );
-        const outcome = await this.integrationTools!.call(
+        const outcome = await this.integrationTools.call(
           userId,
-          toolset!,
+          toolset,
           name,
           args,
           { conversationId: conversation.id },
@@ -2085,7 +2099,31 @@ export class ChatService {
           model = viewer;
         }
       }
+      let attempts = 0;
       for (;;) {
+        attempts++;
+        triedModels.add(model);
+        const attempt = new AbortController();
+        const stopAttempt = () => attempt.abort();
+        abortController.signal.addEventListener("abort", stopAttempt, {
+          once: true,
+        });
+        const progressAtStart = turnProgress;
+        let silent = false;
+        // NVIDIA's free queue is slow by nature; elsewhere 35 s of silence
+        // means the provider is stuck, and the next model should answer.
+        const firstWait = setTimeout(
+          () => {
+            if (
+              turnProgress !== progressAtStart ||
+              turnOptions.mode === "research"
+            )
+              return;
+            silent = true;
+            attempt.abort();
+          },
+          providerOf(model) === "nvidia" ? 150_000 : 35_000,
+        );
         try {
           if (turnOptions.mode === "research" && this.webSearch) {
             // Deep research runs its own plan → search → read → report loop.
@@ -2129,7 +2167,7 @@ export class ChatService {
             });
             webSources.push(...found);
           } else if (model.startsWith("google/gemini")) {
-            let geminiModelName = model.replace("google/", "");
+            const geminiModelName = model.replace("google/", "");
             const makeGemini = (name: string) =>
               this.googleAI.getGenerativeModel(
                 {
@@ -2170,7 +2208,7 @@ export class ChatService {
                       : 60_000,
                 },
               );
-            let generativeModel = makeGemini(geminiModelName);
+            const generativeModel = makeGemini(geminiModelName);
 
             const contents: Content[] = summary
               ? [
@@ -2236,39 +2274,12 @@ export class ChatService {
                           : {}),
                       },
                     },
-                    { signal: abortController.signal },
+                    { signal: attempt.signal },
                   )
                   .then(settleGeminiStream);
-              let resultStream: Awaited<ReturnType<typeof request>>;
-              try {
-                resultStream = await request();
-              } catch (error) {
-                // Auto mode never strands a message on a busy model: before the
-                // first word it moves once to a reserve Gemini model.
-                const reserve = autoFailover(
-                  turnOptions.route,
-                  geminiModelName,
-                  error,
-                );
-                if (
-                  step > 0 ||
-                  fullReply ||
-                  !reserve ||
-                  abortController.signal.aborted
-                )
-                  throw error;
-                this.logger.warn(
-                  `Auto: ${geminiModelName} unavailable, using ${reserve.model}`,
-                );
-                model = reserve.model;
-                turnOptions.route = reserve.route;
-                geminiModelName = model.replace("google/", "");
-                generativeModel = makeGemini(geminiModelName);
-                res.write(`data: ${JSON.stringify({ status: "route", route: reserve.route })}
-
-`);
-                resultStream = await request();
-              }
+              // A busy model fails here; the reserve chain around the turn
+              // moves on to the next model.
+              const resultStream = await request();
 
               // Raw parts, not the SDK aggregate: Gemini 3 requires each function
               // call's thoughtSignature to be sent back unchanged.
@@ -2417,7 +2428,7 @@ export class ChatService {
                   max_tokens: maxOutputFor(model, this.getMaxOutputTokens()),
                   ...(tools ? { tools } : {}),
                 },
-                { signal: abortController.signal },
+                { signal: attempt.signal },
               );
             const openStream = () =>
               this.circuitBreakerService && providerOf(model) === "openrouter"
@@ -2521,15 +2532,20 @@ export class ChatService {
           )
             throw new EmptyReplyError(model);
           break;
-        } catch (error) {
+        } catch (caught) {
+          const error = silent
+            ? Object.assign(new Error(`${model} timed out before answering`), {
+                status: 504,
+              })
+            : caught;
           if (
             fullReply ||
             actionIds.length ||
             abortController.signal.aborted ||
+            attempts > 6 ||
             !isProviderFailure(error)
           )
             throw error;
-          triedModels.add(model);
           const reserve = nextReserve(model, triedModels, { needsVision });
           if (!reserve) {
             if (error instanceof EmptyReplyError) break;
@@ -2566,6 +2582,9 @@ export class ChatService {
 `,
           );
           model = reserve;
+        } finally {
+          clearTimeout(firstWait);
+          abortController.signal.removeEventListener("abort", stopAttempt);
         }
       }
 

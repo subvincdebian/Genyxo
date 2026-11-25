@@ -26,6 +26,13 @@ describe("reserve models", () => {
       isProviderFailure(new Error("No endpoints found for openai/gpt-x")),
     ).toBe(true);
     expect(isProviderFailure(new Error("fetch failed"))).toBe(true);
+    expect(
+      isProviderFailure(
+        new Error(
+          "400 Tool call validation failed: attempted to call tool 'browser.search' which was not in request.tools",
+        ),
+      ),
+    ).toBe(true);
     expect(isProviderFailure(new EmptyReplyError("x"))).toBe(true);
   });
 
