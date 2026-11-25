@@ -4,7 +4,6 @@ import {
   DEFAULT_INTERACTIONS,
   SHORTCUTS,
   bindingProblem,
-  formatBinding,
   getInteractions,
   getServerInteractions,
   shortcutBinding,
@@ -12,6 +11,7 @@ import {
   subscribeInteractions,
   updateInteractions,
 } from "@/shared/lib/interaction-settings";
+import { Keys } from "@/shared/ui/Keys";
 import { Action, Row, Section, useAccountText } from "./account-ui";
 import page from "./ProfilePage.module.css";
 import styles from "./AccountExtensions.module.css";
@@ -92,7 +92,7 @@ export function AccountKeyboard() {
   );
   return (
     <>
-      <p className={styles.note}>
+      <p className={`${styles.note} ${styles.keyboardNote}`}>
         {text(
           "keyboard_help",
           "Select a key combination, then press the new keys. Press Esc to cancel. Ctrl also works as Command on macOS.",
@@ -146,19 +146,7 @@ export function AccountKeyboard() {
                     >
                       {recording === item.id
                         ? text("press_keys", "Press keys…")
-                        : formatBinding(shortcut.binding)
-                            .split("+")
-                            .map((key, i) => (
-                              <kbd key={i}>
-                                {key}
-                                {i <
-                                formatBinding(shortcut.binding).split("+")
-                                  .length -
-                                  1
-                                  ? " +"
-                                  : ""}
-                              </kbd>
-                            ))}
+                        : <Keys binding={shortcut.binding} />}
                     </button>
                   </div>
                 </Row>

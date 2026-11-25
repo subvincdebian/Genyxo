@@ -3280,8 +3280,48 @@ export default function initialize(scope, context) {
   const stopBtn = scope.document.getElementById("stopBtn");
   if (stopBtn) scope.listen(stopBtn, "click", stopGeneration);
   scope.listen(scope.document, "keydown", (event) => {
-    if (event.key !== "Escape" || event.defaultPrevented || scope.document.querySelector("dialog[open]")) return;
+    if (!matchesShortcut(event, "stop") || event.defaultPrevented || scope.document.querySelector("dialog[open]")) return;
     if (stopGeneration()) event.preventDefault();
+  });
+  // Keyboard shortcuts and the command palette act on the latest turn.
+  scope.listen(scope.document, "genyxo:chat-command", (event) => {
+    const action = event.detail?.action;
+    const box = DOM.chatBox;
+    if (!box) return;
+    const last = (selector) => [...box.querySelectorAll(selector)].filter((node) => !node.closest(".streaming")).pop();
+    const say = (message, type = "info") => context.showToast?.(message, type);
+    const bot = last(".message.bot-message");
+    if (action === "stop") {
+      if (!stopGeneration()) say("Nothing is generating right now.");
+      return;
+    }
+    if (action === "copy-last") {
+      if (bot) void copyTextToClipboard(bot._botText || bot.querySelector(".message-content")?.textContent || "");
+      else say("There is no answer to copy yet.");
+      return;
+    }
+    if (action === "copy-code") {
+      const button = last('.message.bot-message button[aria-label="Copy code"]');
+      if (button) button.click();
+      else say("The last answers have no code block.");
+      return;
+    }
+    if (action === "edit-last") {
+      const button = last(".message.user-message .edit-message-btn");
+      if (button) button.click();
+      return;
+    }
+    if (action === "regenerate") {
+      if (!bot) say("There is no answer to regenerate yet.");
+      else if (sendBtn.disabled) say("Wait for the current answer to finish.");
+      else void regenerateBotMessage(bot);
+      return;
+    }
+    if (action === "read-aloud") {
+      const item = bot?.querySelector('.bot-more-menu [data-action="listen"]');
+      if (item) item.click();
+      else say("There is no answer to read yet.");
+    }
   });
   const scrollBottomBtn = scope.document.getElementById("scrollBottomBtn");
   if (scrollBottomBtn && DOM.chatBox) {

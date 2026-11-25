@@ -111,6 +111,15 @@ export function ComposerPlusMenu({ disabled }: { disabled: boolean }) {
     input.placeholder = chatMode ? MODES[chatMode].placeholder : basePlaceholder.current || "Message Genyxo...";
   }, [chatMode]);
   const toggleMode = (mode: ChatMode) => setChatMode((current) => (current === mode ? null : mode));
+  // The command palette and shortcuts switch the next message's mode too.
+  useEffect(() => {
+    const onMode = (event: Event) => {
+      const mode = (event as CustomEvent<{ mode?: ChatMode }>).detail?.mode;
+      if (mode === "search" || mode === "research" || mode === "agent") setChatMode((current) => (current === mode ? null : mode));
+    };
+    document.addEventListener("genyxo:composer-mode", onMode);
+    return () => document.removeEventListener("genyxo:composer-mode", onMode);
+  }, []);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [sketch, setSketch] = useState(false);
   const [coarse, setCoarse] = useState(false);

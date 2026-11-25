@@ -122,31 +122,38 @@
   font-size: 13px;
   line-height: 1.6;
 }
+/* A fixed width keeps every switch in one column, whatever the keys. */
 .shortcut {
   display: flex;
-  gap: 7px;
   align-items: center;
-  border: 0;
-  border-radius: 9px;
+  justify-content: flex-end;
+  width: 168px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   background: transparent;
   color: var(--gx-muted);
-  padding: 10px 12px;
+  font-size: 13px;
   cursor: pointer;
-  min-width: 115px;
-  justify-content: flex-end;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 .shortcut:hover,
 .shortcut:focus-visible {
   background: var(--gx-hover);
   color: var(--gx-text);
+  outline: none;
 }
 .shortcut[data-recording="true"] {
-  color: var(--gx-accent);
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--gx-text) 30%, transparent);
+  color: var(--gx-text);
   background: var(--gx-hover);
 }
-.shortcut kbd {
-  font: inherit;
-  font-size: 13px;
+.keyboardNote {
+  display: block;
+  margin: 0 !important;
+  padding-bottom: 18px;
 }
 .recording {
   color: var(--gx-accent);

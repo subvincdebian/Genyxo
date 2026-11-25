@@ -37,10 +37,58 @@ export const SHORTCUTS = [
     binding: "Ctrl+KeyU",
   },
   {
+    id: "editLast",
+    title: "Edit last message",
+    group: "Message editor",
+    binding: "ArrowUp",
+  },
+  {
+    id: "dictate",
+    title: "Dictate",
+    group: "Message editor",
+    binding: "Ctrl+Shift+KeyD",
+  },
+  {
+    id: "voice",
+    title: "Start voice conversation",
+    group: "Message editor",
+    binding: "Ctrl+Shift+Space",
+  },
+  {
+    id: "stop",
+    title: "Stop generating",
+    group: "Chat",
+    binding: "Escape",
+  },
+  {
+    id: "regenerate",
+    title: "Regenerate response",
+    group: "Chat",
+    binding: "Ctrl+Shift+KeyG",
+  },
+  {
+    id: "copyLast",
+    title: "Copy last response",
+    group: "Chat",
+    binding: "Ctrl+Shift+KeyC",
+  },
+  {
+    id: "copyCode",
+    title: "Copy last code block",
+    group: "Chat",
+    binding: "Ctrl+Shift+Semicolon",
+  },
+  {
     id: "delete",
     title: "Delete current chat",
     group: "Chat",
     binding: "Ctrl+Shift+Delete",
+  },
+  {
+    id: "search",
+    title: "Open command palette",
+    group: "Application",
+    binding: "Ctrl+KeyK",
   },
   {
     id: "new",
@@ -49,22 +97,40 @@ export const SHORTCUTS = [
     binding: "Ctrl+Shift+KeyO",
   },
   {
+    id: "sidebar",
+    title: "Toggle sidebar",
+    group: "Application",
+    binding: "Ctrl+Shift+KeyS",
+  },
+  {
+    id: "settings",
+    title: "Open settings",
+    group: "Application",
+    binding: "Ctrl+Comma",
+  },
+  {
+    id: "instructions",
+    title: "Custom instructions",
+    group: "Application",
+    binding: "Ctrl+Shift+KeyI",
+  },
+  {
     id: "help",
     title: "Show keyboard shortcuts",
     group: "Application",
     binding: "Ctrl+Slash",
   },
   {
-    id: "search",
-    title: "Search chats",
-    group: "Application",
-    binding: "Ctrl+KeyK",
+    id: "prevChat",
+    title: "Previous chat",
+    group: "Navigation",
+    binding: "Alt+ArrowUp",
   },
   {
-    id: "sidebar",
-    title: "Toggle sidebar",
-    group: "Application",
-    binding: "Ctrl+Shift+KeyS",
+    id: "nextChat",
+    title: "Next chat",
+    group: "Navigation",
+    binding: "Alt+ArrowDown",
   },
   ...Array.from({ length: 9 }, (_, i) => ({
     id: `recent${i + 1}`,
@@ -354,14 +420,39 @@ export function matchesShortcut(event: KeyboardEvent, id: string) {
     Boolean(value?.enabled && value.binding === shortcutBinding(event))
   );
 }
+const KEY_NAMES: Record<string, string> = {
+  Escape: "Esc",
+  Slash: "/",
+  Semicolon: ";",
+  Comma: ",",
+  Period: ".",
+  Quote: "'",
+  Backquote: "`",
+  BracketLeft: "[",
+  BracketRight: "]",
+  Backslash: "\\",
+  Minus: "-",
+  Equal: "=",
+  ArrowUp: "↑",
+  ArrowDown: "↓",
+  ArrowLeft: "←",
+  ArrowRight: "→",
+};
 export const formatBinding = (binding: string) =>
   binding
-    .replace(/Key|Digit/g, "")
-    .replace("Escape", "Esc")
-    .replace("Slash", "/")
-    .replace("Space", "Space");
+    .split("+")
+    .map((key) => KEY_NAMES[key] || key.replace(/^(Key|Digit)/, ""))
+    .join("+");
+/** The keys of a binding, one per keycap: "Ctrl+Shift+KeyC" → ["Ctrl", "Shift", "C"]. */
+export const bindingKeys = (binding: string) => formatBinding(binding).split(/\+(?!$)/);
 const BINDING_PATTERN =
-  /^(?:(?:Ctrl|Alt|Shift)\+)*(?:Key[A-Z]|Digit[1-9]|Enter|Escape|Backspace|Delete|Space|Slash|Arrow(?:Up|Down|Left|Right))$/;
+  /^(?:(?:Ctrl|Alt|Shift)\+)*(?:Key[A-Z]|Digit[1-9]|Enter|Escape|Backspace|Delete|Space|Slash|Semicolon|Comma|Period|Quote|Backquote|BracketLeft|BracketRight|Backslash|Minus|Equal|Arrow(?:Up|Down|Left|Right))$/;
+/** Shortcuts that work with a single key, where it cannot mean anything else. */
+const BARE_KEYS: Record<string, string[]> = {
+  send: ["Enter", "NumpadEnter"],
+  stop: ["Escape"],
+  editLast: ["ArrowUp"],
+};
 /** Why a recorded combination cannot be used, or null when it is valid. */
 export function bindingProblem(
   id: string,
@@ -369,9 +460,8 @@ export function bindingProblem(
   event: Pick<KeyboardEvent, "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey">,
 ): "modifier" | "reserved" | null {
   const modified = event.ctrlKey || event.metaKey || event.altKey || event.shiftKey;
-  const bareSend =
-    id === "send" && (event.code === "Enter" || event.code === "NumpadEnter");
-  if (!BINDING_PATTERN.test(binding) || (!modified && !bareSend))
+  const bare = Boolean(BARE_KEYS[id]?.includes(event.code));
+  if (!BINDING_PATTERN.test(binding) || (!modified && !bare))
     return "modifier";
   if (
     /^Ctrl\+Key[WLNTR]$/.test(binding) ||

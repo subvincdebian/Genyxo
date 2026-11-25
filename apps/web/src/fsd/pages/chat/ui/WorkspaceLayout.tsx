@@ -2,8 +2,8 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { matchesShortcut } from "@/shared/lib/interaction-settings";
 import { ShortcutHelp } from "@/shared/ui/ShortcutHelp";
-import { usePathname } from "next/navigation";
-import { WorkspaceProvider, useWorkspace } from "@/features/workspace";
+import { usePathname, useRouter } from "next/navigation";
+import { WorkspaceProvider, useWorkspace, type WorkspaceConversation } from "@/features/workspace";
 import { WorkspaceSidebar } from "@/widgets/workspace/ui/WorkspaceSidebar";
 import { CanvasPanel } from "@/widgets/canvas";
 import { MapCardsHost, MapsHome } from "@/widgets/maps";
@@ -12,7 +12,8 @@ import { WorkspaceIcon, WorkspaceTooltip, lockWorkspaceScroll } from "@/shared/u
 import { useLanguage } from "@/shared/i18n";
 import { isChatPath } from "@/shared/lib/chat-url";
 import { ChatPage } from "./ChatPage";
-import { WorkspaceSearch } from "./WorkspaceSearch";
+import { CommandPalette } from "./CommandPalette";
+import type { CommandId } from "../model/commands";
 import { WorkspaceProjectDialog } from "./WorkspaceProjectDialog";
 
 // Sidebar widths in px. Dragging the edge below `snap` folds it into the rail.
@@ -21,9 +22,20 @@ const SIDEBAR = { fallback: 280, min: 220, max: 480, snap: 150, step: 16 };
 const sidebarMax = () => Math.max(SIDEBAR.min, Math.min(SIDEBAR.max, innerWidth - 600));
 const clampSidebar = (value: number) => Math.round(Math.min(sidebarMax(), Math.max(SIDEBAR.min, value)));
 const storeSidebar = (key: string, value: string) => { try { localStorage.setItem(`genyxo:sidebar-${key}`, value); } catch { /* Storage is optional. */ } };
+// Shortcuts that run a command straight away. Esc (stop) lives with the chat and
+// ↑ (edit last message) only works in an empty message box, so both are handled apart.
+const KEY_COMMANDS: CommandId[] = ["sidebar", "new", "focus", "attach", "effort", "help", "delete", "settings", "instructions", "dictate", "voice", "regenerate", "copyLast", "copyCode", "prevChat", "nextChat"];
+/** Chats in the order the sidebar shows them: latest activity first. */
+const recentChats = (conversations: WorkspaceConversation[], limit = Infinity) =>
+  conversations
+    .filter((chat) => !chat.archivedAt)
+    .slice()
+    .sort((a, b) => new Date(b.lastActivityAt || b.updatedAt || b.createdAt).getTime() - new Date(a.lastActivityAt || a.updatedAt || a.createdAt).getTime() || b.id - a.id)
+    .slice(0, limit);
 
 function WorkspaceFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { startNewChat, projects, conversations, selectChat, selectedChatId } = useWorkspace();
   const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
@@ -94,6 +106,45 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
     if (event.key === "Home" || (delta < 0 && sidebarWidth <= SIDEBAR.min)) { setRail(true); return; }
     commitWidth(event.key === "End" ? sidebarMax() : clampSidebar(sidebarWidth + delta));
   }, [collapsed, sidebarWidth, setRail, commitWidth]);
+  /** One place that does what a shortcut or the command palette asks for. */
+  const runCommand = useCallback((id: CommandId) => {
+    const click = (selector: string) => document.querySelector<HTMLElement>(selector)?.click();
+    const chat = (action: string) => document.dispatchEvent(new CustomEvent("genyxo:chat-command", { detail: { action } }));
+    const go = (path: string) => router.push(path);
+    switch (id) {
+      case "new": startNewChat(); break;
+      case "sidebar": toggle(); break;
+      case "help": setShortcutsOpen(true); break;
+      case "settings": go("/profile"); break;
+      case "instructions": go("/profile#personalization"); break;
+      case "library": case "plugins": case "scheduled": case "maps": go(`/${id}`); break;
+      case "focus": document.getElementById("userInput")?.focus(); break;
+      case "attach": click("#fileInput"); break;
+      case "effort": click("#customModelSelect"); break;
+      case "dictate": click("#voiceBtn"); break;
+      case "voice": void import("@/widgets/chat/model/voice-session").then((voice) => (voice.getVoiceSnapshot().active ? voice.stopVoice() : voice.startVoice())); break;
+      case "web": case "research": case "agent":
+        document.dispatchEvent(new CustomEvent("genyxo:composer-mode", { detail: { mode: id === "web" ? "search" : id } }));
+        document.getElementById("userInput")?.focus();
+        break;
+      case "stop": chat("stop"); break;
+      case "regenerate": chat("regenerate"); break;
+      case "copyLast": chat("copy-last"); break;
+      case "copyCode": chat("copy-code"); break;
+      case "editLast": chat("edit-last"); break;
+      case "readAloud": chat("read-aloud"); break;
+      case "delete": if (selectedChatId) document.dispatchEvent(new CustomEvent("genyxo:shortcut-delete")); break;
+      case "prevChat": case "nextChat": {
+        const list = recentChats(conversations);
+        if (!list.length) break;
+        const at = list.findIndex((item) => item.id === selectedChatId);
+        const next = at < 0 ? 0 : at + (id === "nextChat" ? 1 : -1);
+        if (list[next]) selectChat(list[next].id);
+        break;
+      }
+      default: break;
+    }
+  }, [router, startNewChat, toggle, conversations, selectedChatId, selectChat]);
   useEffect(() => {
     // Legacy message actions use this optional icon font. Loading it after
     // hydration keeps an unavailable CDN from suspending the workspace layout.
@@ -120,19 +171,18 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
     const backgroundReady = () => startNewChat();
     const keydown = (event: KeyboardEvent) => {
       if (event.isComposing || event.defaultPrevented || document.documentElement.dataset.gxShortcutRecording || document.querySelector("dialog[open]")) return;
-      if (matchesShortcut(event, "search")) { event.preventDefault(); setSearchOpen(open => !open); }
-      else if (matchesShortcut(event, "sidebar")) { event.preventDefault(); toggle(); }
-      else if (matchesShortcut(event, "new")) { event.preventDefault(); startNewChat(); }
-      else if (matchesShortcut(event, "focus")) { event.preventDefault(); document.getElementById("userInput")?.focus(); }
-      else if (matchesShortcut(event, "attach")) { event.preventDefault(); document.getElementById("fileInput")?.click(); }
-      else if (matchesShortcut(event, "effort")) { event.preventDefault(); document.getElementById("customModelSelect")?.click(); }
-      else if (matchesShortcut(event, "help")) { event.preventDefault(); setShortcutsOpen(true); }
-      else if (matchesShortcut(event, "delete")) { event.preventDefault(); if (selectedChatId) document.dispatchEvent(new CustomEvent("genyxo:shortcut-delete")); }
-      else {
-        const recent = conversations.filter(chat => !chat.archivedAt).slice().sort((a, b) => new Date(b.lastActivityAt || b.updatedAt || b.createdAt).getTime() - new Date(a.lastActivityAt || a.updatedAt || a.createdAt).getTime() || b.id - a.id).slice(0, 9);
-        const index = Array.from({ length: 9 }, (_, i) => i).find(i => matchesShortcut(event, `recent${i + 1}`));
-        if (index !== undefined && recent[index]) { event.preventDefault(); selectChat(recent[index].id); }
+      if (matchesShortcut(event, "search")) { event.preventDefault(); setSearchOpen(open => !open); return; }
+      // ↑ in an empty message box brings back the last message, as in Slack, Claude and Codex.
+      if (matchesShortcut(event, "editLast")) {
+        const field = event.target as HTMLTextAreaElement | null;
+        if (field?.id === "userInput" && !field.value) { event.preventDefault(); runCommand("editLast"); }
+        return;
       }
+      const id = KEY_COMMANDS.find((command) => matchesShortcut(event, command));
+      if (id) { event.preventDefault(); runCommand(id); return; }
+      const recent = recentChats(conversations, 9);
+      const index = Array.from({ length: 9 }, (_, i) => i).find(i => matchesShortcut(event, `recent${i + 1}`));
+      if (index !== undefined && recent[index]) { event.preventDefault(); selectChat(recent[index].id); }
     };
     document.addEventListener("genyxo:workspace-toggle", toggleEvent);
     document.addEventListener("genyxo:workspace-project", projectEvent);
@@ -152,7 +202,7 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
       document.removeEventListener("genyxo:shortcut-background-ready", backgroundReady);
       document.removeEventListener("keydown", keydown);
     };
-  }, [toggle, startNewChat, conversations, selectedChatId, selectChat]);
+  }, [toggle, startNewChat, conversations, selectChat, runCommand]);
   useEffect(() => { queueMicrotask(() => setMobileOpen(false)); }, [pathname]);
   useEffect(() => {
     const resize = () => { setIsMobile(innerWidth < 768); if (innerWidth >= 768) setMobileOpen(false); };
@@ -208,7 +258,7 @@ function WorkspaceFrame({ children }: { children: ReactNode }) {
       {preset && isChatPath(pathname) && <div className="workspace-preset-badge"><WorkspaceIcon name="sparkles" size={14}/><span>{preset.name}</span><WorkspaceTooltip label={t("workspace.remove_preset", "Remove skill")} side="bottom"><button className="ws-icon-btn" onClick={() => { document.dispatchEvent(new CustomEvent("genyxo:workspace-preset", { detail: { presetId: null } })); setPreset(null); }} aria-label={t("workspace.remove_preset", "Remove skill")}><WorkspaceIcon name="close" size={14}/></button></WorkspaceTooltip></div>}
     </div>
     {shortcutsOpen && <ShortcutHelp onClose={() => setShortcutsOpen(false)} />}
-    {searchOpen && <WorkspaceSearch onClose={() => setSearchOpen(false)}/>}
+    {searchOpen && <CommandPalette onClose={() => setSearchOpen(false)} onCommand={runCommand}/>}
     {projectId !== null && <WorkspaceProjectDialog project={projects.find((item) => item.id === projectId)} onClose={() => setProjectId(null)}/>}
     <div className="ws-toast-region" aria-live="polite" aria-atomic="true">{toast && <div className={`ws-toast ws-toast-${toast.type}`}><WorkspaceIcon name={toast.type === "error" ? "info" : "check"} size={17}/>{toast.message}<WorkspaceTooltip label={t("workspace.dismiss", "Dismiss")} side="bottom"><button className="ws-icon-btn" onClick={() => setToast(null)} aria-label={t("workspace.dismiss", "Dismiss")}><WorkspaceIcon name="close" size={16}/></button></WorkspaceTooltip></div>}</div>
   </div>;
