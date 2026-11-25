@@ -61,3 +61,7 @@
 .gx-media-card[data-status="failed"] .gx-media-body { color: #ff9f8f; font-size: 13px; }
 [data-theme="light"] .gx-media-card[data-status="failed"] .gx-media-body { color: #c2410c; }
 @media (prefers-reduced-motion: reduce) { .gx-media-card, .bot-message .message-content img[src*="/chat/media/"] { animation: none; } }
+
+/* Neutral marks: plugin cards are told apart by name, not coloured tiles. */
+.gx-action-card[data-status="pending"] { border-color: color-mix(in srgb, var(--gx-text, #fff) 22%, transparent); box-shadow: none; }
+.gx-action-mark { color: var(--gx-text, #f3f5f4); background: color-mix(in srgb, var(--gx-text, #fff) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gx-text, #fff) 10%, transparent); }

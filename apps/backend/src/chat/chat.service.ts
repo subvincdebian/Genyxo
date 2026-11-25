@@ -2487,7 +2487,7 @@ export class ChatService {
   }
 
   /** A streamed answer from the chosen model (the Deep research report). */
-  private async streamText(
+  async streamText(
     model: string,
     system: string,
     prompt: string,

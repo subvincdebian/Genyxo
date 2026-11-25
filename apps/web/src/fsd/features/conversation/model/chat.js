@@ -4668,6 +4668,10 @@ export default function initialize(scope, context) {
       }
     });
   });
+  // Credits spent outside a chat turn (canvas edits) update the balance too.
+  scope.listen(scope.document, "genyxo:balance", (event) => {
+    if (typeof event.detail === "number") context.updateBalanceUI?.(event.detail);
+  });
   if (context.workspaceManaged) {
     scope.listen(scope.document, "genyxo:workspace-data", (event) => {
       conversations = event.detail.conversations || [];

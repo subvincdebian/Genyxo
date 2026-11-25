@@ -1025,3 +1025,18 @@ li[data-verdict="pending"] .gx-fc-row-claim { color: var(--gx-ai-muted); }
   .gx-plan, .gx-plan li, .gx-plan-spin { animation: none !important; }
   .gx-plan-body, .gx-plan-bar i, .gx-plan-chevron { transition: none !important; }
 }
+
+/* Neutral marks everywhere: no coloured tiles or badges. */
+.gx-run-file-icon,
+.gx-run-file-icon[data-tone] { color: var(--gx-ai-text); background: color-mix(in srgb, var(--gx-ai-text) 8%, transparent); box-shadow: inset 0 0 0 1px var(--gx-ai-edge); }
+.gx-run-icon,
+.gx-run:not([data-ok]) .gx-run-icon { color: var(--gx-ai-text); background: color-mix(in srgb, var(--gx-ai-text) 8%, transparent); }
+.gx-plan-badge,
+.gx-plan[data-state="blocked"] .gx-plan-badge { color: var(--gx-ai-muted); background: color-mix(in srgb, var(--gx-ai-text) 7%, transparent); }
+.gx-plan li[data-status="done"] .gx-plan-mark,
+.gx-plan li[data-status="blocked"] .gx-plan-mark { color: var(--gx-ai-text); background: color-mix(in srgb, var(--gx-ai-text) 12%, transparent); }
+.gx-plan-bar i,
+.gx-plan[data-state="done"] .gx-plan-bar i { background: var(--gx-ai-text); }
+.gx-ask-cite,
+.gx-ask-n { color: var(--gx-ai-text); background: color-mix(in srgb, var(--gx-ai-text) 10%, transparent); }
+.gx-ask { background: var(--gx-ai-glass); }
